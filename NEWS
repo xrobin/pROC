@@ -1,0 +1,72 @@
+1.5 (2011-??-??)
+  * New 'legacy.axes' argument to 'plot' 1-specificity rather than specificity
+  * New 'axes' argument to turn off the plotting of the axis
+  * New 'power.roc.test' function
+  * Updated load call
+  * Delong's CI reversed in ROC curves with direction=">"
+  * Delong's CI AUC returned values > 1 or < 0 in some rare cases
+  * Minor fixes in documentation of 'direction' and in the output of 'plot.roc'
+
+1.4.4 (2011-08-09)
+  * Fixed alternative for one-tailed tests
+  * Removed COPYING file to fix a warning in r-devel.
+
+1.4.3 (2011-03-17)
+  * Updated citation
+
+1.4.2 (2011-03-03)
+  * Fixed bootstrap 'roc.test' generating NAs when 'smooth.roc's were used with 'reuse.auc=FALSE' (thanks to Buddy for the report)
+  * Documented a warning that was missing in roc.test
+  * Updated citation
+  
+1.4.1 (2011-01-27)
+  * 'venkatraman''s test for unpaired ROC curves
+  
+1.4 (2011-01-21)
+  * 'smooth' does not apply on 'ordered' factors anymore
+  * Multi-class AUC support
+  * Can choose how 'best' thresold is determined ('best.method' and 'best.weights' in 'coords' and 'print.thres.best.method' and 'print.thres.best.weights' in 'plot.roc')
+  * Minor fixes in documentation
+  * 'print' now prints the response instead of "response" and more informative data in 'htest's
+  * Bootstrap with 'ci.auc' consumes much less memory
+  * Unpaired bootstrap and DeLong's test
+  * Specificity and sensitivity tests (in 'roc.test')
+
+1.3.2 (2010-08-24)
+  * 'print.auc' printed incorrect CI in 'plot.roc' (thanks to Alexander B. Leichtle for the report)
+  * Failed to detect local maximas in 'coords' when 2 or less points were selected
+  * Don't consider ROC extremities (+-Inf at 1.0/0.0 SE<->SP) as local maximas
+
+1.3.1 (2010-08-18)
+  * Sensitivity and specificity were inverted in coords when results were reported as list
+  * Faster checks with '\dontrun{}' in 'roc.test'
+
+1.3 (2010-08-13)
+  * '...' not passed correctly in 'plot.ci.se' with 'type="bars"' resulting in an error
+  * CI is not re-computed by default in 'smooth.roc'. You can still turn it on with 'reuse.ci=TRUE'
+  * New function 'are.paired'
+  * Local maximas could be incorrectly detected in 'coords' (and 'plot.roc') with 'predictor's containing more than 2 levels.
+  * New method 'venkatraman' for 'roc.test'
+  * MASS and tcltk packages are now only suggested instead of required
+
+1.2.1 (2010-05-11)
+  * Handle 'method' arguments for 'smooth.roc' and 'ci.auc' separately in 'roc.default'
+  * Added 'auc.polygon.*' and 'max.auc.polygon.*' arguments for 'polygon' in 'plot.roc'
+
+1.2 (2010-05-09)
+  * Added DeLong method in 'ci.auc'
+  * Return value of 'ci.auc' does not contain an 'aucs' item anymore
+  * Put most examples with bootstrap within '\dontrun{}' blocks for faster (but less useful) checks execution
+
+1.1 (2010-05-05)
+  * Added 'lines.roc' functions for ROC
+  * Added 'type' argument for both 'lines.roc' and 'plot.roc'
+  * Added 'print.auc.col' argument to 'plot.roc'
+  * Fixed a warning in 'roc.test.default' when the class of 'predictor1' had several elements
+  * Fixed an encoding failure during the checks on MacOS X
+
+1.0.1 (2010-04-28)
+  * Reduced examples execution time. Added low 'boot.n' in the slowest examples and 'reuse.auc' and 'reuse.ci' arguments in smooth.roc.roc
+
+1.0 (2010-04-27)
+  * First public release
