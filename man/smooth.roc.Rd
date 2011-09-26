@@ -239,8 +239,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   James E. Hanley (1988) ``The robustness of the ``binormal'' assumptions
   used in fitting ROC curves''. \emph{Medical Decision Making} \bold{8}, 197--203.
 
-  Kaspar Rufibach (2011) ``A smooth ROC curve estimator based on log-concave
-  density estimates''. Under revision in \href{http://arxiv.org/abs/1103.1787}{arXiv}.
+  Lutz Duembgen, Kaspar Rufibach (2011) ``logcondens: Computations Related
+  to Univariate Log-Concave Density Estimation''. \emph{Journal of Statistical
+  Software}, \bold{39}, 1--28. URL: \href{http://www.jstatsoft.org/v39/i06/}{jstatsoft.org/v39/i06}. 
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
