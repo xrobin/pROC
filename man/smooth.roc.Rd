@@ -275,8 +275,13 @@ rs2 <- smooth(rocobj, method="density")
 plot(rs2, add=TRUE, col="blue")
 rs3 <- smooth(rocobj, method="fitdistr", density="lognormal")
 plot(rs3, add=TRUE, col="magenta")
-legend("bottomright", legend=c("Empirical", "Binormal", "Density", "Log-normal"),
-       col=c("black", "green", "blue", "magenta"), lwd=2)
+rs4 <- smooth(rocobj, method="logcondens")
+plot(rs4, add=TRUE, col="brown")
+rs5 <- smooth(rocobj, method="logcondens.smooth")
+plot(rs5, add=TRUE, col="orange")
+legend("bottomright", legend=c("Empirical", "Binormal", "Density", "Log-normal",
+                               "Log-concave density", "Smoothed log-concave density"),
+       col=c("black", "green", "blue", "magenta", "brown", "orange"), lwd=2)
 
 ## Advanced smoothing
 
