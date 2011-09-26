@@ -5,7 +5,7 @@ Version: 1.5
 Date: 2011-??-??
 Encoding: UTF-8
 Depends: plyr, R (>= 2.10)
-Suggests: tcltk, MASS
+Suggests: tcltk, MASS, logcondens
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller
 Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
 Description: Tools for visualizing, smoothing and comparing receiver operating characteristic (ROC curves). (Partial) area under the curve (AUC) can be compared with statistical tests based on U-statistics or bootstrap. Confidence intervals can be computed for (p)AUC or ROC curves.

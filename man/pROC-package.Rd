@@ -166,7 +166,7 @@ Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
 CRAN packages \pkg{ROCR}, \pkg{verification} or Bioconductor's \pkg{roc}
 for ROC curves.
 
-CRAN packages \pkg{plyr} and \pkg{MASS} employed in this package.
+CRAN packages \pkg{plyr}, \pkg{MASS} and \pkg{logcondens} employed in this package.
 }
 \examples{
 data(aSAH)

@@ -31,7 +31,7 @@ smooth.smooth.roc <- function(smooth.roc, ...) {
   smooth.roc(roc, ...)
 }
 
-smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr"), n = 512, bw = "nrd0",
+smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth"), n = 512, bw = "nrd0",
                        density = NULL, density.controls = density, density.cases = density,
                        start = NULL, start.controls = start, start.cases = start,
                        reuse.auc = TRUE, reuse.ci = FALSE,
@@ -57,9 +57,12 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr"), n = 5
       sesp <- smooth.roc.binormal(roc, n)
     if (method == "fitdistr")
       sesp <- smooth.roc.fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
-    if (method == "density") {
+    if (method == "density")
       sesp <- smooth.roc.density(roc, n, density.controls, density.cases, bw, ...)
-    }
+    if (method == "logcondens")
+      sesp <- smooth.roc.logcondens(roc, n)
+    if (method == "logcondens.smooth")
+      sesp <- smooth.roc.logcondens.smooth(roc, n)
   }
 
   class(sesp) <- "smooth.roc"
@@ -177,7 +180,7 @@ smooth.roc.binormal <- function(roc, n) {
 
 smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
   if (!require(MASS))
-    stop("Package MASS not available, required with method='fitdistr'. Please install it with 'install.packages(\"MASS\").")
+    stop("Package MASS not available, required with method='fitdistr'. Please install it with 'install.packages(\"MASS\")'.")
 
   densfuns.list <- list(beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
                         gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
@@ -190,7 +193,7 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     densfun.controls <- match.arg(densfun.controls, names(densfuns.list))
 
   if (is.null(densfun.cases))
-    densfun.cases <- "normal"
+    densfun.cases <- "normal"              
   else if (is.character(densfun.cases))
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
 
@@ -229,4 +232,30 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   return(list(sensitivities = perfs[2,] * ifelse(roc$percent, 100, 1),
               specificities = perfs[1,] * ifelse(roc$percent, 100, 1),
               fit.controls=fit.controls, fit.cases=fit.cases))
+}
+
+smooth.roc.logcondens <- function(roc, n) {
+  if (!require(logcondens))
+    stop("Package logcondens not available, required with method='logcondens'. Please install it with 'install.packages(\"logcondens\")'.")
+
+  sp <- seq(0, 1, 1/(n-1))
+  logcondens <- logConROC(roc$cases, roc$controls, sp)
+  se <- logcondens$fROC
+
+  return(list(sensitivities = se * ifelse(roc$percent, 100, 1),
+              specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
+              logcondens = logcondens))
+}
+
+smooth.roc.logcondens.smooth <- function(roc, n) {
+  if (!require(logcondens))
+    stop("Package logcondens not available, required with method='logcondens.smooth'. Please install it with 'install.packages(\"logcondens\")'.")
+
+  sp <- seq(0, 1, 1/(n-1))
+  logcondens <- logConROC(roc$cases, roc$controls, sp)
+  se <- logcondens$fROC.smooth
+
+  return(list(sensitivities = se * ifelse(roc$percent, 100, 1),
+              specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
+              logcondens = logcondens))
 }

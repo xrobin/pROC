@@ -15,8 +15,9 @@
 smooth(...)
 \S3method{smooth}{default}(...)
 \S3method{smooth}{roc}(roc,
-method=c("binormal", "density", "fitdistr"), n=512, bw = "nrd0",
-density=NULL, density.controls=density, density.cases=density,
+method=c("binormal", "density", "fitdistr", "logcondens",
+"logcondens.smooth"), n=512, bw = "nrd0", density=NULL,
+density.controls=density, density.cases=density,
 start=NULL, start.controls=start, start.cases=start, 
 reuse.auc=TRUE, reuse.ci=FALSE, ...)
 \S3method{smooth}{smooth.roc}(smooth.roc, ...)
@@ -28,6 +29,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{\link{smooth.roc}} function.
   }
   \item{method}{\dQuote{binormal}, \dQuote{density}, \dQuote{fitdistr},
+    \dQuote{logcondens}, \dQuote{"logcondens.smooth"},
     or a function returning a list of smoothed sensitivities and specificities.
   }
   \item{n}{
@@ -135,6 +137,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   allowed by \code{\link[MASS]{fitdistr}} or a density function (such
   as \code{\link{dnorm}}, \code{\link{dweibull}}, ...).
 
+  The \code{method="logcondens"} and \code{method="logcondens.smooth"} use the
+    \pkg{logcondens} package to generate a non smoothed or smoothed
+    (respectively) log-concave density estimate of of the control and case
+    observation with the \link[logcondens]{logConROC} function.
+
   Finally, \code{method} can also be a function. It must
   return a list with exactly 2 elements named \dQuote{sensitivities} and
   \dQuote{specificities}, which must be numeric vectors between 0 and 1
@@ -170,19 +177,25 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     smoothing. Will serve to apply the smoothing again in further
     bootstrap operations.
   }
-  \item{fit.controls, fit.cases}{the result of \pkg{MASS}'s
-    \code{\link{fitdistr}} function for controls and cases, with an
-    additional \dQuote{densfun} item indicating the density function, if
-    possible as character.
-  }
   \item{auc}{if the original ROC curve contained an AUC, it is computed
     again on the smoothed ROC.
   }
   \item{ci}{if the original ROC curve contained a CI, it is computed
     again on the smoothed ROC.
   }
-  Additionally, the original \code{\link{roc}} object is stored as a
-  \dQuote{roc} attribute.
+  \item{fit.controls, fit.cases}{with  \code{method="fitdistr"} only: 
+    the result of \pkg{MASS}'s
+    \code{\link{fitdistr}} function for controls and cases, with an
+    additional \dQuote{densfun} item indicating the density function, if
+    possible as character.
+  }
+  \item{logcondens}{with \code{method="logcondens"} and \code{method="logcondens"} only: 
+    the result of \pkg{logcondens}'s \link[logcondens]{logConROC} function.
+  }
+  \subsection{Attributes}{
+    Additionally, the original \code{\link{roc}} object is stored as a
+    \dQuote{roc} attribute.
+  }
 }
 
 \section{Errors}{
@@ -213,11 +226,21 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   generated with an ordered factor only binormal smoothing can be
   applied and the message \dQuote{ROC curves of ordered predictors can
   be smoothed only with binormal smoothing.} is displayed otherwise.
+
+  \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
+  require additional packages. If not available, the following message 
+  will be displayed with the required command to install the package:
+  \dQuote{Package ? not available, required with method='?'.
+     Please install it with 'install.packages("?")'." 
+  }
 }
 
 \references{
   James E. Hanley (1988) ``The robustness of the ``binormal'' assumptions
   used in fitting ROC curves''. \emph{Medical Decision Making} \bold{8}, 197--203.
+
+  Kaspar Rufibach (2011) ``A smooth ROC curve estimator based on log-concave
+  density estimates''. Under revision in \href{http://arxiv.org/abs/1103.1787}{arXiv}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
@@ -273,6 +296,10 @@ smooth(rocobj, method="density", density.controls=density.controls$y,
 # which is roughly what is done by a simple:
 smooth(rocobj, method="density")
 
+# With logcondens:
+smooth(rocobj, method="logcondens")
+smooth(rocobj, method="logcondens.smooth")
+
 
 ## Smoothing artificial ROC curves
 
@@ -286,8 +313,11 @@ roc.norm <- roc(controls=rnorm(1000), cases=rnorm(1000)+1, plot=TRUE)
 plot(smooth(roc.norm), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="fitdistr"), col="blue", lwd=1, add=TRUE)
-legend("bottomright", legend=c("empirical", "binormal", "density", "fitdistr"),
-       col=c(par("fg"), "green", "red", "blue"), lwd=c(2, 1, 1, 1))
+plot(smooth(roc.norm, method="logcondens"), col="brown", lwd=1, add=TRUE)
+plot(smooth(roc.norm, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
+legend("bottomright", legend=c("empirical", "binormal", "density", "fitdistr",
+                               "logcondens", "logcondens.smooth"), 
+       col=c(par("fg"), "green", "red", "blue", "brown", "orange"), lwd=c(2, 1, 1, 1))
        
 # deviation from the normality
 roc.norm.exp <- roc(controls=rnorm(1000), cases=rexp(1000), plot=TRUE)
@@ -298,9 +328,12 @@ plot(smooth(roc.norm.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
 # Correct fitdistr
 plot(smooth(roc.norm.exp, method="fitdistr", density.controls="normal",
             density.cases="exponential"), col="purple", lwd=1, add=TRUE)
+plot(smooth(roc.norm.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
+plot(smooth(roc.norm.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
 legend("bottomright", legend=c("empirical", "binormal", "density",
-                               "wrong fitdistr", "correct fitdistr"),
-       col=c(par("fg"), "green", "red", "blue", "purple"), lwd=c(2, 1, 1, 1, 1))
+                               "wrong fitdistr", "correct fitdistr",
+                               "logcondens", "logcondens.smooth"),
+       col=c(par("fg"), "green", "red", "blue", "purple", "brown", "orange"), lwd=c(2, 1, 1, 1, 1))
 
 # large deviation from the normality
 roc.unif.exp <- roc(controls=runif(1000, 2, 3), cases=rexp(1000)+2, plot=TRUE)
@@ -309,9 +342,12 @@ plot(smooth(roc.unif.exp, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density", bw="ucv"), col="magenta", lwd=1, add=TRUE)
 # Wrong fitdistr: normality assumed by default (uniform distributions not handled)
 plot(smooth(roc.unif.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
+plot(smooth(roc.unif.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
+plot(smooth(roc.unif.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
 legend("bottomright", legend=c("empirical", "binormal", "density",
-                               "density ucv", "wrong fitdistr"),
-       col=c(par("fg"), "green", "red", "magenta", "blue"), lwd=c(2, 1, 1, 1, 1))
+                               "density ucv", "wrong fitdistr",
+                               "logcondens", "logcondens.smooth"),
+       col=c(par("fg"), "green", "red", "magenta", "blue", "brown", "orange"), lwd=c(2, 1, 1, 1, 1))
 
 # 2 uniform distributions with a custom density function
 unif.density <- function(x, n, from, to, bw, kernel, ...) {
