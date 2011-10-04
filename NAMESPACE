@@ -1,4 +1,4 @@
-export(roc, roc.formula, roc.default,
+export(
        are.paired, are.paired.auc, are.paired.roc, are.paired.smooth.roc,
        auc, auc.formula, auc.roc, auc.smooth.roc, auc.default, auc.multiclass.roc,
        ci, ci.formula, ci.default, ci.roc, ci.smooth.roc,
@@ -14,6 +14,7 @@ export(roc, roc.formula, roc.default,
        plot.roc, plot.smooth.roc, plot.roc.formula, plot.roc.default, plot.roc.roc, plot.roc.smooth.roc,
        power.roc.test, power.roc.test.roc, power.roc.test.numeric,
        print.roc, print.smooth.roc, print.auc, print.ci.auc, print.ci.thresholds, print.ci.se, print.ci.sp, print.multiclass.roc, print.multiclass.auc,
+       roc, roc.formula, roc.default,
        roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
        sd, sd.default, sd.auc, sd.smooth.roc, sd.roc,
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
