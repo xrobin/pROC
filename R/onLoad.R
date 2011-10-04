@@ -18,9 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 .onLoad <- function(lib, pkg) {
+  # Generate progressbar option with smart default values
   if (is.null(getOption("pROCProgress"))) {
     if (interactive()) {
-      # Generate progressbar option with smart default values
       if (!is.null(getOption("STERM")) && getOption("STERM") == "iESS")
         options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 1))
       else if (.Platform$OS.type == "windows")
