@@ -136,7 +136,7 @@ ci.auc.roc <- function(roc,
       # partial auc: go for bootstrap
       method <- "bootstrap"
     }
-    else if (class(roc) == "smooth.roc") {
+    else if ("smooth.roc" %in% class(roc)) {
       # smoothing: bootstrap
       method <- "bootstrap"
     }
@@ -151,7 +151,7 @@ ci.auc.roc <- function(roc,
       warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
       method <- "bootstrap"
     }
-    else if (class(roc) == "smooth.roc") {
+    else if ("smooth.roc" %in% class(roc)) {
       warning("Using DeLong's test for smoothed ROCs is not supported. Using bootstrap instead.")
       method <- "bootstrap"
     }

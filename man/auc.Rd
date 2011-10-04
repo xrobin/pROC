@@ -109,8 +109,8 @@ auc(...)
 }
 
 \value{
-  The numeric AUC value, of class \dQuote{auc} (or
-  \dQuote{multiclass.auc} if a \dQuote{multiclass.roc} was supplied), in
+  The numeric AUC value, of class \code{c("auc", "numeric")} (or
+  \code{c("multiclass.auc", "numeric")} if a \dQuote{multiclass.roc} was supplied), in
   fraction of the area or in percent if \code{percent=TRUE}, with the
   following attributes:
   \item{partial.auc}{if the AUC is full (FALSE) or partial (and in this

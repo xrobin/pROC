@@ -39,12 +39,12 @@ cov.roc <- function(roc1, roc2,
                          boot.n=2000, boot.stratified=TRUE,
                          progress=getOption("pROCProgress")$name,
                          ...) {
-  if (class(roc2) == "auc")
+  if ("auc" %in% class(roc2))
     roc2 <- attr(roc2, "roc")
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
-  if (class(roc1) == "smooth.roc") {
+  if ("smooth.roc" %in% class(roc1)) {
     smoothing.args$roc1 <- roc1$smoothing.args
     smoothing.args$roc1$smooth <- TRUE
     roc1 <- attr(roc1, "roc")
@@ -53,7 +53,7 @@ cov.roc <- function(roc1, roc2,
   else {
     smoothing.args$roc1 <- list(smooth=FALSE)
   }
-  if (class(roc2) == "smooth.roc") {
+  if ("smooth.roc" %in% class(roc2)) {
     smoothing.args$roc2 <- roc2$smoothing.args
     smoothing.args$roc2$smooth <- TRUE
     roc2 <- attr(roc2, "roc")

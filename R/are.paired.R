@@ -37,15 +37,15 @@ are.paired.roc <- function(roc1, roc2,
   if (! is.logical(return.paired.rocs) || length(return.paired.rocs) != 1)
     stop("'return.paired.rocs' must be either TRUE or FALSE.")
   # Recover base ROC curves (not auc or smoothed)
-  if (class(roc1) == "auc")
+  if ("auc" %in% class(roc1))
     roc1 <- attr(roc1, "roc")
-  if (class(roc2) == "auc")
+  if ("auc" %in% class(roc2))
     roc2 <- attr(roc2, "roc")
-  if (class(roc1) == "smooth.roc") {
+  if ("smooth.roc" %in% class(roc1)) {
     oroc1 <- roc1
     roc1 <- attr(roc1, "roc")
   }
-  if (class(roc2) == "smooth.roc") {
+  if ("smooth.roc" %in% class(roc2)) {
     oroc2 <- roc2
     roc2 <- attr(roc2, "roc")
   }

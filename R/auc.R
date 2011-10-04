@@ -51,7 +51,7 @@ auc.multiclass.roc <- function(multiclass.roc, ...) {
     attr(auc, "partial.auc.focus") <- attr(aucs[[1]], "partial.auc.focus")
     attr(auc, "partial.auc.correct") <- attr(aucs[[1]], "partial.auc.correct") 
   }
-  class(auc) <- "multiclass.auc"
+  class(auc) <- c("multiclass.auc", class(auc))
   return(auc)
 }
 
@@ -170,6 +170,6 @@ auc.roc <- function(roc,
     attr(auc, "partial.auc.focus") <- partial.auc.focus
     attr(auc, "partial.auc.correct") <- partial.auc.correct
   }
-  class(auc) <- "auc"
+  class(auc) <- c("auc", class(auc))
   return(auc)
 }
