@@ -8,8 +8,9 @@
  Smooth a ROC curve
 }
 \description{
-  This function smoothes a ROC curve of numeric predictor. By default, a binormal smoothing
-  is performed, but density or custom smoothings are supported.
+  This function smoothes a ROC curve of numeric predictor. By default, a
+  binormal smoothing is performed, but density or custom smoothings are
+  supported.
 }
 \usage{
 smooth(...)

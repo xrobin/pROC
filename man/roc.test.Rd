@@ -69,7 +69,8 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
-    test. See details.
+    test. See the \emph{AUC specification} section for more details.
+
   }
   \item{boot.n}{for \code{method="bootstrap"} and \code{method="venkatraman"} only: the number of
     bootstrap replicates or permutations. Default: \var{2000}.
