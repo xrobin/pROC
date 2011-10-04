@@ -28,6 +28,8 @@
 
   Two paired ROC curves (that is \code{\link{roc}} objects with the same
   \code{response}) can be compared with the \code{\link{roc.test}} function.
+  Sample size and power computations can be performed with the 
+  \code{\link{power.roc.test}} function.
 }
 
 \section{Citation}{
