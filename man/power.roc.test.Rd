@@ -142,7 +142,7 @@ alternative = c("two.sided", "one.sided"), ...)
 }
 
 \seealso{
-\code{\link{roc}}
+ \code{\link{roc}}, \code{\link{roc.test}}
 }
 \examples{
 data(aSAH)

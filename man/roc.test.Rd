@@ -359,7 +359,7 @@ na.rm=TRUE, method=NULL, ...)
 }
 
 \seealso{
-  \code{\link{roc}}
+  \code{\link{roc}}, \code{\link{power.roc.test}}
 }
 
 \examples{
