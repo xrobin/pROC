@@ -1,13 +1,14 @@
 1.5 (2011-??-??)
+  * New 'power.roc.test' function for sample size and power computations
+  * New 'cov' and 'var' functions
+  * New 'logcondens' and 'logcondens.smooth' smoothing methods.
   * New 'legacy.axes' argument to 'plot' 1-specificity rather than specificity
   * New 'axes' argument to turn off the plotting of the axis
-  * New 'power.roc.test' function for sample size and power computations
   * 'auc' and 'multiclass.auc' objects now also have secondary class 'numeric'
   * Updated load call
   * Delong's CI reversed in ROC curves with direction=">"
   * Delong's CI AUC returned values > 1 or < 0 in some rare cases
-  * Minor fixes in documentation of 'direction' and in the output of 'plot.roc'
-  * Added 'logcondens' and 'logcondens.smooth' smoothing methods.
+  * Minor improvements in documentation
 
 1.4.4 (2011-08-09)
   * Fixed alternative for one-tailed tests
