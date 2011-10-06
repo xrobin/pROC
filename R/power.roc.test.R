@@ -119,8 +119,10 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
     }
   }
   else {
-    ncontrols <- length(roc1$controls)
-    ncases <- length(roc1$cases)
+    if (is.null(sig.level) || is.null(power)) {
+      ncontrols <- length(roc1$controls)
+      ncases <- length(roc1$cases)
+    }
     auc <- roc1$auc
     return(power.roc.test(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, ...))
   }
