@@ -36,7 +36,9 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
   }
   if (attr(roc1$auc, "percent")) {
     roc1$auc <- roc1$auc / 100
-    attr(roc1$auc, "partial.auc") <- attr(roc1$auc, "partial.auc") / 100
+    if (is.numeric(attr(roc1$auc, "partial.auc"))) {
+      attr(roc1$auc, "partial.auc") <- attr(roc1$auc, "partial.auc") / 100
+    }
     attr(roc1$auc, "percent") <- FALSE
     roc1$percent <- FALSE
   }
@@ -58,7 +60,9 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       }
       if (attr(roc2$auc, "percent")) {
         roc2$auc <- roc2$auc / 100
-        attr(roc2$auc, "partial.auc") <- attr(roc2$auc, "partial.auc") / 100
+        if (is.numeric(attr(roc2$auc, "partial.auc"))) {
+          attr(roc2$auc, "partial.auc") <- attr(roc2$auc, "partial.auc") / 100
+        }
         attr(roc2$auc, "percent") <- FALSE
         roc2$percent <- FALSE
       }
@@ -114,7 +118,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       if (alternative == "two.sided") {
         sig.level <- sig.level * 2
       }
-      return(structure(list(ncases=ncases, ncontrols=ncontrols, auc1=roc1$auc, auc2=roc2$auc, sig.level=sig.level, power=power, alternative=alternative, method="Two ROC curves power calculation"), class="power.htest"))
+      return(structure(list(ncases=ceiling(ncases), ncontrols=ceiling(ncontrols), auc1=roc1$auc, auc2=roc2$auc, sig.level=sig.level, power=power, alternative=alternative, method="Two ROC curves power calculation"), class="power.htest"))
     }
     else {
       stop("'roc2' must be an object of class 'roc'.")
@@ -243,7 +247,7 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   if (alternative == "two.sided") {
     sig.level <- sig.level * 2
   }
-  return(structure(list(ncases=ncases, ncontrols=ncontrols, auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
+  return(structure(list(ncases=ceiling(ncases), ncontrols=ceiling(ncontrols), auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
 }
 
 # Formula 3 from Obuchowski 2004, p. 1123
@@ -258,77 +262,67 @@ power.roc.test.optimize.auc.function <- function(x, ncontrols, ncases, zalpha, z
   (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (x - 0.5)^2 - ncases
 }
 
-var.delta.bootdelong <- function(varroc1, varroc2, covroc1roc2) {
-  varroc1 + varroc2 - 2 * covroc1roc2
+var.delta.bootdelong <- function(covvar) {
+  covvar$var1 + covvar$var2 - 2 * covvar$cov12
 }
 
-var0.delta.bootdelong <- function(varroc1, varroc2, covroc1roc2) {
-  if (varroc1 < varroc2) {
-    varroc <- varroc2
+var0.delta.bootdelong <- function(covvar) {
+  if (covvar$var1 < covvar$var2) {
+    varroc <- covvar$var2
   }
   else {
-    varroc <- varroc1
+    varroc <- covvar$var1
   }
-  2 * varroc - 2 * covroc1roc2
+  2 * varroc - 2 * covvar$cov12
 }
 
 ncases.bootdelong <- function(roc1, roc2, zalpha, zbeta) {
   delta <- roc1$auc - roc2$auc
-  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
-  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
-    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
-    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
-  }
-  else {
-    varroc1 <- var(roc1)
-    varroc2 <- var(roc2)
-  }
-  na <- (zalpha * sqrt(var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)) +
-       zbeta * sqrt(var.delta.bootdelong(varroc1, varroc2, covroc1roc2))) ^2 /
+  covvar <- covvar(roc1, roc2)
+  na <- (zalpha * sqrt(var0.delta.bootdelong(covvar)) +
+       zbeta * sqrt(var.delta.bootdelong(covvar))) ^2 /
        delta^2
-  return(na)
+  return(as.vector(na))
 }
 
 zalpha.bootdelong <- function(roc1, roc2, zbeta) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
-  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
-    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
-    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
-  }
-  else {
-    varroc1 <- var(roc1)
-    varroc2 <- var(roc2)
-  }
-  v0 <- var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)
-  va <- var.delta.bootdelong(varroc1, varroc2, covroc1roc2)
+  covvar <- covvar(roc1, roc2)
+  v0 <- var0.delta.bootdelong(covvar)
+  va <- var.delta.bootdelong(covvar)
   a <- v0
   b <- 2 * zbeta * sqrt(v0) * sqrt(va)
   c <- zbeta^2 * va - ncases * delta ^ 2
-  return(solve.2deg.eqn(a, b, c))
+  return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
 zbeta.bootdelong <- function(roc1, roc2, zalpha) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
-  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
-    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
-    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
-  }
-  else {
-    varroc1 <- var(roc1)
-    varroc2 <- var(roc2)
-  }
-  v0 <- var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)
-  va <- var.delta.bootdelong(varroc1, varroc2, covroc1roc2)
+  covvar <- covvar(roc1, roc2)
+  v0 <- var0.delta.bootdelong(covvar)
+  va <- var.delta.bootdelong(covvar)
   a <- va
   b <- 2 * zalpha * sqrt(va) * sqrt(v0)
   c <- zalpha^2 * v0 - ncases * delta ^ 2
-  return(solve.2deg.eqn(a, b, c))
+  return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
 solve.2deg.eqn <- function(a, b, c) {
   return((- b - sqrt(b^2 - 4*a*c)) / (2*a))
+}
+
+covvar <- function(roc1, roc2) {
+  cov12 <- cov(roc1, roc2, boot.return=TRUE)
+  if (!is.null(attr(cov12, "resampled.values"))) {
+    var1 <- var(attr(cov12, "resampled.values")[,1])
+    var2 <- var(attr(cov12, "resampled.values")[,2])
+    attr(cov12, "resampled.values") <- NULL
+  }
+  else {
+    var1 <- var(roc1)
+    var2 <- var(roc2)
+  }
+  return(list(var1 = var1, var2 = var2, cov12 = cov12))
 }
