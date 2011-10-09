@@ -301,7 +301,6 @@ zalpha.bootdelong <- function(roc1, roc2, zbeta) {
     varroc1 <- var(roc1)
     varroc2 <- var(roc2)
   }
-  vardiff
   v0 <- var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)
   va <- var.delta.bootdelong(varroc1, varroc2, covroc1roc2)
   a <- v0
