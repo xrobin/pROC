@@ -90,13 +90,13 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
         if (is.null(sig.level))
           stop("'sig.level' or 'power' must be provided.")
         zalpha <- qnorm(sig.level)
-        zbeta <- zbeta.obuchowski(roc1, roc2, zalpha)
+        zbeta <- zbeta.bootdelong(roc1, roc2, zalpha)
         power <- 1 - pnorm(zbeta)
       }
       # sig.level
       else if (is.null(sig.level)) {
         zbeta <- qnorm(1 - power)
-        zalpha <- zalpha.obuchowski(roc1, roc2, zbeta)
+        zalpha <- zalpha.bootdelong(roc1, roc2, zbeta)
         sig.level <- pnorm(zalpha)
       }
       # Sample size
@@ -104,7 +104,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
         zalpha <- qnorm(sig.level)
         zbeta <- qnorm(1 - power)
 
-        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta)
+        ncases <- ncases.bootdelong(roc1, roc2, zalpha, zbeta)
         ncontrols <- kappa * ncases
       }
 
@@ -256,168 +256,72 @@ power.roc.test.optimize.auc.function <- function(x, ncontrols, ncases, zalpha, z
   (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (x - 0.5)^2 - ncases
 }
 
-# Formulas from Obuchowski 1997, p. 1530-1531
-expr1 <- function(A, B) {
-  exp(-A^2/(2 * (1 + B^2)))
-}
-expr2 <- function(B) {
-  1 + B^2
-}
-expr3 <- function(cdagger1, cdagger2) {
-  pnorm(cdagger1) - pnorm(cdagger2)
-}
-expr4 <- function(cddagger1, cddagger2) {
- exp(-cddagger1) - exp(- cddagger2)
+var.delta.bootdelong <- function(varroc1, varroc2, covroc1roc2) {
+  varroc1 + varroc2 - 2 * covroc1roc2
 }
 
-cdagger <- function (A, B, FPRi) {
-  (qnorm(FPRi) + A * B * (1 + B^2)^(-1) )* (1 + B^2)^(1/2)
-}
-
-cddagger <- function(cdagger) {
-  cdagger^2 / 2
-}
-
-f.full <- function(A, B) {
-  expr1 <- expr1(A, B)
-  expr2 <- expr2(B)
-  expr1 * (2 * pi * expr2) ^ (-1/2)
-}
-
-f.partial <- function(A, B, FPR1, FPR2) {
-  cdagger1 <- cdagger(A, B, FPR1)
-  cdagger2 <- cdagger(A, B, FPR2)
-  expr1 <- expr1(A, B)
-  expr2 <- expr2(B)
-  expr3 <- expr3(cdagger1, cdagger2)
-  expr1 * (2 * pi * expr2) ^ (-1/2) * expr3
-}
-
-g.full <- function(A, B) {
-  expr1 <- expr1(A, B)
-  expr2 <- expr2(B)
-  - expr1 * A * B * (2 * pi * expr2^3) ^ (-1/2)
-}
-
-g.partial <- function(A, B, FPR1, FPR2) {
-  cdagger1 <- cdagger(A, B, FPR1)
-  cdagger2 <- cdagger(A, B, FPR2)
-  cddagger1 <- cddagger(cdagger1)
-  cddagger2 <- cddagger(cdagger2)
-  expr1 <- expr1(A, B)
-  expr2 <- expr2(B)
-  expr3 <- expr3(cdagger1, cdagger2)
-  expr4 <- expr4(cddagger1, cddagger2)
-  expr1 * (2 * pi * expr2) ^ (-1) * expr4 - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3
-}
-
-var.roc.obuchowski <- function(roc) {
-  A <- (mean(roc$cases) - mean(roc$controls)) / sd(roc$cases)
-  B <- sd(roc$controls) / sd(roc$cases)
-  R <- length(roc$controls) / length(roc$cases)
-
-  if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
-    FPR1 <- attr(roc$auc, "partial.auc")[2]
-    FPR2 <- attr(roc$auc, "partial.auc")[1]
-    f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / R + A^2/2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + R) / (2*R)
+var0.delta.bootdelong <- function(varroc1, varroc2, covroc1roc2) {
+  if (varroc1 < varroc2) {
+    varroc <- varroc2
   }
   else {
-    f.full(A, B)^2 * (1 + B^2 / R + A^2/2) + g.full(A, B)^2 * B^2 * (1 + R) / (2*R)    
+    varroc <- varroc1
   }
+  2 * varroc - 2 * covroc1roc2
 }
 
-cov.roc.obuchowski <- function(roc1, roc2) {
-  A1 <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
-  B1 <- sd(roc1$controls) / sd(roc1$cases)
-  A2 <- (mean(roc2$cases) - mean(roc2$controls)) / sd(roc2$cases)
-  B2 <- sd(roc2$controls) / sd(roc2$cases)
-  R <- length(roc1$controls) / length(roc1$cases)
-  if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    FPR11 <- attr(roc1$auc, "partial.auc")[2]
-    FPR21 <- attr(roc1$auc, "partial.auc")[1]
-    FPR12 <- attr(roc2$auc, "partial.auc")[2]
-    FPR22 <- attr(roc2$auc, "partial.auc")[1]
-    f1 <- f.partial(A1, B1, FPR11, FPR21)
-    f2 <- f.partial(A2, B2, FPR12, FPR22)
-    g1 <- g.partial(A1, B1, FPR11, FPR21)
-    g2 <- g.partial(A2, B2, FPR12, FPR22)
-  }
-  else {
-    f1 <- f.full(A1, B1)
-    f2 <- f.full(A2, B2)
-    g1 <- g.full(A1, B1)
-    g2 <- g.full(A2, B2)
-  }
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
-  co <- f1 * f2 * (ra + rn * B1 * B2 / R + ra^2 * A1 * A2  / 2) +
-        g1 * g2 * (B1 * B2 * (rn^2 + R * ra^2) / (2 * R)) + 
-        f1 * g2 * (ra^2 * A1 * B2 / 2) + f2 * g1 * (ra^2 * A2 * B1 / 2)
-  return(co)
-}
-
-cov0.roc.obuchowski <- function(roc1, roc2) {
-  A <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
-  B <- sd(roc1$controls) / sd(roc1$cases)
-  R <- length(roc1$controls) / length(roc1$cases)
-  if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    FPR1 <- attr(roc1$auc, "partial.auc")[2]
-    FPR2 <- attr(roc1$auc, "partial.auc")[1]
-    f <- f.partial(A, B, FPR1, FPR2)
-    g <- g.partial(A, B, FPR1, FPR2)
-  }
-  else {
-    f <- f.full(A, B)
-    g <- g.full(A, B)
-  }
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
-  co <- f * f * (ra + rn * B * B / R + ra^2 * A * A  / 2) +
-        g * g * (B * B * (rn^2 + R * ra^2) / (2 * R)) + 
-        f * g * (ra^2 * A * B / 2) + f * g * (ra^2 * A * B / 2)
-  return(co)
-}
-
-var.delta.obuchowski <- function(roc1, roc2) {
-  var.roc.obuchowski(roc1) + var.roc.obuchowski(roc2) - 2 * cov.roc.obuchowski(roc1, roc2)
-}
-
-var0.delta.obuchowski <- function(roc1, roc2) {
-  if (roc1$auc < roc2$auc) {
-    roc.min <- roc1
-    roc.max <- roc2
-  }
-  else {
-    roc.min <- roc2
-    roc.max <- roc1
-  }
-  2 * var.roc.obuchowski(roc.min) - 2 * cov0.roc.obuchowski(roc.min, roc.max)
-}
-
-ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta) {
+ncases.bootdelong <- function(roc1, roc2, zalpha, zbeta) {
   delta <- roc1$auc - roc2$auc
-  na <- (zalpha * sqrt(var0.delta.obuchowski(roc1, roc2)) +
-       zbeta * sqrt(var.delta.obuchowski(roc1, roc2))) ^2 /
+  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
+  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
+    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
+    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
+  }
+  else {
+    varroc1 <- var(roc1)
+    varroc2 <- var(roc2)
+  }
+  na <- (zalpha * sqrt(var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)) +
+       zbeta * sqrt(var.delta.bootdelong(varroc1, varroc2, covroc1roc2))) ^2 /
        delta^2
   return(na)
 }
 
-zalpha.obuchowski <- function(roc1, roc2, zbeta) {
+zalpha.bootdelong <- function(roc1, roc2, zbeta) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  v0 <- var0.delta.obuchowski(roc1, roc2)
-  va <- var.delta.obuchowski(roc1, roc2)
+  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
+  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
+    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
+    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
+  }
+  else {
+    varroc1 <- var(roc1)
+    varroc2 <- var(roc2)
+  }
+  vardiff
+  v0 <- var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)
+  va <- var.delta.bootdelong(varroc1, varroc2, covroc1roc2)
   a <- v0
   b <- 2 * zbeta * sqrt(v0) * sqrt(va)
   c <- zbeta^2 * va - ncases * delta ^ 2
   return(solve.2deg.eqn(a, b, c))
 }
 
-zbeta.obuchowski <- function(roc1, roc2, zalpha) {
+zbeta.bootdelong <- function(roc1, roc2, zalpha) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  v0 <- var0.delta.obuchowski(roc1, roc2)
-  va <- var.delta.obuchowski(roc1, roc2)
+  covroc1roc2 <- cov(roc1, roc2, boot.return=TRUE)
+  if (!is.null(attr(covroc1roc2, "resampled.values"))) {
+    varroc1 <- attr(covroc1roc2, "resampled.values")[,1]
+    varroc2 <- attr(covroc1roc2, "resampled.values")[,1]
+  }
+  else {
+    varroc1 <- var(roc1)
+    varroc2 <- var(roc2)
+  }
+  v0 <- var0.delta.bootdelong(varroc1, varroc2, covroc1roc2)
+  va <- var.delta.bootdelong(varroc1, varroc2, covroc1roc2)
   a <- va
   b <- 2 * zalpha * sqrt(va) * sqrt(v0)
   c <- zalpha^2 * v0 - ncases * delta ^ 2
