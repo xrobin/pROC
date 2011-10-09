@@ -391,8 +391,7 @@ roc.test(roc1, roc2, alternative="less")
 # Smoothing is re-done at each iteration, and execution is slow
 roc.test(smooth(roc1), smooth(roc2))
 # or:
-roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns, smooth=TRUE,
-smooth.method="density", boot.n=100)
+roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns, smooth=TRUE, boot.n=100)
 }
 # or from an AUC (no smoothing)
 roc.test(auc(roc1), roc2)
