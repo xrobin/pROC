@@ -154,6 +154,10 @@ cov.roc <- function(roc1, roc2,
     var2 <- var(V2$Y) / n + var(V2$X) / m
 
     cov <- cov(V2$X, V1$X) / m + cov(V2$Y, V1$Y) / n
+
+    if (roc1$percent) {
+      cov <- cov * (100^2)
+    }
   }
   else { # method == "bootstrap"
     # Check if called with density.cases or density.controls
