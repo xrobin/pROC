@@ -38,6 +38,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
     roc1$auc <- roc1$auc / 100
     attr(roc1$auc, "partial.auc") <- attr(roc1$auc, "partial.auc") / 100
     attr(roc1$auc, "percent") <- FALSE
+    roc1$percent <- FALSE
   }
     
 
@@ -59,6 +60,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
         roc2$auc <- roc2$auc / 100
         attr(roc2$auc, "partial.auc") <- attr(roc2$auc, "partial.auc") / 100
         attr(roc2$auc, "percent") <- FALSE
+        roc2$percent <- FALSE
       }
 
       # Make sure the ROC curves are paired
