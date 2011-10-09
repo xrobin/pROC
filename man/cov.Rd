@@ -18,8 +18,8 @@ cov(...)
 \S3method{cov}{default}(...)
 \S3method{cov}{auc}(roc1, roc2, ...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
-\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap"), reuse.auc=TRUE,
-  boot.n=2000, boot.stratified=TRUE,
+\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap"),
+  reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
   progress=getOption("pROCProgress")$name, ...)
 }
 
@@ -37,13 +37,18 @@ cov(...)
     contain an \dQuote{auc} field, re-use these specifications for the
     test. See details.
   }
-  \item{boot.n}{for \code{method="bootstrap"} and \code{method="venkatraman"} only: the number of
+  \item{boot.n}{for \code{method="bootstrap"} only: the number of
     bootstrap replicates or permutations. Default: \var{2000}.
   }
   \item{boot.stratified}{for \code{method="bootstrap"} only:
     should the bootstrap be stratified (same number 
     of cases/controls in each replicate than in the original sample) or
     not. Default: \var{TRUE}.
+  }
+  \item{boot.return}{
+    if \var{TRUE} and \code{method="bootstrap"}, also return the
+    resampled (bootstrapped) values. See the \dQuote{Value} section for
+    more details.
   }
   \item{progress}{the name of progress bar to display. Typically
     \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
@@ -136,7 +141,12 @@ cov(...)
 }
 
 \value{
-  The numeric value of the covariance
+  The numeric value of the covariance.
+
+  If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
+  \code{resampled.values} is set with the resampled (bootstrapped)
+  values. It contains a matrix with the columns representing the two ROC
+  curves, and the rows the \code{boot.n} bootstrap replicates.
 }
 
 \section{Errors}{
@@ -228,6 +238,16 @@ cov(smooth(roc1), smooth(roc2))
 #}
 # or from an AUC (no smoothing)
 cov(auc(roc1), roc2)
+
+#\dontrun{
+# With bootstrap and return.values, one can compute the variances of the
+# ROC curves in one single bootstrap run:
+cov.rocs <- cov(roc1, roc2, method="bootstrap", boot.return=TRUE)
+# var(roc1):
+var(attr(cov.rocs, "resampled.values")[,1])
+# var(roc2):
+var(attr(cov.rocs, "resampled.values")[,2])
+#}
 
 #\dontrun{
 # Covariance of partial AUC:

@@ -36,7 +36,7 @@ cov.smooth.roc <- function(roc1, roc2, ...) {
 cov.roc <- function(roc1, roc2,
                          method=c("delong", "bootstrap"),
                          reuse.auc=TRUE,
-                         boot.n=2000, boot.stratified=TRUE,
+                         boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
                          progress=getOption("pROCProgress")$name,
                          ...) {
   if ("auc" %in% class(roc2))
@@ -168,13 +168,13 @@ cov.roc <- function(roc1, roc2,
       progress <- roc.utils.get.progress.bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
 
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, smoothing.args, progress)
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress)
   }
 
   return(cov)
 }
 
-bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, smoothing.args, progress) {
+bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress) {
 
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
@@ -222,5 +222,9 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, smoothing.args, p
     resampled.values <- resampled.values[!apply(resampled.values, 1, function(x) any(is.na(x))),]
   }
 
-  return(stats::cov(resampled.values[,1], resampled.values[,2]))
+  cov <- stats::cov(resampled.values[,1], resampled.values[,2])
+  if (boot.return) {
+    attr(cov, "resampled.values") <- resampled.values
+  }
+  return(cov)
 }
