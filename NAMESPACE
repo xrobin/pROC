@@ -16,7 +16,6 @@ export(
        print.roc, print.smooth.roc, print.auc, print.ci.auc, print.ci.thresholds, print.ci.se, print.ci.sp, print.multiclass.roc, print.multiclass.auc,
        roc, roc.formula, roc.default,
        roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
-       sd, sd.default, sd.auc, sd.smooth.roc, sd.roc,
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
        var, var.default, var.auc, var.smooth.roc, var.roc
        )
