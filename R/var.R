@@ -94,7 +94,7 @@ var.roc <- function(roc,
     var <- var(V$Y) / n + var(V$X) / m
   }
   else if (method == "obuchowski") {
-    var <- var.roc.obuchowski(roc) / length(roc$cases)
+    var <- var.roc.obuchowski(roc) * length(roc$cases)
   }
   else {
     var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, ...)
