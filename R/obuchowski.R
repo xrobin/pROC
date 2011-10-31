@@ -1,4 +1,5 @@
 # Formula 3 from Obuchowski 2004, p. 1123
+# Variance of an AUC given kappa
 var.theta.obuchowski <- function(theta, kappa) {
     A <- qnorm(theta) * 1.414
     (0.0099 * exp(-A^2/2)) * ((5 * A^2 + 8) + (A^2 + 8)/kappa)
@@ -60,21 +61,32 @@ g.partial <- function(A, B, FPR1, FPR2) {
   expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3
 }
 
+# Variance of a ROC curve given a 'roc' object
 var.roc.obuchowski <- function(roc) {
   A <- (mean(roc$cases) - mean(roc$controls)) / sd(roc$cases)
   B <- sd(roc$controls) / sd(roc$cases)
-  R <- length(roc$controls) / length(roc$cases)
+  kappa <- length(roc$controls) / length(roc$cases)
 
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
     FPR1 <- attr(roc$auc, "partial.auc")[2]
     FPR2 <- attr(roc$auc, "partial.auc")[1]
-    f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / R + A^2/2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + R) / (2*R)
+    var.params.obuchowski(A, B, kappa, FPR1, FPR2)
   }
   else {
-    f.full(A, B)^2 * (1 + B^2 / R + A^2/2) + g.full(A, B)^2 * B^2 * (1 + R) / (2*R)    
+    var.params.obuchowski(A, B, kappa)
   }
 }
 
+var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
+  if (!missing(FPR1) && !is.null(FPR1) && !missing(FPR1) && !is.null(FPR2)) {
+    f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / kappa + A^2/2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + kappa) / (2*kappa)
+  }
+  else {
+    f.full(A, B)^2 * (1 + B^2 / kappa + A^2/2) + g.full(A, B)^2 * B^2 * (1 + kappa) / (2*kappa)
+  }
+}
+
+# Covariance under the alternative hypothesis
 cov.roc.obuchowski <- function(roc1, roc2) {
   A1 <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
   B1 <- sd(roc1$controls) / sd(roc1$cases)
@@ -105,6 +117,7 @@ cov.roc.obuchowski <- function(roc1, roc2) {
   return(co)
 }
 
+# Covariance under the null hypothesis
 cov0.roc.obuchowski <- function(roc1, roc2) {
   A <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
   B <- sd(roc1$controls) / sd(roc1$cases)
@@ -127,10 +140,12 @@ cov0.roc.obuchowski <- function(roc1, roc2) {
   return(co)
 }
 
+# Variance of a delta under the alternative hypothesis
 var.delta.obuchowski <- function(roc1, roc2) {
   var.roc.obuchowski(roc1) + var.roc.obuchowski(roc2) - 2 * cov.roc.obuchowski(roc1, roc2)
 }
 
+# Variance of a delta under the null hypothesis
 var0.delta.obuchowski <- function(roc1, roc2) {
   if (roc1$auc < roc2$auc) {
     roc.min <- roc1
