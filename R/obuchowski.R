@@ -5,7 +5,7 @@ var.theta.obuchowski <- function(theta, kappa) {
     (0.0099 * exp(-A^2/2)) * ((5 * A^2 + 8) + (A^2 + 8)/kappa)
 }
 
-# Formulas from Obuchowski 1997, p. 1530-1531
+# Formulas from Obuchowski 1997, table 1 p. 1531
 expr1 <- function(A, B) {
   exp(-A^2/(2 * (1 + B^2)))
 }
@@ -70,13 +70,19 @@ var.roc.obuchowski <- function(roc) {
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
     FPR1 <- attr(roc$auc, "partial.auc")[2]
     FPR2 <- attr(roc$auc, "partial.auc")[1]
-    var.params.obuchowski(A, B, kappa, FPR1, FPR2)
+    va <- var.params.obuchowski(A, B, kappa, FPR1, FPR2)
   }
   else {
-    var.params.obuchowski(A, B, kappa)
+    va <- var.params.obuchowski(A, B, kappa)
   }
+  return(va)
 }
 
+# Variance of a ROC curve given the parameters
+# Obuchowski 1997, formula 4 p. 1530
+# A and B: params of the binormal ROC curve
+# kappa: proportion controls / cases
+# FPR1, FPR2: the bottom (1) or top (2) bounds of the pAUC interval
 var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
   if (!missing(FPR1) && !is.null(FPR1) && !missing(FPR1) && !is.null(FPR2)) {
     f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / kappa + A^2/2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + kappa) / (2*kappa)
@@ -86,22 +92,65 @@ var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
   }
 }
 
-# Covariance under the alternative hypothesis
+# Covariance of 2 given 'roc' objects (under the alternative hypothesis)
 cov.roc.obuchowski <- function(roc1, roc2) {
   A1 <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
   B1 <- sd(roc1$controls) / sd(roc1$cases)
   A2 <- (mean(roc2$cases) - mean(roc2$controls)) / sd(roc2$cases)
   B2 <- sd(roc2$controls) / sd(roc2$cases)
-  R <- length(roc1$controls) / length(roc1$cases)
+  kappa <- length(roc1$controls) / length(roc1$cases)
+  ra <- cor(roc1$cases, roc2$cases)
+  rn <- cor(roc1$controls, roc2$controls)
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
     FPR11 <- attr(roc1$auc, "partial.auc")[2]
-    FPR21 <- attr(roc1$auc, "partial.auc")[1]
-    FPR12 <- attr(roc2$auc, "partial.auc")[2]
+    FPR12 <- attr(roc1$auc, "partial.auc")[1]
+    FPR21 <- attr(roc2$auc, "partial.auc")[2]
     FPR22 <- attr(roc2$auc, "partial.auc")[1]
-    f1 <- f.partial(A1, B1, FPR11, FPR21)
-    f2 <- f.partial(A2, B2, FPR12, FPR22)
-    g1 <- g.partial(A1, B1, FPR11, FPR21)
-    g2 <- g.partial(A2, B2, FPR12, FPR22)
+    co <- cov.params.obuchowski(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
+  }
+  else {
+    co <- cov.params.obuchowski(A1, B1, A2, B2, rn, ra, kappa)
+  }
+  return(co)
+}
+
+# Covariance under the null hypothesis
+# roc1 is taken as null
+cov0.roc.obuchowski <- function(roc1, roc2) {
+  A <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
+  B <- sd(roc1$controls) / sd(roc1$cases)
+  R <- length(roc1$controls) / length(roc1$cases)
+  ra <- cor(roc1$cases, roc2$cases)
+  rn <- cor(roc1$controls, roc2$controls)
+  if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
+    FPR1 <- attr(roc1$auc, "partial.auc")[2]
+    FPR2 <- attr(roc1$auc, "partial.auc")[1]
+    co <- cov.params.obuchowski(A, B, A, B, rn, ra, kappa, FPR1, FPR2, FPR1, FPR2)
+  }
+  else {
+    co <- cov.params.obuchowski(A, B, A, B, rn, ra, kappa)
+  }
+  return(co)
+}
+
+
+# Covariance of a ROC curve given the parameters
+# Obuchowski 1997, formula 5 p. 1531
+# (A|B)(1|2): A and B params of the binormal ROC curve
+# rn, ra: correlation of the results in ROC curves 1 and 2 in controls (n) and cases (a) patients
+# kappa: proportion controls / cases
+# FPR(1|2)(1|2): the bounds of the pAUC interval:
+#    ***** ROC curve 1 or 2
+#         ***** bottom (1) or top (2) of the interval
+cov.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
+  if (!missing(FPR11) && !is.null(FPR11) &&
+      !missing(FPR12) && !is.null(FPR12) &&
+      !missing(FPR21) && !is.null(FPR21) &&
+      !missing(FPR22) && !is.null(FPR22)) {
+    f1 <- f.partial(A1, B1, FPR11, FPR12)
+    f2 <- f.partial(A2, B2, FPR21, FPR22)
+    g1 <- g.partial(A1, B1, FPR11, FPR12)
+    g2 <- g.partial(A2, B2, FPR21, FPR22)
   }
   else {
     f1 <- f.full(A1, B1)
@@ -109,52 +158,7 @@ cov.roc.obuchowski <- function(roc1, roc2) {
     g1 <- g.full(A1, B1)
     g2 <- g.full(A2, B2)
   }
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
-  co <- f1 * f2 * (ra + rn * B1 * B2 / R + ra^2 * A1 * A2  / 2) +
-        g1 * g2 * (B1 * B2 * (rn^2 + R * ra^2) / (2 * R)) + 
-        f1 * g2 * (ra^2 * A1 * B2 / 2) + f2 * g1 * (ra^2 * A2 * B1 / 2)
-  return(co)
+  f1 * f2 * (ra + rn * B1 * B2 / kappa + ra^2 * A1 * A2  / 2) +
+    g1 * g2 * (B1 * B2 * (rn^2 + kappa * ra^2) / (2 *  kappa)) + 
+    f1 * g2 * (ra^2 * A1 * B2 / 2) + f2 * g1 * (ra^2 * A2 * B1 / 2)
 }
-
-# Covariance under the null hypothesis
-cov0.roc.obuchowski <- function(roc1, roc2) {
-  A <- (mean(roc1$cases) - mean(roc1$controls)) / sd(roc1$cases)
-  B <- sd(roc1$controls) / sd(roc1$cases)
-  R <- length(roc1$controls) / length(roc1$cases)
-  if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    FPR1 <- attr(roc1$auc, "partial.auc")[2]
-    FPR2 <- attr(roc1$auc, "partial.auc")[1]
-    f <- f.partial(A, B, FPR1, FPR2)
-    g <- g.partial(A, B, FPR1, FPR2)
-  }
-  else {
-    f <- f.full(A, B)
-    g <- g.full(A, B)
-  }
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
-  co <- f * f * (ra + rn * B * B / R + ra^2 * A * A  / 2) +
-        g * g * (B * B * (rn^2 + R * ra^2) / (2 * R)) + 
-        f * g * (ra^2 * A * B / 2) + f * g * (ra^2 * A * B / 2)
-  return(co)
-}
-
-# Variance of a delta under the alternative hypothesis
-var.delta.obuchowski <- function(roc1, roc2) {
-  var.roc.obuchowski(roc1) + var.roc.obuchowski(roc2) - 2 * cov.roc.obuchowski(roc1, roc2)
-}
-
-# Variance of a delta under the null hypothesis
-var0.delta.obuchowski <- function(roc1, roc2) {
-  if (roc1$auc < roc2$auc) {
-    roc.min <- roc1
-    roc.max <- roc2
-  }
-  else {
-    roc.min <- roc2
-    roc.max <- roc1
-  }
-  2 * var.roc.obuchowski(roc.min) - 2 * cov0.roc.obuchowski(roc.min, roc.max)
-}
-

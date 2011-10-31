@@ -14,7 +14,7 @@
 power.roc.test(...)
 \S3method{power.roc.test}{roc}(roc1, roc2, sig.level = 0.05, 
 power = NULL, alternative = c("two.sided", "one.sided"), 
-reuse.auc=TRUE, ...)
+reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"), ...)
 \S3method{power.roc.test}{numeric}(ncontrols = NULL, ncases = NULL, 
 auc = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
 alternative = c("two.sided", "one.sided"), ...)
@@ -45,6 +45,12 @@ alternative = c("two.sided", "one.sided"), ...)
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
     test. See the \emph{AUC specification} section for more details.
+  }
+  \item{method}{the method to compute \link[=var.roc]{variance} and
+    \link[=cov.roc]{covariance}, either \dQuote{delong},
+    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+    sufficient. See \code{\link{var}} and \code{\link{cov}} documentations
+    for more details. 
   }
   \item{\dots}{further arguments passed to or from other methods,
   especially \code{\link{auc}}.}
@@ -86,17 +92,6 @@ alternative = c("two.sided", "one.sided"), ...)
   Power calculation for unpaired ROC curves is not implemented.
 }
 
-\section{Binormality assumption}{
-  Both methods make the assumption that the data is binormal.
-  If the data shows a deviation from this assumption, it might help to
-  normalize the data first (that is, before calling \code{\link{roc}}),
-  for example with quantile normalization: 
-  \preformatted{
-    norm.x <- qnorm(rank(x)/(length(x)+1))
-    smooth(roc(response, norm.x, ...), ...)
-  }
-}
-
 \section{AUC specification}{
   The comparison of the AUC of the ROC curves needs a specification of the
   AUC. The specification is defined by:
@@ -127,6 +122,11 @@ alternative = c("two.sided", "one.sided"), ...)
 \value{
   An object of class \code{power.htest} (such as that given by
   \code{\link{power.t.test}}) with the supplied and computed values.
+}
+
+\section{Acknowledgements}{
+  The authors would like to thank Christophe Combescure and Anne-Sophie
+  Jannot for their help with the implementation of this section of the package.
 }
 
 \references{

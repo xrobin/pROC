@@ -20,7 +20,7 @@
 power.roc.test <- function(...)
   UseMethod("power.roc.test")
 
-power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alternative = c("two.sided", "one.sided"), reuse.auc=TRUE, ...) {
+power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alternative = c("two.sided", "one.sided"), reuse.auc=TRUE, method=c("delong", "bootstrap", "obuchowski"), ...) {
   # Basic sanity checks
   if (!is.null(power) && (power < 0 || power > 1))
     stop("'power' must range from 0 to 1")
@@ -96,13 +96,13 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
         if (is.null(sig.level))
           stop("'sig.level' or 'power' must be provided.")
         zalpha <- qnorm(sig.level)
-        zbeta <- zbeta.bootdelong(roc1, roc2, zalpha)
+        zbeta <- zbeta.obuchowski(roc1, roc2, zalpha, method=method, ...)
         power <- 1 - pnorm(zbeta)
       }
       # sig.level
       else if (is.null(sig.level)) {
         zbeta <- qnorm(1 - power)
-        zalpha <- zalpha.bootdelong(roc1, roc2, zbeta)
+        zalpha <- zalpha.obuchowski(roc1, roc2, zbeta, method=method, ...)
         sig.level <- pnorm(zalpha)
       }
       # Sample size
@@ -110,7 +110,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
         zalpha <- qnorm(sig.level)
         zbeta <- qnorm(1 - power)
 
-        ncases <- ncases.bootdelong(roc1, roc2, zalpha, zbeta)
+        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method=method, ...)
         ncontrols <- kappa * ncases
       }
 
@@ -118,7 +118,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       if (alternative == "two.sided") {
         sig.level <- sig.level * 2
       }
-      return(structure(list(ncases=ceiling(ncases), ncontrols=ceiling(ncontrols), auc1=roc1$auc, auc2=roc2$auc, sig.level=sig.level, power=power, alternative=alternative, method="Two ROC curves power calculation"), class="power.htest"))
+      return(structure(list(ncases=ncases, ncontrols=ncontrols, auc1=roc1$auc, auc2=roc2$auc, sig.level=sig.level, power=power, alternative=alternative, method="Two ROC curves power calculation"), class="power.htest"))
     }
     else {
       stop("'roc2' must be an object of class 'roc'.")
@@ -247,26 +247,27 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   if (alternative == "two.sided") {
     sig.level <- sig.level * 2
   }
-  return(structure(list(ncases=ceiling(ncases), ncontrols=ceiling(ncontrols), auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
+  return(structure(list(ncases=ncases, ncontrols=ncontrols, auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
 }
 
-# Formula 3 from Obuchowski 2004, p. 1123
-var.theta.obuchowski <- function(theta, kappa) {
-    A <- qnorm(theta) * 1.414
-    (0.0099 * exp(-A^2/2)) * ((5 * A^2 + 8) + (A^2 + 8)/kappa)
-}
 
+#### HIDDEN FUNCTIONS ####
+
+# A function to 'optimize' auc
 power.roc.test.optimize.auc.function <- function(x, ncontrols, ncases, zalpha, zbeta) {
   kappa <- ncontrols / ncases
   Vtheta <- var.theta.obuchowski(x, kappa)
   (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (x - 0.5)^2 - ncases
 }
 
-var.delta.bootdelong <- function(covvar) {
+# Compute variance of a delta from a 'covvar' list (see 'covvar' below)
+var.delta.covvar <- function(covvar) {
   covvar$var1 + covvar$var2 - 2 * covvar$cov12
 }
 
-var0.delta.bootdelong <- function(covvar) {
+# Compute variance of a delta from a 'covvar' list (see 'covvar' below)
+# under the null hypothesis
+var0.delta.covvar <- function(covvar) {
   if (covvar$var1 < covvar$var2) {
     varroc <- covvar$var2
   }
@@ -276,53 +277,60 @@ var0.delta.bootdelong <- function(covvar) {
   2 * varroc - 2 * covvar$cov12
 }
 
-ncases.bootdelong <- function(roc1, roc2, zalpha, zbeta) {
+# Compute the number of cases with Obuchowski formula and var(... method=method)
+ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
   delta <- roc1$auc - roc2$auc
-  covvar <- covvar(roc1, roc2)
-  na <- (zalpha * sqrt(var0.delta.bootdelong(covvar)) +
-       zbeta * sqrt(var.delta.bootdelong(covvar))) ^2 /
+  covvar <- covvar(roc1, roc2, method, ...)
+  na <- (zalpha * sqrt(var0.delta.covvar(covvar)) +
+       zbeta * sqrt(var.delta.covvar(covvar))) ^2 /
        delta^2
   return(as.vector(na))
 }
 
-zalpha.bootdelong <- function(roc1, roc2, zbeta) {
+# Compute the z alpha with Obuchowski formula and var(... method=method)
+zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  covvar <- covvar(roc1, roc2)
-  v0 <- var0.delta.bootdelong(covvar)
-  va <- var.delta.bootdelong(covvar)
+  covvar <- covvar(roc1, roc2, method, ...)
+  v0 <- var0.delta.covvar(covvar)
+  va <- var.delta.covvar(covvar)
   a <- v0
   b <- 2 * zbeta * sqrt(v0) * sqrt(va)
   c <- zbeta^2 * va - ncases * delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
-zbeta.bootdelong <- function(roc1, roc2, zalpha) {
+# Compute the z beta with Obuchowski formula and var(... method=method)
+zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
-  covvar <- covvar(roc1, roc2)
-  v0 <- var0.delta.bootdelong(covvar)
-  va <- var.delta.bootdelong(covvar)
+  covvar <- covvar(roc1, roc2, method, ...)
+  print(covvar)
+  v0 <- var0.delta.covvar(covvar)
+  va <- var.delta.covvar(covvar)
   a <- va
   b <- 2 * zalpha * sqrt(va) * sqrt(v0)
   c <- zalpha^2 * v0 - ncases * delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
+# Solve the quadratic equation from a, b and c
 solve.2deg.eqn <- function(a, b, c) {
   return((- b - sqrt(b^2 - 4*a*c)) / (2*a))
 }
 
-covvar <- function(roc1, roc2) {
-  cov12 <- cov(roc1, roc2, boot.return=TRUE)
+# Compute var and cov of two ROC curves by bootstrap in a single bootstrap run
+covvar <- function(roc1, roc2, method, ...) {
+  cov12 <- cov(roc1, roc2, boot.return=TRUE, method=method, ...)
   if (!is.null(attr(cov12, "resampled.values"))) {
     var1 <- var(attr(cov12, "resampled.values")[,1])
     var2 <- var(attr(cov12, "resampled.values")[,2])
     attr(cov12, "resampled.values") <- NULL
   }
   else {
-    var1 <- var(roc1)
-    var2 <- var(roc2)
+    var1 <- var(roc1, method=method, ...)
+    var2 <- var(roc2, method=method, ...)
   }
-  return(list(var1 = var1, var2 = var2, cov12 = cov12))
+  ncases <- length(roc1$cases)
+  return(list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases))
 }
