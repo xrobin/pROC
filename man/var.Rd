@@ -132,6 +132,16 @@ progress = getOption("pROCProgress")$name, ...)
   variance.
 }
 
+\section{Binormality assumption}{
+  The \dQuote{obuchowski} methods makes the assumption that the data is binormal.
+  If the data shows a deviation from this assumption, it might help to
+  normalize the data first (that is, before calling \code{\link{roc}}),
+  for example with quantile normalization: 
+  \preformatted{
+    norm.x <- qnorm(rank(x)/(length(x)+1))
+    smooth(roc(response, norm.x, ...), ...)
+  }
+}
 
 \value{
   The numeric value of the variance or standard deviation.
