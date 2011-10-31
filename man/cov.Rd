@@ -139,17 +139,26 @@ cov(...)
 
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
+
+  With \code{method="obuchowski"}, the processing is done as described
+  in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1530--1531. The
+  computation of \eqn{g} for partial area under the ROC curve is
+  modified as: 
+
+  \deqn{expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3}.
 }
 
 \section{Binormality assumption}{
-  The \dQuote{obuchowski} methods makes the assumption that the data is binormal.
+  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
   If the data shows a deviation from this assumption, it might help to
   normalize the data first (that is, before calling \code{\link{roc}}),
   for example with quantile normalization: 
   \preformatted{
     norm.x <- qnorm(rank(x)/(length(x)+1))
-    smooth(roc(response, norm.x, ...), ...)
+    cov(roc(response, norm.x, ...), ...)
   }
+
+  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -188,14 +197,12 @@ cov(...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} and the ROC curve is smoothed, the warning
-  \dQuote{Using DeLong for smoothed ROCs is not supported. Using
-    bootstrap test instead.} is issued. The \code{method} argument is
+  If \code{method="delong"} or \code{method="obuchowski"} and the ROC curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.} is issued. The \code{method} argument is
   ignored and \dQuote{bootstrap} is used instead.
 
-  DeLong ignores the direction of the ROC curve so that if two
+  DeLong and Obuchowski ignores the direction of the ROC curve so that if two
   ROC curves have a different \code{direction}, the warning
-  \dQuote{"DeLong should not be applied to ROC curves with a different
+  \dQuote{"DeLong/Obuchowski should not be applied to ROC curves with a different
   direction."} is printed. However, the spurious computation is enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
@@ -222,6 +229,11 @@ cov(...)
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
   \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
+
+  Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
+  determination for diagnostic accurary studies involving binormal ROC
+  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
+  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 }
 
 \seealso{

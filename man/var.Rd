@@ -128,19 +128,25 @@ progress = getOption("pROCProgress")$name, ...)
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
 
-  With both methods the standard deviation is the square root of the
-  variance.
+  With \code{method="obuchowski"}, the processing is done as described
+  in Obuchowski and McClish (1997), Table 1 and Equation 4, p. 1530--1531. The
+  computation of \eqn{g} for partial area under the ROC curve is
+  modified as: 
+
+  \deqn{expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3}.
 }
 
 \section{Binormality assumption}{
-  The \dQuote{obuchowski} methods makes the assumption that the data is binormal.
+  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
   If the data shows a deviation from this assumption, it might help to
   normalize the data first (that is, before calling \code{\link{roc}}),
   for example with quantile normalization: 
   \preformatted{
     norm.x <- qnorm(rank(x)/(length(x)+1))
-    smooth(roc(response, norm.x, ...), ...)
+    var(roc(response, norm.x, ...), ...)
   }
+
+  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -153,8 +159,8 @@ progress = getOption("pROCProgress")$name, ...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} and the ROC curve is smoothed, the warning
-  \dQuote{Using DeLong for smoothed ROCs is not supported. Using
+  If \code{method="delong"} or \code{method="obuchowski"} and the ROC curve is smoothed, the warning
+  \dQuote{Using DeLong/Obuchowski for smoothed ROCs is not supported. Using
     bootstrap test instead.} is issued. The \code{method} argument is
   ignored and \dQuote{bootstrap} is used instead.
 
