@@ -18,7 +18,7 @@ cov(...)
 \S3method{cov}{default}(...)
 \S3method{cov}{auc}(roc1, roc2, ...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
-\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap"),
+\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
   progress=getOption("pROCProgress")$name, ...)
 }
@@ -29,9 +29,10 @@ cov(...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
   }
-  \item{method}{the method to use, either \dQuote{delong} or
-    \dQuote{bootstrap}. The first letter is sufficient. If omitted, the
-	appropriate method is selected as explained in details.
+  \item{method}{the method to use, either \dQuote{delong},
+    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+    sufficient. If omitted, the appropriate method is selected as
+    explained in details.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the

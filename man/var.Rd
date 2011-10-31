@@ -5,11 +5,6 @@
 \alias{var.roc}
 \alias{var.smooth.roc}
 \alias{var.default}
-\alias{sd}
-\alias{sd.auc}
-\alias{sd.roc}
-\alias{sd.smooth.roc}
-\alias{sd.default}
 \title{
  Variance and standard deviations of a ROC curve
 }
@@ -20,17 +15,10 @@
 var(...)
 \S3method{var}{default}(...)
 \S3method{var}{auc}(auc, ...)
-\S3method{var}{roc}(roc, method=c("delong", "bootstrap"), 
+\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"), 
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
 progress = getOption("pROCProgress")$name, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
-%\S3method{var}{smooth.roc}(smooth.roc, boot.n = 2000, boot.stratified =
-%  TRUE, reuse.auc=TRUE, progress = getOption("pROCProgress")$name, ...)
-sd(...)
-\S3method{sd}{default}(...)
-\S3method{sd}{auc}(auc, ...)
-\S3method{sd}{roc}(roc, ...)
-\S3method{sd}{smooth.roc}(smooth.roc, ...)
 }
 
 \arguments{
@@ -39,15 +27,16 @@ sd(...)
 	\code{\link{smooth.roc}} function or an \dQuote{auc} object from
 	the \code{\link{auc}} function.
   }
-  \item{method}{the method to use, either \dQuote{delong} or
-    \dQuote{bootstrap}. The first letter is sufficient. If omitted, the
-	appropriate method is selected as explained in details.
+  \item{method}{the method to use, either \dQuote{delong},
+    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+    sufficient. If omitted, the appropriate method is selected as
+    explained in details.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
     test. See details.
   }
-  \item{boot.n}{for \code{method="bootstrap"} and \code{method="venkatraman"} only: the number of
+  \item{boot.n}{for \code{method="bootstrap"} only: the number of
     bootstrap replicates or permutations. Default: \var{2000}.
   }
   \item{boot.stratified}{for \code{method="bootstrap"} only:
@@ -64,10 +53,10 @@ sd(...)
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{var.roc} when calling \code{var},
-    \code{var.auc}, \code{var.smooth.roc} and all the \code{sd}
-    functions. Arguments for \code{\link{auc}} (if \code{reuse.auc=FALSE}) and
+    \code{var.auc} and \code{var.smooth.roc}. Arguments for
+    \code{\link{auc}} (if \code{reuse.auc=FALSE}) and
     \code{\link{txtProgressBar}} (only \code{char} and \code{style}) if
-    applicable.
+    applicable.  
   }
 }
 
@@ -76,9 +65,6 @@ sd(...)
   curve. It is typically called with the \link{roc} object of
   interest. Two methods are available: \dQuote{delong} and
   \dQuote{bootstrap} (see \dQuote{Computational details} section below).
-
-  The \code{sd} function computes the standard deviation of the AUC of a ROC
-  curve. It can be called in the same way as \code{var}.
 
   Two methods are available to compute the variance and standard deviation.
   The default is to use \dQuote{delong} method except for comparison of
@@ -99,7 +85,7 @@ sd(...)
 }
 
 \section{AUC specification}{
-  \code{var} and \code{sd} need a specification of the AUC to compute
+  \code{var} needs a specification of the AUC to compute
   the variance and standard deviation of the AUC of the ROC curve.
   The specification is defined by:
   \enumerate{
@@ -199,9 +185,6 @@ roc1 <- roc(aSAH$outcome, aSAH$s100b)
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
 var(roc1)
 var(roc2)
-# standard deviation
-sd(roc1)
-sd(roc2)
 
 # We could also write it in one line:
 var(roc(aSAH$outcome, aSAH$s100b))
@@ -211,20 +194,16 @@ var(roc(aSAH$outcome, aSAH$s100b))
 var(roc1, method="bootstrap")
 # Increase boot.n for a more precise p-value:
 var(roc1,method="bootstrap", boot.n=10000)
-# Same for sd:
-sd(roc1,method="bootstrap", boot.n=10000)
 #}
 
 #\dontrun{
 # Variance of smoothed ROCs:
 # Smoothing is re-done at each iteration, and execution is slow
 var(smooth(roc1))
-sd(smooth(roc1))
 #}
 
 # or from an AUC (no smoothing)
 var(auc(roc1))
-sd(auc(roc1))
 
 ## Test data from Hanley and Hajian-Tilaki, 1997
 disease.present <- c("Yes", "No", "Yes", "No", "No", "Yes", "Yes", "No", "No", "Yes", "No", "No", "Yes", "No", "No")
@@ -235,18 +214,12 @@ roc4 <- roc(disease.present, field.strength.2)
 # Assess the variance:
 var(roc3)
 var(roc4)
-# standard deviation
-sd(roc3)
-sd(roc4)
 
 
 #\dontrun{
 # With bootstrap:
 var(roc3, method="bootstrap")
 var(roc4, method="bootstrap")
-# standard deviation
-sd(roc3, method="bootstrap")
-sd(roc4, method="bootstrap")
 #}
 
 }

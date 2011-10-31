@@ -33,7 +33,7 @@ var.smooth.roc <- function(smooth.roc, ...) {
 }
 
 var.roc <- function(roc,
-                    method=c("delong", "bootstrap"),
+                    method=c("delong", "bootstrap", "obuchowski"),
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc=TRUE,
@@ -69,14 +69,20 @@ var.roc <- function(roc,
     }
   }
   else {
-    method <- match.arg(method, c("delong", "bootstrap"))
+    method <- match.arg(method)
     # delong NA to pAUC: warn + change
-    if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2) && method == "delong") {
-      warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
-      method <- "bootstrap"
+    if (method == "delong") {
+      if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2)) {
+        warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
+        method <- "bootstrap"
+      }
+      else if ("smooth.roc" %in% class(roc)) {
+        warning("Using DeLong for smoothed ROCs is not supported. Using bootstrap instead.")
+        method <- "bootstrap"
+      }
     }
-    else if (class(roc) == "smooth.roc") {
-      warning("Using DeLong's test for smoothed ROCs is not supported. Using bootstrap instead.")
+    else if (method == "obuchowski" && "smooth.roc" %in% class(roc)) {
+      warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
       method <- "bootstrap"
     }
   }
@@ -86,6 +92,9 @@ var.roc <- function(roc,
     m <- length(roc$cases)  
     V <- roc.utils.delong.placements(roc)
     var <- var(V$Y) / n + var(V$X) / m
+  }
+  else if (method == "obuchowski") {
+    var.roc.obuchowski(roc)
   }
   else {
     var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, ...)
@@ -134,26 +143,4 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, ...) {
     aucs <- aucs[!is.na(aucs)]
   }
   return(var(aucs))
-}
-
-
-## SD
-
-sd <- function(...)
-  UseMethod("sd")
-
-sd.default <- function(...) {
-  stats::sd(...)
-}
-
-sd.auc <- function(auc, ...) {
-  sqrt(var.roc(attr(auc, "roc"), ...))
-}
-
-sd.smooth.roc <- function(smooth.roc, ...) {
-  sqrt(var.roc(smooth.roc, ...)) 
-}
-
-sd.roc <- function(roc, ...) {
-  sqrt(var.roc(roc, ...)) 
 }
