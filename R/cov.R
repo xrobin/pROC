@@ -169,7 +169,7 @@ cov.roc <- function(roc1, roc2,
   }
   
   else if (method == "obuchowski") {
-    cov <- cov.roc.obuchowski(roc1, roc2)
+    cov <- cov.roc.obuchowski(roc1, roc2) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
@@ -189,3 +189,4 @@ cov.roc <- function(roc1, roc2,
 
   return(cov)
 }
+
