@@ -109,7 +109,6 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       else {
         zalpha <- qnorm(sig.level)
         zbeta <- qnorm(1 - power)
-
         ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method=method, ...)
         ncontrols <- kappa * ncases
       }
@@ -267,14 +266,9 @@ var.delta.covvar <- function(covvar) {
 
 # Compute variance of a delta from a 'covvar' list (see 'covvar' below)
 # under the null hypothesis
+# roc1 taken as reference.
 var0.delta.covvar <- function(covvar) {
-  if (covvar$var1 < covvar$var2) {
-    varroc <- covvar$var2
-  }
-  else {
-    varroc <- covvar$var1
-  }
-  2 * varroc - 2 * covvar$cov12
+  2 * covvar$var1 - 2 * covvar$cov12
 }
 
 # Compute the number of cases with Obuchowski formula and var(... method=method)
