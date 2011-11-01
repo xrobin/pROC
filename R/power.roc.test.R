@@ -305,7 +305,6 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   delta <- roc1$auc - roc2$auc
   ncases <- length(roc1$cases)
   covvar <- covvar(roc1, roc2, method, ...)
-  print(covvar)
   v0 <- var0.delta.covvar(covvar)
   va <- var.delta.covvar(covvar)
   a <- va
