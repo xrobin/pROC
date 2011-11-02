@@ -117,8 +117,15 @@ roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, ti
   }
   if (name == "none")
     progress_none()
-  else if (name == "text")
+  else if (name == "text") {
+    # Put some default values if user only passed a name
+    if (missing(style) && missing(char) && missing(width) && getOption("pROCProgress")$name != "text") {
+      style <- 3
+      char <- "="
+      width <- NA
+    }
     progress_text(char=char, style=style, width=width)
+  }
   else if (name == "tk" || name == "win")
     match.fun(paste("progress", name, sep = "_"))(title=title, label=label, width=width)
   else # in the special case someone made a progress_other function
