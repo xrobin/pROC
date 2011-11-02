@@ -68,8 +68,8 @@ var.roc.obuchowski <- function(roc) {
   kappa <- length(roc$controls) / length(roc$cases)
 
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
-    FPR1 <- attr(roc$auc, "partial.auc")[2]
-    FPR2 <- attr(roc$auc, "partial.auc")[1]
+    FPR1 <- 1 - attr(roc$auc, "partial.auc")[2]
+    FPR2 <- 1 - attr(roc$auc, "partial.auc")[1]
     va <- var.params.obuchowski(A, B, kappa, FPR1, FPR2)
   }
   else {
@@ -102,10 +102,10 @@ cov.roc.obuchowski <- function(roc1, roc2) {
   ra <- cor(roc1$cases, roc2$cases)
   rn <- cor(roc1$controls, roc2$controls)
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    FPR11 <- attr(roc1$auc, "partial.auc")[2]
-    FPR12 <- attr(roc1$auc, "partial.auc")[1]
-    FPR21 <- attr(roc2$auc, "partial.auc")[2]
-    FPR22 <- attr(roc2$auc, "partial.auc")[1]
+    FPR11 <- 1 - attr(roc1$auc, "partial.auc")[2]
+    FPR12 <- 1 - attr(roc1$auc, "partial.auc")[1]
+    FPR21 <- 1 - attr(roc2$auc, "partial.auc")[2]
+    FPR22 <- 1 - attr(roc2$auc, "partial.auc")[1]
     co <- cov.params.obuchowski(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
   }
   else {
