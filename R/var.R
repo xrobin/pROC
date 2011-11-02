@@ -81,13 +81,16 @@ var.roc <- function(roc,
         method <- "bootstrap"
       }
     }
-    else if (method == "obuchowski" && "smooth.roc" %in% class(roc)) {
-      warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-      method <- "bootstrap"
-    }
-    else if (method == "obuchowski" && ) {
-      warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-      method <- "bootstrap"
+
+    else if (method == "obuchowski") {
+      if ("smooth.roc" %in% class(roc)) {
+        warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
+        method <- "bootstrap"
+      }
+      if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
+        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
+        method <- "bootstrap"
+      }
     }
   }
   

@@ -146,6 +146,10 @@ cov.roc <- function(roc1, roc2,
         warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }
+      if (attr(roc1$auc, "partial.auc.focus") == "sensitivity" || attr(roc2$auc, "partial.auc.focus") == "sensitivity") {
+        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
+        method <- "bootstrap"
+      }
       if (roc1$direction != roc2$direction)
         warning("Obuchowski should not be applied to ROC curves with a different direction.")
     }
