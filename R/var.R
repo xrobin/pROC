@@ -56,7 +56,7 @@ var.roc <- function(roc,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2)) {
+    if (has.partial.auc(roc)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     }
@@ -72,7 +72,7 @@ var.roc <- function(roc,
     method <- match.arg(method)
     # delong NA to pAUC: warn + change
     if (method == "delong") {
-      if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2)) {
+      if (has.partial.auc(roc)) {
         warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }
@@ -82,6 +82,10 @@ var.roc <- function(roc,
       }
     }
     else if (method == "obuchowski" && "smooth.roc" %in% class(roc)) {
+      warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
+      method <- "bootstrap"
+    }
+    else if (method == "obuchowski" && ) {
       warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
       method <- "bootstrap"
     }

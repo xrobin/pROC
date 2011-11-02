@@ -177,3 +177,9 @@ roc.utils.delong.placements <- function(roc) {
   V$Y <- sapply(1:n, function(j) {sum(MW[,j])})/m
   return(V)
 }
+
+# Logical: does the roc curve have a partial AUC? If yes, returns TRUE,
+# otherwise if it is a full AUC returns FALSE
+has.partial.auc <- function(roc) {
+  is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2)
+}

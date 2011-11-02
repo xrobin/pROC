@@ -132,7 +132,7 @@ ci.auc.roc <- function(roc,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2)) {
+    if (has.partial.auc(roc)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     }
@@ -147,7 +147,7 @@ ci.auc.roc <- function(roc,
   else {
     method <- match.arg(method, c("delong", "bootstrap"))
     # delong NA to pAUC: warn + change
-    if (is.numeric(attr(roc$auc, "partial.auc")) && length(attr(roc$auc, "partial.auc") == 2) && method == "delong") {
+    if (has.partial.auc(roc) && method == "delong") {
       warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
       method <- "bootstrap"
     }

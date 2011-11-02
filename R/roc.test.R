@@ -207,7 +207,7 @@ roc.test.roc <- function(roc1, roc2,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (is.numeric(attr(roc1$auc, "partial.auc")) && length(attr(roc1$auc, "partial.auc") == 2)) {
+    if (has.partial.auc(roc1)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     }
@@ -227,7 +227,7 @@ roc.test.roc <- function(roc1, roc2,
     method <- match.arg(method)
     if (method == "delong") {
       # delong NA to pAUC: warn + change
-      if ((is.numeric(attr(roc1$auc, "partial.auc")) && length(attr(roc1$auc, "partial.auc") == 2)) || (is.numeric(attr(roc2$auc, "partial.auc")) && length(attr(roc2$auc, "partial.auc") == 2))) {
+      if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         warning("Using DeLong's test for partial AUC is not supported. Using bootstrap test instead.")
         method <- "bootstrap"
       }
@@ -239,7 +239,7 @@ roc.test.roc <- function(roc1, roc2,
         warning("DeLong's test should not be applied to ROC curves with a different direction.")
     }
     else if (method == "venkatraman") {
-      if (is.numeric(attr(roc1$auc, "partial.auc")) && length(attr(roc1$auc, "partial.auc") == 2))
+      if (has.partial.auc(roc1))
         warning("Partial AUC is ignored in Venkatraman's test.")
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth)
         stop("Using Venkatraman's test for smoothed ROCs is not supported.")
