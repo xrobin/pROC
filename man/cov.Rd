@@ -71,16 +71,20 @@ cov(...)
   This function computes the covariance between the AUC of two
   correlated (or paired, according to the detection of \code{\link{are.paired}}) ROC
   curves. It is typically called with the two \link{roc} objects of
-  interest. Two methods are available: \dQuote{delong} and
-  \dQuote{bootstrap} (see \dQuote{Computational details} section below).
+  interest. Three methods are available: \dQuote{delong},
+  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
+  details} section below).
 
-  The default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
-  curves and curves with different \code{direction}, where \code{bootstrap}
-  is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported in pROC (a warning is produced and \dQuote{bootstrap} is employed instead).
-  It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
-  \code{direction} (a warning is issued but the spurious comparison is
-  enforced).
+  The default is to use \dQuote{delong} method except with
+  partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
+  Using \dQuote{delong} for partial AUC and smoothed ROCs is not
+  supported (a warning is produced and \dQuote{bootstrap} is employed
+  instead). \dQuote{obuchowski} can be used on partial AUCs only if they
+  are defined as a region of specificity (AUC generated with
+  \code{partial.auc.region="specificity"}). Requesting the covvariance to
+  be computed with \code{method="obuchowski"} on an AUC with
+  \code{partial.auc.region="sensitivity"} produces a warning and
+  \dQuote{bootstrap} is employed instead.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -197,8 +201,17 @@ cov(...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} or \code{method="obuchowski"} and the ROC curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.} is issued. The \code{method} argument is
-  ignored and \dQuote{bootstrap} is used instead.
+  If \code{method="delong"} or \code{method="obuchowski"} and the ROC
+  curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for
+  smoothed ROCs is not supported. Using bootstrap instead.} is
+  issued. The \code{method} argument is ignored and \dQuote{bootstrap}
+  is used instead.
+
+  When \code{method="obuchowski"} is requested on a partial AUC with
+  \code{method="obuchowski"} produces the warning \dQuote{Using
+  Obuchowski for smoothed ROCs is not supported. Using bootstrap
+  instead.} The \code{method} argument is ignored and \dQuote{bootstrap}
+  is used instead.
 
   DeLong and Obuchowski ignores the direction of the ROC curve so that if two
   ROC curves have a different \code{direction}, the warning
