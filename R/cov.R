@@ -146,7 +146,8 @@ cov.roc <- function(roc1, roc2,
         warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }
-      if (attr(roc1$auc, "partial.auc.focus") == "sensitivity" || attr(roc2$auc, "partial.auc.focus") == "sensitivity") {
+      if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity")
+          || (has.partial.auc(roc2) && attr(roc2$auc, "partial.auc.focus") == "sensitivity")) {
         warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }

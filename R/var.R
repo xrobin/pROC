@@ -87,7 +87,7 @@ var.roc <- function(roc,
         warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }
-      if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
+      if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
         warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
         method <- "bootstrap"
       }
