@@ -53,7 +53,9 @@ alternative = c("two.sided", "one.sided"), ...)
     for more details. 
   }
   \item{\dots}{further arguments passed to or from other methods,
-  especially \code{\link{auc}}.}
+    especially \code{\link{auc}} (with \code{reuse.auc=FALSE} or no AUC in
+    the ROC curve), \code{\link{cov}} and \code{\link{var}} (especially
+    arguments \code{method}, \code{boot.n} and \code{boot.stratified}).}
 }
 
 \section{One ROC curve power calculation}{
@@ -80,14 +82,19 @@ alternative = c("two.sided", "one.sided"), ...)
   the significance level (if \code{sig.level=NULL} and \code{power} is
   supplied) or the power of a test of a difference between to AUCs
   according to the formula by Obuchowski and McClish, 1997\emph{et al.}
-  (formulas 2 to 5, p. 1530--1531). The null hypothesis is that both ROC
-  curves have the same AUC than the ROC curve (either \code{roc1} or
-  \code{roc2}) having the lowest AUC (thus the highest variance).
+  (formulas 2 to 5, p. 1530--1531). The null hypothesis is that the AUC
+  of \code{roc1} is the same than the AUC of \code{roc2}, with
+  \code{roc1} taken as the reference ROC curve.
 
   For the sample size, \code{ncases} is computed directly from formula 2
   and ncontrols is deduced from the ratio observed in \code{roc1} and \code{roc2}.
-  AUC is optimized by \code{\link{uniroot}} while \code{sig.level}
-  and \code{power} are solved as quadratic equations.
+  \code{sig.level} and \code{power} are solved as quadratic equations.
+
+  The variance and covariance of the ROC curve are computed with the
+  \code{\link{var}} and \code{\link{cov}} functions. By default, DeLong
+  method is used for full AUCs and the bootstrap for partial AUCs. It is
+  possible to force the use of Obuchowski's variance by specifying
+  \code{method="obuchowski"}.
 
   Power calculation for unpaired ROC curves is not implemented.
 }
@@ -172,30 +179,51 @@ power.roc.test(ncases=41, ncontrols=72, sig.level=0.05, power=0.95)
 
 #### Two ROC curves ####
 
-##  Full AUC
+###  Full AUC
 roc1 <- roc(aSAH$outcome, aSAH$ndka)
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
-# Sample size
-power.roc.test(roc1, roc2, power=0.9)
-# Power test
-power.roc.test(roc1, roc2)
-# Significance level
-power.roc.test(roc1, roc2, power=0.9, sig.level=NULL)
 
-# Partial AUC
+## Sample size
+# With DeLong variance (default)
+power.roc.test(roc1, roc2, power=0.9)
+# With Obuchowski variance
+power.roc.test(roc1, roc2, power=0.9, method="obuchowski")
+
+## Power test
+# With DeLong variance (default)
+power.roc.test(roc1, roc2)
+# With Obuchowski variance
+power.roc.test(roc1, roc2, method="obuchowski")
+
+## Significance level
+# With DeLong variance (default)
+power.roc.test(roc1, roc2, power=0.9, sig.level=NULL)
+# With Obuchowski variance
+power.roc.test(roc1, roc2, power=0.9, sig.level=NULL, method="obuchowski")
+
+### Partial AUC
 roc3 <- roc(aSAH$outcome, aSAH$ndka, partial.auc=c(1, 0.9))
 roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.9))
 
-# Sample size
+## Sample size
+# With bootstrap variance (default)
 power.roc.test(roc3, roc4, power=0.9)
+# With Obuchowski variance
+power.roc.test(roc3, roc4, power=0.9, method="obuchowski")
 
-# Power test
+## Power test
+# With bootstrap variance (default)
 power.roc.test(roc3, roc4)
 # This is exactly equivalent:
 power.roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9))
+# With Obuchowski variance
+power.roc.test(roc3, roc4, method="obuchowski")
 
-# Significance level
+## Significance level
+# With bootstrap variance (default)
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
+# With Obuchowski variance
+power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
 
 }
 

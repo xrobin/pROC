@@ -6,10 +6,10 @@
 \alias{var.smooth.roc}
 \alias{var.default}
 \title{
- Variance and standard deviations of a ROC curve
+ Variance of a ROC curve
 }
 \description{
- These functions compute the variance and standard deviation of the AUC of a ROC curve.
+ These functions compute the variance of the AUC of a ROC curve.
 }
 \usage{
 var(...)
@@ -92,7 +92,7 @@ progress = getOption("pROCProgress")$name, ...)
 
 \section{AUC specification}{
   \code{var} needs a specification of the AUC to compute
-  the variance and standard deviation of the AUC of the ROC curve.
+  the variance of the AUC of the ROC curve.
   The specification is defined by:
   \enumerate{
     \item the \dQuote{auc} field in the \dQuote{\link{roc}} objects if
@@ -156,7 +156,7 @@ progress = getOption("pROCProgress")$name, ...)
 }
 
 \value{
-  The numeric value of the variance or standard deviation.
+  The numeric value of the variance.
 }
 
 \section{Warnings}{  
@@ -221,9 +221,12 @@ var(roc(aSAH$outcome, aSAH$s100b))
 #\dontrun{
 # The latter used Delong. To use bootstrap:
 var(roc1, method="bootstrap")
-# Increase boot.n for a more precise p-value:
-var(roc1,method="bootstrap", boot.n=10000)
+# Increase boot.n for a faster execution
+var(roc1,method="bootstrap", boot.n=1000)
 #}
+
+# To use obuchowski:
+var(roc1, method="obuchowski")
 
 #\dontrun{
 # Variance of smoothed ROCs:
@@ -243,7 +246,6 @@ roc4 <- roc(disease.present, field.strength.2)
 # Assess the variance:
 var(roc3)
 var(roc4)
-
 
 #\dontrun{
 # With bootstrap:

@@ -48,7 +48,7 @@ cov(...)
   }
   \item{boot.return}{
     if \var{TRUE} and \code{method="bootstrap"}, also return the
-    resampled (bootstrapped) values. See the \dQuote{Value} section for
+    bootstrapped values. See the \dQuote{Value} section for
     more details.
   }
   \item{progress}{the name of progress bar to display. Typically
@@ -264,9 +264,12 @@ cov(roc1, roc2)
 #\dontrun{
 # The latter used Delong. To use bootstrap:
 cov(roc1, roc2, method="bootstrap")
-# Increase boot.n for a more precise p-value:
-cov(roc1, roc2, method="bootstrap", boot.n=10000)
+# Increase boot.n for a faster execution:
+cov(roc1, roc2, method="bootstrap", boot.n=1000)
 #}
+
+# To use Obuchowski:
+cov(roc1, roc2, method="obuchowski")
 
 #\dontrun{
 # Comparison can be done on smoothed ROCs
@@ -293,6 +296,9 @@ roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.8), partial.auc.focus="s
 cov(roc3, roc4)
 # This is strictly equivalent to:
 cov(roc3, roc4, method="bootstrap")
+
+# To use Obuchowski:
+cov(roc3, roc4, method="obuchowski")
 
 # Alternatively, we could re-use roc1 and roc2 to get the same result:
 cov(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.8), partial.auc.focus="se")
