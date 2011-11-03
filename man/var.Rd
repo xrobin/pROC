@@ -200,6 +200,11 @@ progress = getOption("pROCProgress")$name, ...)
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
   \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
+
+  Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
+  determination for diagnostic accurary studies involving binormal ROC
+  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
+  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 }
 
 \seealso{
