@@ -8,6 +8,7 @@ export(
        ci.auc, ci.auc.formula, ci.auc.default, ci.auc.roc, ci.auc.smooth.roc, ci.auc.auc,
        coords, coords.roc, coords.smooth.roc,
        cov, cov.default, cov.auc, cov.smooth.roc, cov.roc,
+       has.partial.auc, has.partial.auc.auc, has.partial.auc.roc, has.partial.auc.smooth.roc,
        lines.roc, lines.smooth.roc, lines.roc.formula, lines.roc.default, lines.roc.roc, lines.roc.smooth.roc,
        multiclass.roc, multiclass.roc.formula, multiclass.roc.default,
        plot.ci.thresholds, plot.ci.sp, plot.ci.se,

@@ -3,7 +3,8 @@
   * New 'cov' and 'var' functions
   * New 'legacy.axes' argument to 'plot' 1-specificity rather than specificity
   * New 'axes' argument to turn off the plotting of the axis
-  * New 'logcondens' and 'logcondens.smooth' smoothing methods.
+  * New 'logcondens' and 'logcondens.smooth' smoothing methods
+  * New function 'has.partial.auc' to determine if an AUC is full or partial
   * 'auc' and 'multiclass.auc' objects now also have secondary class 'numeric'
   * Updated load call
   * Delong's CI reversed in ROC curves with direction=">"
