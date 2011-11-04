@@ -72,6 +72,7 @@
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
     \code{\link{coords}} \tab Coordinates of a ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
+    \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
