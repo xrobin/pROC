@@ -18,7 +18,7 @@
 }
 
 \usage{
-ci.auc(...)
+# ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress")$name, ...)

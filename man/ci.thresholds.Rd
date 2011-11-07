@@ -17,7 +17,7 @@
 }
 
 \usage{
-ci.thresholds(...)
+# ci.thresholds(...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
 progress=getOption("pROCProgress")$name, ...) 

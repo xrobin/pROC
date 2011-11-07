@@ -17,7 +17,7 @@
 }
 
 \usage{
-ci.sp(...)
+# ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
 progress=getOption("pROCProgress")$name, ...) 
