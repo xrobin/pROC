@@ -19,7 +19,7 @@
   (predictors).
 }
 \usage{
-roc.test(...)
+# roc.test(...)
 \S3method{roc.test}{roc}(roc1, roc2, method=c("delong", "bootstrap",
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
