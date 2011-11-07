@@ -162,3 +162,30 @@ cov.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, F
     g1 * g2 * (B1 * B2 * (rn^2 + kappa * ra^2) / (2 *  kappa)) + 
     f1 * g2 * (ra^2 * A1 * B2 / 2) + f2 * g1 * (ra^2 * A2 * B1 / 2)
 }
+
+# Variance of a difference between two ROC curves given the parameters
+# Obuchowski 1997, formula 4 and 5 p. 1530--1531
+# (A|B)(1|2): A and B params of the binormal ROC curve
+# rn, ra: correlation of the results in ROC curves 1 and 2 in controls (n) and cases (a) patients
+# kappa: proportion controls / cases
+# FPR(1|2)(1|2): the bounds of the pAUC interval:
+#    ***** ROC curve 1 or 2
+#         ***** bottom (1) or top (2) of the interval
+vardiff.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
+  var(A1, B1, kappa, FPR11, FPR12) + var(A2, B2, kappa, FPR21, FPR22) +
+    2 * cov(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
+}
+
+# Variance of a difference between two ROC curves given the parameters
+# under the null hypothesis. ROC curve 1 is taken as null
+# Obuchowski 1997, formula 4 and 5 p. 1530--1531
+# (A|B)(1|2): A and B params of the binormal ROC curve
+# rn, ra: correlation of the results in ROC curves 1 and 2 in controls (n) and cases (a) patients
+# kappa: proportion controls / cases
+# FPR(1|2)(1|2): the bounds of the pAUC interval:
+#    ***** ROC curve 1 or 2
+#         ***** bottom (1) or top (2) of the interval
+vardiff0.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
+  2 * var(A1, B1, kappa, FPR11, FPR12) + 
+    2 * cov(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
+}

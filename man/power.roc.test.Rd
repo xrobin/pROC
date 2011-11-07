@@ -3,6 +3,7 @@
 \alias{power.roc.test}
 \alias{power.roc.test.numeric}
 \alias{power.roc.test.roc}
+\alias{power.roc.test.list}
 
 \title{
   Sample size and power computation for ROC curves
@@ -12,23 +13,49 @@
 }
 \usage{
 power.roc.test(...)
+# One or Two ROC curves test with roc objects:
 \S3method{power.roc.test}{roc}(roc1, roc2, sig.level = 0.05, 
 power = NULL, alternative = c("two.sided", "one.sided"), 
 reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"), ...)
-\S3method{power.roc.test}{numeric}(ncontrols = NULL, ncases = NULL, 
-auc = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
+# One ROC curve with a given AUC:
+\S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
+ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
 alternative = c("two.sided", "one.sided"), ...)
+# Two ROC curves with the given parameters:
+\S3method{power.roc.test}{list}(parslist, ncontrols = NULL, 
+ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, 
+alternative = c("two.sided", "one.sided"))
 }
 
 \arguments{
   \item{roc1, roc2}{one or two \dQuote{roc} object from the
 	\code{\link{roc}} function.
   }
-  \item{ncontrols, ncases}{
-    number of controls and case observations available.
-  }
   \item{auc}{
     expected AUC.
+  }
+  \item{parslist}{
+    a \code{\link{list}} of parameters for the two ROC curves test with
+    Obuchowski variance when no empirical ROC curve is known:
+    \describe{
+      \item{A1}{binormal A parameter for ROC curve 1}
+      \item{B1}{binormal B parameter for ROC curve 1}
+      \item{A2}{binormal A parameter for ROC curve 2}
+      \item{B2}{binormal B parameter for ROC curve 2}
+      \item{rn}{correlation between the variables in control patients}
+      \item{ra}{correlation between the variables in case patients}
+      \item{delta}{the difference of AUC between the two ROC curves}
+    }
+    For a partial AUC, the following additional parameters must be set:
+    \describe{
+      \item{FPR11}{Upper bound of FPR (1 - specificity) of ROC curve 1}
+      \item{FPR12}{Lower bound of FPR (1 - specificity) of ROC curve 1}
+      \item{FPR21}{Upper bound of FPR (1 - specificity) of ROC curve 2}
+      \item{FPR22}{Lower bound of FPR (1 - specificity) of ROC curve 2}
+    }
+  }
+  \item{ncontrols, ncases}{
+    number of controls and case observations available.
   }
   \item{sig.level}{expected significance level (probability of type I
     error).
@@ -49,8 +76,9 @@ alternative = c("two.sided", "one.sided"), ...)
   \item{method}{the method to compute \link[=var.roc]{variance} and
     \link[=cov.roc]{covariance}, either \dQuote{delong},
     \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
-    sufficient. See \code{\link{var}} and \code{\link{cov}} documentations
-    for more details. 
+    sufficient. Only for Two ROC curves power calculation. See
+    \code{\link{var}} and \code{\link{cov}} documentations for more
+    details. 
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially \code{\link{auc}} (with \code{reuse.auc=FALSE} or no AUC in
@@ -82,7 +110,7 @@ alternative = c("two.sided", "one.sided"), ...)
   the significance level (if \code{sig.level=NULL} and \code{power} is
   supplied) or the power of a test of a difference between to AUCs
   according to the formula by Obuchowski and McClish, 1997\emph{et al.}
-  (formulas 2 to 5, p. 1530--1531). The null hypothesis is that the AUC
+  (formulas 2 and 3, p. 1530--1531). The null hypothesis is that the AUC
   of \code{roc1} is the same than the AUC of \code{roc2}, with
   \code{roc1} taken as the reference ROC curve.
 
@@ -95,6 +123,12 @@ alternative = c("two.sided", "one.sided"), ...)
   method is used for full AUCs and the bootstrap for partial AUCs. It is
   possible to force the use of Obuchowski's variance by specifying
   \code{method="obuchowski"}.
+
+  Alternatively when no empirical ROC curve is known, or if only one is
+  available, a list can be passed to \code{power.roc.test}, with the
+  contents defined in the \dQuote{Arguments} section. The variance and
+  covariance are computed from Table 1 and Equation 4 and 5 of
+  Obuchowski and McClish (1997), p. 1530--1531.
 
   Power calculation for unpaired ROC curves is not implemented.
 }
@@ -224,6 +258,15 @@ power.roc.test(roc3, roc4, method="obuchowski")
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
 # With Obuchowski variance
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
+
+## With only binormal parameters given
+# From example 2 of Obuchowski and McClish, 1997.
+ob.params <- list(A1=2.6, B1=1, A2=1.9, B2=1, rn=0.6, ra=0.6, FPR11=0,
+FPR12=0.2, FPR21=0, FPR22=0.2, delta=0.037) 
+
+power.roc.test(ob.params, power=0.8, sig.level=0.05)
+power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=107)
+power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=107)
 
 }
 

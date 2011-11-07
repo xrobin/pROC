@@ -132,11 +132,12 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       ncontrols <- ncases <- NULL
     }
     auc <- roc1$auc
+    # TODO: implement this with var() and cov() for the given ROC curve
     return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, ...))
   }
 }
 
-power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, sig.level = 0.05, power = NULL,  kappa = 1, alternative = c("two.sided", "one.sided"), ...) {
+power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, alternative = c("two.sided", "one.sided"), ...) {
   # basic sanity checks
   if (!is.null(ncases) && ncases < 0)
     stop("'ncases' must be positive")
@@ -149,6 +150,12 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1))
     stop("'sig.level' must range from 0 to 1")
   
+  # Complete ncontrols and ncases with kappa
+  if (is.null(ncontrols) && ! is.null(ncases) && !is.null(kappa))
+    ncontrols <- kappa * ncases
+  else if (is.null(ncases) && ! is.null(ncontrols) && !is.null(kappa))
+    ncases <- ncontrols / kappa
+  
   alternative <- match.arg(alternative)
   if (alternative == "two.sided" && !is.null(sig.level)) {
     sig.level <- sig.level / 2
@@ -157,7 +164,7 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   # determine AUC
   if (is.null(auc)) {
     if (is.null(ncontrols) || is.null(ncases))
-      stop("'ncontrols' and 'ncases' or 'auc' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
     else if (is.null(power))
       stop("'power' or 'auc' must be provided.")
     else if (is.null(sig.level))
@@ -176,7 +183,7 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   # Determine number of patients (sample size)
   else if (is.null(ncases) && is.null(ncontrols)) {
     if (is.null(power))
-      stop("'power' or 'ncases' and 'ncontrols' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
     else if (is.null(kappa))
       stop("'kappa' must be provided.")
     else if (is.null(auc))
@@ -195,7 +202,7 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   # Determine power
   else if (is.null(power)) { 
     if (is.null(ncontrols) || is.null(ncases))
-      stop("'ncontrols' and 'ncases' or 'power' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
     else if (is.null(auc))
       stop("'auc' or 'power' must be provided.")
     else if (is.null(sig.level))
@@ -219,7 +226,7 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
   # Determine sig.level
   else  if (is.null(sig.level)) { 
     if (is.null(ncontrols) || is.null(ncases))
-      stop("'ncontrols' and 'ncases' or 'sig.level' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
     else if (is.null(auc))
       stop("'auc' or 'sig.level' must be provided.")
     else if (is.null(power))
@@ -247,6 +254,88 @@ power.roc.test.numeric <- function(ncontrols = NULL, ncases = NULL, auc = NULL, 
     sig.level <- sig.level * 2
   }
   return(structure(list(ncases=ncases, ncontrols=ncontrols, auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
+}
+
+power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, alternative = c("two.sided", "one.sided")) {
+  # basic sanity checks
+  if (!is.null(ncases) && ncases < 0)
+    stop("'ncases' must be positive")
+  if (!is.null(ncontrols) && ncontrols < 0)
+    stop("'ncontrols' must be positive")
+  if (!is.null(kappa) && kappa < 0)
+    stop("'kappa' must be positive")
+  if (!is.null(power) && (power < 0 || power > 1))
+    stop("'power' must range from 0 to 1")
+  if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1))
+    stop("'sig.level' must range from 0 to 1")
+
+  
+  # Complete ncontrols and ncases with kappa
+  if (is.null(ncontrols) && ! is.null(ncases) && !is.null(kappa))
+    ncontrols <- kappa * ncases
+  else if (is.null(ncases) && ! is.null(ncontrols) && !is.null(kappa))
+    ncases <- ncontrols / kappa
+  
+  alternative <- match.arg(alternative)
+  if (alternative == "two.sided" && !is.null(sig.level)) {
+    sig.level <- sig.level / 2
+  }
+
+  # Check required elements of parslist
+  required <- c("A1", "B1", "A2", "B2", "rn", "ra", "delta")
+  if (any(! required %in% names(parslist))) {
+    stop(paste("Missing parameter(s):", paste(required[! required %in% names(parslist) ], collapse=", ")))
+  }
+
+  # Determine number of patients (sample size)
+  if (is.null(ncases) && is.null(ncontrols)) {
+    if (is.null(power))
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+    else if (is.null(kappa))
+      stop("'kappa' must be provided.")
+    else if (is.null(sig.level))
+      stop("'sig.level' or 'ncases' and 'ncontrols' must be provided.")
+
+    zalpha <- qnorm(sig.level)
+    zbeta <- qnorm(1 - power)
+    ncases <- ncases.obuchowski.params(parslist, zalpha, zbeta, kappa)
+    ncontrols <- kappa * ncases
+  }
+  
+  # Determine power
+  else if (is.null(power)) {
+    if (is.null(ncontrols) || is.null(ncases))
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+    else if (is.null(sig.level))
+      stop("'sig.level' or 'power' must be provided.")
+    kappa <- ncontrols / ncases
+
+    zalpha <- qnorm(sig.level)
+    zbeta <- zbeta.obuchowski.params(parslist, zalpha, ncases, kappa)
+    power <- 1 - pnorm(zbeta)
+  }
+
+  # Determine sig.level
+  else  if (is.null(sig.level)) { 
+    if (is.null(ncontrols) || is.null(ncases))
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+    else if (is.null(power))
+      stop("'power' or 'sig.level' must be provided.")
+    kappa <- ncontrols / ncases
+
+    zbeta <- qnorm(1 - power)
+    zalpha <- zalpha.obuchowski.params(parslist, zbeta, ncases, kappa)
+    sig.level <- pnorm(zalpha)
+  }
+  else {
+    stop("One of 'power', 'sig.level', 'auc', or both 'ncases' and 'ncontrols' must be NULL.")
+  }
+  # Restore sig.level if two.sided
+  if (alternative == "two.sided") {
+    sig.level <- sig.level * 2
+  }
+  return(structure(list(ncases=ncases, ncontrols=ncontrols, sig.level=sig.level, power=power, method="Two ROC curves power calculation"), class="power.htest"))
+
 }
 
 
@@ -281,6 +370,19 @@ ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
   return(as.vector(na))
 }
 
+# Compute the number of cases with Obuchowski formula from params
+ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
+  covvar <- list(
+                 var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+                 var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+                 cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+                 )
+  na <- (zalpha * sqrt(var0.delta.covvar(covvar)) +
+       zbeta * sqrt(var.delta.covvar(covvar))) ^2 /
+       parslist$delta^2
+  return(as.vector(na))
+}
+
 # Compute the z alpha with Obuchowski formula and var(... method=method)
 zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   delta <- roc1$auc - roc2$auc
@@ -290,7 +392,22 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   va <- var.delta.covvar(covvar)
   a <- v0
   b <- 2 * zbeta * sqrt(v0) * sqrt(va)
-  c <- zbeta^2 * va - ncases * delta ^ 2
+  c <- zbeta^2 * va - ncases * parslist$delta ^ 2
+  return(as.vector(solve.2deg.eqn(a, b, c)))
+}
+
+# Compute the z alpha with Obuchowski formula from params
+zalpha.obuchowski.params <- function(parslist, zbeta, ncases, kappa) {
+  covvar <- list(
+                 var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+                 var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+                 cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+                 )
+  v0 <- var0.delta.covvar(covvar)
+  va <- var.delta.covvar(covvar)
+  a <- v0
+  b <- 2 * zbeta * sqrt(v0) * sqrt(va)
+  c <- zbeta^2 * va - ncases * parslist$delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
@@ -304,6 +421,21 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   a <- va
   b <- 2 * zalpha * sqrt(va) * sqrt(v0)
   c <- zalpha^2 * v0 - ncases * delta ^ 2
+  return(as.vector(solve.2deg.eqn(a, b, c)))
+}
+
+# Compute the z beta with Obuchowski formula from params
+zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
+  covvar <- list(
+                 var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+                 var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+                 cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+                 )
+  v0 <- var0.delta.covvar(covvar)
+  va <- var.delta.covvar(covvar)
+  a <- va
+  b <- 2 * zalpha * sqrt(va) * sqrt(v0)
+  c <- zalpha^2 * v0 - ncases * parslist$delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
