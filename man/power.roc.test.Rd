@@ -24,7 +24,7 @@ alternative = c("two.sided", "one.sided"), ...)
 # Two ROC curves with the given parameters:
 \S3method{power.roc.test}{list}(parslist, ncontrols = NULL, 
 ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, 
-alternative = c("two.sided", "one.sided"))
+alternative = c("two.sided", "one.sided"), ...)
 }
 
 \arguments{
@@ -83,7 +83,9 @@ alternative = c("two.sided", "one.sided"))
   \item{\dots}{further arguments passed to or from other methods,
     especially \code{\link{auc}} (with \code{reuse.auc=FALSE} or no AUC in
     the ROC curve), \code{\link{cov}} and \code{\link{var}} (especially
-    arguments \code{method}, \code{boot.n} and \code{boot.stratified}).}
+    arguments \code{method}, \code{boot.n} and \code{boot.stratified}).
+    Ignored (with a warning) with a \code{parslist}.
+  }
 }
 
 \section{One ROC curve power calculation}{

@@ -256,7 +256,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   return(structure(list(ncases=ncases, ncontrols=ncontrols, auc=auc, sig.level=sig.level, power=power, method="One ROC curve power calculation"), class="power.htest"))
 }
 
-power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, alternative = c("two.sided", "one.sided")) {
+power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL,  kappa = 1, alternative = c("two.sided", "one.sided"), ...) {
   # basic sanity checks
   if (!is.null(ncases) && ncases < 0)
     stop("'ncases' must be positive")
@@ -275,6 +275,11 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
     ncontrols <- kappa * ncases
   else if (is.null(ncases) && ! is.null(ncontrols) && !is.null(kappa))
     ncases <- ncontrols / kappa
+
+  # Warn if anything is passed with ...
+  if (length(list(...)) > 0) {
+    warning(paste("The following arguments were ignored:", paste(names(list(...)), collapse=", ")))
+  }
   
   alternative <- match.arg(alternative)
   if (alternative == "two.sided" && !is.null(sig.level)) {
