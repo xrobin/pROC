@@ -145,7 +145,7 @@ cov(...)
   Hanley and Hajian-Tilaki (1997).
 
   With \code{method="obuchowski"}, the processing is done as described
-  in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1530--1531. The
+  in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
   computation of \eqn{g} for partial area under the ROC curve is
   modified as: 
 
