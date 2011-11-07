@@ -397,7 +397,7 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   va <- var.delta.covvar(covvar)
   a <- v0
   b <- 2 * zbeta * sqrt(v0) * sqrt(va)
-  c <- zbeta^2 * va - ncases * parslist$delta ^ 2
+  c <- zbeta^2 * va - ncases * delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
 }
 
