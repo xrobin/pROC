@@ -27,7 +27,7 @@ smooth.default <- function(...) {
 smooth.smooth.roc <- function(smooth.roc, ...) {
   roc <- attr(smooth.roc, "roc")
   if (is.null(roc))
-    stop("Cannot smooth a ROC curve generated directly with numeric density.controls and density.cases.")
+    stop("Cannot smooth a ROC curve generated directly with numeric 'density.controls' and 'density.cases'.")
   smooth.roc(roc, ...)
 }
 

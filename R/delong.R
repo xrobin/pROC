@@ -19,12 +19,11 @@
 
 # Delong's test paired, used by roc.test.roc
 delong.paired.test <- function(roc1, roc2) {
-
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
-  VR <- roc.utils.delong.placements(roc1)
-  VS <- roc.utils.delong.placements(roc2)
+  VR <- delong.placements(roc1)
+  VS <- delong.placements(roc2)
 
   SX <- matrix(NA, ncol=2, nrow=2)
   SX[1,1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(m-1)
@@ -57,8 +56,8 @@ delong.unpaired.test <- function(roc1, roc2) {
   nS <- length(roc2$controls)
   mS <- length(roc2$cases)
 
-  VR <- roc.utils.delong.placements(roc1)
-  VS <- roc.utils.delong.placements(roc2)
+  VR <- delong.placements(roc1)
+  VS <- delong.placements(roc2)
 
   SRX <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(mR-1)
   SSX <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(mS-1)
@@ -88,7 +87,7 @@ ci.auc.delong <- function(roc, conf.level) {
   mn <- m*n
 
   # Compute Mann-Whitney statistics and deduce thetaR and thetaS
-  MWR <- sapply(1:n, function(j) sapply(1:m, function(i, j) roc.utils.MW.kernel(XR[i], YR[j]), j=j))
+  MWR <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(XR[i], YR[j]), j=j))
 
   thetaR <- sum(MWR)/mn
 
@@ -117,4 +116,31 @@ ci.auc.delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
+}
+
+# Mann-Whitney Kernel used by delong.test and ci.auc.delong
+MW.kernel <- function(x, y) {
+  # x, y: numeric vectors of length 1
+  # returns: numeric vectors of length 1
+  if (y < x) return(1)
+  if (y == x) return(.5)
+  if (y > x) return(0)
+}
+
+delong.placements <- function(roc) {
+  # returns a list V containing:
+  # - theta: the AUC
+  # - X: the 10 component
+  # - Y: the 01 component
+  V <- list()
+  Y <- roc$controls
+  X <- roc$cases
+  n <- length(Y)
+  m <- length(X)
+  MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
+  V$theta <- sum(MW)/(m*n)
+  # Delong-specific computations
+  V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
+  V$Y <- sapply(1:n, function(j) {sum(MW[,j])})/m
+  return(V)
 }

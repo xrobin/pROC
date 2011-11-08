@@ -195,4 +195,3 @@ print.dataline <- function(x) {
     cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", x$levels[1], ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", x$levels[2], ").\n", sep="")
   }
 }
-

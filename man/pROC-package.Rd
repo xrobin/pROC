@@ -97,7 +97,7 @@
   }
   
   To load the package in R:
-  
+ 
   \preformatted{
     library(pROC)
   }

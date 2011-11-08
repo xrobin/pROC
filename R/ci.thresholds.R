@@ -107,3 +107,4 @@ ci.thresholds.roc <- function(roc,
   attr(ci, "roc") <- roc
   return(ci)
 }
+

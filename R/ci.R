@@ -56,3 +56,4 @@ ci.roc <- function(roc, of = c("auc", "thresholds", "sp", "se"), ...) {
 
   return(ci)
 }
+

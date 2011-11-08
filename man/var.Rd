@@ -1,8 +1,8 @@
 \encoding{UTF-8}
 \name{var.roc}
 \alias{var}
-\alias{var.auc}
 \alias{var.roc}
+\alias{var.auc}
 \alias{var.smooth.roc}
 \alias{var.default}
 \title{
@@ -56,7 +56,7 @@ progress = getOption("pROCProgress")$name, ...)
     \code{var.auc} and \code{var.smooth.roc}. Arguments for
     \code{\link{auc}} (if \code{reuse.auc=FALSE}) and
     \code{\link{txtProgressBar}} (only \code{char} and \code{style}) if
-    applicable.  
+    applicable.
   }
 }
 
@@ -226,7 +226,7 @@ var(roc(aSAH$outcome, aSAH$s100b))
 #\dontrun{
 # The latter used Delong. To use bootstrap:
 var(roc1, method="bootstrap")
-# Increase boot.n for a faster execution
+# Decrease boot.n for a faster execution
 var(roc1,method="bootstrap", boot.n=1000)
 #}
 

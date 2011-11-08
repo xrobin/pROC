@@ -150,30 +150,3 @@ sort.smooth.roc <- function(roc) {
   }
   return(roc)
 }
-
-# Mann-Whitney Kernel used by delong.test and ci.auc.delong
-roc.utils.MW.kernel <- function(x, y) {
-  # x, y: numeric vectors of length 1
-  # returns: numeric vectors of length 1
-  if (y < x) return(1)
-  if (y == x) return(.5)
-  if (y > x) return(0)
-}
-
-roc.utils.delong.placements <- function(roc) {
-  # returns a list V containing:
-  # - theta: the AUC
-  # - X: the 10 component
-  # - Y: the 01 component
-  V <- list()
-  Y <- roc$controls
-  X <- roc$cases
-  n <- length(Y)
-  m <- length(X)
-  MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) roc.utils.MW.kernel(X[i], Y[j]), j=j))
-  V$theta <- sum(MW)/(m*n)
-  # Delong-specific computations
-  V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
-  V$Y <- sapply(1:n, function(j) {sum(MW[,j])})/m
-  return(V)
-}

@@ -264,7 +264,7 @@ cov(roc1, roc2)
 #\dontrun{
 # The latter used Delong. To use bootstrap:
 cov(roc1, roc2, method="bootstrap")
-# Increase boot.n for a faster execution:
+# Decrease boot.n for a faster execution:
 cov(roc1, roc2, method="bootstrap", boot.n=1000)
 #}
 

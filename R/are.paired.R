@@ -120,7 +120,6 @@ are.paired.roc <- function(roc1, roc2,
 
         # Re-use auc/ci/smooth for roc1
         if (exists("oroc1") && reuse.smooth) {
-          print("Smoothing ROC1")
           args <- oroc1$smoothing.args
           args$roc <- roc1.without.nas
           roc1.without.nas <- do.call("smooth.roc", args)

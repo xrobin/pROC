@@ -74,6 +74,7 @@ This function returns the confidence interval object invisibly.
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
 }
+
 \seealso{
 \code{\link{plot.roc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}}
 }

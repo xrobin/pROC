@@ -39,3 +39,4 @@
 .onAttach <- function(lib, pkg) {
   packageStartupMessage("Type 'citation(\"pROC\")' for a citation.")
 }
+

@@ -290,7 +290,7 @@ roc.test.roc <- function(roc1, roc2,
                 null.value = null.value
                 )
   class(htest) <- "htest"
-  
+
   if (method == "delong") {
     if (paired) {
       stat <- delong.paired.test(roc1, roc2)

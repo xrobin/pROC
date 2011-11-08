@@ -54,7 +54,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
     response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
     auc1skeleton$response <- response.roc1
     auc2skeleton$response <- response.roc2
-    resampled.values <- raply(boot.n, stratified.bootstrap.test(roc1, roc2, "boot", NULL, TRUE, auc1skeleton, auc2skeleton), .progress=progress) # stratified.bootstrap.test: returns resampled values just as we need for cov, so re-use it!
+    resampled.values <- raply(boot.n, stratified.bootstrap.test(roc1, roc2, "boot", NULL, TRUE, auc1skeleton, auc2skeleton), .progress=progress)
   }
   else {
     resampled.values <- raply(boot.n, nonstratified.bootstrap.test(roc1, roc2, "boot", NULL, TRUE, auc1skeleton, auc2skeleton), .progress=progress)
@@ -73,9 +73,8 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   return(cov)
 }
 
-# Paired bootstrap test, used by roc.test.roc
+# Bootstrap test, used by roc.test.roc
 bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, progress) {
-
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
   smoothing.args$roc1$method <- NULL
@@ -160,6 +159,7 @@ stratified.bootstrap.test <- function(roc1, roc2, test, x, paired, auc1skeleton,
   idx.cases.roc1 <- sample(1:length(roc1$cases), replace=TRUE)
   # finish roc skeletons
   auc1skeleton$predictor <- c(roc1$controls[idx.controls.roc1], roc1$cases[idx.cases.roc1])
+
   if (paired) {
     auc2skeleton$predictor <- c(roc2$controls[idx.controls.roc1], roc2$cases[idx.cases.roc1])
   }
@@ -172,8 +172,9 @@ stratified.bootstrap.test <- function(roc1, roc2, test, x, paired, auc1skeleton,
   # re-compute the resampled ROC curves
   roc1 <- try(do.call("roc.default", auc1skeleton), silent=TRUE)
   roc2 <- try(do.call("roc.default", auc2skeleton), silent=TRUE)
+
   # resampled ROCs might not be smoothable: return NA
-  if (class(roc1) == "try-error" || class(roc2) == "try-error") {
+  if (is(roc1, "try-error") || is(roc2, "try-error")) {
     return(c(NA, NA))
   }
   else {
@@ -213,7 +214,7 @@ nonstratified.bootstrap.test <- function(roc1, roc2, test, x, paired, auc1skelet
   roc1 <- try(do.call("roc.default", auc1skeleton), silent=TRUE)
   roc2 <- try(do.call("roc.default", auc2skeleton), silent=TRUE)
   # resampled ROCs might not be smoothable: return NA
-  if (class(roc1) == "try-error" || class(roc2) == "try-error") {
+  if (is(roc1, "try-error") || is(roc2, "try-error")) {
     return(c(NA, NA))
   }
   else {
@@ -253,7 +254,6 @@ ci.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress,
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
   # Prepare the return value
   return(quantile(aucs, c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-
 }
 
 stratified.ci.auc <- function(roc) {
@@ -267,7 +267,6 @@ stratified.ci.auc <- function(roc) {
 
   as.numeric(auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
 }
-
 
 nonstratified.ci.auc <- function(roc) {
   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
@@ -305,11 +304,10 @@ stratified.ci.smooth.auc <- function(roc, smooth.roc.call, auc.call) {
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(auc.call$smooth.roc) == "try-error") {
+  if (is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
   return(as.numeric(eval(auc.call)))
@@ -339,8 +337,9 @@ nonstratified.ci.smooth.auc <- function(roc, smooth.roc.call, auc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(auc.call$smooth.roc) == "try-error")
+  if (is(auc.call$smooth.roc, "try-error")) {
     return(NA)
+  }
   return(as.numeric(eval(auc.call)))
 }
 
@@ -453,7 +452,7 @@ stratified.ci.smooth.se <- function(roc, sp, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(smooth.roc) == "try-error")
+  if (is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
 }
@@ -481,7 +480,7 @@ nonstratified.ci.smooth.se <- function(roc, sp, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(smooth.roc) == "try-error")
+  if (is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
 }
@@ -539,7 +538,7 @@ stratified.ci.smooth.sp <- function(roc, se, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(smooth.roc) == "try-error")
+  if (is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
 }
@@ -567,7 +566,7 @@ nonstratified.ci.smooth.sp <- function(roc, se, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (class(smooth.roc) == "try-error")
+  if (is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
 }

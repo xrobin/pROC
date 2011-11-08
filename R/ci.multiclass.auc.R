@@ -57,3 +57,4 @@ ci.multiclass.roc <- function(multiclass.roc,
   class(ci) <- "ci.multiclass.auc"
   return(ci)
 }
+

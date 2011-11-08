@@ -97,7 +97,7 @@ var.roc <- function(roc,
   if (method == "delong") {
     n <- length(roc$controls)
     m <- length(roc$cases)  
-    V <- roc.utils.delong.placements(roc)
+    V <- delong.placements(roc)
     var <- var(V$Y) / n + var(V$X) / m
   }
   else if (method == "obuchowski") {
@@ -114,7 +114,6 @@ var.roc <- function(roc,
 }
 
 var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, ...) {
-
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="AUC variance", label="Bootstrap in progress...", ...)
 
