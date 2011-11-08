@@ -237,6 +237,11 @@ cov(...)
 }
 
 \references{
+  Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
+  (1988) ``Comparing the areas under two or more correlated receiver
+  operating characteristic curves: a nonparametric
+  approach''. \emph{Biometrics} \bold{44}, 837--845.
+
   James A. Hanley and Karim O. Hajian-Tilaki (1997) ``Sampling
   variability of nonparametric estimates of the areas under receiver
   operating characteristic curves: An update''. \emph{Academic

@@ -175,12 +175,12 @@ alternative = c("two.sided", "one.sided"), ...)
 \references{
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
   determination for diagnostic accurary studies involving binormal ROC
-  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
+  curve indices''. \emph{Statistics in Medicine}, \bold{16},
   1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 
   Nancy A. Obuchowski, Micharl L. Lieber, Frank H. Wians
   Jr. (2004). ``ROC Curves in Clinical Chemistry: Uses, Misuses, and
-  Possible Solutions''. \emph{Clin Chem}, \bold{50}(7), 1118--1125. DOI:
+  Possible Solutions''. \emph{Clinical Chemistry}, \bold{50}, 1118--1125. DOI:
   \href{http://dx.doi.org/10.1373/clinchem.2004.031823}{10.1373/clinchem.2004.031823}.
 }
 
