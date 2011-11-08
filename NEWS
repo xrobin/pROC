@@ -1,9 +1,9 @@
-1.5 (2011-??-??)
+1.5 (2011-11-??)
   * New 'power.roc.test' function for sample size and power computations
   * New 'cov' and 'var' functions
   * New 'legacy.axes' argument to 'plot' 1-specificity rather than specificity
   * New 'axes' argument to turn off the plotting of the axis
-  * New 'logcondens' and 'logcondens.smooth' smoothing methods
+  * New 'logcondens' and 'logcondens.smooth' (Univariate Log-Concave Density Estimation) smoothing methods
   * New function 'has.partial.auc' to determine if an AUC is full or partial
   * 'auc' and 'multiclass.auc' objects now also have secondary class 'numeric'
   * Updated load call
