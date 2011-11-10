@@ -39,7 +39,7 @@ expr4 <- function(cddagger1, cddagger2) {
 }
 
 cdagger <- function (A, B, FPRi) {
-  (qnorm(FPRi) + A * B * (1 + B^2)^(-1) )* (1 + B^2)^(1/2)
+  (qnorm(FPRi) + A * B * (1 + B^2)^(-1) ) * (1 + B^2)^(1/2)
 }
 
 cddagger <- function(cdagger) {
