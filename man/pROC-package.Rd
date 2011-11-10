@@ -10,7 +10,9 @@
   characteristic (ROC curves). (Partial) area under the curve (AUC) can
   be compared with statistical tests based on U-statistics or
   bootstrap. Confidence intervals can be computed for (p)AUC or ROC
-  curves.
+  curves. Sample size / power computation for one or two ROC curves are available.
+
+  In S+, the package comes with a  graphical user interface.
 }
 
 \details{
@@ -26,8 +28,9 @@
   individual functions for the arguments that can be passed to them
   through \code{\link{roc}}. These function can be called separately.
 
-  Two paired ROC curves (that is \code{\link{roc}} objects with the same
-  \code{response}) can be compared with the \code{\link{roc.test}} function.
+  Two paired (that is \code{\link{roc}} objects with the same
+  \code{response}) or unpaired (with different \code{response}) ROC
+  curves can be compared with the \code{\link{roc.test}} function.
   Sample size and power computations can be performed with the 
   \code{\link{power.roc.test}} function.
 }
