@@ -78,10 +78,6 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       if (!identical(attr1, attr2)) {
         stop("Different AUC specifications in the ROC curves.")
       }
-
-      if (!is.null(attr(roc1$auc, "partial.auc.focus")) && attr(roc1$auc, "partial.auc.focus") != "specificity") {
-        stop("Power tests for pAUC in sensitivity are not implemented yet!")
-      }
     
       # check that the same region was requested in auc. Otherwise, issue a warning
       if (!identical(attributes(roc1$auc)[names(attributes(roc1$auc))!="roc"], attributes(roc2$auc)[names(attributes(roc2$auc))!="roc"]))
@@ -131,7 +127,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
     else {
       ncontrols <- ncases <- NULL
     }
-    auc <- roc1$auc
+    auc <- auc(roc1)
     # TODO: implement this with var() and cov() for the given ROC curve
     return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, ...))
   }
