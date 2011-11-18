@@ -20,7 +20,7 @@
 coords <- function(...)
   UseMethod("coords")
 
-coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
+coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
   # make sure x was provided
   if (missing(x))
     stop("'x' must be a numeric or character vector.")
@@ -68,10 +68,18 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
     }
     if (length(se) == 1) {
       if (as.list) {
-        return(list(sensitivity=se, specificity=sp)[ret])
+        list <- list(sensitivity=se, specificity=sp)[ret]
+        if (drop == FALSE) {
+          list <- list(list)
+          names(list) <- x
+        }
+        return(list)
       }
       else {
-        return(c(sensitivity=se, specificity=sp)[ret])
+        res <- c(sensitivity=se, specificity=sp)[ret]
+        if (drop == FALSE) {
+        }
+        return(res)
       }
     }
     else if (length(se) > 1) {
@@ -90,10 +98,10 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  coords.roc(smooth.roc, x, input, ret, as.list, ...)
+  coords.roc(smooth.roc, x, input, ret, as.list, drop, ...)
 }
 
-coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"), as.list=FALSE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
+coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
   # make sure x was provided
   if (missing(x) || length(x) == 0)
     stop("'x' must be a numeric or character vector of positive length.")
@@ -128,7 +136,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       }
       if (length(thres) == 0)
         return(NULL)
-      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list)
+      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list, drop=drop)
       if (class(co) == "matrix")
         colnames(co) <- rep(x, dim(co)[2])
       else if (class(co) == "list" && class(co[[1]]) == "list")
@@ -157,7 +165,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       if (length(thres) == 0)
         return(NULL)
       lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
-      co <- coords(roc, x=thres[lm.idx], input="threshold", ret=ret, as.list=as.list)
+      co <- coords(roc, x=thres[lm.idx], input="threshold", ret=ret, as.list=as.list, drop=drop)
       if (class(co) == "matrix")
         colnames(co) <- rep(x, dim(co)[2])
       else if (class(co) == "list" && class(co[[1]]) == "list")
@@ -197,7 +205,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       }
       if (length(thres) == 0)
         return(NULL)
-      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list)
+      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list, drop=drop)
       if (class(co) == "matrix")
         colnames(co) <- rep(x, dim(co)[2])
       else if (class(co) == "list" && class(co[[1]]) == "list")
@@ -254,11 +262,18 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     }
     if (as.list) {
       list <- list(threshold=res[1], specificity=res[2], sensitivity=res[3])
-      return(list[ret])
+      list <- list[ret]
+      if (drop == FALSE) {
+        list <- list(list)
+        names(list) <- x
+      }
+      return(list)
     }
     else {
       names(res) <- c("threshold", "specificity", "sensitivity")
-      return(res[ret])
+      res <- as.matrix(res)
+      colnames(res) <- x
+      return(res[ret,, drop=drop])
     }
   }
   else {

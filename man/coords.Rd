@@ -15,11 +15,12 @@
 coords(...)
 \S3method{coords}{roc}(roc, x, input=c("threshold", "specificity",
 "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
-as.list=FALSE, best.method=c("youden", "closest.topleft"),
+as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
 best.weights=c(1, 0.5), ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
 "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE,
-best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...)
+drop=TRUE, best.method=c("youden", "closest.topleft"), 
+best.weights=c(1, 0.5), ...)
 }
 		   
 \arguments{
@@ -53,6 +54,10 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...)
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
     (default), a named numeric vector is returned.}
+  \item{drop}{If \code{TRUE} the result is coerced to the lowest
+    possible dimension, as per \link{Extract}. With \code{FALSE} if \code{x} is
+    of length 1, the object returned will have the same format than if
+    \code{x} was of length > 1.}
   \item{best.method}{if \code{x="best"}, the method to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
@@ -154,7 +159,7 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...)
   \tabular{lll}{
 	\tab
 	length(x) == 1 \tab
-	length(x) > 1
+	length(x) > 1 or drop == FALSE
 	\cr
 	
     \code{as.list=TRUE} \tab
