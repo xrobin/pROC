@@ -213,6 +213,10 @@ coords(rocobj, 0.5, "se", ret="se")
 # fully qualified but identical:
 coords(roc=rocobj, x=0.5, input="sensitivity", ret="sensitivity")
 
+# Compare with drop=FALSE
+coords(rocobj, 0.55, drop=FALSE)
+coords(rocobj, 0.9, "specificity", as.list=TRUE, drop=FALSE)
+
 # Same in percent
 rocobj <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 
