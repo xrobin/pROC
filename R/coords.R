@@ -41,7 +41,7 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
     r <- (1 - best.weights[2]) / (best.weights[1] * best.weights[2]) # r should be 1 by default
       
     # Compute optimality criterion and store it in the optim.crit vector
-    best.method <- match.arg(best.method, c("youden", "closest.topleft", "topleft")) # cheat: allow the user to pass "topleft"
+    best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft")) # cheat: allow the user to pass "topleft"
     if (best.method == "youden") {
       optim.crit <- smooth.roc$sensitivities + r * smooth.roc$specificities
     }
