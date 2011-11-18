@@ -224,6 +224,12 @@ coords(rocobj, 0.55)
 coords(rocobj, 90, "specificity", as.list=TRUE)
 coords(rocobj, x=50, input="sensitivity", ret=c("sen", "spec"))
 
+# And with a smoothed ROC curve
+coords(smooth(rocobj), 90, "specificity")
+coords(smooth(rocobj), 90, "specificity", drop=FALSE)
+coords(smooth(rocobj), 90, "specificity", as.list=TRUE)
+coords(smooth(rocobj), 90, "specificity", as.list=TRUE, drop=FALSE)
+
 # Get the sensitivities for all thresholds
 sensitivities <- coords(rocobj, rocobj$thresholds, "thr", "se")
 # This is equivalent to taking sensitivities from rocobj directly
