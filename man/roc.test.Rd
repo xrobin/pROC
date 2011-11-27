@@ -20,7 +20,7 @@
 }
 \usage{
 # roc.test(...)
-\S3method{roc.test}{roc}(roc1, roc2, method=c("delong", "bootstrap",
+\S3method{roc.test}{roc}(roc1, roc2=0.5, method=c("delong", "bootstrap",
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
@@ -36,7 +36,8 @@ na.rm=TRUE, method=NULL, ...)
   \item{roc1, roc2}{the two ROC curves to compare. Either
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
-	the original ROC curve are paired).
+	the original ROC curve are paired). \code{roc2} can be a numeric
+	value for a one ROC curve bootstrap test.
   }
   \item{response}{a vector or factor, as for the \link{roc} function.}
   \item{predictor1}{a numeric or ordered vector as for the \link{roc} function, or
@@ -65,7 +66,7 @@ na.rm=TRUE, method=NULL, ...)
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
     If \code{TRUE} but the paired status cannot be assessed by \code{\link{are.paired}}
-    will produce an error.
+    will produce an error. Ignored for a one ROC curve test.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -113,7 +114,8 @@ na.rm=TRUE, method=NULL, ...)
   as both paired and unpaired tests, whereas \dQuote{venkatraman} is only paired yet.
 
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
-  curves and curves with different \code{direction}, where \code{bootstrap}
+  curves and curves with different \code{direction}, and when
+  \code{roc2} is numeric, where \code{bootstrap}
   is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported in pROC (a warning is produced and \dQuote{bootstrap} is employed instead).
   It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
@@ -121,7 +123,9 @@ na.rm=TRUE, method=NULL, ...)
   enforced). \dQuote{venkatraman}'s test cannot be employed to compare smoothed
   ROC curves. Additionally, partial AUC specifications are ignored (with
   a warning), and comparison of ROC curves with different
-  \code{direction} should be used with care (a warning is produced as well).
+  \code{direction} should be used with care (a warning is produced as
+  well).
+  Finally, only the bootstrap test is available for one ROC curve.
 
   If \code{alternative="two.sided"}, a two-sided test for difference in AUC is performed. If
   \code{alternative="less"}, the alternative is that the AUC of roc1 is
@@ -135,7 +139,8 @@ na.rm=TRUE, method=NULL, ...)
   this possibility cannot be excluded entierly. It would require equal sample sizes
   and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
-  useless as it will be tested anyway.
+  useless as it will be tested anyway. The \code{paired} argument is
+  ignored for one ROC curve tests.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -365,8 +370,11 @@ na.rm=TRUE, method=NULL, ...)
 \examples{
 data(aSAH)
 
-# Basic example with 2 roc objects
+# Basic example with 1 roc objects
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc.test(roc1)
+
+# Basic example with 2 roc objects
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
 roc.test(roc1, roc2)
 
