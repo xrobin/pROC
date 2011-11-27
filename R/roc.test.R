@@ -403,7 +403,7 @@ roc.test.roc <- function(roc1, roc2=0.5,
           htest$method <- "Bootstrap test for two ROC curves"
       }
       else {
-        stat <- one.roc.bootstrap(roc1, roc2, boot.n, boot.stratified, smoothing.args, progress)
+        stat <- bootstrap.one.roc(roc1, roc2, boot.n, boot.stratified, smoothing.args, progress)
         htest$method <- "Bootstrap test for one ROC curve"
       }
     }
@@ -433,9 +433,7 @@ roc.test.roc <- function(roc1, roc2=0.5,
   return(htest)
 }
 
-
-
-one.roc.bootstrap <- function(roc, roc2, boot.n, boot.stratified, smoothing.args, progress) {
+bootstrap.one.roc <- function(roc, roc2, boot.n, boot.stratified, smoothing.args, progress) {
   ## Smoothed ROC curve test
   if (class(roc) == "smooth.roc") {
     smoothing.args <- roc$smoothing.args
