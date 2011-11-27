@@ -35,8 +35,7 @@ na.rm=TRUE, method=NULL, ...)
 \arguments{
   \item{roc1, roc2}{the two ROC curves to compare. Either
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
-	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
-	the original ROC curve are paired).
+	\dQuote{\link{smooth.roc}} objects (types can be mixed).
   }
   \item{response}{a vector or factor, as for the \link{roc} function.}
   \item{predictor1}{a numeric or ordered vector as for the \link{roc} function, or
@@ -109,8 +108,7 @@ na.rm=TRUE, method=NULL, ...)
   Three methods are available: \dQuote{delong}, \dQuote{bootstrap} and \dQuote{venkatraman} (see
   \dQuote{Computational details} section below). \dQuote{delong} and
   \dQuote{bootstrap} are tests over the AUC whereas \dQuote{venkatraman}
-  compares the the ROC curves themselves. \dQuote{delong} and \dQuote{bootstrap} are available
-  as both paired and unpaired tests, whereas \dQuote{venkatraman} is only paired yet.
+  compares the the ROC curves themselves.
 
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
   curves and curves with different \code{direction}, where \code{bootstrap}
@@ -269,13 +267,6 @@ na.rm=TRUE, method=NULL, ...)
 }
 
 \section{Errors}{
-  Both Delong and Bootstrap tests work only on paired data. This
-  assumption is enforced by the verification that the \code{response}s
-  of \code{roc1} and \code{roc2} are \link{identical}. If they are found
-  different, and the difference cannot be explained by missing values,
-  the error \dQuote{The ROC test is defined only on paired ROC curves}
-  is produced.
-
   An error will also occur if you give a \code{predictor2} when
   \code{predictor1} is a \code{\link{matrix}} or a
   \code{\link{data.frame}}, if \code{predictor1} has more than two
