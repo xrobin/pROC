@@ -235,6 +235,19 @@ roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
 roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
          partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)
 }
+
+
+## Sample size ##
+
+# Two ROC curves
+power.roc.test(roc1, roc2, reuse.auc=FALSE)
+power.roc.test(roc1, roc2, power=0.9, reuse.auc=FALSE)
+
+# One ROC curve
+power.roc.test(auc=0.8, ncases=41, ncontrols=72)
+power.roc.test(auc=0.8, power=0.9)
+power.roc.test(auc=0.8, ncases=41, ncontrols=72, sig.level=0.01)
+power.roc.test(ncases=41, ncontrols=72, power=0.9)
 }
 
 
