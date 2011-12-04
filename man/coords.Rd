@@ -138,7 +138,7 @@ best.weights=c(1, 0.5), ...)
       \deqn{max(sensitivities + r * specificities)}{max(sensitivities + r \times specificities)}
     }
     \item{\dQuote{closest.topleft}}{
-      \deqn{min((1 - sensitivities)^2 + r * (1- specificities)^2)}{min((1 - sensitivities)^2 + \times (1- specificities)^2)}
+      \deqn{min((1 - sensitivities)^2 + r * (1- specificities)^2)}{min((1 - sensitivities)^2 + r \times (1- specificities)^2)}
     }
   }
 
