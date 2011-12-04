@@ -106,7 +106,7 @@ best.weights=c(1, 0.5), ...)
   optimal threshold is determined.
   \describe{
     \item{\dQuote{youden}}{
-      The Youden index is employed. The optimal cut-off is the threshold
+      Youden's J statistic (Youden, 1950) is employed. The optimal cut-off is the threshold
       that maximizes the distance to the identity (diagonal) line. Can
       be shortened to \dQuote{y}.
 
@@ -196,6 +196,10 @@ best.weights=c(1, 0.5), ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+
+  W. J. Youden (1950) ``Index for rating diagnostic tests''. \emph{Cancer}, 
+  \bold{3}, 32--35. DOI: 
+  \href{http://dx.doi.org/10.1002/1097-0142(1950)3:1<32::AID-CNCR2820030106>3.0.CO;2-3}{10.1002/1097-0142(1950)3:1<32::AID-CNCR2820030106>3.0.CO;2-3}.
 }
 
 \seealso{
