@@ -52,11 +52,11 @@ best.weights=c(1, 0.5), ...)
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
     as well.
-    Can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
+    Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
     \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
     \code{coords.smooth.roc}.
     In addition, \dQuote{npe} is replaced by \dQuote{1-npv} and \dQuote{ppe} by \dQuote{1-ppv}
-    (but these two cannot be shortened).
+    (but they cannot be shortened).
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
     (default), a named numeric vector is returned.}
