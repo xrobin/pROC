@@ -6,6 +6,7 @@
   * New 'axes' argument to turn off the plotting of the axis
   * New 'logcondens' and 'logcondens.smooth' (Univariate Log-Concave Density Estimation) smoothing methods
   * New function 'has.partial.auc' to determine if an AUC is full or partial
+  * New argument 'drop' for 'coords'
   * 'auc' and 'multiclass.auc' objects now also have secondary class 'numeric'
   * Updated load call
   * Delong's CI reversed in ROC curves with direction=">"
