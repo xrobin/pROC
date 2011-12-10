@@ -200,6 +200,10 @@ roc1 <- roc(aSAH$outcome,
 roc2 <- roc(aSAH$outcome, aSAH$wfns,
             plot=TRUE, add=TRUE, percent=roc1$percent)
 
+## Coordinates of the curve ##
+coords(roc1, "best", ret=c("threshold", "specificity", "1-npv"))
+coords(roc2, "local maximas", ret=c("threshold", "sens", "spec", "ppv", "npv"))
+
 ## Confidence intervals ##
 
 # CI of the AUC
