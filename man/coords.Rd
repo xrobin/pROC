@@ -46,11 +46,17 @@ best.weights=c(1, 0.5), ...)
 		\code{x} is a character.
   }
   \item{ret}{The coordinates to return. One or more of
-    \dQuote{threshold}, \dQuote{specificity} or
-    \dQuote{sensitivity}. Can be shortenend (for example to
-    \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
-    \dQuote{t}, \dQuote{se} and \dQuote{sp}). Note that
-		\dQuote{threshold} is not allowed in \code{coords.smooth.roc}.
+    \dQuote{threshold}, \dQuote{specificity}, \dQuote{sensitivity}, \dQuote{accuracy},
+    \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
+    \dQuote{fn} (false negativge count), \dQuote{fp} (false positive count), 
+    \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
+    \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
+    as well.
+    Can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
+    \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
+    \code{coords.smooth.roc}.
+    In addition, \dQuote{npe} is replaced by \dQuote{1-npv} and \dQuote{ppe} by \dQuote{1-ppv}
+    (but these two cannot be shortened).
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
     (default), a named numeric vector is returned.}
@@ -180,7 +186,7 @@ best.weights=c(1, 0.5), ...)
   numeric vector or a matrix (if \code{as.list=FALSE}) or either a list
   of numeric or a list of lists (if \code{as.list=TRUE}). Even
   \dQuote{best} may return more than one value (for example if the ROC
-  curve is below the identity line, both extreme points).
+  curve is below the identity line, both extreme points). 
 
   \code{coords} may also return \code{NULL} when there a partial area is
   defined but no point of the ROC curve falls within the region.
@@ -260,6 +266,16 @@ plot(rocobj, print.thres="best", print.thres.best.method="youden",
 plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft",
                                  print.thres.best.weights=c(5, 0.2)) 
 
+# Return more values:
+coords(rocobj, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
+                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
+                           "1-sensitivity", "1-npv", "1-ppv"))
+coords(smooth(rocobj), "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
+                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
+                           "1-sensitivity", "1-npv", "1-ppv"))
+coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "accuracy",
+                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
+                           "1-sensitivity", "1-npv", "1-ppv"))
 }
 
 \keyword{univar}
