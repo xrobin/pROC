@@ -51,7 +51,7 @@ best.weights=c(1, 0.5), ...)
     \dQuote{fn} (false negativge count), \dQuote{fp} (false positive count), 
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
-    as well.
+    as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
     Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
     \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
     \code{coords.smooth.roc}.
