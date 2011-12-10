@@ -182,9 +182,7 @@ best.weights=c(1, 0.5), ...)
 
   Note that if giving a character as \code{x} (\dQuote{all},
   \dQuote{local maximas} or \dQuote{best}), you cannot predict the
-  dimension of the return value, so be prepared to receive either a
-  numeric vector or a matrix (if \code{as.list=FALSE}) or either a list
-  of numeric or a list of lists (if \code{as.list=TRUE}). Even
+  dimension of the return value unless \code{drop=FALSE}. Even
   \dQuote{best} may return more than one value (for example if the ROC
   curve is below the identity line, both extreme points). 
 
