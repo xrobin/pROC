@@ -50,7 +50,7 @@ best.weights=c(1, 0.5), ...)
     \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
     \dQuote{fn} (false negativge count), \dQuote{fp} (false positive count), 
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
-    \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
+    \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
     as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
     Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
     \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
@@ -267,13 +267,13 @@ plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft",
 # Return more values:
 coords(rocobj, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 coords(smooth(rocobj), "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 }
 
 \keyword{univar}
