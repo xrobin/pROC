@@ -10,7 +10,7 @@
   characteristic (ROC curves). (Partial) area under the curve (AUC) can
   be compared with statistical tests based on U-statistics or
   bootstrap. Confidence intervals can be computed for (p)AUC or ROC
-  curves. Sample size / power computation for one or two ROC curves are available.
+  curves.
 
   In S+, the package comes with a  graphical user interface.
 }
@@ -31,8 +31,6 @@
   Two paired (that is \code{\link{roc}} objects with the same
   \code{response}) or unpaired (with different \code{response}) ROC
   curves can be compared with the \code{\link{roc.test}} function.
-  Sample size and power computations can be performed with the 
-  \code{\link{power.roc.test}} function.
 }
 
 \section{Citation}{
@@ -79,7 +77,6 @@
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
-    \code{\link{power.roc.test}} \tab Sample size and power computation \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
     \code{\link{roc.test}} \tab Compare the AUC of two ROC curves \cr
     \code{\link{smooth}} \tab Smooth a ROC curve \cr
@@ -239,19 +236,6 @@ roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
 roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
          partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)
 }
-
-
-## Sample size ##
-
-# Two ROC curves
-power.roc.test(roc1, roc2, reuse.auc=FALSE)
-power.roc.test(roc1, roc2, power=0.9, reuse.auc=FALSE)
-
-# One ROC curve
-power.roc.test(auc=0.8, ncases=41, ncontrols=72)
-power.roc.test(auc=0.8, power=0.9)
-power.roc.test(auc=0.8, ncases=41, ncontrols=72, sig.level=0.01)
-power.roc.test(ncases=41, ncontrols=72, power=0.9)
 }
 
 

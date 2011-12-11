@@ -33,7 +33,7 @@ var.smooth.roc <- function(smooth.roc, ...) {
 }
 
 var.roc <- function(roc,
-                    method=c("delong", "bootstrap", "obuchowski"),
+                    method=c("delong", "bootstrap"),
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc=TRUE,
@@ -81,17 +81,6 @@ var.roc <- function(roc,
         method <- "bootstrap"
       }
     }
-
-    else if (method == "obuchowski") {
-      if ("smooth.roc" %in% class(roc)) {
-        warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
-      }
-      if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
-      }
-    }
   }
   
   if (method == "delong") {
@@ -99,9 +88,6 @@ var.roc <- function(roc,
     m <- length(roc$cases)  
     V <- delong.placements(roc)
     var <- var(V$Y) / n + var(V$X) / m
-  }
-  else if (method == "obuchowski") {
-    var <- var.roc.obuchowski(roc) / length(roc$cases)
   }
   else {
     var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, ...)

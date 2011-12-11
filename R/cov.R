@@ -34,7 +34,7 @@ cov.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 cov.roc <- function(roc1, roc2,
-                         method=c("delong", "bootstrap", "obuchowski"),
+                         method=c("delong", "bootstrap"),
                          reuse.auc=TRUE,
                          boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
                          progress=getOption("pROCProgress")$name,
@@ -141,19 +141,6 @@ cov.roc <- function(roc1, roc2,
       if (roc1$direction != roc2$direction)
         warning("DeLong should not be applied to ROC curves with a different direction.")
     }
-    else if (method == "obuchowski") {
-      if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
-        warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
-      }
-      if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity")
-          || (has.partial.auc(roc2) && attr(roc2$auc, "partial.auc.focus") == "sensitivity")) {
-        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
-      }
-      if (roc1$direction != roc2$direction)
-        warning("Obuchowski should not be applied to ROC curves with a different direction.")
-    }
   }
   
   if (method == "delong") {
@@ -167,14 +154,6 @@ cov.roc <- function(roc1, roc2,
     var2 <- var(V2$Y) / n + var(V2$X) / m
 
     cov <- cov(V2$X, V1$X) / m + cov(V2$Y, V1$Y) / n
-
-    if (roc1$percent) {
-      cov <- cov * (100^2)
-    }
-  }
-  
-  else if (method == "obuchowski") {
-    cov <- cov.roc.obuchowski(roc1, roc2) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
