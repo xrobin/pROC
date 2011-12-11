@@ -292,9 +292,9 @@ cov.rocs <- cov(roc1, roc2, method="bootstrap", boot.return=TRUE)
 var(attr(cov.rocs, "resampled.values")[,1])
 # var(roc2):
 var(attr(cov.rocs, "resampled.values")[,2])
-#}
+}
 
-#\dontrun{
+\dontrun{
 # Covariance of partial AUC:
 roc3 <- roc(aSAH$outcome, aSAH$s100b, partial.auc=c(1, 0.8), partial.auc.focus="se")
 roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.8), partial.auc.focus="se")
@@ -307,7 +307,7 @@ cov(roc3, roc4, method="obuchowski")
 
 # Alternatively, we could re-use roc1 and roc2 to get the same result:
 cov(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.8), partial.auc.focus="se")
-#}
+}
 
 # Spurious use of DeLong's test with different direction:
 roc5 <- roc(aSAH$outcome, aSAH$s100b, direction="<")
@@ -323,10 +323,10 @@ roc8 <- roc(disease.present, field.strength.2)
 # Assess the covariance:
 cov(roc7, roc8)
 
-#\dontrun{
+\dontrun{
 # With bootstrap:
 cov(roc7, roc8, method="bootstrap")
-#}
+}
 
 }
 

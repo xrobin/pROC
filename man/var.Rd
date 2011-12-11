@@ -257,11 +257,11 @@ roc4 <- roc(disease.present, field.strength.2)
 var(roc3)
 var(roc4)
 
-#\dontrun{
+\dontrun{
 # With bootstrap:
 var(roc3, method="bootstrap")
 var(roc4, method="bootstrap")
-#}
+}
 
 }
 
