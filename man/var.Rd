@@ -192,18 +192,18 @@ var(roc2)
 # We could also write it in one line:
 var(roc(aSAH$outcome, aSAH$s100b))
 
-#\dontrun{
+\dontrun{
 # The latter used Delong. To use bootstrap:
 var(roc1, method="bootstrap")
 # Decrease boot.n for a faster execution
 var(roc1,method="bootstrap", boot.n=1000)
-#}
+}
 
-#\dontrun{
+\dontrun{
 # Variance of smoothed ROCs:
 # Smoothing is re-done at each iteration, and execution is slow
 var(smooth(roc1))
-#}
+}
 
 # or from an AUC (no smoothing)
 var(auc(roc1))
@@ -218,11 +218,11 @@ roc4 <- roc(disease.present, field.strength.2)
 var(roc3)
 var(roc4)
 
-#\dontrun{
+\dontrun{
 # With bootstrap:
 var(roc3, method="bootstrap")
 var(roc4, method="bootstrap")
-#}
+}
 
 }
 
