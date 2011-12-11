@@ -15,7 +15,7 @@
 var(...)
 \S3method{var}{default}(...)
 \S3method{var}{auc}(auc, ...)
-\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"), 
+\S3method{var}{roc}(roc, method=c("delong", "bootstrap"), 
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
 progress = getOption("pROCProgress")$name, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
@@ -27,8 +27,8 @@ progress = getOption("pROCProgress")$name, ...)
 	\code{\link{smooth.roc}} function or an \dQuote{auc} object from
 	the \code{\link{auc}} function.
   }
-  \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong} or
+    \dQuote{bootstrap}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -63,20 +63,15 @@ progress = getOption("pROCProgress")$name, ...)
 \details{
   The \code{var} function computes the variance of the AUC of a ROC
   curve. It is typically called with the \link{roc} object of
-  interest. Three methods are available: \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
+  interest. Two methods are available: \dQuote{delong} and
+  \dQuote{bootstrap} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except for with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported (a warning is produced and \dQuote{bootstrap} is employed
-  instead). \dQuote{obuchowski} can be used on partial AUCs only if they
-  are defined as a region of specificity (AUC generated with
-  \code{partial.auc.region="specificity"}). Requesting the variance to
-  be computed with \code{method="obuchowski"} on an AUC with
-  \code{partial.auc.region="specificity"} produces a warning and
-  \dQuote{bootstrap} is employed instead.
+  instead).
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -133,26 +128,6 @@ progress = getOption("pROCProgress")$name, ...)
 
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
-
-  With \code{method="obuchowski"}, the processing is done as described
-  in Obuchowski and McClish (1997), Table 1 and Equation 4, p. 1530--1531. The
-  computation of \eqn{g} for partial area under the ROC curve is
-  modified as: 
-
-  \deqn{expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3}.
-}
-
-\section{Binormality assumption}{
-  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
-  If the data shows a deviation from this assumption, it might help to
-  normalize the data first (that is, before calling \code{\link{roc}}),
-  for example with quantile normalization: 
-  \preformatted{
-    norm.x <- qnorm(rank(x)/(length(x)+1))
-    var(roc(response, norm.x, ...), ...)
-  }
-
-  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -165,16 +140,10 @@ progress = getOption("pROCProgress")$name, ...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} or \code{method="obuchowski"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for
+  If \code{method="delong"} and the ROC
+  curve is smoothed, the warning \dQuote{Using DeLong for
   smoothed ROCs is not supported. Using bootstrap test instead.} is
   issued. The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
-  When \code{method="obuchowski"} is requested on a partial AUC with
-  \code{method="obuchowski"} produces the warning \dQuote{Using
-  Obuchowski for smoothed ROCs is not supported. Using bootstrap
-  instead.} The \code{method} argument is ignored and \dQuote{bootstrap}
   is used instead.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
@@ -205,11 +174,6 @@ progress = getOption("pROCProgress")$name, ...)
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
   \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
-
-  Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
-  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
-  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 }
 
 \seealso{
@@ -234,9 +198,6 @@ var(roc1, method="bootstrap")
 # Decrease boot.n for a faster execution
 var(roc1,method="bootstrap", boot.n=1000)
 #}
-
-# To use obuchowski:
-var(roc1, method="obuchowski")
 
 #\dontrun{
 # Variance of smoothed ROCs:

@@ -18,7 +18,7 @@ cov(...)
 \S3method{cov}{default}(...)
 \S3method{cov}{auc}(roc1, roc2, ...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
-\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
+\S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
   progress=getOption("pROCProgress")$name, ...)
 }
@@ -29,8 +29,8 @@ cov(...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
   }
-  \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong} or
+    \dQuote{bootstrap}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -71,20 +71,15 @@ cov(...)
   This function computes the covariance between the AUC of two
   correlated (or paired, according to the detection of \code{\link{are.paired}}) ROC
   curves. It is typically called with the two \link{roc} objects of
-  interest. Three methods are available: \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
+  interest. Two methods are available: \dQuote{delong} and
+  \dQuote{bootstrap} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported (a warning is produced and \dQuote{bootstrap} is employed
-  instead). \dQuote{obuchowski} can be used on partial AUCs only if they
-  are defined as a region of specificity (AUC generated with
-  \code{partial.auc.region="specificity"}). Requesting the covvariance to
-  be computed with \code{method="obuchowski"} on an AUC with
-  \code{partial.auc.region="sensitivity"} produces a warning and
-  \dQuote{bootstrap} is employed instead.
+  instead).
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -143,26 +138,6 @@ cov(...)
 
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
-
-  With \code{method="obuchowski"}, the processing is done as described
-  in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
-  computation of \eqn{g} for partial area under the ROC curve is
-  modified as: 
-
-  \deqn{expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3}.
-}
-
-\section{Binormality assumption}{
-  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
-  If the data shows a deviation from this assumption, it might help to
-  normalize the data first (that is, before calling \code{\link{roc}}),
-  for example with quantile normalization: 
-  \preformatted{
-    norm.x <- qnorm(rank(x)/(length(x)+1))
-    cov(roc(response, norm.x, ...), ...)
-  }
-
-  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -201,21 +176,15 @@ cov(...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} or \code{method="obuchowski"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for
+  If \code{method="delong"} and the ROC
+  curve is smoothed, the warning \dQuote{Using DeLong for
   smoothed ROCs is not supported. Using bootstrap instead.} is
   issued. The \code{method} argument is ignored and \dQuote{bootstrap}
   is used instead.
 
-  When \code{method="obuchowski"} is requested on a partial AUC with
-  \code{method="obuchowski"} produces the warning \dQuote{Using
-  Obuchowski for smoothed ROCs is not supported. Using bootstrap
-  instead.} The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
-  DeLong and Obuchowski ignores the direction of the ROC curve so that if two
+  DeLong ignores the direction of the ROC curve so that if two
   ROC curves have a different \code{direction}, the warning
-  \dQuote{"DeLong/Obuchowski should not be applied to ROC curves with a different
+  \dQuote{"DeLong should not be applied to ROC curves with a different
   direction."} is printed. However, the spurious computation is enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
@@ -247,11 +216,6 @@ cov(...)
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
   \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
-
-  Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
-  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
-  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 }
 
 \seealso{
@@ -272,9 +236,6 @@ cov(roc1, roc2, method="bootstrap")
 # Decrease boot.n for a faster execution:
 cov(roc1, roc2, method="bootstrap", boot.n=1000)
 #}
-
-# To use Obuchowski:
-cov(roc1, roc2, method="obuchowski")
 
 #\dontrun{
 # Comparison can be done on smoothed ROCs
@@ -301,9 +262,6 @@ roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.8), partial.auc.focus="s
 cov(roc3, roc4)
 # This is strictly equivalent to:
 cov(roc3, roc4, method="bootstrap")
-
-# To use Obuchowski:
-cov(roc3, roc4, method="obuchowski")
 
 # Alternatively, we could re-use roc1 and roc2 to get the same result:
 cov(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.8), partial.auc.focus="se")
