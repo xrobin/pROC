@@ -108,7 +108,7 @@
 
 \section{Bootstrap}{
 
-  All the bootstrap operations for \link[=roc.test]{significance testing}  and \link[=ci]{confidence interval} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
+  All the bootstrap operations for \link[=roc.test]{significance testing} and \link[=ci]{confidence interval} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
 
   Stratification of bootstrap can be controlled
   with \code{boot.stratified}. In stratified bootstrap (the default), each replicate
@@ -117,11 +117,11 @@
   little observations, or if groups are not balanced.
 
   The number of bootstrap replicates is controlled by \code{boot.n}. Higher numbers will give a more precise estimate of the significance tests and confidence intervals
-  but take more time to compute. 2000 is recommanded by Carpenter and Bithell for confidence intervals. In our experience this is sufficient for a good estimation of the 
+  but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Progress bars}{
-	  A progressbar shows the progress of bootstrap operations. It is handled by the \pkg{plyr} package,
+	  A progressbar shows the progress of bootstrap operations. It is handled by the \pkg{plyr} package (Wickham, 2011),
 	  and is created by the \code{progress_*} family of functions.
 	  Sensible defaults are guessed during the package loading:
 	  \itemize{
@@ -166,6 +166,9 @@ Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  
+  Hadley Wickham (2011). ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
+  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{
