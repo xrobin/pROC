@@ -258,6 +258,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
 \seealso{
  \code{\link{roc}}
+ 
+CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this function.
 }
 
 \examples{

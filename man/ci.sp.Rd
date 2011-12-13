@@ -130,6 +130,9 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  
+  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
+  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{
@@ -137,6 +140,8 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
   \code{\link{ci}},
   \code{\link{ci.se}},
   \code{\link{plot.ci}}
+  
+  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{
