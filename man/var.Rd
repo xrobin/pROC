@@ -233,21 +233,21 @@ var(roc2)
 # We could also write it in one line:
 var(roc(aSAH$outcome, aSAH$s100b))
 
-#\dontrun{
+\dontrun{
 # The latter used Delong. To use bootstrap:
 var(roc1, method="bootstrap")
 # Decrease boot.n for a faster execution
 var(roc1,method="bootstrap", boot.n=1000)
-#}
+}
 
 # To use obuchowski:
 var(roc1, method="obuchowski")
 
-#\dontrun{
+\dontrun{
 # Variance of smoothed ROCs:
 # Smoothing is re-done at each iteration, and execution is slow
 var(smooth(roc1))
-#}
+}
 
 # or from an AUC (no smoothing)
 var(auc(roc1))

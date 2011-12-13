@@ -271,25 +271,25 @@ roc1 <- roc(aSAH$outcome, aSAH$s100b)
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
 cov(roc1, roc2)
 
-#\dontrun{
+\dontrun{
 # The latter used Delong. To use bootstrap:
 cov(roc1, roc2, method="bootstrap")
 # Decrease boot.n for a faster execution:
 cov(roc1, roc2, method="bootstrap", boot.n=1000)
-#}
+}
 
 # To use Obuchowski:
 cov(roc1, roc2, method="obuchowski")
 
-#\dontrun{
+\dontrun{
 # Comparison can be done on smoothed ROCs
 # Smoothing is re-done at each iteration, and execution is slow
 cov(smooth(roc1), smooth(roc2))
-#}
+}
 # or from an AUC (no smoothing)
 cov(auc(roc1), roc2)
 
-#\dontrun{
+\dontrun{
 # With bootstrap and return.values, one can compute the variances of the
 # ROC curves in one single bootstrap run:
 cov.rocs <- cov(roc1, roc2, method="bootstrap", boot.return=TRUE)
