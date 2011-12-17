@@ -39,6 +39,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
                    progress = getOption("pROCProgress")$name,
+                   parallel = FALSE,
                    ...
                    ) {
   if (conf.level > 1 | conf.level < 0)
@@ -77,10 +78,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    aucs <- unlist(rlply(boot.n, stratified.ci.smooth.auc(roc, smooth.roc.call, auc.call), .progress=progress))
+    aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
   }
   else {
-    aucs <- unlist(rlply(boot.n, nonstratified.ci.smooth.auc(roc, smooth.roc.call, auc.call), .progress=progress))
+    aucs <- unlist(llply(1:boot.n, nonstratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
   }
 
   if (sum(is.na(aucs)) > 0) {
@@ -110,6 +111,7 @@ ci.auc.roc <- function(roc,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
                    progress = getOption("pROCProgress")$name,
+                   parallel = FALSE,
                    ...
                    ) {
   if (conf.level > 1 | conf.level < 0)
@@ -160,7 +162,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong")
     ci <- ci.auc.delong(roc, conf.level)
   else
-    ci <- ci.auc.bootstrap(roc, conf.level, boot.n, boot.stratified, progress, ...)
+    ci <- ci.auc.bootstrap(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
 
   if (percent) {
     ci <- ci * 100

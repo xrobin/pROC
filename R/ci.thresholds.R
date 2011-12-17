@@ -38,6 +38,7 @@ ci.thresholds.roc <- function(roc,
                    boot.stratified = TRUE,
                    thresholds = "local maximas",
                    progress = getOption("pROCProgress")$name,
+                   parallel = FALSE,
                    ...
                    ) {
   if (conf.level > 1 | conf.level < 0)
@@ -66,10 +67,10 @@ ci.thresholds.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.thresholds(roc, thresholds.num), .progress=progress)
+    perfs <- laply(1:boot.n, stratified.ci.thresholds, roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.thresholds(roc, thresholds.num), .progress=progress)
+    perfs <- laply(1:boot.n, nonstratified.ci.thresholds, roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
   }
 
   if (length(thresholds.num) > 1) {
@@ -77,7 +78,7 @@ ci.thresholds.roc <- function(roc,
       warning("NA value(s) produced during bootstrap were ignored.")
       perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
     }
-    # raply returns a 3d matrix, with dim 1 = bootstrap replicates, dim 2 = SE/SP and dim 3 = thresholds
+    # laply returns a 3d matrix, with dim 1 = bootstrap replicates, dim 2 = SE/SP and dim 3 = thresholds
     # [,1,] = SP and [,2,] = SE
     sp <- t(apply(perfs[,1,], 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
     se <- t(apply(perfs[,2,], 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))

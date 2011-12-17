@@ -26,6 +26,7 @@ ci.multiclass.roc <- function(multiclass.roc,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
                    progress = getOption("pROCProgress")$name,
+                   parallel = FALSE,
                    ...
                    ) {
   if (conf.level > 1 | conf.level < 0)
@@ -45,7 +46,7 @@ ci.multiclass.roc <- function(multiclass.roc,
       attr(multiclass.roc$auc, "partial.auc") <- attr(multiclass.roc$auc, "partial.auc") / 100
   }
 
-  ci <- ci.multiclass.auc.bootstrap(multiclass.roc, conf.level, boot.n, boot.stratified, progress, ...)
+  ci <- ci.multiclass.auc.bootstrap(multiclass.roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
 
   if (percent) {
     ci <- ci * 100

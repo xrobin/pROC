@@ -35,6 +35,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress")$name,
+                      parallel = FALSE,
                       ...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -55,10 +56,10 @@ ci.sp.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="SP confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.smooth.sp(roc, sensitivities, smooth.roc.call), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, stratified.ci.smooth.sp, roc=roc, se=sensitivities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.smooth.sp(roc, sensitivities, smooth.roc.call), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, nonstratified.ci.smooth.sp, roc=roc, se=sensitivities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
   }
 
   if (any(is.na(perfs))) {
@@ -84,6 +85,7 @@ ci.sp.roc <- function(roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress")$name,
+                      parallel = FALSE,
                       ...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -93,10 +95,10 @@ ci.sp.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="SP confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.sp(roc, sensitivities), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, stratified.ci.sp, roc=roc, se=sensitivities, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.sp(roc, sensitivities), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, nonstratified.ci.sp, roc=roc, se=sensitivities, .progress=progress, .parallel=parallel)
   }
 
   if (any(is.na(perfs))) {

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first", progress) {
+venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first", progress, parallel) {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
@@ -25,11 +25,11 @@ venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first", pro
   D <- roc1$response # because roc1&roc2 are paired
 
   E <- venkatraman.paired.stat(R, S, D, roc1$levels)
-  EP <- raply(boot.n, venkatraman.paired.permutation(R, S, D, roc1$levels, ties.method), .progress=progress)
+  EP <- laply(1:boot.n, venkatraman.paired.permutation, R=R, S=S, D=D, levels=roc1$levels, ties.method=ties.method, .progress=progress, .parallel=parallel)
   return(list(E, EP))
 }
 
-venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first", progress) {
+venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first", progress, parallel) {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
@@ -39,7 +39,7 @@ venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first", p
   mp <- (sum(D1 == roc1$levels[2]) + sum(D2 == roc2$levels[2]))/(length(D1) + length(D1)) # mixing proportion, kappa
 
   E <- venkatraman.unpaired.stat(R, S, D1, D2, roc1$levels, roc2$levels, mp)
-  EP <- raply(boot.n, venkatraman.unpaired.permutation(R, S, D1, D2, roc1$levels, roc2$levels, mp, ties.method), .progress=progress)
+  EP <- laply(1:boot.n, venkatraman.unpaired.permutation, R=R, S=S, D1=D1, D2=D2, levels1=roc1$levels, levels2=roc2$levels, mp=mp, ties.method=ties.method, .progress=progress, .parallel=parallel)
   return(list(E, EP))
 }
 

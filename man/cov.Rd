@@ -20,7 +20,7 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress=getOption("pROCProgress")$name, ...)
+  progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 }
 
 \arguments{
@@ -57,6 +57,9 @@ cov(...)
     more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
+  }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},

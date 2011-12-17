@@ -38,6 +38,7 @@ var.roc <- function(roc,
                     boot.stratified = TRUE,
                     reuse.auc=TRUE,
                     progress = getOption("pROCProgress")$name,
+                    parallel = FALSE,
                     ...) {
   # We need an auc
   if (is.null(roc$auc) | !reuse.auc)
@@ -104,7 +105,7 @@ var.roc <- function(roc,
     var <- var.roc.obuchowski(roc) / length(roc$cases)
   }
   else {
-    var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, ...)
+    var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, parallel, ...)
   }
   
   if (percent) {
@@ -113,7 +114,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, ...) {
+var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, ...) {
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="AUC variance", label="Bootstrap in progress...", ...)
 
@@ -128,19 +129,19 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, ...) {
     auc.call <- as.call(c(match.fun("auc.smooth.roc"), auc.args))
 
     if (boot.stratified) {
-      aucs <- unlist(rlply(boot.n, stratified.ci.smooth.auc(non.smoothed.roc, smooth.roc.call, auc.call), .progress=progress))
+      aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
     }
     else {
-      aucs <- unlist(rlply(boot.n, nonstratified.ci.smooth.auc(non.smoothed.roc, smooth.roc.call, auc.call), .progress=progress))
+      aucs <- unlist(llply(1:boot.n, nonstratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
     }
   }
   ## Non smoothed ROC curves variance
   else {
     if (boot.stratified) {
-      aucs <- unlist(rlply(boot.n, stratified.ci.auc(roc), .progress=progress)) # ci.auc: returns aucs just as we need for var, so re-use it!
+      aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
     }
     else {
-      aucs <- unlist(rlply(boot.n, nonstratified.ci.auc(roc), .progress=progress))
+      aucs <- unlist(llply(1:boot.n, nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
     }
   }
 
