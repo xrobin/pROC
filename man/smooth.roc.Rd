@@ -232,7 +232,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   require additional packages. If not available, the following message 
   will be displayed with the required command to install the package:
   \dQuote{Package ? not available, required with method='?'.
-     Please install it with 'install.packages("?")'." 
+     Please install it with 'install.packages("?")'. 
   }
 }
 
