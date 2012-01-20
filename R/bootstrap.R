@@ -591,3 +591,34 @@ nonstratified.ci.thresholds <- function(roc, thresholds) {
 
   return(sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction))
 }
+
+
+##########  Coords of one ROC curves (ci.coords)  ##########
+stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+  controls <- sample(roc$controls, replace=TRUE)
+  cases <- sample(roc$cases, replace=TRUE)
+  thresholds <- roc.utils.thresholds(c(cases, controls))
+  
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+
+  as.numeric(coords.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+}
+
+nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  predictor <- roc$predictor[tmp.idx]
+  response <- roc$response[tmp.idx]
+  splitted <- split(predictor, response)
+  controls <- splitted[[as.character(roc$levels[1])]]
+  cases <- splitted[[as.character(roc$levels[2])]]
+  thresholds <- roc.utils.thresholds(c(controls, cases))
+
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+  
+  as.numeric(auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+}
+
