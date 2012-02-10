@@ -16,7 +16,8 @@ coords(...)
 \S3method{coords}{roc}(roc, x, input=c("threshold", "specificity",
 "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
-best.weights=c(1, 0.5), ...)
+best.weights=c(1, 0.5), interpolate=c("soft", "hard", "conservative",
+"lax", "two", "nearest"), ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
 "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE,
 drop=TRUE, best.method=c("youden", "closest.topleft"), 
@@ -69,6 +70,11 @@ best.weights=c(1, 0.5), ...)
   }
   \item{best.weights}{if \code{x="best"}, the weights to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
+  }
+  \item{interpolate}{if \code{input} is \sQuote{specificity} or \sQuote{sensitivity},
+    it does not necessarely correspond to a threshold. One of \sQuote{soft}, \sQuote{hard},
+   \sQuote{conservative}, \sQuote{lax}, \sQuote{two} and \sQuote{nearest}. Can be shortened
+   to the first letter only. See details in the \sQuote{Interpolation} section.
   }
   \item{\dots}{further arguments passed to or from other methods. Ignored.}
 }
@@ -156,6 +162,40 @@ best.weights=c(1, 0.5), ...)
   applied in effect.
 
   Note that several thresholds might be equally optimal.
+}
+
+\section{Interpolation}{
+  If \code{input} is \sQuote{specificity} or \sQuote{sensitivity},
+  it does not necessarely correspond to a threshold. In this case, 
+  several behaviours are available:
+  \describe{
+    \item{\dQuote{soft}}{
+      Never deduces a threshold. Uses the exact requested sensitivity or specificity and linearly interpolate specificity or sensitivity respectively.
+      Decimal tn, tp, fn and fp may be computed. The threshold returned will be \code{NA}.
+    }
+    \item{\dQuote{hard}}{
+      Uses the exact requested sensitivity or specificity and linearly interpolate specificity or sensitivity respectively.
+      Also linearly interpolates the threshold. Decimal tn, tp, fn and fp may be computed.
+
+      Warning: this interpolated threshold will not be real: if you later send it as an input to coords you will get different specificity and sensitivity.
+    }
+    \item{\dQuote{conservative}}{
+      Conservatively moves the sensitivity or specificity to that of the nearest threshold with higher sensitivity or specificity respectively.
+    }
+    \item{\dQuote{lax}}{
+      Liberally moves the sensitivity or specificity to that of the nearest threshold with lower sensitivity or specificity respectively.
+
+      Warning: the results will be overly optimistic.
+    }
+    \item{\dQuote{two}}{
+      Matches two thresholds, one above and one below the requested sensitivity or specificity.
+    }
+    \item{\dQuote{nearest}}{
+      Moves the sensitivity or specificity to that of the threshold which has the nearest (euclidean) distance to the requested sensitivity or specificity.
+    }
+  }
+
+  \dQuote{lax} and \dQuote{hard} values are provided for consistency purposes (with \dQuote{conservative} and \dQuote{soft}) and should be avoided when possible.
 }
 
 \value{

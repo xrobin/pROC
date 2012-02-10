@@ -20,12 +20,16 @@
 coords <- function(...)
   UseMethod("coords")
 
-coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
+coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), interpolate=c("soft", "hard", "conservative", "lax", "two", "nearest"), ...) {
   # make sure x was provided
   if (missing(x))
     stop("'x' must be a numeric or character vector.")
   # match input 
   input <- match.arg(input)
+  # match interpolate 
+  interpolate <- match.arg(interpolate)
+  if (interpolate != "soft")
+    stop("Only 'soft' interpolate is currently implemented.")
   # match return
   valid.ret.args <- c("specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
   ret <- replace(ret, ret=="npe", "1-npv")
