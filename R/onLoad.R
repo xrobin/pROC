@@ -25,7 +25,7 @@
         options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 1))
       else if (.Platform$OS.type == "windows")
         options("pROCProgress" = list(name = "win", width = 300))
-      else if ("tcltk" %in% installed.packages()[,1] && Sys.getenv("DISPLAY") != "")
+      else if (suppressPackageStartupMessages(suppressWarnings(require(tcltk))) && Sys.getenv("DISPLAY") != "")
         options("pROCProgress" = list(name = "tk", width = 300))
       else
         options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 3))
