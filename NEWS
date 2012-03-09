@@ -3,6 +3,9 @@
   * New 'cov' and 'var' functions supports new "obuchowski" method
   * 'coords' accepts new 'ret' value "1-accuracy"
 
+1.5.1 (2012-03-09)
+  * Faster loading of the package (thanks to Prof Brian Ripley and Glenn Lawyer for the report)
+
 1.5 (2011-12-11)
   * New 'cov' and 'var' functions
   * 'coords' accepts new 'ret' values: "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-npv", "1-ppv", "npe" and "ppe"
