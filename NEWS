@@ -1,3 +1,6 @@
+1.5.1 (2012-03-09)
+  * Faster loading of the package (thanks to Prof Brian Ripley and Glenn Lawyer for the report)
+
 1.5 (2011-12-11)
   * New 'cov' and 'var' functions
   * New 'coords' accepts new 'ret' values: "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-npv", "1-ppv", "npe" and "ppe"
@@ -13,7 +16,7 @@
   * Minor improvements in documentation
 
 1.4.4 (2011-08-09)
-  * Fixed alternative for one-tailed tests
+  * Fixed alternative for one-tailed tests (thanks to Lisa Koch for the report)
   * Removed COPYING file to fix a warning in r-devel.
 
 1.4.3 (2011-03-17)

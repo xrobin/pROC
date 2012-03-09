@@ -112,8 +112,14 @@ roc.utils.max.thresholds.idx <- function(thresholds, sp, se) {
 # Define which progress bar to use
 roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
   if (name == "tk") { # load tcltk if possible
-    if (!require(tcltk))
-      stop("Package tcltk not available, required with progress='tk'")
+    if (!require(tcltk)) {
+      # If tcltk cannot be loaded fall back to default text progress bar
+      name <- "text"
+      style <- 3
+      char <- "="
+      width <- NA
+      warning("Package tcltk required with progress='tk' but could not be loaded. Falling back to text progress bar.")
+    }
   }
   if (name == "none")
     progress_none()
