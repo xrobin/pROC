@@ -20,3 +20,5 @@ export(
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
        var, var.default, var.auc, var.smooth.roc, var.roc
        )
+
+import(methods, utils)
