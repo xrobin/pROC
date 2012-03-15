@@ -247,7 +247,7 @@ best.weights=c(1, 0.5), ...)
 }
 
 \seealso{
-\code{\link{roc}}
+\code{\link{roc}}, \code{\link{ci.coords}}
 }
 \examples{
 data(aSAH)

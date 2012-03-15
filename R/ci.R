@@ -29,7 +29,7 @@ ci.default <- function(response, predictor, ...) {
   ci.roc(roc.default(response, predictor, ...), ...)
 }
 
-ci.smooth.roc <- function(smooth.roc, of = c("auc", "sp", "se"), ...) {
+ci.smooth.roc <- function(smooth.roc, of = c("auc", "sp", "se", "coords"), ...) {
   of <- match.arg(of)
   
   if (of == "auc")
@@ -42,7 +42,7 @@ ci.smooth.roc <- function(smooth.roc, of = c("auc", "sp", "se"), ...) {
   return(ci)
 }
 
-ci.roc <- function(roc, of = c("auc", "thresholds", "sp", "se"), ...) {
+ci.roc <- function(roc, of = c("auc", "thresholds", "sp", "se", "coords"), ...) {
   of <- match.arg(of)
   
   if (of == "auc")
