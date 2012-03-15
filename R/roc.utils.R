@@ -150,3 +150,13 @@ sort.smooth.roc <- function(roc) {
   }
   return(roc)
 }
+
+# Arguments which can be returned by coords
+roc.utils.match.coords.ret.args <- function(x) {
+  valid.ret.args <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
+  x <- replace(x, x=="t", "threshold")
+  x <- replace(x, x=="npe", "1-npv")
+  x <- replace(x, x=="ppe", "1-ppv")
+  match.arg(x, valid.ret.args, several.ok=TRUE)
+}
+

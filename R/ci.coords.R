@@ -60,7 +60,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
     perfs <- rdply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call), .progress=progress)[-1]
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.smooth.se(roc, x, input, ret, best.method, best.weights,smooth.roc.call), .progress=progress)[-1]
+    perfs <- rdply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call), .progress=progress)[-1]
   }
 
   if (any(is.na(perfs))) {
@@ -69,7 +69,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   }
 
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
+  rownames(ci) <- ret
 
   class(ci) <- "ci.coords"
   attr(ci, "conf.level") <- conf.level
@@ -92,15 +92,23 @@ ci.coords.roc <- function(roc,
                       ) {
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
+  input <- match.arg(input)
+  ret <- roc.utils.match.coords.ret.args(ret)
+  if (is.character(x)) {
+    x <- match.arg(x, c("all", "local maximas", "best"))
+    if (x == "all" || x == "local maximas") {
+      stop("'all' and 'local maximas' are not available for confidence intervals.")
+    }
+  }
 
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress)[-1]
+    perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress, .drop=FALSE)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress)[-1]
+    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress, .drop=FALSE)
   }
 
   if (any(is.na(perfs))) {
@@ -108,10 +116,18 @@ ci.coords.roc <- function(roc,
     perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
   }
 
-  ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
+  if (length(x) > 1) {
+    inputs <- paste(input, x)
+    rownames.ret <- paste(rep(inputs, each=length(ret)), ret, sep=": ")
+  }
+  else {
+    rownames.ret <- ret
+  }
 
-  class(ci) <- "ci.coords"
+  ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
+  rownames(ci) <- rownames.ret
+
+  class(ci) <- c("ci.coords", "matrix")
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

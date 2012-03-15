@@ -600,10 +600,16 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) 
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
   perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  # update ROC
   roc$sensitivities <- perfs[2,]
   roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- c(controls, cases)
+  roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
+  roc$thresholds <- thresholds
 
-  as.numeric(coords.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
 }
 
 nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
@@ -616,9 +622,15 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   thresholds <- roc.utils.thresholds(c(controls, cases))
 
   perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  # update ROC
   roc$sensitivities <- perfs[2,]
   roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- c(controls, cases)
+  roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
+  roc$thresholds <- thresholds
   
-  as.numeric(auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
 }
 
