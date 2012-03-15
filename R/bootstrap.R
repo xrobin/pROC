@@ -591,3 +591,99 @@ nonstratified.ci.thresholds <- function(n, roc, thresholds) {
 
   return(sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction))
 }
+
+
+##########  Coords of one ROC curves (ci.coords)  ##########
+stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+  controls <- sample(roc$controls, replace=TRUE)
+  cases <- sample(roc$cases, replace=TRUE)
+  thresholds <- roc.utils.thresholds(c(cases, controls))
+  
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  # update ROC
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- c(controls, cases)
+  roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
+  roc$thresholds <- thresholds
+
+  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+}
+
+nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  predictor <- roc$predictor[tmp.idx]
+  response <- roc$response[tmp.idx]
+  splitted <- split(predictor, response)
+  controls <- splitted[[as.character(roc$levels[1])]]
+  cases <- splitted[[as.character(roc$levels[2])]]
+  thresholds <- roc.utils.thresholds(c(controls, cases))
+
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction)
+  # update ROC
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- c(controls, cases)
+  roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
+  roc$thresholds <- thresholds
+  
+  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+}
+
+##########  Coords of a smooth ROC curve (ci.coords)  ##########
+
+stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
+  controls <- sample(roc$controls, replace=TRUE)
+  cases <- sample(roc$cases, replace=TRUE)
+  thresholds <- roc.utils.thresholds(c(cases, controls))
+  
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction) * ifelse(roc$percent, 100, 1)
+
+  # update ROC
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- c(controls, cases)
+  roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
+  roc$thresholds <- thresholds
+
+  # call smooth.roc and auc.smooth.roc
+  smooth.roc.call$roc <- roc
+  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
+  if (is(smooth.roc, "try-error"))
+    return(NA)
+  as.numeric(coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+}
+
+nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
+  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  predictor <- roc$predictor[tmp.idx]
+  response <- roc$response[tmp.idx]
+  splitted <- split(predictor, response)
+  controls <- splitted[[as.character(roc$levels[1])]]
+  cases <- splitted[[as.character(roc$levels[2])]]
+  thresholds <- roc.utils.thresholds(c(cases, controls))
+  
+  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=roc$direction) * ifelse(roc$percent, 100, 1)
+
+  # update ROC
+  roc$sensitivities <- perfs[2,]
+  roc$specificities <- perfs[1,]
+  roc$cases <- cases
+  roc$controls <- controls
+  roc$predictor <- predictor
+  roc$response <- response
+  roc$thresholds <- thresholds
+
+  # call smooth.roc and auc.smooth.roc
+  smooth.roc.call$roc <- roc
+  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
+  if (is(smooth.roc, "try-error"))
+    return(NA)
+  as.numeric(coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+}

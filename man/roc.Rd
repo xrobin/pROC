@@ -65,9 +65,9 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     \dQuote{auto} (default): automatically define in which group the
     median is higher and take the direction accordingly.
     \dQuote{>}: if the predictor values for the control group are
-    higher than the values of the case group. \dQuote{<}: if the predictor
-    values for the control group are higher or equal than the values of
-    the case group.
+    higher than the values of the case group (controls > t >= cases).
+    \dQuote{<}: if the predictor values for the control group are higher
+    or equal than the values of the case group (controls < t <= cases).
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
@@ -230,16 +230,10 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
-
 }
 
 \seealso{
  \code{\link{auc}}, \code{\link{ci}}, \code{\link{plot.roc}}, \code{\link{print.roc}}, \code{\link{roc.test}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{

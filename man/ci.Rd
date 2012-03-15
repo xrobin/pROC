@@ -17,8 +17,8 @@
 }
 \usage{
 ci(...)
-\S3method{ci}{roc}(roc, of = c("auc", "thresholds", "sp", "se"), ...)
-\S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se"), ...)
+\S3method{ci}{roc}(roc, of = c("auc", "thresholds", "sp", "se", "coords"), ...)
+\S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
 \S3method{ci}{formula}(formula, data, ...)
 \S3method{ci}{default}(response, predictor, ...)
 }
@@ -33,7 +33,7 @@ ci(...)
 	response~predictor for the \code{\link{roc}} function.
   }
   \item{of}{The type of confidence interval. One of \dQuote{auc},
-	\dQuote{thresholds}, \dQuote{sp} or \dQuote{se}. Note that
+	\dQuote{thresholds}, \dQuote{sp}, \dQuote{se} or \dQuote{coords}. Note that
 	confidence interval on \dQuote{thresholds} are not available for
 	smoothed ROC curves.
   }
@@ -54,13 +54,12 @@ ci(...)
   This function is typically called from \code{\link{roc}} when \code{ci=TRUE} (not by
   default). Depending on the \code{of} argument, the specific
   \code{ci} functions \code{\link{ci.auc}}, \code{\link{ci.thresholds}},
-  \code{\link{ci.sp}} or \code{\link{ci.se}} are called.
+  \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}} are called.
 }
 
 \value{
 The return value of the specific \code{ci} functions
-\code{\link{ci.auc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}
-or \code{\link{ci.se}}, depending on the
+\code{\link{ci.auc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}}, depending on the
 \code{of} argument.
 }
 
@@ -73,7 +72,7 @@ or \code{\link{ci.se}}, depending on the
 
 \seealso{
   \code{\link{roc}}, \code{\link{auc}}, \code{\link{ci.auc}},
-  \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}}
+  \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}}, \code{\link{ci.coords}}
 }
 
 \examples{

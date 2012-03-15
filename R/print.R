@@ -168,6 +168,23 @@ print.ci.se <- function(x, digits=max(3, getOption("digits") - 3), ...) {
   invisible(x)
 }
 
+print.ci.coords <- function(x, digits=max(3, getOption("digits") - 3), ...) {
+  cat(attr(x, "conf.level")*100, "% CI", sep="")
+  cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep="")
+
+  # Back to the standard object we'll print
+  unattr.coords <- x
+  class(unattr.coords) <- "matrix"
+  attr(unattr.coords, "conf.level") <- NULL
+  attr(unattr.coords, "boot.n") <- NULL
+  attr(unattr.coords, "boot.stratified") <- NULL
+  attr(unattr.coords, "roc") <- NULL
+
+  class(unattr.coords) <- "matrix"
+  print(unattr.coords, digits=digits)
+  invisible(x)
+}
+
 print.dataline <- function(x) {
   # Case / Controls call
   if ("cases" %in%  names(x$call) && "controls" %in% names(x$call)) {

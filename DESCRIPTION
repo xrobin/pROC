@@ -4,7 +4,7 @@ Title: display and analyze ROC curves
 Version: 1.5.9
 Date: 2011-??-??
 Encoding: UTF-8
-Depends: plyr, R (>= 2.10), utils
+Depends: plyr, R (>= 2.10), utils, methods
 Suggests: tcltk, MASS, logcondens
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller
 Maintainer: Xavier Robin <Xavier.Robin@unige.ch>

@@ -112,8 +112,14 @@ roc.utils.max.thresholds.idx <- function(thresholds, sp, se) {
 # Define which progress bar to use
 roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
   if (name == "tk") { # load tcltk if possible
-    if (!require(tcltk))
-      stop("Package tcltk not available, required with progress='tk'")
+    if (!require(tcltk)) {
+      # If tcltk cannot be loaded fall back to default text progress bar
+      name <- "text"
+      style <- 3
+      char <- "="
+      width <- NA
+      warning("Package tcltk required with progress='tk' but could not be loaded. Falling back to text progress bar.")
+    }
   }
   if (name == "none")
     progress_none()
@@ -150,3 +156,13 @@ sort.smooth.roc <- function(roc) {
   }
   return(roc)
 }
+
+# Arguments which can be returned by coords
+roc.utils.match.coords.ret.args <- function(x) {
+  valid.ret.args <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
+  x <- replace(x, x=="t", "threshold")
+  x <- replace(x, x=="npe", "1-npv")
+  x <- replace(x, x=="ppe", "1-ppv")
+  match.arg(x, valid.ret.args, several.ok=TRUE)
+}
+
