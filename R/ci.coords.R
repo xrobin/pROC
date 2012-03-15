@@ -41,6 +41,14 @@ ci.coords.smooth.roc <- function(smooth.roc,
                       ) {
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
+  input <- match.arg(input)
+  ret <- roc.utils.match.coords.ret.args(ret)
+  if (is.character(x)) {
+    x <- match.arg(x, c("all", "local maximas", "best"))
+    if (x == "all" || x == "local maximas") {
+      stop("'all' and 'local maximas' are not available for confidence intervals.")
+    }
+  }
 
   # Check if called with density.cases or density.controls
   if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls))
@@ -57,10 +65,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call), .progress=progress)[-1]
+    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call), .progress=progress)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call), .progress=progress)[-1]
+    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call), .progress=progress)
   }
 
   if (any(is.na(perfs))) {
@@ -68,8 +76,16 @@ ci.coords.smooth.roc <- function(smooth.roc,
     perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
   }
 
+  if (length(x) > 1) {
+    inputs <- paste(input, x)
+    rownames.ret <- paste(rep(inputs, each=length(ret)), ret, sep=": ")
+  }
+  else {
+    rownames.ret <- ret
+  }
+
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  rownames(ci) <- ret
+  rownames(ci) <- rownames.ret
 
   class(ci) <- "ci.coords"
   attr(ci, "conf.level") <- conf.level
@@ -83,7 +99,6 @@ ci.coords.roc <- function(roc,
 								  x,
 								  input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
 								  best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
-								  specificities = seq(0, 1, .1) * ifelse(roc$percent, 100, 1),
 								  conf.level = 0.95,
 								  boot.n = 2000,
 								  boot.stratified = TRUE,
