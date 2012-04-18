@@ -175,7 +175,8 @@ smooth.roc.binormal <- function(roc, n) {
   sp <- predict(model, data.frame(se))
 
   return(list(sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),
-              specificities = pnorm(sp) * ifelse(roc$percent, 100, 1)))
+              specificities = pnorm(sp) * ifelse(roc$percent, 100, 1),
+              model = model))
 }
 
 smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
