@@ -74,7 +74,8 @@ roc.default <- function(response, predictor,
   direction <- match.arg(direction)
   # Response / Predictor
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
-    original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric)
+    original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
+    original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
     # ensure predictor is numeric
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
@@ -105,9 +106,11 @@ roc.default <- function(response, predictor,
       stop("No case observation.")
 
     # Remove patients not in levels
-    patients.in.levels <- response == levels[1] | response == levels[2]
-    response <- response[patients.in.levels]
-    predictor <- predictor[patients.in.levels]
+    patients.in.levels <- response %in% levels
+    if (!all(patients.in.levels)) {
+      response <- response[patients.in.levels]
+      predictor <- predictor[patients.in.levels]
+    }
   }
 
   # Cases / Controls
@@ -124,7 +127,8 @@ roc.default <- function(response, predictor,
     # build response/predictor
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
     predictor <- c(controls, cases)
-    original.predictor <- c(controls, cases)
+    original.predictor <- predictor
+    original.response <- response
     # remove nas
     if (na.rm) {
       if (any(is.na(controls)))
@@ -211,6 +215,7 @@ roc.default <- function(response, predictor,
   roc$cases <- cases
   roc$controls <- controls
   roc$original.predictor <- original.predictor
+  roc$original.response <- original.response
   roc$predictor <- predictor
   roc$response <- response
 
