@@ -3,6 +3,8 @@
   * New 'cov' and 'var' functions supports new "obuchowski" method
   * New 'ci.coords' function to compute CI of arbitrary coords
   * 'coords' accepts new 'ret' value "1-accuracy"
+  * Faster algorithm to compute sensitivities and specificites with more than 1000 samples. Slightly slower with smaller samples
+  * 'are.paired' now also checks for identical 'levels'
 
 1.5.1 (2012-03-09)
   * Faster loading of the package (thanks to Prof Brian Ripley and Glenn Lawyer for the report)
