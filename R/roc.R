@@ -187,7 +187,8 @@ roc.default <- function(response, predictor,
   thresholds <- roc.utils.thresholds(c(controls, cases))
   perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
   se <- perfs[2,]
-  sp <- perfs[1,]
+  sp <- perfs[1,]
+
   if (percent) {
     se <- se*100
     sp <- sp*100
