@@ -103,6 +103,11 @@ roc.default <- function(response, predictor,
     cases <- splitted[[as.character(levels[2])]]
     if (length(cases) == 0)
       stop("No case observation.")
+
+    # Remove patients not in levels
+    patients.in.levels <- response == levels[1] | response == levels[2]
+    response <- response[patients.in.levels]
+    predictor <- predictor[patients.in.levels]
   }
 
   # Cases / Controls
