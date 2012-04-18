@@ -66,6 +66,7 @@ ci.thresholds.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
+browser()
     perfs <- raply(boot.n, stratified.ci.thresholds(roc, thresholds.num), .progress=progress)
   }
   else {

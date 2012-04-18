@@ -185,9 +185,13 @@ roc.default <- function(response, predictor,
 
   # compute SE / SP
   thresholds <- roc.utils.thresholds(c(controls, cases))
-  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
-  se <- perfs[2,]
-  sp <- perfs[1,]
+  perfs <- roc.utils.perfs.all(thresholds=thresholds, predictor=predictor, response=response, ncontrols=length(controls), ncases=length(cases), direction=direction, levels=levels)
+  se <- perfs$se
+  sp <- perfs$sp
+
+  if (length(thresholds) != length(se)) {
+    stop("New SE/SP computation is wrong (inconsistent number of se/sp)")
+  }
 
   if (percent) {
     se <- se*100
