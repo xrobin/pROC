@@ -174,15 +174,17 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   \item{ci}{if called with \code{ci=TRUE}, a numeric of class \dQuote{ci} as
     defined in \code{\link{ci}}.
   }
-  \item{response}{the response vector as passed in argument. If
+  \item{response}{the response vector. Patients whose response is not
+    \code{\link{\%in\%}} \code{levels} are discarded. If \code{NA} values
+    were removed, a \code{na.action} attribute similar
+    to \code{\link{na.omit}} stores the row numbers. 
+  }
+  \item{predictor}{the predictor vector converted to numeric as used to build the ROC
+    curve. Patients whose response is not \code{\link{\%in\%}} \code{levels} are discarded. If
     \code{NA} values were removed, a \code{na.action} attribute similar
     to \code{\link{na.omit}} stores the row numbers.
   }
-  \item{predictor}{the predictor vector converted to numeric as used to build the ROC curve. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
-  }
-  \item{original.predictor}{the predictor vector as passed in argument.}
+  \item{original.predictor, original.response}{the response and predictor vectors as passed in argument.}
   \item{levels}{the levels of the response as defined in argument.}
   \item{controls}{the predictor values for the control observations.}
   \item{cases}{the predictor values for the cases.}

@@ -74,7 +74,8 @@ roc.default <- function(response, predictor,
   direction <- match.arg(direction)
   # Response / Predictor
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
-    original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric)
+    original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
+    original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
     # ensure predictor is numeric
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
@@ -103,6 +104,13 @@ roc.default <- function(response, predictor,
     cases <- splitted[[as.character(levels[2])]]
     if (length(cases) == 0)
       stop("No case observation.")
+
+    # Remove patients not in levels
+    patients.in.levels <- response %in% levels
+    if (!all(patients.in.levels)) {
+      response <- response[patients.in.levels]
+      predictor <- predictor[patients.in.levels]
+    }
   }
 
   # Cases / Controls
@@ -119,7 +127,8 @@ roc.default <- function(response, predictor,
     # build response/predictor
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
     predictor <- c(controls, cases)
-    original.predictor <- c(controls, cases)
+    original.predictor <- predictor
+    original.response <- response
     # remove nas
     if (na.rm) {
       if (any(is.na(controls)))
@@ -185,9 +194,14 @@ roc.default <- function(response, predictor,
 
   # compute SE / SP
   thresholds <- roc.utils.thresholds(c(controls, cases))
-  perfs <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
-  se <- perfs[2,]
-  sp <- perfs[1,]
+  perfs <- roc.utils.perfs.all(thresholds=thresholds, predictor=predictor, response=response, ncontrols=length(controls), ncases=length(cases), direction=direction, levels=levels)
+  se <- perfs$se
+  sp <- perfs$sp
+
+  if (length(thresholds) != length(se)) {
+    stop(sprintf("New SE/SP computation is wrong (inconsistent number of se/sp). Please report this bug to the maintainer (%s).", packageDescription("pROC")$Maintainer))
+  }
+
   if (percent) {
     se <- se*100
     sp <- sp*100
@@ -201,6 +215,7 @@ roc.default <- function(response, predictor,
   roc$cases <- cases
   roc$controls <- controls
   roc$original.predictor <- original.predictor
+  roc$original.response <- original.response
   roc$predictor <- predictor
   roc$response <- response
 
