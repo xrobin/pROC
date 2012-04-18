@@ -368,7 +368,6 @@ ci.multiclass.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified
 
 # Returns an auc in a stratified manner
 stratified.ci.multiclass.auc <- function(roc) {
-  browser()
   controls <- sample(roc$controls, replace=TRUE)
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
@@ -383,7 +382,6 @@ stratified.ci.multiclass.auc <- function(roc) {
 
 # Returns an auc in a non stratified manner
 nonstratified.ci.multiclass.auc <- function(roc) {
-  browser()
   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
