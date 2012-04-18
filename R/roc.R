@@ -199,7 +199,7 @@ roc.default <- function(response, predictor,
   sp <- perfs$sp
 
   if (length(thresholds) != length(se)) {
-    stop("New SE/SP computation is wrong (inconsistent number of se/sp)")
+    stop(sprintf("New SE/SP computation is wrong (inconsistent number of se/sp). Please report this bug to the maintainer (%s).", packageDescription("pROC")$Maintainer))
   }
 
   if (percent) {
