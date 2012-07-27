@@ -117,6 +117,7 @@ roc.test.roc <- function(roc1, roc2,
                          boot.n=2000, boot.stratified=TRUE,
                          ties.method="first",
                          progress=getOption("pROCProgress")$name,
+                         parallel=FALSE,
                          ...) {
   alternative <- match.arg(alternative)
   data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
@@ -338,11 +339,11 @@ roc.test.roc <- function(roc1, roc2,
     if(class(progress) != "list")
       progress <- roc.utils.get.progress.bar(progress, title="Venkatraman ROC test", label="Permutations in progress...", ...)
     if (paired) {
-      stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method, progress)
+      stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method, progress, parallel)
       htest$method <- "Venkatraman's test for two paired ROC curves"
     }
     else {
-      stats <- venkatraman.unpaired.test(roc1, roc2, boot.n, ties.method, progress)
+      stats <- venkatraman.unpaired.test(roc1, roc2, boot.n, ties.method, progress, parallel)
       htest$method <- "Venkatraman's test for two unpaired ROC curves"
     }
     stat <- stats[[1]]
@@ -368,7 +369,7 @@ roc.test.roc <- function(roc1, roc2,
       if (! is.numeric(specificity) || length(specificity) != 1) {
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args, progress)
+      stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args, progress, parallel)
       if (paired)
         htest$method <- "Specificity test for two correlated ROC curves"
       else
@@ -378,14 +379,14 @@ roc.test.roc <- function(roc1, roc2,
       if (! is.numeric(sensitivity) || length(sensitivity) != 1) {
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args, progress)
+      stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args, progress, parallel)
       if (paired)
         htest$method <- "Sensitivity test for two correlated ROC curves"
       else
         htest$method <- "Sensitivity test for two ROC curves"
     }
     else {
-      stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args, progress)
+      stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args, progress, parallel)
       if (paired)
         htest$method <- "Bootstrap test for two correlated ROC curves"
       else

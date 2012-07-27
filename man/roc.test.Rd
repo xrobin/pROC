@@ -24,7 +24,8 @@
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
-ties.method="first", progress=getOption("pROCProgress")$name, ...)
+ties.method="first", progress=getOption("pROCProgress")$name,
+parallel=FALSE, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ...)
@@ -89,6 +90,9 @@ na.rm=TRUE, method=NULL, ...)
     more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
+  }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}

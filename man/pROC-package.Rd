@@ -156,6 +156,24 @@
 	  
 	  \preformatted{options(pROCProgress = list(name = "none"))}
 	}
+
+	\subsection{Parallel processing}{
+		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
+
+		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG}, \pkg{doSMP} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
+
+		\preformatted{
+#ifdef windows
+		  library(doSMP)
+		  registerDoSMP(startWorkers(2))
+#endif
+#ifdef unix 
+		  library(doMC)
+		  registerDoMC(2)
+#endif
+		  ci(rocobj, method="bootstrap", parallel=TRUE)
+		}
+	}
 }
 
 \author{

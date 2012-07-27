@@ -44,6 +44,7 @@ cov.roc <- function(roc1, roc2,
                          reuse.auc=TRUE,
                          boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
                          progress=getOption("pROCProgress")$name,
+                         parallel = FALSE,
                          ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (is(roc2, "auc")) {
@@ -179,7 +180,7 @@ cov.roc <- function(roc1, roc2,
       progress <- roc.utils.get.progress.bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
 
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress)
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel)
   }
 
   return(cov)

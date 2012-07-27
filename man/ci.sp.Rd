@@ -20,10 +20,10 @@
 # ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress=getOption("pROCProgress")$name, ...) 
+progress=getOption("pROCProgress")$name, parallel=FALSE, ...) 
 \S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
-boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
+boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 \S3method{ci.sp}{formula}(formula, data, ...)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }
@@ -53,6 +53,9 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
     more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
+  }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.sp.roc}
