@@ -93,9 +93,16 @@ auc(...)
   in the region and max is the maximum possible AUC in the region. With this correction, the AUC
   will be 0.5 if non discriminant and 1.0 if maximal, whatever the region
   defined. This correction is fully compatible with \code{percent}.
-
+}
+\section{Smoothed ROC curves}{
   There is no difference in the computation of the area under a smoothed
-  ROC curve.
+  ROC curve, except for curves smoothed with \code{method="binomial"}. In this case
+  and only if a full AUC is requested, the classical binormal AUC formula is applied:
+
+  \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2).}
+
+  If the ROC curve is smoothed with any other \code{method} or if a partial AUC
+  is requested, the empirical AUC described in the previous section is applied.
 }
 \section{Multi-class AUCs}{
   With an object of class \dQuote{multiclass.roc}, a multi-class AUC is
