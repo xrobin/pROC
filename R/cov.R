@@ -26,7 +26,13 @@ cov.default <- function(...) {
 }
 
 cov.auc <- function(roc1, roc2, ...) {
-  return(cov.roc(attr(roc1, "roc"), roc2, ...))
+  # Change roc1 from an auc to a roc object but keep the auc specifications
+  auc1 <- roc1
+  attr(auc1, "roc") <- NULL
+  roc1 <- attr(roc1, "roc")
+  roc1$auc <- auc1
+  # Pass to cov.roc
+  return(cov.roc(roc1, roc2, ...))
 }
 
 cov.smooth.roc <- function(roc1, roc2, ...) {
@@ -39,8 +45,13 @@ cov.roc <- function(roc1, roc2,
                          boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
                          progress=getOption("pROCProgress")$name,
                          ...) {
-  if ("auc" %in% class(roc2))
+  # If roc2 is an auc, take the roc but keep the auc specifications
+  if (is(roc2, "auc")) {
+    auc2 <- roc2
+    attr(auc2, "roc") <- NULL
     roc2 <- attr(roc2, "roc")
+    roc2$auc <- auc2
+  }
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
