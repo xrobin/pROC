@@ -1,8 +1,8 @@
 Package: pROC
 Type: Package
 Title: display and analyze ROC curves
-Version: 1.5.1
-Date: 2012-03-09
+Version: 1.5.2
+Date: 2012-??-??
 Encoding: UTF-8
 Depends: plyr, R (>= 2.10), utils
 Suggests: tcltk, MASS, logcondens
