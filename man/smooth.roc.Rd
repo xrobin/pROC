@@ -232,7 +232,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   require additional packages. If not available, the following message 
   will be displayed with the required command to install the package:
   \dQuote{Package ? not available, required with method='?'.
-     Please install it with 'install.packages("?")'." 
+     Please install it with 'install.packages("?")'. 
   }
 }
 
@@ -248,6 +248,14 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+
+  Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
+  \emph{The International Journal of Biostatistics}, \bold{8}, accepted. DOI: 
+  \href{http://dx.doi.org/10.1515/1557-4679.1378}{10.1515/1557-4679.1378}. arXiv:
+  \href{http://arxiv.org/abs/1103.1787}{1103.1787}.
+
+  William N. Venables, Brian D. Ripley (2002). ``Modern Applied Statistics with S''. New York, Springer.
+  \href{http://books.google.ch/books?id=974c4vKurNkC}{Google books}.
   
   Kelly H. Zou, W. J. Hall and David E. Shapiro (1997) ``Smooth
   non-parametric receiver operating characteristic (ROC) curves for
@@ -258,6 +266,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
 \seealso{
  \code{\link{roc}}
+ 
+CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this function.
 }
 
 \examples{

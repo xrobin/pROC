@@ -89,7 +89,13 @@ roc.test.default <- function(response, predictor1, predictor2=NULL, na.rm=TRUE, 
 }
 
 roc.test.auc <- function(roc1, roc2, ...) {
-  testres <- roc.test.roc(attr(roc1, "roc"), roc2, ...)
+  # Change roc1 from an auc to a roc object but keep the auc specifications
+  auc1 <- roc1
+  attr(auc1, "roc") <- NULL
+  roc1 <- attr(roc1, "roc")
+  roc1$auc <- auc1
+  # Pass to roc.test.roc
+  testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
   testres$data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
   return(testres)
@@ -114,12 +120,17 @@ roc.test.roc <- function(roc1, roc2,
                          ...) {
   alternative <- match.arg(alternative)
   data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
-  if ("auc" %in% class(roc2))
+  # If roc2 is an auc, take the roc but keep the auc specifications
+  if (is(roc2, "auc")) {
+    auc2 <- roc2
+    attr(auc2, "roc") <- NULL
     roc2 <- attr(roc2, "roc")
+    roc2$auc <- auc2
+  }
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
-  if ("smooth.roc" %in% class(roc1)) {
+  if (is(roc1, "smooth.roc")) {
     smoothing.args$roc1 <- roc1$smoothing.args
     smoothing.args$roc1$smooth <- TRUE
     roc1 <- attr(roc1, "roc")
@@ -127,7 +138,7 @@ roc.test.roc <- function(roc1, roc2,
   else {
     smoothing.args$roc1 <- list(smooth=FALSE)
   }
-  if ("smooth.roc" %in% class(roc2)) {
+  if (is(roc2, "smooth.roc")) {
     smoothing.args$roc2 <- roc2$smoothing.args
     smoothing.args$roc2$smooth <- TRUE
     roc2 <- attr(roc2, "roc")

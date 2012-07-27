@@ -1,31 +1,38 @@
 \encoding{UTF-8}
-\name{ci.sp}
-\alias{ci.sp}
-\alias{ci.sp.default}
-\alias{ci.sp.formula}
-\alias{ci.sp.roc}
-\alias{ci.sp.smooth.roc}
+\name{ci.coords}
+\alias{ci.coords}
+\alias{ci.coords.default}
+\alias{ci.coords.formula}
+\alias{ci.coords.roc}
+\alias{ci.coords.smooth.roc}
 
 \title{
-  Compute the confidence interval of specificities at given sensitivities
+  Compute the confidence interval of arbitrary coordinates
 }
 
 \description{
-  This function computes the confidence interval (CI) of the specificity
-  at the given sensitivity points.
+  This function computes the confidence interval (CI) of the coordinates
+  of a ROC curves with the \code{\link{coords}} function.
   By default, the 95\% CI are computed with 2000 stratified bootstrap replicates.
 }
 
 \usage{
-# ci.sp(...)
-\S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
-100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
+# ci.thresholds(...)
+\S3method{ci.coords}{roc}(roc, x,
+input=c("threshold", "specificity", "sensitivity"),
+ret=c("threshold", "specificity", "sensitivity"),
+best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+conf.level=0.95, boot.n=2000,
+boot.stratified=TRUE,
 progress=getOption("pROCProgress")$name, ...) 
-\S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
-ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
-boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
-\S3method{ci.sp}{formula}(formula, data, ...)
-\S3method{ci.sp}{default}(response, predictor, ...)
+\S3method{ci.coords}{formula}(formula, data, ...)
+\S3method{ci.coords}{smooth.roc}(smooth.roc, x,
+input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
+best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+conf.level=0.95, boot.n=2000,
+boot.stratified=TRUE,
+progress=getOption("pROCProgress")$name, ...)
+\S3method{ci.coords}{default}(response, predictor, ...)
 }
 		   
 \arguments{
@@ -37,10 +44,12 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
   }
-  \item{sensitivities}{on which sensitivities to evaluate the CI.
+  \item{x, input, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
+    See there for more details. The only difference is on the \code{x} argument which cannot be
+    \dQuote{all} or \dQuote{local maximas}.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
-  in percent. Default: 0.95, resulting in a 95\% CI.
+    in percent. Default: 0.95, resulting in a 95\% CI.
   }
   \item{boot.n}{the number of bootstrap replicates. Default: 2000.}
   \item{boot.stratified}{should the bootstrap be stratified (default, same number
@@ -55,62 +64,48 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
     \link[=pROC-package]{this package's documentation}.
   }
   \item{\dots}{further arguments passed to or from other methods,
-    especially arguments for \code{\link{roc}} and \code{ci.sp.roc}
-    when calling \code{ci.sp.default} or \code{ci.sp.formula}.
+    especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
+    when calling \code{ci.coords.default} or \code{ci.coords.formula}.
     Arguments for \code{\link{txtProgressBar}} (only 
     \code{char} and \code{style}) if applicable.
   }
 }
 
 \details{
-  \code{ci.sp.formula} and \code{ci.sp.default} are convenience methods
+  \code{ci.coords.formula} and \code{ci.coords.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
-  calling \code{ci.sp.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{ci.sp.roc}. Simply use \code{ci.sp}
+  calling \code{ci.coords.roc}. You can pass them arguments for both
+  \code{\link{roc}} and \code{ci.coords.roc}. Simply use \code{ci.coords}
   that will dispatch to the correct method.
-  
-  The \code{ci.sp.roc} function creates \code{boot.n} bootstrap replicate of the ROC
-  curve, and evaluates the specificity at sensitivities
-  given by the \code{sensitivities} argument. Then it computes the
+
+  This function creates \code{boot.n} bootstrap replicate of the ROC
+  curve, and evaluates the coordinates specified by the \code{x}, \code{input},
+  \code{ret}, \code{best.method} and \code{best.weights} arguments. Then it computes the
   confidence interval as the percentiles given by \code{conf.level}.
 
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
-
-  For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
-  bootstrap replicate with the parameters originally provided.
-  If a density smoothing was performed with user-provided
-  \code{density.cases} or \code{density.controls} the bootstrap cannot
-  be performed and an error is issued.
 }
 
 \section{Warnings}{
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
-  contains no case or control observation, or that there are not enough
-  points for smoothing, producing a \code{NA} area.
+  contains no case or control observation, producing a \code{NA} area.
   The warning \dQuote{NA value(s) produced during bootstrap were ignored.}
   will be issued and the observation will be ignored. If you have a large
   imbalance in your sample, it could be safer to keep
   \code{boot.stratified=TRUE}.
 }
 
-\section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-  curves smoothed with density.controls and density.cases.} is issued.
-}
-
 \value{
-  A matrix of CI for the given specificities. Row (names) are the
-  sensitivities, the first column the lower bound, the 2nd column the
-  median and the 3rd column the upper bound.
-
+  A matrix of class \dQuote{ci.coords}, with the confidence
+  intervals of the CI. The matrix has 3 columns (lower bound, median and upper bound) and
+  as many rows as confidence intervals computed. If more than one element was provided in \code{x},
+  
   Additionally, the list has the following attributes: 
   \item{conf.level}{the width of the CI, in fraction.}
   \item{boot.n}{the number of bootstrap replicates.}
   \item{boot.stratified}{whether or not the bootstrapping was stratified.}
-  \item{sensitivities}{the sensitivities as given in argument.}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
@@ -126,20 +121,14 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, ...)
     Recognition Letters} \bold{27}, 861--874. DOI:
   \href{http://dx.doi.org/10.1016/j.patrec.2005.10.010}{10.1016/j.patrec.2005.10.010}.
   
-  Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
-  (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
-  
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{
   \code{\link{roc}},
-  \code{\link{ci}},
-  \code{\link{ci.se}},
-  \code{\link{plot.ci}}
+  \code{\link{coords}},
+  \code{\link{ci}}
   
   CRAN package \pkg{plyr}, employed in this function.
 }
@@ -149,31 +138,22 @@ data(aSAH)
 
 \dontrun{
 # Syntax (response, predictor):
-ci.sp(aSAH$outcome, aSAH$s100b)
+ci.coords(aSAH$outcome, aSAH$s100b, x="best")
 
 # With a roc object:
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.sp(rocobj)
+ci.thresholds(rocobj, x="best")
 
-# Customized bootstrap and specific specificities:
-ci.sp(rocobj, c(.95, .9, .85), boot.n=500, conf.level=0.9, stratified=FALSE)
+# Customized bootstrap and specific thresholds:
+ci.thresholds(aSAH$outcome, aSAH$s100b,
+              boot.n=500, conf.level=0.9, stratified=FALSE,
+              x=0.51)
 }
 
 # Alternatively, you can get the CI directly from roc():
 rocobj <- roc(aSAH$outcome,
-              aSAH$s100b, ci=TRUE, of="sp", boot.n=100)
+              aSAH$s100b, ci=TRUE, of="coords", x="best")
 rocobj$ci
-
-# Plotting the CI
-plot(rocobj)
-plot(rocobj$ci)
-
-\dontrun{
-# On a smoothed ROC, the CI is re-computed automatically
-smooth(rocobj)
-# Or you can compute a new one:
-ci.sp(smooth(rocobj, method="density", reuse.ci=FALSE), boot.n=100)
-}
 }
 
 \keyword{univar}

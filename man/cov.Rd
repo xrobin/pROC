@@ -216,10 +216,20 @@ cov(...)
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
   \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
+
+  Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
+  determination for diagnostic accurary studies involving binormal ROC
+  curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
+  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
+  
+  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
+  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{
   \code{\link{roc}}, \code{\link{var.roc}}
+  
+  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{
@@ -236,6 +246,12 @@ cov(roc1, roc2, method="bootstrap")
 # Decrease boot.n for a faster execution:
 cov(roc1, roc2, method="bootstrap", boot.n=1000)
 }
+<<<<<<< HEAD
+=======
+
+# To use Obuchowski:
+cov(roc1, roc2, method="obuchowski")
+>>>>>>> master
 
 \dontrun{
 # Comparison can be done on smoothed ROCs

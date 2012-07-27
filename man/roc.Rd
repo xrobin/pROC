@@ -65,9 +65,9 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     \dQuote{auto} (default): automatically define in which group the
     median is higher and take the direction accordingly.
     \dQuote{>}: if the predictor values for the control group are
-    higher than the values of the case group. \dQuote{<}: if the predictor
-    values for the control group are higher or equal than the values of
-    the case group.
+    higher than the values of the case group (controls > t >= cases).
+    \dQuote{<}: if the predictor values for the control group are higher
+    or equal than the values of the case group (controls < t <= cases).
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
@@ -174,15 +174,17 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   \item{ci}{if called with \code{ci=TRUE}, a numeric of class \dQuote{ci} as
     defined in \code{\link{ci}}.
   }
-  \item{response}{the response vector as passed in argument. If
+  \item{response}{the response vector. Patients whose response is not
+    \code{\link{\%in\%}} \code{levels} are discarded. If \code{NA} values
+    were removed, a \code{na.action} attribute similar
+    to \code{\link{na.omit}} stores the row numbers. 
+  }
+  \item{predictor}{the predictor vector converted to numeric as used to build the ROC
+    curve. Patients whose response is not \code{\link{\%in\%}} \code{levels} are discarded. If
     \code{NA} values were removed, a \code{na.action} attribute similar
     to \code{\link{na.omit}} stores the row numbers.
   }
-  \item{predictor}{the predictor vector converted to numeric as used to build the ROC curve. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
-  }
-  \item{original.predictor}{the predictor vector as passed in argument.}
+  \item{original.predictor, original.response}{the response and predictor vectors as passed in argument.}
   \item{levels}{the levels of the response as defined in argument.}
   \item{controls}{the predictor values for the control observations.}
   \item{cases}{the predictor values for the cases.}
@@ -230,7 +232,6 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
-
 }
 
 \seealso{

@@ -143,14 +143,14 @@ plot.roc.roc <- function(x,
     # As we had axes=FALSE we need to add them again unless axes=FALSE
     if (axes) {
       box()
-      axis(side=2, ...)
+      suppressWarnings(axis(side=2, ...))
       lab.at <- seq(1, 0, -.2)
       if (x$percent)
         lab.at <- lab.at * 100
       lab.labels <- lab.at
       if (legacy.axes)
         lab.labels <- rev(lab.labels)
-      axis(side=1, at=lab.at, labels=as.graphicsAnnot(sprintf(ifelse(x$percent, "%.0f", "%.1f"), lab.labels)), ...)
+      suppressWarnings(axis(side=1, at=lab.at, labels=as.graphicsAnnot(sprintf(ifelse(x$percent, "%.0f", "%.1f"), lab.labels)), ...))
     }
   }
 
