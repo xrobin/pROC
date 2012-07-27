@@ -89,6 +89,8 @@ roc.test.default <- function(response, predictor1, predictor2=NULL, na.rm=TRUE, 
 }
 
 roc.test.auc <- function(roc1, roc2, ...) {
+  # First save the names
+  data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
   # Change roc1 from an auc to a roc object but keep the auc specifications
   auc1 <- roc1
   attr(auc1, "roc") <- NULL
@@ -97,7 +99,7 @@ roc.test.auc <- function(roc1, roc2, ...) {
   # Pass to roc.test.roc
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
-  testres$data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  testres$data.names <- data.names
   return(testres)
 }
 
