@@ -107,6 +107,15 @@
   }
 }
 
+\section{Handling large datasets}{
+  Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations.
+
+  Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}}
+  functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create a matrix of size
+  \code{number of controls} x \code{number of cases}, which is memory-comsuming. If you plan to run one of these function on a ROC curve
+  with more than 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}.
+}
+
 \section{Bootstrap}{
 
   All the bootstrap operations for \link[=roc.test]{significance testing} and \link[=ci]{confidence interval} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.

@@ -25,7 +25,13 @@ var.default <- function(...) {
 }
 
 var.auc <- function(auc, ...) {
-  var.roc(attr(auc, "roc"), ...)
+  # Change roc from an auc to a roc object but keep the auc specifications
+  roc <- auc
+  attr(auc, "roc") <- NULL
+  roc <- attr(roc, "roc")
+  roc$auc <- auc
+  # Pass to var.roc
+  var.roc(roc, ...)
 }
 
 var.smooth.roc <- function(smooth.roc, ...) {

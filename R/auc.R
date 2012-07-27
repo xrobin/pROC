@@ -79,6 +79,10 @@ auc.roc <- function(roc,
 
   # Full area if partial.auc is FALSE
   if (identical(partial.auc, FALSE)) {
+    if (is(roc, "smooth.roc") && roc$smoothing.args$method == "binormal") {
+      coefs <- coefficients(roc$model)
+      auc <- pnorm(coefs[1] / sqrt(1+coefs[2]^2))
+    }
     diffs.x <- sp[-1] - sp[-length(sp)]
     means.vert <- (se[-1] + se[-length(se)])/2
     auc <- sum(means.vert * diffs.x)

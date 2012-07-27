@@ -19,8 +19,18 @@
 
 # Helper functions for the ROC curves. These functions should not be called directly as they peform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
-# returns a list of sensitivities (se) and specificities (sp) for the given data
-roc.utils.perfs.all <- function(thresholds, predictor, response, ncontrols, ncases, direction, levels) {
+# returns a list of sensitivities (se) and specificities (sp) for the given data. Robust algorithm
+roc.utils.perfs.all <- function(thresholds, controls, cases, direction, levels) {
+  perf.matrix <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
+  return(list(se=perf.matrix[2,], sp=perf.matrix[1,]))
+}
+
+# returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
+roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction, levels) {
+  ncontrols <- length(controls)
+  ncases <- length(cases)
+  predictor <- c(controls, cases)
+  response <- c(rep(0, length(controls)), rep(1, length(cases)))
   decr <- direction=="<"
   predictor.order <- order(predictor, decreasing=decr)
   predictor.sorted <- predictor[predictor.order]
