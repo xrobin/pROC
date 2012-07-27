@@ -7,6 +7,9 @@
   * 'are.paired' now also checks for identical 'levels'
   * Fixed a warning generated in the examples
 
+??1.5.2?? (2012-??-??)
+  * AUC specification was lost when roc.test, cov or var was passed an 'auc' object.
+
 1.5.1 (2012-03-09)
   * Faster loading of the package (thanks to Prof Brian Ripley and Glenn Lawyer for the report)
 
