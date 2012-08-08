@@ -34,7 +34,6 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
 
   if (is.character(x)) {
     x <- match.arg(x, c("best")) # no thresholds in smoothed roc: only best is possible
-    browser()
     partial.auc <- attr(smooth.roc$auc, "partial.auc")
     # What kind of "best" do we want?
     # Compute weights
@@ -59,13 +58,13 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
       sp <- smooth.roc$specificities[optim.crit==max(optim.crit)]
     }
     else {
-      if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-        optim.crit <- (optim.crit)[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]]
+      if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
+        optim.crit <- (optim.crit)[smooth.roc$se <= partial.auc[1] & smooth.roc$se >= partial.auc[2]]
         se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit==max(optim.crit)]
         sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
       }
       else {
-        optim.crit <- (optim.crit)[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]]
+        optim.crit <- (optim.crit)[smooth.roc$sp <= partial.auc[1] & smooth.roc$sp >= partial.auc[2]]
         se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit==max(optim.crit)]
         sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
       }
