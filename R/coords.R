@@ -34,6 +34,7 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
 
   if (is.character(x)) {
     x <- match.arg(x, c("best")) # no thresholds in smoothed roc: only best is possible
+    browser()
     partial.auc <- attr(smooth.roc$auc, "partial.auc")
     # What kind of "best" do we want?
     # Compute weights

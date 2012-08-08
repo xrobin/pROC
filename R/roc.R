@@ -163,7 +163,7 @@ roc.default <- function(response, predictor,
     smooth.roc$call <- match.call()
     if (auc) {
       smooth.roc$auc <- auc(smooth.roc, ...)
-      if (direction == "auto" && smooth.roc$auc < 0.5) {
+      if (direction == "auto" && smooth.roc$auc < roc.utils.min.partial.auc.auc(smooth.roc$auc)) {
         smooth.roc <- roc.default(density.controls=density.controls, density.cases=density.cases, levels=levels,
                                   percent=percent, direction=">", auc=auc, ci=ci, plot=plot, ...)
         smooth.roc$call <- match.call()

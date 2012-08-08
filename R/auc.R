@@ -65,6 +65,8 @@ auc.roc <- function(roc,
   if (!identical(partial.auc, FALSE)) {
     partial.auc.focus <- match.arg(partial.auc.focus)
   }
+
+  percent <- roc$percent
   
   # Validate partial.auc
   if (! identical(partial.auc, FALSE) & !(is.numeric(partial.auc) && length(partial.auc)==2))
@@ -148,17 +150,14 @@ auc.roc <- function(roc,
   }
 
   # In percent, we have 100*100 = 10,000 as maximum area, so we need to divide by a factor 100
-  if (roc$percent)
+  if (percent)
     auc <- auc/100
 
   # Correction according to McClish DC, 1989
   if (all(!identical(partial.auc, FALSE), partial.auc.correct)) { # only for pAUC
-    if (roc$percent)
-      min <- sum(ifelse(roc$percent, 100, 1)-partial.auc)*abs(diff(partial.auc))/2/ifelse(roc$percent, 100, 1)
-    else
-      min <- sum(1-partial.auc)*abs(diff(partial.auc))/2
-    max <- abs(diff(partial.auc))
-    if (roc$percent) {
+    min <- roc.utils.min.partial.auc(partial.auc, percent)
+    max <- roc.utils.max.partial.auc(partial.auc, percent)
+    if (percent) {
       auc <- (100+((auc-min)*100/(max-min)))/2 # McClish formula adapted for %
     }
     else {
@@ -168,7 +167,7 @@ auc.roc <- function(roc,
   # Prepare the AUC to return with attributes
   auc <- as.vector(auc) # remove potential pre-existing attributes
   attr(auc, "partial.auc") <- partial.auc
-  attr(auc, "percent") <- roc$percent
+  attr(auc, "percent") <- percent
   attr(auc, "roc") <- roc
   if (!identical(partial.auc, FALSE)) {
     attr(auc, "partial.auc.focus") <- partial.auc.focus
