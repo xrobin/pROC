@@ -79,7 +79,7 @@ auc.roc <- function(roc,
 
   # Full area if partial.auc is FALSE
   if (identical(partial.auc, FALSE)) {
-    if (is(roc, "smooth.roc") && roc$smoothing.args$method == "binormal") {
+    if (is(roc, "smooth.roc") && ! is.null(roc$smoothing.args) && roc$smoothing.args$method == "binormal") {
       coefs <- coefficients(roc$model)
       auc <- pnorm(coefs[1] / sqrt(1+coefs[2]^2))
     }
