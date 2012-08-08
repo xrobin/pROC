@@ -6,6 +6,7 @@
   * Faster algorithm to compute sensitivities and specificites with more than 1000 samples. Slightly slower with smaller samples
   * 'are.paired' now also checks for identical 'levels'
   * Fixed a warning generated in the examples
+  * Fixed several bugs related with 'smooth.roc' curves
 
 ??1.5.2?? (2012-??-??)
   * AUC specification was lost when roc.test, cov or var was passed an 'auc' object.
