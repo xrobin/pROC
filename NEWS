@@ -1,5 +1,6 @@
-1.5.2 (2012-??-??)
+1.5.2 (2012-08-31)
   * AUC specification was lost when roc.test, cov or var was passed an 'auc' object.
+  * Correct computation of "accuracy" in coords
 
 1.5.1 (2012-03-09)
   * Faster loading of the package (thanks to Prof Brian Ripley and Glenn Lawyer for the report)
