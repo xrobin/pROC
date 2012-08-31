@@ -307,7 +307,7 @@ smooth(rocobj, method="density")
 smooth(rocobj, method="logcondens")
 smooth(rocobj, method="logcondens.smooth")
 
-
+\dontrun{
 ## Smoothing artificial ROC curves
 
 rand.unif <- runif(1000, -1, 1)
@@ -355,6 +355,7 @@ legend("bottomright", legend=c("empirical", "binormal", "density",
                                "density ucv", "wrong fitdistr",
                                "logcondens", "logcondens.smooth"),
        col=c(par("fg"), "green", "red", "magenta", "blue", "brown", "orange"), lwd=c(2, 1, 1, 1, 1))
+}
 
 # 2 uniform distributions with a custom density function
 unif.density <- function(x, n, from, to, bw, kernel, ...) {
