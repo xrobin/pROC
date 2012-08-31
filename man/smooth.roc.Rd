@@ -303,10 +303,6 @@ smooth(rocobj, method="density", density.controls=density.controls$y,
 # which is roughly what is done by a simple:
 smooth(rocobj, method="density")
 
-# With logcondens:
-smooth(rocobj, method="logcondens")
-smooth(rocobj, method="logcondens.smooth")
-
 \dontrun{
 ## Smoothing artificial ROC curves
 
