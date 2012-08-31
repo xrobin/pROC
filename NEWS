@@ -8,6 +8,9 @@
   * Fixed a warning generated in the examples
   * Fixed several bugs related with 'smooth.roc' curves
 
+1.5.4 (2012-08-31)
+  * Running less smooth.roc examples with logcondens because they take too much time (requested by Uwe Ligges)
+
 1.5.3 (2012-08-31)
   * AUC specification was lost when roc.test, cov or var was passed an 'auc' object.
   * Correct computation of "accuracy" in 'coords' (thanks to Kosuke Yoshihara for the report)
