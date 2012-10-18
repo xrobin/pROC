@@ -7,6 +7,7 @@
   * 'are.paired' now also checks for identical 'levels'
   * Fixed a warning generated in the examples
   * Fixed several bugs related with 'smooth.roc' curves
+  * Additional input data sanity checks
 
 1.5.4 (2012-08-31)
   * Running less smooth.roc examples with logcondens because they take too much time (requested by Uwe Ligges)

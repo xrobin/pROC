@@ -83,6 +83,16 @@ roc.default <- function(response, predictor,
       else
         stop("Predictor must be numeric or ordered.")
     }
+    # also make sure response and predictor are vectors of the same length
+    if (! (is.vector(response) || is.factor(response))) {
+      stop("Response must  be a vector or factor.")
+    }
+    if (! is.vector(predictor)) {
+      stop("Predictor must  be a vector.")
+    }
+    if (length(predictor) != length(response)) {
+      stop("Response and predictor must  be vectors of the same length.")
+    }
     # remove NAs if requested
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor)
@@ -185,6 +195,7 @@ roc.default <- function(response, predictor,
   class(roc) <- "roc"
   roc$levels <- levels
   roc$percent <- percent
+
   roc$call <- match.call()
 
   if (direction == "auto" && median(controls) <= median(cases))
