@@ -249,12 +249,9 @@ cov(roc1, roc2, method="bootstrap")
 # Decrease boot.n for a faster execution:
 cov(roc1, roc2, method="bootstrap", boot.n=1000)
 }
-<<<<<<< HEAD
-=======
 
 # To use Obuchowski:
 cov(roc1, roc2, method="obuchowski")
->>>>>>> master
 
 \dontrun{
 # Comparison can be done on smoothed ROCs
