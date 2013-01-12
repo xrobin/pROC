@@ -23,7 +23,10 @@
     if (interactive()) {
       # Check the presence of tcltk
       tcltk.present <- length(find.package("tcltk", quiet=TRUE)) > 0
-      if (!is.null(getOption("STERM")) && getOption("STERM") == "iESS")
+      if (Sys.info()[['sysname']] == "Darwin") {
+        options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 3)) # Tcltk looks broken in some macs (just hangs forever)
+      }
+      else if (!is.null(getOption("STERM")) && getOption("STERM") == "iESS")
         options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 1))
       else if (.Platform$OS.type == "windows")
         options("pROCProgress" = list(name = "win", width = 300))
