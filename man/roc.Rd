@@ -27,13 +27,14 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
 
 \arguments{
   \item{response}{a factor, numeric or character vector of
-    responses, typically encoded with 0 (controls) and 1 (cases). The
-    object. Only two classes can be used in a ROC curve. If the vector
+    responses, typically encoded with 0 (controls) and 1 (cases).
+    Only two classes can be used in a ROC curve. If the vector
     contains more than two unique values, or if their order could be
     ambiguous, use \code{levels} to specify which values must be used as
     control and case value.
   }
-  \item{predictor}{a numeric vector, containing the value of each
+  \item{predictor}{a numeric vector of the same length than \code{response},
+    containing the predicted value of each
     observation. An ordered factor is coerced to a numeric.
   }
   \item{controls, cases}{instead of \code{response}, \code{predictor},
@@ -53,7 +54,7 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     It usually captures two-class factor data correctly, but will
     frequently fail for other data types (response factor with more than 2 levels,
     or for example if your response is coded \dQuote{controls} and \dQuote{cases},
-    the levels will be inverted) and must then be precised here.
+    the levels will be inverted) and must then be specified here.
     If your data is coded as \code{0} and \code{1} with \code{0}
     being the controls, you can safely omit this argument.
   }

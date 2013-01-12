@@ -201,10 +201,42 @@ sort.smooth.roc <- function(roc) {
 
 # Arguments which can be returned by coords
 roc.utils.match.coords.ret.args <- function(x) {
+
   valid.ret.args <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
   x <- replace(x, x=="t", "threshold")
   x <- replace(x, x=="npe", "1-npv")
   x <- replace(x, x=="ppe", "1-ppv")
   match.arg(x, valid.ret.args, several.ok=TRUE)
+}
+
+# Compute the min/max for partial AUC
+# ... with an auc
+roc.utils.min.partial.auc.auc <- function(auc) {
+  roc.utils.min.partial.auc(attr(auc, "partial.auc"), attr(auc, "percent"))
+}
+
+roc.utils.max.partial.auc.auc <- function(roc) {
+  roc.utils.max.partial.auc(attr(auc, "partial.auc"), attr(auc, "percent"))
+}
+
+# ... with partial.auc/percent
+roc.utils.min.partial.auc <- function(partial.auc, percent) {
+  if (!identical(partial.auc, FALSE)) {
+    min <- sum(ifelse(percent, 100, 1)-partial.auc)*abs(diff(partial.auc))/2/ifelse(percent, 100, 1)
+  }
+  else {
+    min <- 0.5 * ifelse(percent, 100, 1)
+  }
+  return(min)
+}
+
+roc.utils.max.partial.auc <- function(partial.auc, percent) {
+  if (!identical(partial.auc, FALSE)) {
+    max <- abs(diff(partial.auc))
+  }
+  else {
+    max <- 1 * ifelse(percent, 100, 1)
+  }
+  return(max)
 }
 
