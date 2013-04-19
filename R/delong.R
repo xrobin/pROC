@@ -1,8 +1,8 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2010, 2011 Xavier Robin, Alexandre Hainard, Natacha Turck,
-# Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
-# and Markus Müller
+# Copyright (C) 2013 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez,
+# Markus Müller and Kazuki Yoshida
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ delong.paired.test <- function(roc1, roc2) {
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
+  browser()
   VR <- delong.placements(roc1)
   VS <- delong.placements(roc2)
 
@@ -137,7 +138,14 @@ delong.placements <- function(roc) {
   X <- roc$cases
   n <- length(Y)
   m <- length(X)
-  MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
+  
+  # Original computation of MW matrix as given in DeLong et al paper
+  # MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
+  # Alternative version by Kazuki Yoshida
+  equal   <- outer(X, Y, "==") * 0.5
+  greater <- outer(X, Y, ">") * 1.0
+  MW <- equal + greater
+  
   V$theta <- sum(MW)/(m*n)
   # Delong-specific computations
   V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
