@@ -113,7 +113,7 @@ Development
 Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtool](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process:
 
 ```R
-install.packages("devtool")
-library("devtool")
+install.packages("devtools")
+library("devtools")
 install_github(repo = "pROC", username = "xrobin", ref = "master")
 ```
