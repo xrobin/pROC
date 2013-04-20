@@ -22,7 +22,6 @@ delong.paired.test <- function(roc1, roc2) {
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
-  browser()
   VR <- delong.placements(roc1)
   VS <- delong.placements(roc2)
 
@@ -87,19 +86,12 @@ ci.auc.delong <- function(roc, conf.level) {
   m <- length(XR)
   mn <- m*n
 
-  # Compute Mann-Whitney statistics and deduce thetaR and thetaS
-  MWR <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(XR[i], YR[j]), j=j))
+  V <- delong.placements(roc)
 
-  thetaR <- sum(MWR)/mn
-
-  # Delong-specific computations
-  VR10 <- sapply(1:m, function(i) {sum(MWR[i,])})/n
-  VR01 <- sapply(1:n, function(j) {sum(MWR[,j])})/m
-
-  S10 <- sum((VR10 - thetaR) * (VR10 - thetaR))/(m-1)
-  S01 <- sum((VR01 - thetaR) * (VR01 - thetaR))/(n-1)
-  S <- S10/m + S01/n
-  ci <- qnorm(c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), mean = thetaR, sd = sqrt(S))
+  SX <- sum((V$X - V$theta) * (V$X - V$theta))/(m-1)
+  SY <- sum((V$Y - V$theta) * (V$Y - V$theta))/(n-1)
+  S <- SX/m + SY/n
+  ci <- qnorm(c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), mean = V$theta, sd = sqrt(S))
   if (roc$direction == ">") {
     ci <- rev(1 - ci)
   }
@@ -117,15 +109,6 @@ ci.auc.delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
-}
-
-# Mann-Whitney Kernel used by delong.test and ci.auc.delong
-MW.kernel <- function(x, y) {
-  # x, y: numeric vectors of length 1
-  # returns: numeric vectors of length 1
-  if (y < x) return(1)
-  if (y == x) return(.5)
-  if (y > x) return(0)
 }
 
 delong.placements <- function(roc) {
