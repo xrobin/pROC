@@ -20,7 +20,7 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), smooth=FALSE, auc=TRUE, ci=FALSE,
+direction=c("auto", "<", ">"), algorithm = 1, smooth=FALSE, auc=TRUE, ci=FALSE,
 plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
 
 }
@@ -69,6 +69,20 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     higher than the values of the case group (controls > t >= cases).
     \dQuote{<}: if the predictor values for the control group are higher
     or equal than the values of the case group (controls < t <= cases).
+  }
+  \item{algorithm}{the method used to compute sensitivity and specificity, 
+    an integer of length 1 between \code{0} and \code{4}.
+    \code{1} (default): a safe, well-tested, pure-\R code that is efficient when the 
+    number of thresholds is low. It goes with O(T*N).
+    \code{2}: an alternative pure-\R algorithm that goes in
+    O(N). Typically faster than \code{1} when the number of thresholds of
+    the ROC curve is above 1000. Less tested than \code{1}.
+    \code{3}: a C++ 
+    implementation of \code{1}, about 3-5x faster. Typically the fastest with
+    ROC curves with less than 3000-5000 thresholds. 
+    \code{4} (debug only, slow):
+    runs all 3 algorithms and makes sure they return the same values.
+    \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
@@ -193,6 +207,8 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     reported in percent, as defined in argument.
   }
   \item{direction}{the direction of the comparison, as defined in argument.}
+  \item{fun.sesp}{the function used to compute sensitivities and specificities.
+    Will be re-used in bootstrap operations.}
   \item{sensitivities}{the sensitivities defining the ROC curve.}
   \item{specificities}{the specificities defining the ROC curve.}
   \item{thresholds}{the thresholds at which the sensitivities and
@@ -272,6 +288,14 @@ roc(aSAH$outcome, aSAH$s100b,
 
 # If we prefer counting in percent:
 roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
+
+# Test the different algorithms:
+roc(aSAH$outcome, aSAH$s100b, algorithm = 1)
+roc(aSAH$outcome, aSAH$s100b, algorithm = 2)
+roc(aSAH$outcome, aSAH$s100b, algorithm = 3)
+if (require(microbenchmark)) {
+  roc(aSAH$outcome, aSAH$s100b, algorithm = 0)
+}
 
 # Plot and CI (see plot.roc and ci for more options):
 roc(aSAH$outcome, aSAH$s100b,

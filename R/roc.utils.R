@@ -20,13 +20,14 @@
 # Helper functions for the ROC curves. These functions should not be called directly as they peform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Robust algorithm
-roc.utils.perfs.all <- function(thresholds, controls, cases, direction, levels) {
+roc.utils.perfs.all.safe <- function(thresholds, controls, cases, direction) {
   perf.matrix <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
+  #stopifnot(identical(roc.utils.perfs.all.fast(thresholds, controls, cases, direction), list(se=perf.matrix[2,], sp=perf.matrix[1,])))
   return(list(se=perf.matrix[2,], sp=perf.matrix[1,]))
 }
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
-roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction, levels) {
+roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
   ncontrols <- length(controls)
   ncases <- length(cases)
   predictor <- c(controls, cases)
@@ -36,14 +37,18 @@ roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction, lev
   predictor.sorted <- predictor[predictor.order]
   response.sorted <- response[predictor.order]
   
-  tp <- cumsum(response.sorted==levels[2])
-  fp <- cumsum(response.sorted==levels[1])
+  tp <- cumsum(response.sorted==1)
+  fp <- cumsum(response.sorted==0)
   se <- tp / ncases
   sp <- (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
   dups.pred <- rev(duplicated(rev(predictor.sorted)))
   dups.sesp <- duplicated(matrix(c(se, sp), ncol=2), MARGIN=1)
   dups <- dups.pred | dups.sesp
+  # Make sure we have the right length
+  if (sum(!dups) != length(thresholds) - 1) {
+    stop(sprintf("Bug in pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
+  }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
     sp <- rev(c(1, sp[!dups]))
@@ -56,10 +61,10 @@ roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction, lev
 }
 
 # As roc.utils.perfs.all but returns an "old-style" matrix (pre-fast-algo-compatible)
-roc.utils.perfs.all.matrix <- function(...) {
-  perfs <- roc.utils.perfs.all(...)
-  return(matrix(c(perfs$sp, perfs$se), nrow=2, byrow=TRUE))
-}
+#roc.utils.perfs.all.matrix <- function(...) {
+#  perfs <- roc.utils.perfs.all(...)
+#  return(matrix(c(perfs$sp, perfs$se), nrow=2, byrow=TRUE))
+#}
 
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
 # sp <- roc.utils.perfs(...)[1,]
