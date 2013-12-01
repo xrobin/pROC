@@ -4,8 +4,8 @@ Title: display and analyze ROC curves
 Version: 1.5.9
 Date: 2013-??-??
 Encoding: UTF-8
-Depends: R (>= 2.13), Rcpp
-Imports: plyr, utils, methods
+Depends: R (>= 2.13)
+Imports: plyr, utils, methods, Rcpp
 Suggests: microbenchmark, tcltk, MASS, logcondens
 LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller. Contributions by Kazuki Yoshida.
