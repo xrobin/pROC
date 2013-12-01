@@ -53,6 +53,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
+                        algorithm=1,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object
@@ -205,8 +206,53 @@ roc.default <- function(response, predictor,
 
   # compute SE / SP
   thresholds <- roc.utils.thresholds(c(controls, cases))
+  
+  if (identical(algorithm, 0)) {
+    if (!require(microbenchmark))
+      stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
+    cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
+    benchmark <- microbenchmark(
+      "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+      "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+      times = 10
+      )
+    print(summary(benchmark))
+    roc$fun.sesp <- if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
+      cat("Selecting algorithm 2.\n")
+      roc.utils.perfs.all.fast
+    }
+    else {
+      cat("Selecting algorithm 3.\n")
+      rocUtilsPerfsAllC
+    }
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 1)) {
+    roc$fun.sesp <- roc.utils.perfs.all.safe
+    perfs <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+    
+  }
+  else if (identical(algorithm, 2)) {
+    roc$fun.sesp <- roc.utils.perfs.all.fast
+    perfs <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 3)) {
+    roc$fun.sesp <- rocUtilsPerfsAllC
+    perfs <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 4)) {
+    perfs.safe <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+    perfs.fast <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+    perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+    if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
+      stop(sprintf("Bug in pROC: algorithms returned different values. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
+    }
+    perfs <- perfs.safe
+  }
+  else {
+    stop("Unknown algorithm (must be 1, 2, 3 or 4).")
+  }
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=direction, levels=levels)
   se <- perfs$se
   sp <- perfs$sp
 
