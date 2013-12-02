@@ -139,7 +139,7 @@ progress = getOption("pROCProgress")$name, ...)
   computation of \eqn{g} for partial area under the ROC curve is
   modified as: 
 
-  \deqn{expr1 * (2 * pi * expr2) ^ (-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ (-1/2) * expr3}.
+  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
 }
 
 \section{Binormality assumption}{
