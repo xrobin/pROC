@@ -11,7 +11,6 @@ LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller. Contributions by Kazuki Yoshida.
 Maintainer: Xavier Robin <xavier@cbs.dtu.dk>
 Description: Tools for visualizing, smoothing and comparing receiver operating characteristic (ROC curves). (Partial) area under the curve (AUC) can be compared with statistical tests based on U-statistics or bootstrap. Confidence intervals can be computed for (p)AUC or ROC curves.
-Acknowledgements: The authors would like to thank E. S. Venkatraman and Colin B. Begg for their support in the implementation of their test.
 License: GPL (>= 3)
 URL: http://expasy.org/tools/pROC/
 LazyLoad: yes
