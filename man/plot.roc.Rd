@@ -60,8 +60,15 @@ print.auc.col=col,
 print.auc.cex=par("cex"),
 # Grid
 grid=FALSE,
-grid.v={if(is.logical(grid) && grid[1]==TRUE){seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} else if(is.numeric(grid)) {seq(0, ifelse(x$percent, 100, 1), grid[1])} else {NULL}},
-grid.h={if (length(grid) == 1) {grid.v} else if (is.logical(grid) && grid[2]==TRUE){seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} else if(is.numeric(grid)) {seq(0, ifelse(x$percent, 100, 1), grid[2])} else {NULL}},
+grid.v={if(is.logical(grid) && grid[1]==TRUE)
+          {seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)}
+        else if(is.numeric(grid)) 
+          {seq(0, ifelse(x$percent, 100, 1), grid[1])} else {NULL}},
+grid.h={if (length(grid) == 1) {grid.v} 
+        else if (is.logical(grid) && grid[2]==TRUE)
+          {seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} 
+        else if(is.numeric(grid))
+          {seq(0, ifelse(x$percent, 100, 1), grid[2])} else {NULL}},
 grid.lty=3,
 grid.lwd=1,
 grid.col="#DDDDDD",
