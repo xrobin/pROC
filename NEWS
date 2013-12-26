@@ -1,4 +1,4 @@
-1.6 (201?-??-??)
+1.6 (2013-12-26)
   * New 'power.roc.test' function for sample size and power computations
   * New 'cov' and 'var' functions supports new "obuchowski" method
   * New 'ci.coords' function to compute CI of arbitrary coords
