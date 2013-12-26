@@ -26,6 +26,20 @@ roc.utils.perfs.all.safe <- function(thresholds, controls, cases, direction) {
   return(list(se=perf.matrix[2,], sp=perf.matrix[1,]))
 }
 
+
+roc.utils.perfs.all.test <- function(thresholds, controls, cases, direction) {
+	perfs.safe <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+	perfs.fast <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+	perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+	if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
+		pROCpackageDescription <- packageDescription("pROC")
+		save(thresholds, controls, cases, direction, pROCpackageDescription, file="pROC_bug.RData")
+		stop(sprintf("Bug in pROC: algorithms returned different values. Diagnostic data saved in pROC_bug.RData. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
+	}
+	return(perfs.safe)
+}
+
+
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
 roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
   ncontrols <- length(controls)

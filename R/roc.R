@@ -241,13 +241,8 @@ roc.default <- function(response, predictor,
     perfs <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
   }
   else if (identical(algorithm, 4)) {
-    perfs.safe <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-    perfs.fast <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-    perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-    if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
-      stop(sprintf("Bug in pROC: algorithms returned different values. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
-    }
-    perfs <- perfs.safe
+  	roc$fun.sesp <- roc.utils.perfs.all.test
+  	perfs <- roc.utils.perfs.all.test(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
   }
   else {
     stop("Unknown algorithm (must be 1, 2, 3 or 4).")
