@@ -1,9 +1,16 @@
-1.6 (201?-??-??)
+1.6.1 (*)
+  * Fixed documentation of 'ci.coords' with examples
+
+1.6.0.1 (2013-12-28)
+  * Removed erroneous error message displayed when predictors and responses were not vectors
+
+1.6 (2013-12-26)
   * New 'power.roc.test' function for sample size and power computations
   * New 'cov' and 'var' functions supports new "obuchowski" method
   * New 'ci.coords' function to compute CI of arbitrary coords
   * 'coords' accepts new 'ret' value "1-accuracy"
-  * Faster algorithm to compute sensitivities and specificites with more than 1000 samples. Slightly slower with smaller samples
+  * Introducing various algorithms to compute sensitivities and specificites, with a more vectorized code or Rcpp. See 'algorithm' in ?roc for more details on the trade-offs of the different methods.
+  * Faster algorithm for DeLong 'roc.test', 'ci', 'var' and 'cov' function (thanks Kazuki Yoshida).
   * 'are.paired' now also checks for identical 'levels'
   * Fixed a warning generated in the examples
   * Fixed several bugs related with 'smooth.roc' curves

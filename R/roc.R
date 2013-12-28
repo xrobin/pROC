@@ -53,6 +53,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
+                        algorithm=1,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object
@@ -76,7 +77,7 @@ roc.default <- function(response, predictor,
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
-    # ensure predictor is numeric
+    # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
         predictor <- as.numeric(predictor)
@@ -84,14 +85,8 @@ roc.default <- function(response, predictor,
         stop("Predictor must be numeric or ordered.")
     }
     # also make sure response and predictor are vectors of the same length
-    if (! (is.vector(response) || is.factor(response))) {
-      stop("Response must  be a vector or factor.")
-    }
-    if (! is.vector(predictor)) {
-      stop("Predictor must  be a vector.")
-    }
     if (length(predictor) != length(response)) {
-      stop("Response and predictor must  be vectors of the same length.")
+      stop("Response and predictor must be vectors of the same length.")
     }
     # remove NAs if requested
     if (na.rm) {
@@ -205,8 +200,48 @@ roc.default <- function(response, predictor,
 
   # compute SE / SP
   thresholds <- roc.utils.thresholds(c(controls, cases))
+  
+  if (identical(algorithm, 0)) {
+    if (!require(microbenchmark))
+      stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
+    cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
+    benchmark <- microbenchmark(
+      "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+      "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+      times = 10
+      )
+    print(summary(benchmark))
+    roc$fun.sesp <- if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
+      cat("Selecting algorithm 2.\n")
+      roc.utils.perfs.all.fast
+    }
+    else {
+      cat("Selecting algorithm 3.\n")
+      rocUtilsPerfsAllC
+    }
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 1)) {
+    roc$fun.sesp <- roc.utils.perfs.all.safe
+    perfs <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+    
+  }
+  else if (identical(algorithm, 2)) {
+    roc$fun.sesp <- roc.utils.perfs.all.fast
+    perfs <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 3)) {
+    roc$fun.sesp <- rocUtilsPerfsAllC
+    perfs <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else if (identical(algorithm, 4)) {
+  	roc$fun.sesp <- roc.utils.perfs.all.test
+  	perfs <- roc.utils.perfs.all.test(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  }
+  else {
+    stop("Unknown algorithm (must be 1, 2, 3 or 4).")
+  }
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=direction, levels=levels)
   se <- perfs$se
   sp <- perfs$sp
 

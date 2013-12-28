@@ -243,21 +243,27 @@ roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.9))
 
 ## Sample size
 # With bootstrap variance (default)
+\dontrun{
 power.roc.test(roc3, roc4, power=0.9)
+}
 # With Obuchowski variance
 power.roc.test(roc3, roc4, power=0.9, method="obuchowski")
 
 ## Power test
 # With bootstrap variance (default)
+\dontrun{
 power.roc.test(roc3, roc4)
 # This is exactly equivalent:
 power.roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9))
+}
 # With Obuchowski variance
 power.roc.test(roc3, roc4, method="obuchowski")
 
 ## Significance level
 # With bootstrap variance (default)
+\dontrun{
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
+}
 # With Obuchowski variance
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
 
