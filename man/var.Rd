@@ -131,6 +131,26 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
 
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
+
+  With \code{method="obuchowski"}, the processing is done as described
+  in Obuchowski and McClish (1997), Table 1 and Equation 4, p. 1530--1531. The
+  computation of \eqn{g} for partial area under the ROC curve is
+  modified as: 
+
+  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
+}
+
+\section{Binormality assumption}{
+  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
+  If the data shows a deviation from this assumption, it might help to
+  normalize the data first (that is, before calling \code{\link{roc}}),
+  for example with quantile normalization: 
+  \preformatted{
+    norm.x <- qnorm(rank(x)/(length(x)+1))
+    var(roc(response, norm.x, ...), ...)
+  }
+
+  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -211,12 +231,9 @@ var(roc1, method="bootstrap")
 # Decrease boot.n for a faster execution
 var(roc1,method="bootstrap", boot.n=1000)
 }
-<<<<<<< HEAD
-=======
 
 # To use obuchowski:
 var(roc1, method="obuchowski")
->>>>>>> master
 
 \dontrun{
 # Variance of smoothed ROCs:
@@ -228,7 +245,8 @@ var(smooth(roc1))
 var(auc(roc1))
 
 ## Test data from Hanley and Hajian-Tilaki, 1997
-disease.present <- c("Yes", "No", "Yes", "No", "No", "Yes", "Yes", "No", "No", "Yes", "No", "No", "Yes", "No", "No")
+disease.present <- c("Yes", "No", "Yes", "No", "No", "Yes", "Yes", "No",
+                     "No", "Yes", "No", "No", "Yes", "No", "No")
 field.strength.1 <- c(1, 2, 5, 1, 1, 1, 2, 1, 2, 2, 1, 1, 5, 1, 1)
 field.strength.2 <- c(1, 1, 5, 1, 1, 1, 4, 1, 2, 2, 1, 1, 5, 1, 1)
 roc3 <- roc(disease.present, field.strength.1)

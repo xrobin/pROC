@@ -17,7 +17,7 @@
 }
 
 \usage{
-# ci.thresholds(...)
+# ci.coords(...)
 \S3method{ci.coords}{roc}(roc, x,
 input=c("threshold", "specificity", "sensitivity"),
 ret=c("threshold", "specificity", "sensitivity"),
@@ -138,22 +138,21 @@ data(aSAH)
 
 \dontrun{
 # Syntax (response, predictor):
-ci.coords(aSAH$outcome, aSAH$s100b, x="best")
+ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold", ret=c("specificity", "ppv", "tp"))
 
 # With a roc object:
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.thresholds(rocobj, x="best")
+ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
 
-# Customized bootstrap and specific thresholds:
-ci.thresholds(aSAH$outcome, aSAH$s100b,
-              boot.n=500, conf.level=0.9, stratified=FALSE,
-              x=0.51)
-}
+# With a smoothed roc:
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
 
-# Alternatively, you can get the CI directly from roc():
-rocobj <- roc(aSAH$outcome,
-              aSAH$s100b, ci=TRUE, of="coords", x="best")
-rocobj$ci
+# Return everything we can:
+rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
+          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
+ci.coords(rocobj, x="best", input = "threshold", ret=rets)
+
 }
 
 \keyword{univar}

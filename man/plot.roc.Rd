@@ -24,7 +24,8 @@ axes=TRUE, legacy.axes=FALSE,
 # Generic arguments for par:
 xlim=if(x$percent){c(100, 0)} else{c(1, 0)},
 ylim=if(x$percent){c(0, 100)} else{c(0, 1)},
-xlab=ifelse(x$percent, ifelse(legacy.axes, "100 - Specificity (\%)", "Specificity (\%)"), ifelse(legacy.axes, "1 - Specificity", "Specificity")),
+xlab=ifelse(x$percent, ifelse(legacy.axes, "100 - Specificity (\%)", "Specificity (\%)"),
+            ifelse(legacy.axes, "1 - Specificity", "Specificity")),
 ylab=ifelse(x$percent, "Sensitivity (\%)", "Sensitivity"),
 asp=1,
 mar=c(4, 4, 2, 2)+.1,
@@ -59,8 +60,15 @@ print.auc.col=col,
 print.auc.cex=par("cex"),
 # Grid
 grid=FALSE,
-grid.v={if(is.logical(grid) && grid[1]==TRUE){seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} else if(is.numeric(grid)) {seq(0, ifelse(x$percent, 100, 1), grid[1])} else {NULL}},
-grid.h={if (length(grid) == 1) {grid.v} else if (is.logical(grid) && grid[2]==TRUE){seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} else if(is.numeric(grid)) {seq(0, ifelse(x$percent, 100, 1), grid[2])} else {NULL}},
+grid.v={if(is.logical(grid) && grid[1]==TRUE)
+          {seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)}
+        else if(is.numeric(grid)) 
+          {seq(0, ifelse(x$percent, 100, 1), grid[1])} else {NULL}},
+grid.h={if (length(grid) == 1) {grid.v} 
+        else if (is.logical(grid) && grid[2]==TRUE)
+          {seq(0, 1, 0.1) * ifelse(x$percent, 100, 1)} 
+        else if(is.numeric(grid))
+          {seq(0, ifelse(x$percent, 100, 1), grid[2])} else {NULL}},
 grid.lty=3,
 grid.lwd=1,
 grid.col="#DDDDDD",

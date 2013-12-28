@@ -261,7 +261,7 @@ stratified.ci.auc <- function(n, roc) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
 
@@ -277,7 +277,7 @@ nonstratified.ci.auc <- function(n, roc) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(controls, cases))
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
   
@@ -293,7 +293,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   # need to rebuild a ROC and smooth it
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -323,7 +323,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(controls, cases))
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -373,7 +373,7 @@ stratified.ci.multiclass.auc <- function(n, roc) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
 
@@ -392,7 +392,7 @@ nonstratified.ci.multiclass.auc <- function(n, roc) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(controls, cases))
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
   
@@ -406,7 +406,7 @@ stratified.ci.se <- function(n, roc, sp) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -423,7 +423,7 @@ nonstratified.ci.se <- function(n, roc, sp) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -438,7 +438,7 @@ stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-    perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -466,7 +466,7 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-    perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -492,7 +492,7 @@ stratified.ci.sp <- function(n, roc, se) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -509,7 +509,7 @@ nonstratified.ci.sp <- function(n, roc, se) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -524,7 +524,7 @@ stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-    perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -552,7 +552,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-    perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+    perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -599,7 +599,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) 
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -623,7 +623,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   thresholds <- roc.utils.thresholds(c(controls, cases))
 
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -645,7 +645,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
 
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -673,7 +673,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc.utils.thresholds(c(cases, controls))
   
-  perfs <- roc.utils.perfs.all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction, levels=c(0, 1))
+  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export(
        are.paired, are.paired.auc, are.paired.roc, are.paired.smooth.roc,
        auc, auc.formula, auc.roc, auc.smooth.roc, auc.default, auc.multiclass.roc,
@@ -22,3 +23,31 @@ export(
        )
 
 import(methods, utils)
+=======
+export(
+       are.paired, are.paired.auc, are.paired.roc, are.paired.smooth.roc,
+       auc, auc.formula, auc.roc, auc.smooth.roc, auc.default, auc.multiclass.roc,
+       ci, ci.formula, ci.default, ci.roc, ci.smooth.roc,
+       ci.coords, ci.coords.formula, ci.coords.default, ci.coords.roc, ci.coords.smooth.roc,
+       ci.thresholds, ci.thresholds.formula, ci.thresholds.default, ci.thresholds.roc, ci.thresholds.smooth.roc,
+       ci.sp, ci.sp.formula, ci.sp.default, ci.sp.roc, ci.sp.smooth.roc,
+       ci.se, ci.se.formula, ci.se.default, ci.se.roc, ci.se.smooth.roc,
+       ci.auc, ci.auc.formula, ci.auc.default, ci.auc.roc, ci.auc.smooth.roc, ci.auc.auc,
+       coords, coords.roc, coords.smooth.roc,
+       cov, cov.default, cov.auc, cov.smooth.roc, cov.roc,
+       has.partial.auc, has.partial.auc.auc, has.partial.auc.roc, has.partial.auc.smooth.roc,
+       lines.roc, lines.smooth.roc, lines.roc.formula, lines.roc.default, lines.roc.roc, lines.roc.smooth.roc,
+       multiclass.roc, multiclass.roc.formula, multiclass.roc.default,
+       plot.ci.thresholds, plot.ci.sp, plot.ci.se,
+       plot.roc, plot.smooth.roc, plot.roc.formula, plot.roc.default, plot.roc.roc, plot.roc.smooth.roc,
+       power.roc.test, power.roc.test.roc, power.roc.test.numeric, power.roc.test.list,
+       print.roc, print.smooth.roc, print.auc, print.ci.auc, print.ci.thresholds, print.ci.se, print.ci.sp, print.multiclass.roc, print.multiclass.auc,
+       roc, roc.formula, roc.default,
+       roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
+       smooth, smooth.roc, smooth.default, smooth.smooth.roc,
+       var, var.default, var.auc, var.smooth.roc, var.roc
+       )
+
+import(plyr, methods, utils, Rcpp)
+useDynLib(pROC)
+>>>>>>> master

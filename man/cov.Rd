@@ -141,6 +141,26 @@ cov(...)
 
   With \code{method="delong"}, the processing is done as described in
   Hanley and Hajian-Tilaki (1997).
+
+  With \code{method="obuchowski"}, the processing is done as described
+  in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
+  computation of \eqn{g} for partial area under the ROC curve is
+  modified as: 
+
+  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
+}
+
+\section{Binormality assumption}{
+  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
+  If the data shows a deviation from this assumption, it might help to
+  normalize the data first (that is, before calling \code{\link{roc}}),
+  for example with quantile normalization: 
+  \preformatted{
+    norm.x <- qnorm(rank(x)/(length(x)+1))
+    cov(roc(response, norm.x, ...), ...)
+  }
+
+  \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
 
 \value{
@@ -289,7 +309,8 @@ roc6 <- roc(aSAH$outcome, aSAH$s100b, direction=">")
 cov(roc5, roc6, method="delong")
 
 ## Test data from Hanley and Hajian-Tilaki, 1997
-disease.present <- c("Yes", "No", "Yes", "No", "No", "Yes", "Yes", "No", "No", "Yes", "No", "No", "Yes", "No", "No")
+disease.present <- c("Yes", "No", "Yes", "No", "No", "Yes", "Yes", "No",
+                     "No", "Yes", "No", "No", "Yes", "No", "No")
 field.strength.1 <- c(1, 2, 5, 1, 1, 1, 2, 1, 2, 2, 1, 1, 5, 1, 1)
 field.strength.2 <- c(1, 1, 5, 1, 1, 1, 4, 1, 2, 2, 1, 1, 5, 1, 1)
 roc7 <- roc(disease.present, field.strength.1)
