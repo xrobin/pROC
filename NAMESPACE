@@ -22,4 +22,5 @@ export(
        var, var.default, var.auc, var.smooth.roc, var.roc
        )
 
-import(methods, utils)
+import(plyr, methods, utils, Rcpp)
+useDynLib(pROC)

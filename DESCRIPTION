@@ -1,15 +1,16 @@
 Package: pROC
 Type: Package
 Title: display and analyze ROC curves
-Version: 1.5.9
-Date: 2012-??-??
+Version: 1.6.0.1
+Date: 2013-12-28
 Encoding: UTF-8
-Depends: plyr, R (>= 2.13), utils, methods
-Suggests: tcltk, MASS, logcondens
-Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller
-Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
+Depends: R (>= 2.13)
+Imports: plyr, utils, methods, Rcpp
+Suggests: microbenchmark, tcltk, MASS, logcondens
+LinkingTo: Rcpp
+Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller. Contributions by Kazuki Yoshida.
+Maintainer: Xavier Robin <xavier@cbs.dtu.dk>
 Description: Tools for visualizing, smoothing and comparing receiver operating characteristic (ROC curves). (Partial) area under the curve (AUC) can be compared with statistical tests based on U-statistics or bootstrap. Confidence intervals can be computed for (p)AUC or ROC curves.
-Acknowledgements: The authors would like to thank E. S. Venkatraman and Colin B. Begg for their support in the implementation of their test.
 License: GPL (>= 3)
 URL: http://expasy.org/tools/pROC/
 LazyLoad: yes

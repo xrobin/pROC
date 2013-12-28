@@ -1,8 +1,8 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2010, 2011 Xavier Robin, Alexandre Hainard, Natacha Turck,
-# Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
-# and Markus Müller
+# Copyright (C) 2013 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez,
+# Markus Müller and Kazuki Yoshida
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,19 +86,12 @@ ci.auc.delong <- function(roc, conf.level) {
   m <- length(XR)
   mn <- m*n
 
-  # Compute Mann-Whitney statistics and deduce thetaR and thetaS
-  MWR <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(XR[i], YR[j]), j=j))
+  V <- delong.placements(roc)
 
-  thetaR <- sum(MWR)/mn
-
-  # Delong-specific computations
-  VR10 <- sapply(1:m, function(i) {sum(MWR[i,])})/n
-  VR01 <- sapply(1:n, function(j) {sum(MWR[,j])})/m
-
-  S10 <- sum((VR10 - thetaR) * (VR10 - thetaR))/(m-1)
-  S01 <- sum((VR01 - thetaR) * (VR01 - thetaR))/(n-1)
-  S <- S10/m + S01/n
-  ci <- qnorm(c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), mean = thetaR, sd = sqrt(S))
+  SX <- sum((V$X - V$theta) * (V$X - V$theta))/(m-1)
+  SY <- sum((V$Y - V$theta) * (V$Y - V$theta))/(n-1)
+  S <- SX/m + SY/n
+  ci <- qnorm(c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), mean = V$theta, sd = sqrt(S))
   if (roc$direction == ">") {
     ci <- rev(1 - ci)
   }
@@ -118,15 +111,6 @@ ci.auc.delong <- function(roc, conf.level) {
   return(ci)
 }
 
-# Mann-Whitney Kernel used by delong.test and ci.auc.delong
-MW.kernel <- function(x, y) {
-  # x, y: numeric vectors of length 1
-  # returns: numeric vectors of length 1
-  if (y < x) return(1)
-  if (y == x) return(.5)
-  if (y > x) return(0)
-}
-
 delong.placements <- function(roc) {
   # returns a list V containing:
   # - theta: the AUC
@@ -137,7 +121,14 @@ delong.placements <- function(roc) {
   X <- roc$cases
   n <- length(Y)
   m <- length(X)
-  MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
+  
+  # Original computation of MW matrix as given in DeLong et al paper
+  # MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
+  # Alternative version by Kazuki Yoshida
+  equal   <- outer(X, Y, "==") * 0.5
+  greater <- outer(X, Y, ">") * 1.0
+  MW <- equal + greater
+  
   V$theta <- sum(MW)/(m*n)
   # Delong-specific computations
   V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
