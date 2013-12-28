@@ -1,3 +1,6 @@
+1.6.0.1 (2013-12-28)
+  * Removed erroneous error message displayed when predictors and responses were not vectors
+
 1.6 (2013-12-26)
   * New 'power.roc.test' function for sample size and power computations
   * New 'cov' and 'var' functions supports new "obuchowski" method

@@ -77,7 +77,7 @@ roc.default <- function(response, predictor,
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
-    # ensure predictor is numeric
+    # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
         predictor <- as.numeric(predictor)
@@ -85,14 +85,8 @@ roc.default <- function(response, predictor,
         stop("Predictor must be numeric or ordered.")
     }
     # also make sure response and predictor are vectors of the same length
-    if (! (is.vector(response) || is.factor(response))) {
-      stop("Response must  be a vector or factor.")
-    }
-    if (! is.vector(predictor)) {
-      stop("Predictor must  be a vector.")
-    }
     if (length(predictor) != length(response)) {
-      stop("Response and predictor must  be vectors of the same length.")
+      stop("Response and predictor must be vectors of the same length.")
     }
     # remove NAs if requested
     if (na.rm) {
