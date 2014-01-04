@@ -5,6 +5,7 @@
 \alias{print.multiclass.roc}
 \alias{print.ci.auc}
 \alias{print.ci.thresholds}
+\alias{print.ci.coords}
 \alias{print.ci.se}
 \alias{print.ci.sp}
 \alias{print.auc}
@@ -28,6 +29,7 @@ call=TRUE, ...)
 \S3method{print}{ci.thresholds}(x, digits=max(3, getOption("digits") - 3), ...)
 \S3method{print}{ci.se}(x, digits=max(3, getOption("digits") - 3), ...)
 \S3method{print}{ci.sp}(x, digits=max(3, getOption("digits") - 3), ...)
+\S3method{print}{ci.coords}(x, digits=max(3, getOption("digits") - 3), ...)
 }
 		   
 \arguments{

@@ -15,7 +15,7 @@ export(
        plot.ci.thresholds, plot.ci.sp, plot.ci.se,
        plot.roc, plot.smooth.roc, plot.roc.formula, plot.roc.default, plot.roc.roc, plot.roc.smooth.roc,
        power.roc.test, power.roc.test.roc, power.roc.test.numeric, power.roc.test.list,
-       print.roc, print.smooth.roc, print.auc, print.ci.auc, print.ci.thresholds, print.ci.se, print.ci.sp, print.multiclass.roc, print.multiclass.auc,
+       print.roc, print.smooth.roc, print.auc, print.ci.auc, print.ci.thresholds, print.ci.se, print.ci.sp, print.ci.coords, print.multiclass.roc, print.multiclass.auc,
        roc, roc.formula, roc.default,
        roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
