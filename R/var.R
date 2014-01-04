@@ -92,7 +92,8 @@ var.roc <- function(roc,
   
   if (method == "delong") {
     n <- length(roc$controls)
-    m <- length(roc$cases)  
+    m <- length(roc$cases)
+    delong.warn(roc)
     V <- delong.placements(roc)
     var <- var(V$Y) / n + var(V$X) / m
   }
