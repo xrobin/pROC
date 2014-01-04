@@ -152,7 +152,7 @@ ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "pp
 rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
           "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
 ci.coords(rocobj, x="best", input = "threshold", ret=rets)
-
+}
 }
 
 \keyword{univar}

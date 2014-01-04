@@ -11,8 +11,6 @@
   be compared with statistical tests based on U-statistics or
   bootstrap. Confidence intervals can be computed for (p)AUC or ROC
   curves.
-
-  In S+, the package comes with a  graphical user interface.
 }
 
 \details{
@@ -72,6 +70,7 @@
     \code{\link{ci.se}} \tab Compute the CI of sensitivities at given specificities \cr
     \code{\link{ci.sp}} \tab Compute the CI of specificities at given sensitivities \cr
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
+    \code{\link{ci.coords}} \tab Compute the CI of arbitrary coordinates \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
     \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
@@ -105,12 +104,9 @@
 }
 
 \section{Handling large datasets}{
-  Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations.
+  Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
 
-  Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}}
-  functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create a matrix of size
-  \code{number of controls} x \code{number of cases}, which is memory-comsuming. If you plan to run one of these function on a ROC curve
-  with more than 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}.
+  Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}} functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create matrices of size \code{number of controls} x \code{number of cases} (or O(n^2)), which is memory-comsuming. If you plan to run one of these function on a ROC curve with more than about 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}.
 }
 
 \section{Bootstrap}{
