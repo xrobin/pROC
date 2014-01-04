@@ -107,11 +107,13 @@
   Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
 
   Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}} functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create matrices of size \code{number of controls} x \code{number of cases} (or O(n^2)), which is memory-comsuming and could slow down or even crash your computer. If you plan to run one of these function on a ROC curve with more than about 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}. Note that pROC will show a confirmation before proceeding with the allocation of more than about 1 GB memory, though the estimate remains imprecise. Type N to abort the processing or anything else to continue.
+  
+  Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyways.
 }
 
 \section{Bootstrap}{
 
-  All the bootstrap operations for \link[=roc.test]{significance testing} and \link[=ci]{confidence interval} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
+  All the bootstrap operations for \link[=roc.test]{significance testing}, \link[=ci]{confidence interval}, \link[=var]{variance} and \link[=cov]{covariance} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
 
   Stratification of bootstrap can be controlled
   with \code{boot.stratified}. In stratified bootstrap (the default), each replicate
@@ -156,12 +158,12 @@
 	\subsection{Parallel processing}{
 		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
 
-		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG}, \pkg{doSMP} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
+		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
 
 		\preformatted{
 #ifdef windows
-		  library(doSMP)
-		  registerDoSMP(startWorkers(2))
+		  library(doSNOW)
+		  registerDoSNOW(makeCluster(2, type = "SOCK"))
 #endif
 #ifdef unix 
 		  library(doMC)
@@ -170,6 +172,8 @@
 		  ci(rocobj, method="bootstrap", parallel=TRUE)
 		}
 	}
+  
+  Progress bars are not available when parallel processing is enabled.
 }
 
 \author{
