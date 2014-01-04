@@ -138,7 +138,8 @@ data(aSAH)
 
 \dontrun{
 # Syntax (response, predictor):
-ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold", ret=c("specificity", "ppv", "tp"))
+ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold", 
+          ret=c("specificity", "ppv", "tp"))
 
 # With a roc object:
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
@@ -152,6 +153,18 @@ ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "pp
 rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
           "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
 ci.coords(rocobj, x="best", input = "threshold", ret=rets)
+}
+\dontshow{
+ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
+          ret=c("specificity", "ppv", "tp"), boot.n=10)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"),
+          boot.n=10)
+rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
+          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
+ci.coords(rocobj, x="best", input = "threshold", ret=rets, boot.n=3)
 }
 }
 
