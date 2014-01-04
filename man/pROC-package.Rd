@@ -10,7 +10,7 @@
   characteristic (ROC curves). (Partial) area under the curve (AUC) can
   be compared with statistical tests based on U-statistics or
   bootstrap. Confidence intervals can be computed for (p)AUC or ROC
-  curves.
+  curves. Sample size / power computation for one or two ROC curves are available.
 }
 
 \details{
