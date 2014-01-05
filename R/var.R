@@ -112,7 +112,7 @@ var.roc <- function(roc,
     var <- var.roc.obuchowski(roc) / length(roc$cases)
   }
   else {
-    var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, ...)
+    var <- var.roc.bootstrap(roc, boot.n, boot.stratified, progress, parallel, ...)
   }
   
   if (percent) {
@@ -121,7 +121,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, ...) {
+var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, ...) {
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="AUC variance", label="Bootstrap in progress...", ...)
 
