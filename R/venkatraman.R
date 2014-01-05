@@ -43,7 +43,7 @@ venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first", p
   return(list(E, EP))
 }
 
-venkatraman.paired.permutation <- function(x, R, S, D, levels, ties.method) {
+venkatraman.paired.permutation <- function(n, R, S, D, levels, ties.method) {
   # Break ties
   R2 <- R + runif(length(D)) - 0.5 # Add small amount of random but keep same mean
   S2 <- S + runif(length(D)) - 0.5
@@ -56,7 +56,7 @@ venkatraman.paired.permutation <- function(x, R, S, D, levels, ties.method) {
   return(venkatraman.paired.stat(rank(R3, ties.method=ties.method), rank(S3, ties.method=ties.method), D, levels))
 }
 
-venkatraman.unpaired.permutation <- function(x, R, S, D1, D2, levels1, levels2, mp, ties.method) {
+venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, mp, ties.method) {
   # Break ties
   R <- R + runif(length(D1)) - 0.5 # Add small amount of random but keep same mean
   S <- S + runif(length(D2)) - 0.5
