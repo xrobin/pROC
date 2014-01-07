@@ -103,13 +103,6 @@
   }
 }
 
-\section{Handling large datasets}{
-  Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
-  
-  Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
-  
-  Since version 1.7, pROC does not allocate an m * n matrix (with m = number of controls and n = number of case observations) in all DeLong computations, so it is in practice nearly always faster than bootstrapping. However it still goes with O(m*n) so it might be slower than bootstrap in some very edge cases (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
-}
 
 \section{Bootstrap}{
 
@@ -153,27 +146,91 @@
 	  To inhibit the progress bars completely:
 	  
 	  \preformatted{options(pROCProgress = list(name = "none"))}
+    
 	}
+}
 
-	\subsection{Parallel processing}{
-		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
 
-		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
+\section{Handling large datasets}{
+  Versions 1.6 and 1.7 of pROC focused on execution speed to handle large datasets. Let's say we have the following dataset with 100 thousands observations:
+  
+  \preformatted{
+response <- round(runif(1E5))
+predictor <- rnorm(1E5)
+system.time(rocobj <- roc(response, predictor)) # Very slow!
+  }
+  
+  \subsection{Choosing an algorithm for \code{roc}}{
+    
+    By default, pROC uses an algorithm that linearly depends on the number of thresholds. An naive optimization is to reduce the precision of the predictor by generating ties in the data 
+    
+    \preformatted{
+system.time(rocobj <- roc(response, round(predictor))) # Faster - but losing precision
+    }
+    
+    Since version 1.6, pROC contains an alternative algorithm with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
+    
+    \preformatted{
+system.time(rocobj <- roc(response, predictor, algorithm = 2)) # Better
+    }
+    
+    When unsure about the fastest algorithm, use \code{algorithm=0} to choose between 2 and 3. Make sure \pkg{\link{microbenchmark}} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
+    
+    \preformatted{
+if (!require(microbenchmark))
+  install.packages("microbenchmark")
+rocobj <- roc(response, round(predictor), algorithm = 0)
+rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
+    }
+  }
 
-		\preformatted{
+  \subsection{Boostrap}{
+    Bootstrap is typically slow because it involves repeatedly computing the ROC curve (or a part of it).
+    
+    Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
+    
+    A naive way to speed-up the boostrap is by removing the progress bar:
+    
+    \preformatted{
+rocobj <- roc(response, round(predictor))
+system.time(ci(rocobj))
+system.time(ci(rocobj, progress = "none"))
+    }
+    
+    It is of course possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
+
+    \subsection{Parallel processing}{
+  		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
+  
+  		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
+  
+  		\preformatted{
 #ifdef windows
-		  library(doSNOW)
-		  registerDoSNOW(makeCluster(2, type = "SOCK"))
+library(doSNOW)
+registerDoSNOW(makeCluster(4, type = "SOCK"))
 #endif
 #ifdef unix 
-		  library(doMC)
-		  registerDoMC(2)
+library(doMC)
+registerDoMC(4)
 #endif
-		  ci(rocobj, method="bootstrap", parallel=TRUE)
-		}
-	}
+ci(rocobj, method="bootstrap", parallel=TRUE)
+  		}
+    
+    Progress bars are not available when parallel processing is enabled.
+  	}
+  }
   
-  Progress bars are not available when parallel processing is enabled.
+  \subsection{Using DeLong instead of boostrap}{
+    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)) which is typically faster than boostrapping. By default, pROC will choose the DeLong method whenever possible.
+  
+    Since version 1.7, pROC does not allocate an m * n matrix (with m = number of controls and n = number of case observations) in all DeLong computations, so it is in practice nearly always faster than bootstrapping. However it still goes with O(m*n) so it might be slower than bootstrap in some very edge cases (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
+    
+        \preformatted{
+rocobj <- roc(response, round(predictor), algorithm=3)
+system.time(ci(rocobj, method="delong"))
+system.time(ci(rocobj, method="bootstrap", parallel = TRUE))
+    }
+  }
 }
 
 \author{
@@ -187,6 +244,11 @@ Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
+
+  Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
+  (1988) ``Comparing the areas under two or more correlated receiver
+  operating characteristic curves: a nonparametric
+  approach''. \emph{Biometrics} \bold{44}, 837--845.
 
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
