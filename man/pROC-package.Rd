@@ -257,6 +257,22 @@ plot(roc2, add=TRUE)
 plot(ci.thresholds(roc2))
 }
 
+# In parallel
+#ifdef windows
+if (require(doSNOW)) {
+    registerDoSNOW(makeCluster(2, type = "SOCK"))
+    ci(roc2, method="bootstrap", parallel=TRUE)
+    \dontrun{ci(roc2, method="bootstrap", parallel=TRUE)}
+    \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
+}
+#endif
+#ifdef unix 
+if (require(doMC)) {
+    registerDoMC(2)
+    \dontrun{ci(roc2, method="bootstrap", parallel=TRUE)}
+    \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
+}
+#endif
 
 ## Comparisons ##
 
