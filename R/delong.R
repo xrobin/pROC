@@ -2,7 +2,7 @@
 # (partial) area under the curve, confidence intervals and comparison. 
 # Copyright (C) 2013 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez,
-# Markus Müller and Kazuki Yoshida
+# Markus Müller
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,9 +22,8 @@ delong.paired.test <- function(roc1, roc2) {
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
-  delong.warn(roc1, roc2)
-  VR <- delong.placements(roc1)
-  VS <- delong.placements(roc2)
+  VR <- delongPlacementsCpp(roc1)
+  VS <- delongPlacementsCpp(roc2)
 
   SX <- matrix(NA, ncol=2, nrow=2)
   SX[1,1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(m-1)
@@ -56,9 +55,8 @@ delong.unpaired.test <- function(roc1, roc2) {
   nS <- length(roc2$controls)
   mS <- length(roc2$cases)
   
-  delong.warn(roc1, roc2)
-  VR <- delong.placements(roc1)
-  VS <- delong.placements(roc2)
+  VR <- delongPlacementsCpp(roc1)
+  VS <- delongPlacementsCpp(roc2)
 
   SRX <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(mR-1)
   SSX <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(mS-1)
@@ -86,9 +84,8 @@ ci.auc.delong <- function(roc, conf.level) {
   n <- length(YR)
   m <- length(XR)
   mn <- m*n
-  
-  delong.warn(roc)
-  V <- delong.placements(roc)
+
+  V <- delongPlacementsCpp(roc)
 
   SX <- sum((V$X - V$theta) * (V$X - V$theta))/(m-1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta))/(n-1)
@@ -111,47 +108,4 @@ ci.auc.delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
-}
-
-delong.placements <- function(roc) {
-  # returns a list V containing:
-  # - theta: the AUC
-  # - X: the 10 component
-  # - Y: the 01 component
-  V <- list()
-  Y <- roc$controls
-  X <- roc$cases
-  n <- length(Y)
-  m <- length(X)
-  
-  # Original computation of MW matrix as given in DeLong et al paper
-  # MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
-  # Alternative version by Kazuki Yoshida
-  #equal   <- outer(X, Y, "==") * 0.5
-  #greater <- outer(X, Y, ">") * 1.0
-  MW <- outer(X, Y, "==") * 0.5 + outer(X, Y, ">") * 1.0
-  
-  V$theta <- sum(MW)/(m*n)
-  # Delong-specific computations
-  V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
-  V$Y <- sapply(1:n, function(j) {sum(MW[,j])})/m
-  return(V)
-}
-
-delong.warn <- function(roc, roc2) {
-  # Safety function to be called before roc.placements.
-  # Will warn and ask for user input. If user supplies any string that starts with N, it will abort the processing
-  # Based on the assumption that 3 X*Y matrices will be created, each matrix being X*Y*8 bits at least
-  XY <- length(roc$controls) * length(roc$cases)
-  if (!missing(roc2)) {
-    XY2 <- length(roc2$controls) * length(roc2$cases)
-    XY <- max(XY, XY2)
-  }
-  bytes <- XY * 3 * 8
-  if (bytes > 1E9) {
-    ans <- readline(sprintf("This could allocate more than %.1f GB of memory. Are you sure you want to continue?\nType N to abort, anything else to continue... ", bytes / 1E9))
-    if (grepl("^\\s?n", ans)) {
-      stop("Command aborted on user request. Consider using method=\"bootstrap\" instead.", call.=FALSE)
-    }
-  }
 }

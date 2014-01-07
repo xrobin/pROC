@@ -105,10 +105,10 @@
 
 \section{Handling large datasets}{
   Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
-
-  Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}} functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create matrices of size \code{number of controls} x \code{number of cases} (or O(n^2)), which is memory-comsuming and could slow down or even crash your computer. If you plan to run one of these function on a ROC curve with more than about 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}. Note that pROC will show a confirmation before proceeding with the allocation of more than about 1 GB memory, though the estimate remains imprecise. Type N to abort the processing or anything else to continue.
   
-  Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyways.
+  Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
+  
+  Since version 1.7, pROC does not allocate an m * n matrix (with m = number of controls and n = number of case observations) in all DeLong computations, so it is in practice nearly always faster than bootstrapping. However it still goes with O(m*n) so it might be slower than bootstrap in some very edge cases (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
 }
 
 \section{Bootstrap}{

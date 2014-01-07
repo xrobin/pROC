@@ -104,8 +104,7 @@ var.roc <- function(roc,
   if (method == "delong") {
     n <- length(roc$controls)
     m <- length(roc$cases)  
-    delong.warn(roc)
-    V <- delong.placements(roc)
+    V <- delongPlacementsCpp(roc)
     var <- var(V$Y) / n + var(V$X) / m
   }
   else if (method == "obuchowski") {
