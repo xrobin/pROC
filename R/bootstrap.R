@@ -265,7 +265,7 @@ stratified.ci.auc <- function(n, roc) {
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
 
-  as.numeric(auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
 }
 
 nonstratified.ci.auc <- function(n, roc) {
@@ -281,7 +281,7 @@ nonstratified.ci.auc <- function(n, roc) {
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
   
-  as.numeric(auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct")))
+  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
 }
 
 ##########  AUC of a smooth ROC curve (ci.smooth.auc)  ##########
@@ -310,7 +310,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   if (is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
-  return(as.numeric(eval(auc.call)))
+  return(eval(auc.call))
 }
 
 # Returns a smoothed auc in a non stratified manner
@@ -340,7 +340,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   if (is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
-  return(as.numeric(eval(auc.call)))
+  return(eval(auc.call))
 }
 
 ##########  AUC of a multiclass ROC (ci.multiclass.auc)  ##########
@@ -610,7 +610,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
 }
 
 nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
@@ -634,7 +634,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
   
-  as.numeric(coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
 }
 
 ##########  Coords of a smooth ROC curve (ci.coords)  ##########
@@ -661,7 +661,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  as.numeric(coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
 }
 
 nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
@@ -689,5 +689,5 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  as.numeric(coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights))
+  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
 }
