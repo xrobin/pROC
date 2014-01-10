@@ -50,10 +50,10 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
     stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Please report this bug to the package maintainer %s", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), packageDescription("pROC")$Maintainer))
 
   if (boot.stratified) { # precompute sorted responses if stratified
-    response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
-    response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
-    auc1skeleton$response <- response.roc1
-    auc2skeleton$response <- response.roc2
+    #response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
+    #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
+    #auc1skeleton$response <- response.roc1
+    #auc2skeleton$response <- response.roc2
     resampled.values <- laply(1:boot.n, stratified.bootstrap.test, roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton, .progress=progress, .parallel=parallel)
   }
   else {
@@ -158,20 +158,29 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   idx.controls.roc1 <- sample(1:length(roc1$controls), replace=TRUE)
   idx.cases.roc1 <- sample(1:length(roc1$cases), replace=TRUE)
   # finish roc skeletons
-  auc1skeleton$predictor <- c(roc1$controls[idx.controls.roc1], roc1$cases[idx.cases.roc1])
+  auc1skeleton$controls <- roc1$controls[idx.controls.roc1]
+  auc1skeleton$cases <- roc1$cases[idx.cases.roc1]
+  if (test == "sp" && test == "se") {
+    auc1skeleton$auc <- auc2skeleton$auc <- FALSE
+  }
+  else {
+    auc1skeleton$auc <- auc2skeleton$auc <- FALSE
+  }
 
   if (paired) {
-    auc2skeleton$predictor <- c(roc2$controls[idx.controls.roc1], roc2$cases[idx.cases.roc1])
+    auc2skeleton$controls <- roc2$controls[idx.controls.roc1]
+    auc2skeleton$cases <- roc2$cases[idx.cases.roc1]
   }
   else { # for unpaired, resample roc2 separately
     idx.controls.roc2 <- sample(1:length(roc2$controls), replace=TRUE)
     idx.cases.roc2 <- sample(1:length(roc2$cases), replace=TRUE)
-    auc2skeleton$predictor <- c(roc2$controls[idx.controls.roc2], roc2$cases[idx.cases.roc2])
+    auc2skeleton$controls <- roc2$controls[idx.controls.roc2]
+    auc2skeleton$cases <- roc2$cases[idx.cases.roc2]
   }
 
   # re-compute the resampled ROC curves
-  roc1 <- try(do.call("roc.default", auc1skeleton), silent=TRUE)
-  roc2 <- try(do.call("roc.default", auc2skeleton), silent=TRUE)
+  roc1 <- try(do.call("roc.cc.nochecks", auc1skeleton), silent=TRUE)
+  roc2 <- try(do.call("roc.cc.nochecks", auc2skeleton), silent=TRUE)
 
   # resampled ROCs might not be smoothable: return NA
   if (is(roc1, "try-error") || is(roc2, "try-error")) {
@@ -211,8 +220,8 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   }
 
   # re-compute the resampled ROC curves
-  roc1 <- try(do.call("roc.default", auc1skeleton), silent=TRUE)
-  roc2 <- try(do.call("roc.default", auc2skeleton), silent=TRUE)
+  roc1 <- try(do.call("roc.rp.nochecks", auc1skeleton), silent=TRUE)
+  roc2 <- try(do.call("roc.rp.nochecks", auc2skeleton), silent=TRUE)
   # resampled ROCs might not be smoothable: return NA
   if (is(roc1, "try-error") || is(roc2, "try-error")) {
     return(c(NA, NA))

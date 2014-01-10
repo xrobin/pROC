@@ -185,18 +185,63 @@ roc.default <- function(response, predictor,
     stop("No valid data provided.")
   }
 
-  # create the roc object
-  roc <- list()
-  class(roc) <- "roc"
-  roc$levels <- levels
-  roc$percent <- percent
-
-  roc$call <- match.call()
-
   if (direction == "auto" && median(controls) <= median(cases))
     direction <- "<"
   else if (direction == "auto" && median(controls) > median(cases))
     direction <- ">"
+  
+  roc <- roc.cc.nochecks(controls, cases,
+             percent=percent,
+             direction=direction,
+             algorithm=algorithm)
+  
+  roc$call <- match.call()
+  roc$original.predictor <- original.predictor
+  roc$original.response <- original.response
+  roc$predictor <- predictor
+  roc$response <- response
+  roc$levels <- levels
+  
+  # smooth?
+  if (smooth) {
+    if (missing(density.controls))
+      density.controls <- density
+    if (missing(density.cases))
+      density.cases <- density
+    roc <- smooth.roc(roc, density=density, density.controls=density.controls, density.cases=density.cases, method=smooth.method, ...)
+    roc$call <- match.call()
+  }
+
+  # compute AUC
+  if (auc)
+    roc$auc <- auc.roc(roc, ...)
+  # compute CI
+  if (ci)
+    roc$ci <- ci(roc, method=ci.method, ...)
+  # plot
+  if (plot)
+    plot.roc(roc, ...)
+  
+  # return roc
+  return(roc)
+}
+
+roc.rp.nochecks <- function(response, predictor, levels, percent, direction, algorithm) {
+  splitted <- split(predictor, response)
+  controls <- splitted[[as.character(levels[1])]]
+  if (length(controls) == 0)
+    stop("No control observation.")
+  cases <- splitted[[as.character(levels[2])]]
+  if (length(cases) == 0)
+    stop("No case observation.")
+  roc.cc.nochecks(controls, cases, percent, direction, algorithm)  
+}
+  
+roc.cc.nochecks <- function(controls, cases, percent, direction, algorithm) {
+  # create the roc object
+  roc <- list()
+  class(roc) <- "roc"
+  roc$percent <- percent
 
   # compute SE / SP
   thresholds <- roc.utils.thresholds(c(controls, cases))
@@ -257,31 +302,5 @@ roc.default <- function(response, predictor,
   roc$direction <- direction
   roc$cases <- cases
   roc$controls <- controls
-  roc$original.predictor <- original.predictor
-  roc$original.response <- original.response
-  roc$predictor <- predictor
-  roc$response <- response
-
-  # smooth?
-  if (smooth) {
-    if (missing(density.controls))
-      density.controls <- density
-    if (missing(density.cases))
-      density.cases <- density
-    roc <- smooth.roc(roc, density=density, density.controls=density.controls, density.cases=density.cases, method=smooth.method, ...)
-    roc$call <- match.call()
-  }
-
-  # compute AUC
-  if (auc)
-    roc$auc <- auc(roc, ...)
-  # compute CI
-  if (ci)
-    roc$ci <- ci(roc, method=ci.method, ...)
-  # plot
-  if (plot)
-    plot.roc(roc, ...)
-
-  # return roc
   return(roc)
 }
