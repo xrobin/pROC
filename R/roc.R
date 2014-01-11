@@ -245,8 +245,14 @@ roc.default <- function(response, predictor,
              auc, ...)
   
   roc$call <- match.call()
-  if (smooth)
+  if (smooth) {
     attr(roc, "roc")$call <- roc$call
+    attr(roc, "roc")$original.predictor <- original.predictor
+    attr(roc, "roc")$original.response <- original.response
+    attr(roc, "roc")$predictor <- predictor
+    attr(roc, "roc")$response <- response
+    attr(roc, "roc")$levels <- levels
+  }
   roc$original.predictor <- original.predictor
   roc$original.response <- original.response
   roc$predictor <- predictor
@@ -273,7 +279,7 @@ roc.rp.nochecks <- function(response, predictor, levels, ...) {
   cases <- splitted[[as.character(levels[2])]]
   if (length(cases) == 0)
     stop("No case observation.")
-  roc.cc.nochecks(controls, cases, ...)  
+  roc.cc.nochecks(controls, cases, ...)
 }
 
 #' Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
