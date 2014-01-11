@@ -230,8 +230,8 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   }
 
   # re-compute the resampled ROC curves
-  roc1 <- try(do.call("roc.rp.nochecks", auc1skeleton), silent=FALSE)
-  roc2 <- try(do.call("roc.rp.nochecks", auc2skeleton), silent=FALSE)
+  roc1 <- try(do.call("roc.rp.nochecks", auc1skeleton), silent=TRUE)
+  roc2 <- try(do.call("roc.rp.nochecks", auc2skeleton), silent=TRUE)
   # resampled ROCs might not be smoothable: return NA
   if (is(roc1, "try-error") || is(roc2, "try-error")) {
     return(c(NA, NA))
