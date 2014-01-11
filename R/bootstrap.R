@@ -199,12 +199,12 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   else {
     if (test == "sp") {
       coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
-      coord2 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
       return(c(coord1, coord2))
     }
     else if (test == "se") {
       coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
-      coord2 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
       return(c(coord1, coord2))
     }
     else {
@@ -239,12 +239,12 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   else {
     if (test == "sp") {
       coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
-      coord2 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
       return(c(coord1, coord2))
     }
     else if (test == "se") {
       coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
-      coord2 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
       return(c(coord1, coord2))
     }
     else {
