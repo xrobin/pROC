@@ -31,11 +31,13 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   auc1skeleton$roc <- NULL
   auc1skeleton$direction <- roc1$direction
   auc1skeleton$class <- NULL
+  auc1skeleton$fun.sesp <- roc1$fun.sesp
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
+  auc2skeleton$fun.sesp <- roc2$fun.sesp
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
 
   # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
@@ -86,11 +88,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   auc1skeleton$roc <- NULL
   auc1skeleton$direction <- roc1$direction
   auc1skeleton$class <- NULL
+  auc1skeleton$fun.sesp <- roc1$fun.sesp
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
+  auc2skeleton$fun.sesp <- roc2$fun.sesp
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
 
   # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
@@ -164,7 +168,7 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
     auc1skeleton$auc <- auc2skeleton$auc <- FALSE
   }
   else {
-    auc1skeleton$auc <- auc2skeleton$auc <- FALSE
+    auc1skeleton$auc <- auc2skeleton$auc <- TRUE
   }
 
   if (paired) {
@@ -377,7 +381,6 @@ ci.multiclass.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified
 
 # Returns an auc in a stratified manner
 stratified.ci.multiclass.auc <- function(n, roc) {
-  browser()
   controls <- sample(roc$controls, replace=TRUE)
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
@@ -392,7 +395,6 @@ stratified.ci.multiclass.auc <- function(n, roc) {
 
 # Returns an auc in a non stratified manner
 nonstratified.ci.multiclass.auc <- function(n, roc) {
-  browser()
   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
