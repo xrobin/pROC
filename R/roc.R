@@ -41,6 +41,8 @@ roc.formula <- function (formula, data, ...){
 
   roc <- roc.default(response, m[[term.labels]], ...)
   roc$call <- match.call()
+  if (!is.null(roc$smooth))
+    attr(roc, "roc")$call <- roc$call
   return(roc)
 }
 
@@ -243,6 +245,8 @@ roc.default <- function(response, predictor,
              auc, ...)
   
   roc$call <- match.call()
+  if (smooth)
+    attr(roc, "roc")$call <- roc$call
   roc$original.predictor <- original.predictor
   roc$original.response <- original.response
   roc$predictor <- predictor
