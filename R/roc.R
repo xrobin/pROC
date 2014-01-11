@@ -273,7 +273,7 @@ roc.rp.nochecks <- function(response, predictor, levels, ...) {
   cases <- splitted[[as.character(levels[2])]]
   if (length(cases) == 0)
     stop("No case observation.")
-  roc.cc.nochecks(controls, cases, percent, direction, algorithm, ...)  
+  roc.cc.nochecks(controls, cases, ...)  
 }
 
 #' Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
