@@ -206,19 +206,27 @@ roc.default <- function(response, predictor,
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases))
-    benchmark <- microbenchmark(
+    benchmark <- try(microbenchmark(
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
-    )
-    print(summary(benchmark))
-    if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
-      algorithm <- 2
-      cat("Selecting algorithm 2.\n")
-    }
+    ))
+    if (is("try-error", benchmark)) {
+      warning("Microbenchmark failed. Using default algorithm 1.")
+    } 
     else {
-      algorithm <- 3
-      cat("Selecting algorithm 3.\n")
+      print(summary(benchmark))
+      if (any(is.na(benchmark))) {
+        warning("Microbenchmark returned NA. Using default algorithm 1.")
+      }
+      if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
+        algorithm <- 2
+        cat("Selecting algorithm 2.\n")
+      }
+      else {
+        algorithm <- 3
+        cat("Selecting algorithm 3.\n")
+      }
     }
   }
   if (identical(algorithm, 1)) {
