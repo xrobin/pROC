@@ -20,7 +20,7 @@ export(
        roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
        var, var.default, var.auc, var.smooth.roc, var.roc,
-       Ops.auc, Math.auc
+       Ops.auc, Ops.ci.se, Ops.ci.sp, Ops.ci.coords, Ops.ci.auc, Ops.ci, Math.auc, Math.ci.se, Math.ci.sp, Math.ci.coords, Math.ci.auc, Math.ci
        )
 
 import(plyr, methods, utils, Rcpp)

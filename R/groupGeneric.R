@@ -27,3 +27,28 @@ Math.auc <- function(x, ...) {
   attributes(x) <- NULL
   NextMethod()
 }
+
+Ops.ci.se <- Ops.ci.sp <- Ops.ci.coords <- Ops.ci.auc <- Ops.ci <- function(e1, e2) {
+  e1 <- remove.ci.attributes(e1)
+  e2 <- remove.ci.attributes(e2)
+  NextMethod()
+}
+
+
+Math.ci.se <- Math.ci.sp <- Math.ci.coords <- Math.ci.auc <- Math.ci <- function(x, ...) {
+  x <- remove.ci.attributes(x)
+  NextMethod()
+}
+
+remove.ci.attributes <- function(ci) {
+  attr(ci, "conf.level") <- NULL
+  attr(ci, "boot.n") <- NULL
+  attr(ci, "boot.stratified") <- NULL
+  attr(ci, "specificities") <- NULL
+  attr(ci, "sensitivities") <- NULL
+  attr(ci, "roc") <- NULL
+  attr(ci, "method") <- NULL
+  attr(ci, "auc") <- NULL
+  class(ci) <- class(ci)[-(1:2)]
+  return(ci)
+}
