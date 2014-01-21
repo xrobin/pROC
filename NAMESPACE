@@ -19,7 +19,8 @@ export(
        roc, roc.formula, roc.default,
        roc.test, roc.test.auc, roc.test.roc, roc.test.smooth.roc, roc.test.default, roc.test.formula,
        smooth, smooth.roc, smooth.default, smooth.smooth.roc,
-       var, var.default, var.auc, var.smooth.roc, var.roc
+       var, var.default, var.auc, var.smooth.roc, var.roc,
+       Ops.auc, Math.auc
        )
 
 import(plyr, methods, utils, Rcpp)
