@@ -106,7 +106,8 @@ parallel=FALSE, ...)
 }
 
 \value{
-  A matrix of CI for the given sensitivities. Row (names) are the
+  A matrix of class \dQuote{ci.se}, \dQuote{ci} and \dQuote{matrix} (in this order)
+  containing the given sensitivities. Row (names) are the
   specificities, the first column the lower bound, the 2nd column the
   median and the 3rd column the upper bound.
 

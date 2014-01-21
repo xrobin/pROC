@@ -157,7 +157,7 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 }
 
 \value{
-A numeric vector of length 3 and class \dQuote{ci.auc}, with the lower
+A numeric vector of length 3 and class \dQuote{ci.auc}, \dQuote{ci} and \dQuote{numeric} (in this order), with the lower
 bound, the median and the upper bound of the CI, and the following attributes:
 \item{conf.level}{the width of the CI, in fraction.}
 \item{method}{the method employed.}

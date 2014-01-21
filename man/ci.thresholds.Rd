@@ -94,7 +94,7 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 }
 
 \value{
-  A list of length 2 and class \dQuote{ci.thresholds}, with the confidence
+  A list of length 2 and class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order), with the confidence
   intervals of the CI and the following items:
   \item{specificity}{a matrix of CI for the specificity. Row (names) are the
 	thresholds, the first column the lower bound, the 2nd column the

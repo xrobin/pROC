@@ -98,7 +98,7 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
-  A matrix of class \dQuote{ci.coords}, with the confidence
+  A matrix of class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{matrix} (in this order), with the confidence
   intervals of the CI. The matrix has 3 columns (lower bound, median and upper bound) and
   as many rows as confidence intervals computed. If more than one element was provided in \code{x},
   

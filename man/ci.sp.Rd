@@ -105,7 +105,8 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, .
 }
 
 \value{
-  A matrix of CI for the given specificities. Row (names) are the
+  A matrix of class \dQuote{ci.sp}, \dQuote{ci} and \dQuote{matrix} (in this order)
+  containing the given specificities. Row (names) are the
   sensitivities, the first column the lower bound, the 2nd column the
   median and the 3rd column the upper bound.
 

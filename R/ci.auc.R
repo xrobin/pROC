@@ -100,7 +100,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "auc") <- oldauc
-  class(ci) <- "ci.auc"
+  class(ci) <- c("ci.auc", "ci", class(ci))
   return(ci)  
 }
 
@@ -172,6 +172,6 @@ ci.auc.roc <- function(roc,
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "auc") <- oldauc
-  class(ci) <- "ci.auc"
+  class(ci) <- c("ci.auc", "ci", class(ci))
   return(ci)
 }

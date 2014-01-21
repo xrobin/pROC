@@ -70,7 +70,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
 
-  class(ci) <- "ci.se"
+  class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -107,8 +107,8 @@ ci.se.roc <- function(roc,
   }
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
-
-  class(ci) <- "ci.se"
+  
+  class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

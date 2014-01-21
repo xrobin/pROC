@@ -87,7 +87,7 @@ are.paired.roc <- function(roc1, roc2,
       if (!is.null(roc1$ci) && reuse.ci) {
         args <- attributes(roc1$ci)
         args$roc <- NULL
-        roc1.paired$ci <- do.call(class(roc1$ci), c(roc=list(roc1.paired), args))
+        roc1.paired$ci <- do.call(class(roc1$ci)[1], c(roc=list(roc1.paired), args))
       }
       # Re-use auc/ci/smooth for roc2
       if (exists("oroc2") && reuse.smooth) {
@@ -104,7 +104,7 @@ are.paired.roc <- function(roc1, roc2,
       if (!is.null(roc2$ci) && reuse.ci) {
         args <- attributes(roc2$ci)
         args$roc <- NULL
-        roc2.paired$ci <- do.call(class(roc2$ci), c(roc=list(roc2.paired), args))
+        roc2.paired$ci <- do.call(class(roc2$ci)[1], c(roc=list(roc2.paired), args))
       }
 
       # Attach ROCs and return value

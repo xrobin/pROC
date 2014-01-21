@@ -100,7 +100,7 @@ ci.thresholds.roc <- function(roc,
   }
 
   ci <- list(specificity = sp, sensitivity = se)
-  class(ci) <- "ci.thresholds"
+  class(ci) <- c("ci.thresholds", "ci", "list")
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
