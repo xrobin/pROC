@@ -211,7 +211,7 @@ roc.default <- function(response, predictor,
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
     ))
-    if (is("try-error", benchmark)) {
+    if (is(benchmark, "try-error")) {
       warning("Microbenchmark failed. Using default algorithm 1.")
     } 
     else {
