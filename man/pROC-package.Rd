@@ -174,7 +174,7 @@ system.time(rocobj <- roc(response, round(predictor))) # Faster - but losing pre
 system.time(rocobj <- roc(response, predictor, algorithm = 2)) # Better
     }
     
-    When unsure about the fastest algorithm, use \code{algorithm=0} to choose between 2 and 3. Make sure \pkg{\link{microbenchmark}} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
+    When unsure about the fastest algorithm, use \code{algorithm=0} to choose between 2 and 3. Make sure \pkg{microbenchmark} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
     
     \preformatted{
 if (!require(microbenchmark))
