@@ -22,24 +22,25 @@ roc <- function(...) {
 }
 
 roc.formula <- function (formula, data, ...){
+  # Get predictors (easy)
   predictors <- attr(terms(formula), "term.labels")
   
+  # Get the data (complicated)
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m$... <- NULL
+  m[[1]] <- as.name("model.frame")
+  m <- eval(m, parent.frame())
   
+  # Get response (easy)
+  response <- model.response(m)
+
+  if (length(response) == 0) {
+    stop("Error in the formula: a response is required in a formula of type response~predictor.")
+  }
 
   if (length(predictors) == 1) {
-    # Get response (it's complicated)
-    m <- match.call(expand.dots = FALSE)
-    if (is.matrix(eval(m$data, parent.frame())))
-      m$data <- as.data.frame(data)
-    m$... <- NULL
-    m[[1]] <- as.name("model.frame")
-    m <- eval(m, parent.frame())
-    response <- model.response(m)
-
-    if (length(response) != nrow(data)) {
-      stop("Error in the formula: exactly 1 response is required in a formula of type response~predictor.")
-    }
-
     roc <- roc.default(response, m[[predictors]], ...)
     roc$call <- match.call()
     if (!is.null(roc$smooth))
@@ -47,13 +48,16 @@ roc.formula <- function (formula, data, ...){
     return(roc)
   }
   else if (length(predictors) > 1) {
-    roclist <- lapply(predictors, function(predictor, formula, data, dataName, ...) {
+    roclist <- lapply(predictors, function(predictor, formula, data, call, ...) {
+      # Get one ROC
+      roc <- roc.default(response, data[[predictor]], ...)
+      # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
-      roc <- roc.formula(formula, data, ...)
-      roc$call$data = dataName # Replace original name of the data
-      roc$call$formula = formula # Replace modified formula
+      call$formula <- formula # Replace modified formula
+      roc$call <- call
       return(roc)
-    }, formula = formula, data = data, dataName = match.call(expand.dots = FALSE)[["data"]], ...)
+    }, formula = formula, data = m, call = match.call(), ...)
+    # Set the list names
     names(roclist) <- predictors
     return(roclist)
   }
