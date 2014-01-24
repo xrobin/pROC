@@ -2,6 +2,7 @@
   * Fixed documentation of 'ci.coords' with examples
   * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation).
   * Handling Math and operations correctly on 'auc' and 'ci' objects (see '?groupGeneric.pROC')
+  * The 'formula' for 'roc.formula' can now provide several predictors and a list of ROC curves will be returned
 
 1.6.0.1 (2013-12-28)
   * Removed erroneous error message displayed when predictors and responses were not vectors

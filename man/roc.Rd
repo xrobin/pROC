@@ -45,7 +45,8 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link{smooth.roc}}.
   }
-  \item{formula}{a formula of the type \code{response~predictor}.}
+  \item{formula}{a formula of the type \code{response~predictor}. If mulitple predictors 
+    are passed, a named list of \code{roc} objects will be returned.}
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
   \item{levels}{the value of the response for controls and cases
