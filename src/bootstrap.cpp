@@ -34,11 +34,11 @@ std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, 
   for (int i = 0; i < bootN; i++) {
     std::generate(sampleControls.begin(), sampleControls.end(), controlsGenerator);
     std::generate(sampleCases.begin(), sampleCases.end(), casesGenerator);
+  
+    // Compute SE/SP of sample
+    
+    // Compute AUC
   }
-  
-  // Compute SE/SP of sample
-  
-  // Compute AUC
   
   return aucs;
 }
