@@ -5,6 +5,23 @@
 
 using namespace Rcpp;
 
+// bootstrapAucStratified
+std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, const std::vector<double>& cases, const int bootN);
+RcppExport SEXP pROC_bootstrapAucStratified(SEXP controlsSEXP, SEXP casesSEXP, SEXP bootNSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const std::vector<double>& >::type controls(controlsSEXP );
+        Rcpp::traits::input_parameter< const std::vector<double>& >::type cases(casesSEXP );
+        Rcpp::traits::input_parameter< const int >::type bootN(bootNSEXP );
+        std::vector<double> __result = bootstrapAucStratified(controls, cases, bootN);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // delongPlacementsCpp
 List delongPlacementsCpp(List roc);
 RcppExport SEXP pROC_delongPlacementsCpp(SEXP rocSEXP) {
