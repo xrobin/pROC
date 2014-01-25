@@ -10,10 +10,19 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double>& controls, const std::vector<double>& cases) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, std::vector<double> controls, std::vector<double> cases, const std::string& direction) {
   // keep all AUCs in a vector of size bootN
   vector<double> aucs;
   aucs.reserve(bootN);
+  
+  if (direction == ">") {
+    for (size_t i = 0; i < controls.size(); ++i) {
+      controls[i] = -controls[i];
+    }
+    for (size_t i = 0; i < cases.size(); ++i) {
+      cases[i] = -cases[i];
+    }
+  }
   
   vector<double> sampleControls(controls.size()), 
                       sampleCases(cases.size());

@@ -6,16 +6,17 @@
 using namespace Rcpp;
 
 // bootstrapAucStratified
-std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double>& controls, const std::vector<double>& cases);
-RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP controlsSEXP, SEXP casesSEXP) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, std::vector<double> controls, std::vector<double> cases, const std::string& direction);
+RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        Rcpp::traits::input_parameter< const std::vector<double>& >::type controls(controlsSEXP );
-        Rcpp::traits::input_parameter< const std::vector<double>& >::type cases(casesSEXP );
-        std::vector<double> __result = bootstrapAucStratified(bootN, controls, cases);
+        Rcpp::traits::input_parameter< std::vector<double> >::type controls(controlsSEXP );
+        Rcpp::traits::input_parameter< std::vector<double> >::type cases(casesSEXP );
+        Rcpp::traits::input_parameter< const std::string& >::type direction(directionSEXP );
+        std::vector<double> __result = bootstrapAucStratified(bootN, controls, cases, direction);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
