@@ -1,43 +1,30 @@
 #include <Rcpp.h>
 #include <vector>
 #include <algorithm>
-#include <random>
+#include "rocUtils.h"
+#include "auc.h"
 
 using std::vector;
+using std::pair;
 using namespace Rcpp;
-
-class BootstrapGenerator {
-  std::mt19937 rng = std::mt19937(std::random_device{}());
-  std::uniform_int_distribution<size_t> uniform_dist;
-  std::vector<double> vector;
-  
-  public:
-    //BootstrapGenerator() : rd(time(0)), rng(rd()) {};
-    BootstrapGenerator(const std::vector<double>& vector) : uniform_dist(0, vector.size() - 1), vector(vector) {}
-    double operator()() { return vector[uniform_dist(rng)]; }
-};
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, const std::vector<double>& cases, const int bootN) {
+std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, const std::vector<double>& cases, const size_t bootN) {
   // keep all AUCs in a vector of size bootN
   vector<double> aucs;
   aucs.reserve(bootN);
   
-  std::vector<double> sampleControls(controls.size()), 
+  vector<double> sampleControls(controls.size()), 
                       sampleCases(cases.size());
-  
-  // Generate sampling vector
-  BootstrapGenerator controlsGenerator(controls),
-                     casesGenerator(cases);
 
-  for (int i = 0; i < bootN; i++) {
-    std::generate(sampleControls.begin(), sampleControls.end(), controlsGenerator);
-    std::generate(sampleCases.begin(), sampleCases.end(), casesGenerator);
+  for (size_t i = 0; i < bootN; i++) {
+    // Select random sample
+    setRandomSample(controls, sampleControls);
+    setRandomSample(cases, sampleCases);
   
-    // Compute SE/SP of sample
-    
     // Compute AUC
+    aucs.push_back(aucCC(sampleControls, sampleCases));
   }
   
   return aucs;
