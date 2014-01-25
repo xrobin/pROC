@@ -144,7 +144,12 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
   ## Non smoothed ROC curves variance
   else {
     if (boot.stratified) {
-      aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
+      if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
+        aucs <- bootstrapAucStratified(boot.n, roc$controls, roc$cases)
+      }
+      else {
+        aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
+      }
     }
     else {
       aucs <- unlist(llply(1:boot.n, nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))

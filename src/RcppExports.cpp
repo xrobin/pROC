@@ -6,16 +6,16 @@
 using namespace Rcpp;
 
 // bootstrapAucStratified
-std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, const std::vector<double>& cases, const size_t bootN);
-RcppExport SEXP pROC_bootstrapAucStratified(SEXP controlsSEXP, SEXP casesSEXP, SEXP bootNSEXP) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double>& controls, const std::vector<double>& cases);
+RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP controlsSEXP, SEXP casesSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
         Rcpp::traits::input_parameter< const std::vector<double>& >::type controls(controlsSEXP );
         Rcpp::traits::input_parameter< const std::vector<double>& >::type cases(casesSEXP );
-        Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        std::vector<double> __result = bootstrapAucStratified(controls, cases, bootN);
+        std::vector<double> __result = bootstrapAucStratified(bootN, controls, cases);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

@@ -260,7 +260,12 @@ ci.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress,
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    aucs <- unlist(llply(1:boot.n, .fun=stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
+      aucs <- bootstrapAucStratified(boot.n, roc$controls, roc$cases)
+    }
+    else {
+      aucs <- unlist(llply(1:boot.n, .fun=stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    }
   }
   else {
     aucs <- unlist(llply(1:boot.n, .fun=nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))

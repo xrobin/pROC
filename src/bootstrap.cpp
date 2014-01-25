@@ -10,7 +10,7 @@ using namespace Rcpp;
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const std::vector<double>& controls, const std::vector<double>& cases, const size_t bootN) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double>& controls, const std::vector<double>& cases) {
   // keep all AUCs in a vector of size bootN
   vector<double> aucs;
   aucs.reserve(bootN);
