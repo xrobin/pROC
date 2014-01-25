@@ -145,7 +145,10 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
   else {
     if (boot.stratified) {
       if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
-        aucs <- bootstrapAucStratified(boot.n, roc$controls, roc$cases, roc$direction)
+        # Inverse controls & cases to handle direction == ">"
+        controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
+        cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
+        aucs <- bootstrapAucStratified(boot.n, controls, cases)
       }
       else {
         aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
