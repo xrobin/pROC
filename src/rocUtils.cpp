@@ -13,6 +13,30 @@ void setRandomSample(const vector<double>& from, vector<double>& to) {
   }
 }
 
+void setRandomUnpairedSample(const vector<double>& fromControls, const vector<double>& fromCases,
+                             vector<double>& toControls, vector<double>& toControls) {
+  // relevant sizes
+  size_t totalSize = fromControls.size() + fromCases.size();
+  size_t controlsSize = fromControls.size();
+  // prepare return values
+  toControls.clear().reserve(controlsSize); // best guess on the size.
+  toCases.clear().reserve(fromCases.size());
+  // take random index from R
+  Rcpp::NumericVector idx = Rcpp::runif(totalSize);
+  std::sort(idx.begin(), idx.end()); // avoid branch prediction fail?
+  for (double id: idx) {
+    if (id < controlsSize) {
+      toControls.push_back(fromControls[i]);
+    }
+    else {
+      toCases.push_back(fromCases[i - controlsSize]);
+    }
+  }
+  // remove potential unused reserved elements before returning
+  toControls.shrink_to_fit();
+  toCases.shrink_to_fit();
+}
+
 vector<double> computeThresholds(const vector<double>& predictor) {
   // Hold thresholds in a new vector
   vector<double> thresholds = predictor;
