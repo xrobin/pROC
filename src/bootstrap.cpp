@@ -42,7 +42,7 @@ std::vector<double> bootstrapAucNonStratified(const size_t bootN, std::vector<do
 
   for (size_t i = 0; i < bootN; i++) {
     // Select random sample
-    setRandomUnpairedSample(controls, cases, sampleControls, sampleCases)
+    setRandomUnpairedSample(controls, cases, sampleControls, sampleCases);
   
     // Compute AUC
     aucs.push_back(aucCC(sampleControls, sampleCases));
