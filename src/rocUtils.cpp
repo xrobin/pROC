@@ -24,9 +24,9 @@ void setRandomUnpairedSample(const vector<double>& fromControls, const vector<do
   toCases.clear();
   toCases.reserve(fromCases.size());
   // take random index from R
-  Rcpp::NumericVector idx = Rcpp::runif(totalSize);
+  Rcpp::NumericVector idx = Rcpp::runif(totalSize, 0, totalSize);
   std::sort(idx.begin(), idx.end()); // avoid branch prediction fail?
-  for (double id: idx) {
+  for (size_t id: idx) { // cast to size_t
     if (id < controlsSize) {
       toControls.push_back(fromControls[id]);
     }
