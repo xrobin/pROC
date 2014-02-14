@@ -156,7 +156,16 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
       }
     }
     else {
-      aucs <- unlist(llply(1:boot.n, nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+      if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
+        # Inverse controls & cases to handle direction == ">"
+        controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
+        cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
+        aucs <- bootstrapAucNonStratified(boot.n, controls, cases)
+        if (roc$percent) {aucs <- aucs * 100}
+      }
+      else {
+        aucs <- unlist(llply(1:boot.n, nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+      }
     }
   }
 
