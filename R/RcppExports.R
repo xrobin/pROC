@@ -5,6 +5,10 @@ bootstrapAucStratified <- function(bootN, controls, cases) {
     .Call('pROC_bootstrapAucStratified', PACKAGE = 'pROC', bootN, controls, cases)
 }
 
+bootstrapAucNonStratified <- function(bootN, controls, cases) {
+    .Call('pROC_bootstrapAucNonStratified', PACKAGE = 'pROC', bootN, controls, cases)
+}
+
 delongPlacementsCpp <- function(roc) {
     .Call('pROC_delongPlacementsCpp', PACKAGE = 'pROC', roc)
 }

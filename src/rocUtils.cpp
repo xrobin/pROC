@@ -14,22 +14,24 @@ void setRandomSample(const vector<double>& from, vector<double>& to) {
 }
 
 void setRandomUnpairedSample(const vector<double>& fromControls, const vector<double>& fromCases,
-                             vector<double>& toControls, vector<double>& toControls) {
+                             vector<double>& toControls, vector<double>& toCases) {
   // relevant sizes
   size_t totalSize = fromControls.size() + fromCases.size();
   size_t controlsSize = fromControls.size();
   // prepare return values
-  toControls.clear().reserve(controlsSize); // best guess on the size.
-  toCases.clear().reserve(fromCases.size());
+  toControls.clear();
+  toControls.reserve(controlsSize); // best guess on the size.
+  toCases.clear();
+  toCases.reserve(fromCases.size());
   // take random index from R
   Rcpp::NumericVector idx = Rcpp::runif(totalSize);
   std::sort(idx.begin(), idx.end()); // avoid branch prediction fail?
   for (double id: idx) {
     if (id < controlsSize) {
-      toControls.push_back(fromControls[i]);
+      toControls.push_back(fromControls[id]);
     }
     else {
-      toCases.push_back(fromCases[i - controlsSize]);
+      toCases.push_back(fromCases[id - controlsSize]);
     }
   }
   // remove potential unused reserved elements before returning

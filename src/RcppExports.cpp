@@ -22,6 +22,23 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// bootstrapAucNonStratified
+std::vector<double> bootstrapAucNonStratified(const size_t bootN, std::vector<double> controls, std::vector<double> cases);
+RcppExport SEXP pROC_bootstrapAucNonStratified(SEXP bootNSEXP, SEXP controlsSEXP, SEXP casesSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
+        Rcpp::traits::input_parameter< std::vector<double> >::type controls(controlsSEXP );
+        Rcpp::traits::input_parameter< std::vector<double> >::type cases(casesSEXP );
+        std::vector<double> __result = bootstrapAucNonStratified(bootN, controls, cases);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // delongPlacementsCpp
 List delongPlacementsCpp(List roc);
 RcppExport SEXP pROC_delongPlacementsCpp(SEXP rocSEXP) {

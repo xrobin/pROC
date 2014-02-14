@@ -16,8 +16,8 @@
 
 
 void setRandomSample(const std::vector<double>& from, std::vector<double>& to);
-void setRandomUnpairedSample(const vector<double>& fromControls, const vector<double>& fromCases,
-                             vector<double>& toControls, vector<double>& toControls);
+void setRandomUnpairedSample(const std::vector<double>& fromControls, const std::vector<double>& fromCases,
+                             std::vector<double>& toControls, std::vector<double>& toCases);
 
 std::vector<double> computeThresholds(const std::vector<double>& controls, const std::vector<double>& cases);
 
