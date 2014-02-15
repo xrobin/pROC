@@ -15,12 +15,18 @@
 
 
 
-void setRandomSample(const std::vector<double>& from, std::vector<double>& to);
-void setRandomUnpairedSample(const std::vector<double>& fromControls, const std::vector<double>& fromCases,
-                             std::vector<double>& toControls, std::vector<double>& toCases);
+//void setRandomSample(const std::vector<double>& from, std::vector<double>& to);
+void setRandomIdx(const size_t size, std::vector<size_t>& idxVector);
+void setRandomNonStratifiedSample(const size_t controlsSize, const size_t casesSize,
+                             std::vector<size_t>& controlsIdx, std::vector<size_t>& casesIdx);
+                             
+void makeUniqueInPlace(std::vector<double>& thresholds);
 
+std::vector<double> computeThresholds(const std::vector<double>& predictor);
 std::vector<double> computeThresholds(const std::vector<double>& controls, const std::vector<double>& cases);
+std::vector<double> computeThresholds(const std::vector<double>& controls, const std::vector<double>& cases, 
+                                      const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);
 
 std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
-
-double computeAuc(std::pair<std::vector<double>, std::vector<double>>);
+std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&, 
+                                                                const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);

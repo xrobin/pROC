@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <vector>
 #include <utility>
+#include "auc.h"
 #include "rocUtils.h"
 
 using std::vector;
@@ -14,7 +15,15 @@ double aucCC(const std::vector<double>& controls, const std::vector<double>& cas
     return computeAuc(sesp);
 }
 
-double computeAuc(const pair<vector<double>, vector<double>> sesp) {
+double aucCC(const std::vector<double>& controls, const std::vector<double>& cases, 
+             const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx) {
+    // Compute SE/SP of sample
+    vector<double> thresholds = computeThresholds(controls, cases, controlsIdx, casesIdx);
+    pair<vector<double>, vector<double>> sesp = computeSeSp(thresholds, controls, cases, controlsIdx, casesIdx);
+    return computeAuc(sesp);
+}
+
+double computeAuc(const pair<vector<double>, vector<double>>& sesp) {
   const vector<double> se = sesp.first;
   const vector<double> sp = sesp.second;
   double auc = 0;
