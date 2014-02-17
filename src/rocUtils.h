@@ -18,7 +18,7 @@
 
 #include <vector>
 #include <utility> // std::pair
-#include <algorithm> // std::reverse
+#include <algorithm> // std::reverse_copy
 
 
 std::vector<double> computeThresholds(const std::vector<double>& predictor);
@@ -31,7 +31,7 @@ std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vecto
                                                                 const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);
 
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
-  std::vector<T> y(x);
-  std::reverse(y.begin(), y.end());
+  std::vector<T> y;
+  std::reverse_copy(x.begin(), x.end(), y.begin());
   return y;
 }
