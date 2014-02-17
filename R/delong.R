@@ -1,8 +1,8 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2013 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez,
-# Markus Müller and Kazuki Yoshida
+# Markus Müller
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ delong.paired.test <- function(roc1, roc2) {
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
-  VR <- delong.placements(roc1)
-  VS <- delong.placements(roc2)
+  VR <- delongPlacementsCpp(roc1)
+  VS <- delongPlacementsCpp(roc2)
 
   SX <- matrix(NA, ncol=2, nrow=2)
   SX[1,1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(m-1)
@@ -31,7 +31,6 @@ delong.paired.test <- function(roc1, roc2) {
   SX[2,1] <- sum((VS$X - VS$theta) * (VR$X - VR$theta))/(m-1)
   SX[2,2] <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(m-1)
 
-  
   SY <- matrix(NA, ncol=2, nrow=2)
   SY[1,1] <- sum((VR$Y - VR$theta) * (VR$Y - VR$theta))/(n-1)
   SY[1,2] <- sum((VR$Y - VR$theta) * (VS$Y - VS$theta))/(n-1)
@@ -55,9 +54,9 @@ delong.unpaired.test <- function(roc1, roc2) {
 
   nS <- length(roc2$controls)
   mS <- length(roc2$cases)
-
-  VR <- delong.placements(roc1)
-  VS <- delong.placements(roc2)
+  
+  VR <- delongPlacementsCpp(roc1)
+  VS <- delongPlacementsCpp(roc2)
 
   SRX <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(mR-1)
   SSX <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(mS-1)
@@ -86,7 +85,7 @@ ci.auc.delong <- function(roc, conf.level) {
   m <- length(XR)
   mn <- m*n
 
-  V <- delong.placements(roc)
+  V <- delongPlacementsCpp(roc)
 
   SX <- sum((V$X - V$theta) * (V$X - V$theta))/(m-1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta))/(n-1)
@@ -109,29 +108,4 @@ ci.auc.delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
-}
-
-delong.placements <- function(roc) {
-  # returns a list V containing:
-  # - theta: the AUC
-  # - X: the 10 component
-  # - Y: the 01 component
-  V <- list()
-  Y <- roc$controls
-  X <- roc$cases
-  n <- length(Y)
-  m <- length(X)
-  
-  # Original computation of MW matrix as given in DeLong et al paper
-  # MW <- sapply(1:n, function(j) sapply(1:m, function(i, j) MW.kernel(X[i], Y[j]), j=j))
-  # Alternative version by Kazuki Yoshida
-  equal   <- outer(X, Y, "==") * 0.5
-  greater <- outer(X, Y, ">") * 1.0
-  MW <- equal + greater
-  
-  V$theta <- sum(MW)/(m*n)
-  # Delong-specific computations
-  V$X <- sapply(1:m, function(i) {sum(MW[i,])})/n
-  V$Y <- sapply(1:n, function(j) {sum(MW[,j])})/m
-  return(V)
 }

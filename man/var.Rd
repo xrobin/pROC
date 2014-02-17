@@ -15,9 +15,9 @@
 var(...)
 \S3method{var}{default}(...)
 \S3method{var}{auc}(auc, ...)
-\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"), 
+\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
-progress = getOption("pROCProgress")$name, ...)
+progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
 }
 
@@ -27,8 +27,8 @@ progress = getOption("pROCProgress")$name, ...)
 	\code{\link{smooth.roc}} function or an \dQuote{auc} object from
 	the \code{\link{auc}} function.
   }
-  \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong} or
+    \dQuote{bootstrap}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -51,6 +51,9 @@ progress = getOption("pROCProgress")$name, ...)
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
   }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{var.roc} when calling \code{var},
     \code{var.auc} and \code{var.smooth.roc}. Arguments for
@@ -63,20 +66,15 @@ progress = getOption("pROCProgress")$name, ...)
 \details{
   The \code{var} function computes the variance of the AUC of a ROC
   curve. It is typically called with the \link{roc} object of
-  interest. Three methods are available: \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
+  interest. Two methods are available: \dQuote{delong} and
+  \dQuote{bootstrap} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except for with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported (a warning is produced and \dQuote{bootstrap} is employed
-  instead). \dQuote{obuchowski} can be used on partial AUCs only if they
-  are defined as a region of specificity (AUC generated with
-  \code{partial.auc.region="specificity"}). Requesting the variance to
-  be computed with \code{method="obuchowski"} on an AUC with
-  \code{partial.auc.region="specificity"} produces a warning and
-  \dQuote{bootstrap} is employed instead.
+  instead).
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -165,16 +163,10 @@ progress = getOption("pROCProgress")$name, ...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} or \code{method="obuchowski"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for
+  If \code{method="delong"} and the ROC
+  curve is smoothed, the warning \dQuote{Using DeLong for
   smoothed ROCs is not supported. Using bootstrap test instead.} is
   issued. The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
-  When \code{method="obuchowski"} is requested on a partial AUC with
-  \code{method="obuchowski"} produces the warning \dQuote{Using
-  Obuchowski for smoothed ROCs is not supported. Using bootstrap
-  instead.} The \code{method} argument is ignored and \dQuote{bootstrap}
   is used instead.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between

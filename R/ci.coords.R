@@ -1,6 +1,6 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2010, 2011 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
 #
@@ -86,8 +86,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
 
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- rownames.ret
-
-  class(ci) <- "ci.coords"
+  
+  class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -142,7 +142,7 @@ ci.coords.roc <- function(roc,
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- rownames.ret
 
-  class(ci) <- c("ci.coords", "matrix")
+  class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

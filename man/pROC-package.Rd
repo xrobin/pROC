@@ -11,8 +11,6 @@
   be compared with statistical tests based on U-statistics or
   bootstrap. Confidence intervals can be computed for (p)AUC or ROC
   curves. Sample size / power computation for one or two ROC curves are available.
-
-  In S+, the package comes with a  graphical user interface.
 }
 
 \details{
@@ -31,8 +29,6 @@
   Two paired (that is \code{\link{roc}} objects with the same
   \code{response}) or unpaired (with different \code{response}) ROC
   curves can be compared with the \code{\link{roc.test}} function.
-  Sample size and power computations can be performed with the 
-  \code{\link{power.roc.test}} function.
 }
 
 \section{Citation}{
@@ -74,13 +70,13 @@
     \code{\link{ci.se}} \tab Compute the CI of sensitivities at given specificities \cr
     \code{\link{ci.sp}} \tab Compute the CI of specificities at given sensitivities \cr
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
+    \code{\link{ci.coords}} \tab Compute the CI of arbitrary coordinates \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
     \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
-    \code{\link{power.roc.test}} \tab Sample size and power computation \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
     \code{\link{roc.test}} \tab Compare the AUC of two ROC curves \cr
     \code{\link{smooth}} \tab Smooth a ROC curve \cr
@@ -107,18 +103,10 @@
   }
 }
 
-\section{Handling large datasets}{
-  Since version 1.6, pROC is able to accomodate large datasets, with an overhead growing linearly as a function of the number of observations.
-
-  Bootstrap operations (in \code{\link{ci}}, \code{\link{cov}}, \code{\link{power.roc.test}}, \code{\link{roc.test}} and \code{\link{var}}
-  functions), though slow, will also run as O(n). However all operations depending on DeLong's algorithm create a matrix of size
-  \code{number of controls} x \code{number of cases}, which is memory-comsuming. If you plan to run one of these function on a ROC curve
-  with more than 10000 observations per group, consider using \code{method="bootstrap"} rather than the default \code{method="delong"}.
-}
 
 \section{Bootstrap}{
 
-  All the bootstrap operations for \link[=roc.test]{significance testing} and \link[=ci]{confidence interval} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
+  All the bootstrap operations for \link[=roc.test]{significance testing}, \link[=ci]{confidence interval}, \link[=var]{variance} and \link[=cov]{covariance} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
 
   Stratification of bootstrap can be controlled
   with \code{boot.stratified}. In stratified bootstrap (the default), each replicate
@@ -158,7 +146,91 @@
 	  To inhibit the progress bars completely:
 	  
 	  \preformatted{options(pROCProgress = list(name = "none"))}
+    
 	}
+}
+
+
+\section{Handling large datasets}{
+  Versions 1.6 and 1.7 of pROC focused on execution speed to handle large datasets. Let's say we have the following dataset with 100 thousands observations:
+  
+  \preformatted{
+response <- round(runif(1E5))
+predictor <- rnorm(1E5)
+system.time(rocobj <- roc(response, predictor)) # Very slow!
+  }
+  
+  \subsection{Choosing an algorithm for \code{roc}}{
+    
+    By default, pROC uses an algorithm that linearly depends on the number of thresholds. An naive optimization is to reduce the precision of the predictor by generating ties in the data 
+    
+    \preformatted{
+system.time(rocobj <- roc(response, round(predictor))) # Faster - but losing precision
+    }
+    
+    Since version 1.6, pROC contains an alternative algorithm with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
+    
+    \preformatted{
+system.time(rocobj <- roc(response, predictor, algorithm = 2)) # Better
+    }
+    
+    When unsure about the fastest algorithm, use \code{algorithm=0} to choose between 2 and 3. Make sure \pkg{microbenchmark} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
+    
+    \preformatted{
+if (!require(microbenchmark))
+  install.packages("microbenchmark")
+rocobj <- roc(response, round(predictor), algorithm = 0)
+rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
+    }
+  }
+
+  \subsection{Boostrap}{
+    Bootstrap is typically slow because it involves repeatedly computing the ROC curve (or a part of it).
+    
+    Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
+    
+    A naive way to speed-up the boostrap is by removing the progress bar:
+    
+    \preformatted{
+rocobj <- roc(response, round(predictor))
+system.time(ci(rocobj))
+system.time(ci(rocobj, progress = "none"))
+    }
+    
+    It is of course possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
+
+    \subsection{Parallel processing}{
+  		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
+  
+  		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
+  
+  		\preformatted{
+#ifdef windows
+library(doSNOW)
+registerDoSNOW(makeCluster(4, type = "SOCK"))
+#endif
+#ifdef unix 
+library(doMC)
+registerDoMC(4)
+#endif
+ci(rocobj, method="bootstrap", parallel=TRUE)
+  		}
+    
+    Progress bars are not available when parallel processing is enabled.
+  	}
+  }
+  
+  \subsection{Using DeLong instead of boostrap}{
+    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)) which is typically faster than boostrapping. By default, pROC will choose the DeLong method whenever possible.
+  
+    Since version 1.7, pROC does not allocate an m * n matrix (with m = number of controls and n = number of case observations) in all DeLong computations, so it is in practice nearly always faster than bootstrapping. However it still goes with O(m*n) so it might be slower than bootstrap in some very edge cases (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
+    
+        \preformatted{
+rocobj <- roc(response, round(predictor), algorithm=3)
+system.time(ci(rocobj, method="delong"))
+system.time(ci(rocobj, method="bootstrap", parallel = TRUE))
+    }
+  }
 }
 
 \author{
@@ -172,6 +244,11 @@ Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
+
+  Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
+  (1988) ``Comparing the areas under two or more correlated receiver
+  operating characteristic curves: a nonparametric
+  approach''. \emph{Biometrics} \bold{44}, 837--845.
 
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
@@ -242,6 +319,22 @@ plot(roc2, add=TRUE)
 plot(ci.thresholds(roc2))
 }
 
+# In parallel
+#ifdef windows
+if (require(doSNOW)) {
+    registerDoSNOW(makeCluster(2, type = "SOCK"))
+    ci(roc2, method="bootstrap", parallel=TRUE)
+    \dontrun{ci(roc2, method="bootstrap", parallel=TRUE)}
+    \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
+}
+#endif
+#ifdef unix 
+if (require(doMC)) {
+    registerDoMC(2)
+    \dontrun{ci(roc2, method="bootstrap", parallel=TRUE)}
+    \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
+}
+#endif
 
 ## Comparisons ##
 
@@ -257,19 +350,6 @@ roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
 roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
          partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)
 }
-
-
-## Sample size ##
-
-# Two ROC curves
-power.roc.test(roc1, roc2, reuse.auc=FALSE)
-power.roc.test(roc1, roc2, power=0.9, reuse.auc=FALSE)
-
-# One ROC curve
-power.roc.test(auc=0.8, ncases=41, ncontrols=72)
-power.roc.test(auc=0.8, power=0.9)
-power.roc.test(auc=0.8, ncases=41, ncontrols=72, sig.level=0.01)
-power.roc.test(ncases=41, ncontrols=72, power=0.9)
 }
 
 

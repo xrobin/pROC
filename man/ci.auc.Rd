@@ -21,10 +21,10 @@
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress")$name, ...)
+progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress=getOption("pROCProgress")$name, ...)
+progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 \S3method{ci.auc}{auc}(auc, ...)
 \S3method{ci.auc}{formula}(formula, data, ...)
 \S3method{ci.auc}{default}(response, predictor, ...)
@@ -63,6 +63,9 @@ progress=getOption("pROCProgress")$name, ...)
     more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
+  }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
@@ -154,7 +157,7 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
-A numeric vector of length 3 and class \dQuote{ci.auc}, with the lower
+A numeric vector of length 3 and class \dQuote{ci.auc}, \dQuote{ci} and \dQuote{numeric} (in this order), with the lower
 bound, the median and the upper bound of the CI, and the following attributes:
 \item{conf.level}{the width of the CI, in fraction.}
 \item{method}{the method employed.}
