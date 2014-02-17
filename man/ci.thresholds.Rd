@@ -20,7 +20,7 @@
 # ci.thresholds(...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
-progress=getOption("pROCProgress")$name, ...) 
+progress=getOption("pROCProgress")$name, parallel=FALSE, ...) 
 \S3method{ci.thresholds}{formula}(formula, data, ...)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
@@ -55,6 +55,9 @@ progress=getOption("pROCProgress")$name, ...)
     more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
+  }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.thresholds.roc}
@@ -91,7 +94,7 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
-  A list of length 2 and class \dQuote{ci.thresholds}, with the confidence
+  A list of length 2 and class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order), with the confidence
   intervals of the CI and the following items:
   \item{specificity}{a matrix of CI for the specificity. Row (names) are the
 	thresholds, the first column the lower bound, the 2nd column the

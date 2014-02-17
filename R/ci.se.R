@@ -1,6 +1,6 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2010, 2011 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
 #
@@ -35,6 +35,7 @@ ci.se.smooth.roc <- function(smooth.roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress")$name,
+                      parallel = FALSE,
                       ...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -55,10 +56,10 @@ ci.se.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.smooth.se(roc, specificities, smooth.roc.call), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, stratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.smooth.se(roc, specificities, smooth.roc.call), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, nonstratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
   }
 
   if (any(is.na(perfs))) {
@@ -69,7 +70,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
 
-  class(ci) <- "ci.se"
+  class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -84,6 +85,7 @@ ci.se.roc <- function(roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress")$name,
+                      parallel = FALSE,
                       ...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -93,21 +95,20 @@ ci.se.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rdply(boot.n, stratified.ci.se(roc, specificities), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, stratified.ci.se, roc=roc, sp=specificities, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- rdply(boot.n, nonstratified.ci.se(roc, specificities), .progress=progress)[-1]
+    perfs <- ldply(1:boot.n, nonstratified.ci.se, roc=roc, sp=specificities, .progress=progress, .parallel=parallel)
   }
 
   if (any(is.na(perfs))) {
     warning("NA value(s) produced during bootstrap were ignored.")
     perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
   }
-
   ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep="")
-
-  class(ci) <- "ci.se"
+  
+  class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

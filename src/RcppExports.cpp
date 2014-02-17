@@ -5,6 +5,21 @@
 
 using namespace Rcpp;
 
+// delongPlacementsCpp
+List delongPlacementsCpp(List roc);
+RcppExport SEXP pROC_delongPlacementsCpp(SEXP rocSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< List >::type roc(rocSEXP );
+        List __result = delongPlacementsCpp(roc);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // rocUtilsPerfsAllC
 List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
 RcppExport SEXP pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {

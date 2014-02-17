@@ -20,7 +20,7 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress=getOption("pROCProgress")$name, ...)
+  progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 }
 
 \arguments{
@@ -29,8 +29,8 @@ cov(...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
   }
-  \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong} or
+    \dQuote{bootstrap}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -58,6 +58,9 @@ cov(...)
     is also accepted. See also the \dQuote{Progress bars} section of
     \link[=pROC-package]{this package's documentation}.
   }
+  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
+    parallel backend provided by plyr (foreach).
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
@@ -71,20 +74,15 @@ cov(...)
   This function computes the covariance between the AUC of two
   correlated (or paired, according to the detection of \code{\link{are.paired}}) ROC
   curves. It is typically called with the two \link{roc} objects of
-  interest. Three methods are available: \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
+  interest. Two methods are available: \dQuote{delong} and
+  \dQuote{bootstrap} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported (a warning is produced and \dQuote{bootstrap} is employed
-  instead). \dQuote{obuchowski} can be used on partial AUCs only if they
-  are defined as a region of specificity (AUC generated with
-  \code{partial.auc.region="specificity"}). Requesting the covvariance to
-  be computed with \code{method="obuchowski"} on an AUC with
-  \code{partial.auc.region="sensitivity"} produces a warning and
-  \dQuote{bootstrap} is employed instead.
+  instead).
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -201,21 +199,15 @@ cov(...)
     not supported. Using bootstrap test instead.} is issued. The
   \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
 
-  If \code{method="delong"} or \code{method="obuchowski"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong/Obuchowski for
+  If \code{method="delong"} and the ROC
+  curve is smoothed, the warning \dQuote{Using DeLong for
   smoothed ROCs is not supported. Using bootstrap instead.} is
   issued. The \code{method} argument is ignored and \dQuote{bootstrap}
   is used instead.
 
-  When \code{method="obuchowski"} is requested on a partial AUC with
-  \code{method="obuchowski"} produces the warning \dQuote{Using
-  Obuchowski for smoothed ROCs is not supported. Using bootstrap
-  instead.} The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
-  DeLong and Obuchowski ignores the direction of the ROC curve so that if two
+  DeLong ignores the direction of the ROC curve so that if two
   ROC curves have a different \code{direction}, the warning
-  \dQuote{"DeLong/Obuchowski should not be applied to ROC curves with a different
+  \dQuote{"DeLong should not be applied to ROC curves with a different
   direction."} is printed. However, the spurious computation is enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
@@ -306,9 +298,6 @@ roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.8), partial.auc.focus="s
 cov(roc3, roc4)
 # This is strictly equivalent to:
 cov(roc3, roc4, method="bootstrap")
-
-# To use Obuchowski:
-cov(roc3, roc4, method="obuchowski")
 
 # Alternatively, we could re-use roc1 and roc2 to get the same result:
 cov(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.8), partial.auc.focus="se")

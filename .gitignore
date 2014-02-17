@@ -1,0 +1,12 @@
+.DS_Store
+.Rproj.user
+.Rhistory
+.RData
+.Rbuildignore
+*~
+R.Rproj
+pROC-Ex.R
+R/emacs23.desktop
+src/*.o
+src/pROC.so
+src/symbols.rds

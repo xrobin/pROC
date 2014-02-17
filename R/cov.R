@@ -1,6 +1,6 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
 # (partial) area under the curve, confidence intervals and comparison. 
-# Copyright (C) 2010, 2011 Xavier Robin, Alexandre Hainard, Natacha Turck,
+# Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
 #
@@ -44,6 +44,7 @@ cov.roc <- function(roc1, roc2,
                          reuse.auc=TRUE,
                          boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
                          progress=getOption("pROCProgress")$name,
+                         parallel = FALSE,
                          ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (is(roc2, "auc")) {
@@ -171,10 +172,10 @@ cov.roc <- function(roc1, roc2,
     n <- length(roc1$controls)
     m <- length(roc1$cases)
 
-    V1 <- delong.placements(roc1)
+    V1 <- delongPlacementsCpp(roc1)
     var1 <- var(V1$Y) / n + var(V1$X) / m
 
-    V2 <- delong.placements(roc2)
+    V2 <- delongPlacementsCpp(roc2)
     var2 <- var(V2$Y) / n + var(V2$X) / m
 
     cov <- cov(V2$X, V1$X) / m + cov(V2$Y, V1$Y) / n
@@ -199,8 +200,8 @@ cov.roc <- function(roc1, roc2,
     if(class(progress) != "list") {
       progress <- roc.utils.get.progress.bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
-
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress)
+    
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel)
   }
 
   return(cov)
