@@ -118,5 +118,3 @@ pair<vector<double>, vector<double>> computeSeSp(const vector<double>& threshold
   
   return std::make_pair(se, sp);
 }
-
-

@@ -5,6 +5,23 @@
 
 using namespace Rcpp;
 
+// computeAuc
+double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, const Rcpp::List& aucParamsList);
+RcppExport SEXP pROC_computeAuc(SEXP seSEXP, SEXP spSEXP, SEXP aucParamsListSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const std::vector<double>& >::type se(seSEXP );
+        Rcpp::traits::input_parameter< const std::vector<double>& >::type sp(spSEXP );
+        Rcpp::traits::input_parameter< const Rcpp::List& >::type aucParamsList(aucParamsListSEXP );
+        double __result = computeAuc(se, sp, aucParamsList);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // bootstrapAucStratified
 std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double> controls, const std::vector<double> cases, const Rcpp::List& aucParamsList);
 RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP aucParamsListSEXP) {

@@ -17,7 +17,8 @@
 */
 
 #include <vector>
-#include <utility>
+#include <utility> // std::pair
+#include <algorithm> // std::reverse
 
 
 std::vector<double> computeThresholds(const std::vector<double>& predictor);
@@ -28,3 +29,9 @@ std::vector<double> computeThresholds(const std::vector<double>& controls, const
 std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
 std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&, 
                                                                 const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);
+
+template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
+  std::vector<T> y(x);
+  std::reverse(y.begin(), y.end());
+  return y;
+}
