@@ -41,7 +41,7 @@ AucParams::AucParams(const List& l) {
       stop("Reached a line that should be unreachable (partial.auc=TRUE). Please report this bug to the maintainer of pROC. Please type packageDescription(\"pROC\", fields=\"Maintainer\") to obtain this information.");
     }
   }
-  catch (const Rcpp::not_compatible&) {
+  catch (const Rcpp::not_compatible&) { // the test if (! test) { will throw for partial auc where test is a numeric vector of length 2.
     NumericVector test = l["partial.auc"];
     partial = true;
     from = test[0];
@@ -108,57 +108,45 @@ double computePartialAuc(const vector<double>& se, const vector<double>& sp, con
   const vector<double>& x = aucParams.focusOnSp ? sp : getReversedVector(se);
   const vector<double>& y = aucParams.focusOnSp ? se : getReversedVector(sp);
   
-  bool beforeRange = true;
-  for (size_t i = 0; i < x.size() - 1; ++i) {
-    if (x[i] > aucParams.from) { // We're before the range: nothing to do
-      continue;
-    }
-    else {
-      // We are in range
-      if (beforeRange) { // but the previous wasn't
-        // Are we still in range?
-        if (x[i] < aucParams.to) {
-          // special case: partial interpolation between 2 out-of-range bounds
-          double diff_horiz = aucParams.from - aucParams.to;
-          double proportion_before = (x[i-1] - aucParams.from) / (x[i-1] - x[i]);
-          double proportion_after  = (aucParams.to - x[i]) / (x[i-1] - x[i]);
-          double y_interpolated_before = y[i-1] + proportion_before * (y[i] - y[i-1]);
-          double y_interpolated_after = y[i] - proportion_after * (y[i] - y[i-1]);
-          std::cout << "adding partial: " << diff_horiz * (y_interpolated_before + y_interpolated_after)/2 << std::endl;
-          auc += diff_horiz * (y_interpolated_before + y_interpolated_after) / 2;
-          break; // We're done - we're already past the range
-        }
-        // add previous partial 
-        if (i > 0) { // if first element is in range, just do normal processing
-          if (x[i] - x[i-1] == 0 || x[i] == aucParams.from) { // if no horizontal span from last point, or we're exactly at the from point, auc += 0, just go to next iteration
-            continue;
-          }
-          double proportion = (aucParams.from - x[i - 1]) / (x[i] - x[i-1]);
-          double y_interpolated = y[i-1] + proportion * (y[i] - y[i-1]);
-          std::cout << "adding previous partial: " << (aucParams.from - x[i]) * (y[i] + y_interpolated) / 2 << std::endl;
+  // iterate backwards until we reach the start of the range
+  size_t i = x.size() - 1;
+  while (x[i] > aucParams.from) {
+    --i;
+  }
+  // i is now the first element of the range
+  
+  // special case: we're already beyond the range
+  // We need to perform partial interpolation between 2 out-of-range bounds
+  if (x[i] < aucParams.to) {
+    double diff_horiz = aucParams.from - aucParams.to;
+    double proportion_before = (x[i + 1] - aucParams.from) / (x[i + 1] - x[i]);
+    double proportion_after  = (aucParams.to - x[i]) / (x[i + 1] - x[i]);
+    double y_interpolated_before = y[i + 1] + proportion_before * (y[i] - y[i + 1]);
+    double y_interpolated_after = y[i] - proportion_after * (y[i] - y[i + 1]);
+    return diff_horiz * (y_interpolated_before + y_interpolated_after) / 2;
+  }
+  // Ok now we're really in range.
+  // Do we need to add the part of AUC before the range?
+  // Only if we're NOT the last element AND not exactly "from"
+  if (x[i] < 1 && x[i] < aucParams.from) {
+          double proportion = (aucParams.from - x[i + 1]) / (x[i] - x[i + 1]);
+          double y_interpolated = y[i + 1] + proportion * (y[i] - y[i + 1]);
           auc += (aucParams.from - x[i]) * (y[i] + y_interpolated) / 2; 
-        }
-        beforeRange = false;
-      }
-      
-      if (x[i+1] < aucParams.to) {
-        //  add last partial and stop
-        if (x[i] - x[i+1] != 0 && x[i] != aucParams.to) {
-          // x[i] - x[i+1] != 0: no horizontal span: auc += 0 anyway
-          // x[i] != aucParams.to: we're already exactly at the "to" (last) point: nothing to add
-          double proportion = (x[i] - aucParams.to) / (x[i] - x[i+1]);
-          double y_interpolated = y[i] + proportion * (y[i+1] - y[i]);
-          std::cout << "adding last partial: " << (x[i] - aucParams.to) * (y[i] + y_interpolated) / 2 << std::endl;
-          auc += (x[i] - aucParams.to) * (y[i] + y_interpolated) / 2;
-        }
-        break;
-      }
-      else {
-        // Normal add everythhing betwen i and i + 1
-        std::cout << "adding full range: " << (x[i + 1] - x[i]) * (y[i + 1] + y[i]) / 2 << std::endl;
-        auc += (x[i + 1] - x[i]) * (y[i + 1] + y[i]) / 2;
-      }
-    }
+  }
+  
+  // Now we're going down the SP and adding AUCs normally
+  // TODO special case where x[i] == from?
+  while (i > 0 && x[i - 1] >= aucParams.to) {
+    auc += (x[i] - x[i - 1]) * (y[i] + y[i - 1]) / 2;
+    --i;
+  }
+  // We're now either at i = 0 (nothing more to add)
+  // Or just at the border of the range (then it was added @ previous step because x[i - 1] >= aucParams.to was true so now x[i] == aucParams.to)
+  // or just before being out of range (because if i-1 at the previous step was, it didn't decrement!
+  if ( i > 0 && x[i] > aucParams.to) {
+    double proportion = (x[i] - aucParams.to) / (x[i] - x[i - 1]);
+    double y_interpolated = y[i] + proportion * (y[i - 1] - y[i]);
+    auc += (x[i] - aucParams.to) * (y[i] + y_interpolated) / 2;
   }
 
   return auc;
