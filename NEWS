@@ -1,3 +1,6 @@
+1.8 (*)
+  *
+
 1.7 (2014-02-19)
   * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation).
   * Handling Math and Operations correctly on 'auc' and 'ci' objects (see '?groupGeneric.pROC')
