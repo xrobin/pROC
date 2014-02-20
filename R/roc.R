@@ -226,7 +226,7 @@ roc.default <- function(response, predictor,
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases))
-    benchmark <- try(microbenchmark(
+    benchmark <- try(microbenchmark::microbenchmark(
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
