@@ -1,3 +1,7 @@
+1.7.1 (2014-02-20)
+  * Close SOCK cluster on Windows with parallel=TRUE
+  * Fixed really use algorithm 1 when microbenchmark fails
+
 1.7 (2014-02-19)
   * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation).
   * Handling Math and Operations correctly on 'auc' and 'ci' objects (see '?groupGeneric.pROC')
