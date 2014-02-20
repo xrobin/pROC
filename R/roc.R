@@ -275,6 +275,7 @@ roc.default <- function(response, predictor,
              auc, ...)
   
   roc$call <- match.call()
+  roc$algorithm <- algorithm
   if (smooth) {
     attr(roc, "roc")$call <- roc$call
     attr(roc, "roc")$original.predictor <- original.predictor
