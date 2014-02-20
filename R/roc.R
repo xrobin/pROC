@@ -233,13 +233,15 @@ roc.default <- function(response, predictor,
     ))
     if (is(benchmark, "try-error")) {
       warning("Microbenchmark failed. Using default algorithm 1.")
+      algorithm <- 1
     } 
     else {
       print(summary(benchmark))
       if (any(is.na(benchmark))) {
         warning("Microbenchmark returned NA. Using default algorithm 1.")
+        algorithm <- 1
       }
-      if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
+      else if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
         algorithm <- 2
         cat("Selecting algorithm 2.\n")
       }
