@@ -138,25 +138,22 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
   }
   
   
-  vector<double> finalSe(nthresholds), finalSp(thresholds.size());
-  finalSe[0] = 0; 
-  finalSp[0] = 1;
-  size_t nextFinalIdx = 1, nextIdx = 0;
-  while (nextFinalIdx < nthresholds) {
+  vector<double> finalSe(nthresholds), finalSp(nthresholds);
+  finalSe[nthresholds - 1] = 0; 
+  finalSp[nthresholds - 1] = 1;
+  size_t nextFinalIdx = 0, nextIdx = npredictors - 1;
+  while (nextFinalIdx < nthresholds - 1) {
     if (!duplicated[nextIdx]) {
       finalSe[nextFinalIdx] = se[nextIdx];
       finalSp[nextFinalIdx] = sp[nextIdx];
       ++nextFinalIdx;
     }
-    ++nextIdx;
+    --nextIdx;
   }
-  
-  std::reverse(finalSe.begin(), finalSe.end());
-  std::reverse(finalSp.begin(), finalSp.end());
 
-  
   List ret;
   ret["se"] = finalSe;
   ret["sp"] = finalSp;
-  return(ret);
+  
+  return ret;
 }
