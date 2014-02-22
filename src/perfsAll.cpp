@@ -73,6 +73,12 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
 }
 
 
+/** A sorter for two vectors, specifically cases & controls 
+ * Example usage: 
+ * vector<size_t> index(controls.size() + cases.size());
+ * std::iota(index.begin(), index.end(), 0);
+ * std::sort(index.begin(), index.end(), ControlCasesComparator(controls, cases));
+ */
 class ControlCasesComparator{
    NumericVector& controls;
    NumericVector& cases;
@@ -87,6 +93,7 @@ class ControlCasesComparator{
 
 // [[Rcpp::export]]
 List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
+  // Vector sizes
   const size_t ncontrols(controls.size());
   const size_t ncases(cases.size());
   const size_t npredictors = ncontrols + ncases;
@@ -96,39 +103,45 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
   vector<size_t> index(npredictors);
   std::iota(index.begin(), index.end(), 0);
   std::sort(index.begin(), index.end(), ControlCasesComparator(controls, cases));
-  if (direction == "<") {
+  if (direction == "<") { // potential decreasing=TRUE
     std::reverse(index.begin(), index.end());
   }
   
   // Cummulative sum
-  //vector<size_t> tp(npredictors), fp(npredictors);
+  // no need for tp/fp, compute se/sp directly during the cummulative sum
   vector<double> se(npredictors), sp(npredictors);
-  vector<bool> duplicated(npredictors); 
+  // And store the cummulative sums (tp, fp) in two variables
   size_t currentTpSum = 0, currentFpSum = 0;
+  // Assess the duplication stage in the same loop
+  vector<bool> duplicated(npredictors); 
+  
   for (size_t i = 0; i < npredictors; ++i) {
     if (index[i] < ncontrols) { // we have one control
       sp[i] = (ncontrols - static_cast<double>(++currentFpSum)) / ncontrols;
       se[i] = static_cast<double>(currentTpSum) / ncases;
     }
-    else {
+    else { // we have one case
       sp[i] = (ncontrols - static_cast<double>(currentFpSum)) / ncontrols;
       se[i] = static_cast<double>(++currentTpSum) / ncases;
     }
     // We can compute the duplicates in the same loop
     bool currentDupPred = false;
     bool currentDupSeSp = false;
+    // Is predictor[i] the same as predictor[i+1]?
     if (i < npredictors - 1) {
       size_t nextIdx = index[i + 1];
       size_t currIdx = index[i];
       currentDupPred = (nextIdx < ncontrols ? controls[nextIdx] : cases[nextIdx - ncontrols]) == (currIdx < ncontrols ? controls[currIdx] : cases[currIdx - ncontrols]);
     }
+    // Are SE[i] & SP[i] the same as SE[i-1] & SP[i-1]
     if (i > 0) {
       currentDupSeSp = se[i] == se[i - 1] && sp[i] == sp[i - 1];
     }
     duplicated[i] = currentDupPred || currentDupSeSp;
   }
   
-  // Todo: ensure the sum of !duplicated == thresholds.size()
+  // Ensure the sum of !duplicated == thresholds.size()
+  // Todo: maybe remove this in a future version of pROC...
   size_t nNonDuplicated = 0;
   for (size_t i = 0; i < npredictors; ++i) {
     if (! duplicated[i]) ++nNonDuplicated;
@@ -137,9 +150,9 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
     stop("Bug in pROC: fast algorithm (C++ version) computed an incorrect number of sensitivities and specificities.");
   }
   
-  
+  // Push the non-duplicated SE / SP into the final vectors
   vector<double> finalSe(nthresholds), finalSp(nthresholds);
-  finalSe[nthresholds - 1] = 0; 
+  finalSe[nthresholds - 1] = 0;
   finalSp[nthresholds - 1] = 1;
   size_t nextFinalIdx = 0, nextIdx = npredictors - 1;
   while (nextFinalIdx < nthresholds - 1) {
