@@ -21,3 +21,7 @@ rocUtilsPerfsAllC <- function(thresholds, controls, cases, direction) {
     .Call('pROC_rocUtilsPerfsAllC', PACKAGE = 'pROC', thresholds, controls, cases, direction)
 }
 
+rocUtilsPerfsCumsumC <- function(thresholds, controls, cases, direction) {
+    .Call('pROC_rocUtilsPerfsCumsumC', PACKAGE = 'pROC', thresholds, controls, cases, direction)
+}
+
