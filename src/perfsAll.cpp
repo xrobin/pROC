@@ -151,10 +151,9 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
     ++nextIdx;
   }
   
-  if (direction == "<") {
-    std::reverse(finalSe.begin(), finalSe.end());
-    std::reverse(finalSp.begin(), finalSp.end());
-  }
+  std::reverse(finalSe.begin(), finalSe.end());
+  std::reverse(finalSp.begin(), finalSp.end());
+
   
   List ret;
   ret["se"] = finalSe;
