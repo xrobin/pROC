@@ -92,61 +92,52 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
   vector<double> se(npredictors), sp(npredictors);
   // And store the cummulative sums (tp, fp) in two variables
   size_t currentTpSum = 0, currentFpSum = 0;
-  // Assess the duplication stage in the same loop
-  vector<bool> duplicated(npredictors); 
-  
+
+  size_t validPositions = 0;
   for (size_t i = 0; i < npredictors; ++i) {
-    if (index[i] < ncontrols) { // we have one control
-      sp[i] = (ncontrols - static_cast<double>(++currentFpSum)) / ncontrols;
-      se[i] = static_cast<double>(currentTpSum) / ncases;
+    // Compute Se/Sp
+    if (predictor.isControl(index[i])) { // we have one control
+      ++currentFpSum;
     }
     else { // we have one case
-      sp[i] = (ncontrols - static_cast<double>(currentFpSum)) / ncontrols;
-      se[i] = static_cast<double>(++currentTpSum) / ncases;
+      ++currentTpSum;
     }
-    // We can compute the duplicates in the same loop
+    
+    // Determine if if is a duplicate
     bool currentDupPred = false;
-    bool currentDupSeSp = false;
     // Is predictor[i] the same as predictor[i+1]?
     if (i < npredictors - 1) {
-      size_t nextIdx = index[i + 1];
-      size_t currIdx = index[i];
-      currentDupPred = predictor[nextIdx] == predictor[currIdx];
+      currentDupPred = predictor[index[i + 1]] == predictor[index[i]];
     }
-    // Are SE[i] & SP[i] the same as SE[i-1] & SP[i-1]
-    if (i > 0) {
-      currentDupSeSp = se[i] == se[i - 1] && sp[i] == sp[i - 1];
+    // If different, add the Se/Sp as a valid position
+    if (!currentDupPred) {
+      se[validPositions] = static_cast<double>(currentTpSum) / ncases;
+      sp[validPositions] = (ncontrols - static_cast<double>(currentFpSum)) / ncontrols;
+      ++validPositions;
     }
-    duplicated[i] = currentDupPred || currentDupSeSp;
   }
   
+  // Se/sp were over-allocated - resize to the valid positions only
+  se.resize(validPositions + 1);
+  sp.resize(validPositions + 1);
+  
+  // Reverse - can we find a way to do it right from the start?
+  std::reverse(se.begin(), se.end() - 1);
+  std::reverse(sp.begin(), sp.end() - 1);
+  
+  // Anchor the last position to 1/0
+  se[validPositions] = 0;
+  sp[validPositions] = 1;
+
   // Ensure the sum of !duplicated == thresholds.size()
   // Todo: maybe remove this in a future version of pROC...
-  size_t nNonDuplicated = 0;
-  for (size_t i = 0; i < npredictors; ++i) {
-    if (! duplicated[i]) ++nNonDuplicated;
-  }
-  if (nNonDuplicated != nthresholds - 1) {
+  if (validPositions != nthresholds - 1) {
     stop("Bug in pROC: fast algorithm (C++ version) computed an incorrect number of sensitivities and specificities.");
-  }
-  
-  // Push the non-duplicated SE / SP into the final vectors
-  vector<double> finalSe(nthresholds), finalSp(nthresholds);
-  finalSe[nthresholds - 1] = 0;
-  finalSp[nthresholds - 1] = 1;
-  size_t nextFinalIdx = 0, nextIdx = npredictors - 1;
-  while (nextFinalIdx < nthresholds - 1) {
-    if (!duplicated[nextIdx]) {
-      finalSe[nextFinalIdx] = se[nextIdx];
-      finalSp[nextFinalIdx] = sp[nextIdx];
-      ++nextFinalIdx;
-    }
-    --nextIdx;
   }
 
   List ret;
-  ret["se"] = finalSe;
-  ret["sp"] = finalSp;
+  ret["se"] = se;
+  ret["sp"] = sp;
   
   return ret;
 }
