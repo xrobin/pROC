@@ -16,8 +16,9 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <Rcpp.h> 
-#include <vector> 
+#include <Rcpp.h>
+#include <vector>
+#include "Predictor.h"
 using namespace Rcpp;
 using std::vector;
 
@@ -73,12 +74,8 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
 }
 
 
-/** A sorter for two vectors, specifically cases & controls 
- * Example usage: 
- * vector<size_t> index(controls.size() + cases.size());
- * std::iota(index.begin(), index.end(), 0);
- * std::sort(index.begin(), index.end(), ControlCasesComparator(controls, cases));
- */
+
+
 class ControlCasesComparator{
    NumericVector& controls;
    NumericVector& cases;
@@ -90,7 +87,6 @@ class ControlCasesComparator{
    }
 };
 
-
 // [[Rcpp::export]]
 List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
   // Vector sizes
@@ -99,13 +95,10 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
   const size_t npredictors = ncontrols + ncases;
   const size_t nthresholds = thresholds.size();
   
+  const Predictor predictor(controls, cases);
+  
   // Compute an index vector for controls and cases as R's order() function
-  vector<size_t> index(npredictors);
-  std::iota(index.begin(), index.end(), 0);
-  std::sort(index.begin(), index.end(), ControlCasesComparator(controls, cases));
-  if (direction == "<") { // potential decreasing=TRUE
-    std::reverse(index.begin(), index.end());
-  }
+  vector<size_t> index = predictor.getOrder(direction);
   
   // Cummulative sum
   // no need for tp/fp, compute se/sp directly during the cummulative sum
@@ -131,7 +124,8 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
     if (i < npredictors - 1) {
       size_t nextIdx = index[i + 1];
       size_t currIdx = index[i];
-      currentDupPred = (nextIdx < ncontrols ? controls[nextIdx] : cases[nextIdx - ncontrols]) == (currIdx < ncontrols ? controls[currIdx] : cases[currIdx - ncontrols]);
+      currentDupPred = predictor[nextIdx] == predictor[currIdx];
+      //currentDupPred = (nextIdx < ncontrols ? controls[nextIdx] : cases[nextIdx - ncontrols]) == (currIdx < ncontrols ? controls[currIdx] : cases[currIdx - ncontrols]);
     }
     // Are SE[i] & SP[i] the same as SE[i-1] & SP[i-1]
     if (i > 0) {
