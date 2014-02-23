@@ -74,19 +74,6 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
 }
 
 
-
-
-class ControlCasesComparator{
-   NumericVector& controls;
-   NumericVector& cases;
-   size_t firstCase;
- public:
-   ControlCasesComparator(NumericVector& theControls, NumericVector& theCases) : controls(theControls), cases(theCases), firstCase(theControls.size()) {}
-   bool operator()(size_t i, size_t j){
-     return (i < firstCase ? controls[i] : cases[i - firstCase]) < (j < firstCase ? controls[j] : cases[j - firstCase]);
-   }
-};
-
 // [[Rcpp::export]]
 List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
   // Vector sizes
@@ -125,7 +112,6 @@ List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, Nume
       size_t nextIdx = index[i + 1];
       size_t currIdx = index[i];
       currentDupPred = predictor[nextIdx] == predictor[currIdx];
-      //currentDupPred = (nextIdx < ncontrols ? controls[nextIdx] : cases[nextIdx - ncontrols]) == (currIdx < ncontrols ? controls[currIdx] : cases[currIdx - ncontrols]);
     }
     // Are SE[i] & SP[i] the same as SE[i-1] & SP[i-1]
     if (i > 0) {
