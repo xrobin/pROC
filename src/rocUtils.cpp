@@ -62,7 +62,7 @@ vector<double> computeThresholds(const vector<double>& controls, const vector<do
   return thresholds;
 }
 
-pair<vector<double>, vector<double>> computeSeSp(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases) {
+pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases) {
   vector<double> se(thresholds.size()),
                  sp(thresholds.size());
   long tp, tn;
@@ -91,7 +91,7 @@ pair<vector<double>, vector<double>> computeSeSp(const vector<double>& threshold
 
 
 
-pair<vector<double>, vector<double>> computeSeSp(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases,
+pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases,
                                                  const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx) {
   vector<double> se(thresholds.size()), 
                  sp(thresholds.size());

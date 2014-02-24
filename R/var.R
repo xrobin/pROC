@@ -144,16 +144,11 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
   ## Non smoothed ROC curves variance
   else {
     if (boot.stratified) {
-      if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
-        # Inverse controls & cases to handle direction == ">"
-        controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
-        cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
-        aucs <- bootstrapAucStratified(boot.n, controls, cases)
-        if (roc$percent) {aucs <- aucs * 100}
-      }
-      else {
-        aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
-      }
+      # Inverse controls & cases to handle direction == ">"
+      controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
+      cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
+      aucs <- bootstrapAucStratified(boot.n, controls, cases, attributes(roc$auc))
+      if (roc$percent) {aucs <- aucs * 100}
     }
     else {
       if (identical(attr(roc$auc, "partial.auc"), FALSE)) {

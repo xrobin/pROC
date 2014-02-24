@@ -17,11 +17,7 @@ delongPlacementsCpp <- function(roc) {
     .Call('pROC_delongPlacementsCpp', PACKAGE = 'pROC', roc)
 }
 
-rocUtilsPerfsAllC <- function(thresholds, controls, cases, direction) {
-    .Call('pROC_rocUtilsPerfsAllC', PACKAGE = 'pROC', thresholds, controls, cases, direction)
-}
-
-rocUtilsPerfsCumsumC <- function(thresholds, controls, cases, direction) {
-    .Call('pROC_rocUtilsPerfsCumsumC', PACKAGE = 'pROC', thresholds, controls, cases, direction)
+computeSeSpList <- function(thresholds, controls, cases, direction) {
+    .Call('pROC_computeSeSpList', PACKAGE = 'pROC', thresholds, controls, cases, direction)
 }
 

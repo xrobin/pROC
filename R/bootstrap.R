@@ -260,29 +260,17 @@ ci.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress,
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
-      # Inverse controls & cases to handle direction == ">"
-      controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
-      cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
-      aucs <- bootstrapAucStratified(boot.n, controls, cases)
-      if (roc$percent) {aucs <- aucs * 100}
-    }
-    else {
-      aucs <- unlist(llply(1:boot.n, .fun=stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
-    }
+    # Inverse controls & cases to handle direction == ">"
+    controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
+    cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
+    aucs <- bootstrapAucStratified(boot.n, controls, cases, attributes(roc$auc))
+    if (roc$percent) {aucs <- aucs * 100}
   }
   else {
-    if (identical(attr(roc$auc, "partial.auc"), FALSE)) {
-      # Inverse controls & cases to handle direction == ">"
-      controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
-      cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
-      browser()
-      aucs <- bootstrapAucNonStratified(boot.n, controls, cases)
-      if (roc$percent) {aucs <- aucs * 100}
-    }
-    else {
-      aucs <- unlist(llply(1:boot.n, .fun=nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
-    }
+    controls <- roc$controls * ifelse(roc$direction == "<", 1, -1)
+    cases <- roc$cases * ifelse(roc$direction == "<", 1, -1)
+    aucs <- bootstrapAucNonStratified(boot.n, controls, cases, attributes(roc$auc))
+    if (roc$percent) {aucs <- aucs * 100}
   }
 
   if (sum(is.na(aucs)) > 0) {

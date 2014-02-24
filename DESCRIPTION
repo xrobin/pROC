@@ -6,7 +6,7 @@ Date: *
 Encoding: UTF-8
 Depends: R (>= 2.13)
 Imports: plyr, utils, methods, Rcpp (>= 0.10.5)
-Suggests: microbenchmark, tcltk, MASS, logcondens, doMC, doSNOW
+Suggests: tcltk, MASS, logcondens, doMC, doSNOW
 LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller.
 Maintainer: Xavier Robin <xavier@cbs.dtu.dk>

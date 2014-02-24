@@ -73,9 +73,9 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
-// rocUtilsPerfsAllC
-List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
-RcppExport SEXP pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
+// computeSeSpList
+List computeSeSpList(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
+RcppExport SEXP pROC_computeSeSpList(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -84,25 +84,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP );
         Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP );
         Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP );
-        List __result = rocUtilsPerfsAllC(thresholds, controls, cases, direction);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-END_RCPP
-}
-// rocUtilsPerfsCumsumC
-List rocUtilsPerfsCumsumC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
-RcppExport SEXP pROC_rocUtilsPerfsCumsumC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
-BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP );
-        Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP );
-        List __result = rocUtilsPerfsCumsumC(thresholds, controls, cases, direction);
+        List __result = computeSeSpList(thresholds, controls, cases, direction);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

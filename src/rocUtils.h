@@ -26,8 +26,8 @@ std::vector<double> computeThresholds(const std::vector<double>& controls, const
 std::vector<double> computeThresholds(const std::vector<double>& controls, const std::vector<double>& cases, 
                                       const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);
 
-std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
-std::pair<std::vector<double>, std::vector<double>> computeSeSp(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&, 
+std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
+std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&, 
                                                                 const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx);
 
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {

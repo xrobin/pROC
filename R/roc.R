@@ -75,7 +75,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
-                        algorithm=1,
+                        algorithm,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object
@@ -221,51 +221,11 @@ roc.default <- function(response, predictor,
   }
   
   # Choose algorithm
-  if (identical(algorithm, 0)) {
-    if (!require(microbenchmark))
-      stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
-    cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
-    thresholds <- roc.utils.thresholds(c(controls, cases))
-    benchmark <- try(microbenchmark::microbenchmark(
-      "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      times = 10
-    ))
-    if (is(benchmark, "try-error")) {
-      warning("Microbenchmark failed. Using default algorithm 1.")
-      algorithm <- 1
-    } 
-    else {
-      print(summary(benchmark))
-      if (any(is.na(benchmark))) {
-        warning("Microbenchmark returned NA. Using default algorithm 1.")
-        algorithm <- 1
-      }
-      else if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
-        algorithm <- 2
-        cat("Selecting algorithm 2.\n")
-      }
-      else {
-        algorithm <- 3
-        cat("Selecting algorithm 3.\n")
-      }
-    }
+  if (!missing(algorithm)) {
+    warning("'algorithm' is deprecated and will be removed in a future version of pROC.")
   }
-  if (identical(algorithm, 1)) {
-    fun.sesp <- roc.utils.perfs.all.safe
-  }
-  else if (identical(algorithm, 2)) {
-    fun.sesp <- roc.utils.perfs.all.fast
-  }
-  else if (identical(algorithm, 3)) {
-    fun.sesp <- rocUtilsPerfsAllC
-  }
-  else if (identical(algorithm, 4)) {
-    fun.sesp <- roc.utils.perfs.all.test
-  }
-  else {
-    stop("Unknown algorithm (must be 0, 1, 2, 3 or 4).")
-  }
+
+  fun.sesp <- computeSeSpList
 
   roc <- roc.cc.nochecks(controls, cases,
              percent=percent,
@@ -275,7 +235,6 @@ roc.default <- function(response, predictor,
              auc, ...)
   
   roc$call <- match.call()
-  roc$algorithm <- algorithm
   if (smooth) {
     attr(roc, "roc")$call <- roc$call
     attr(roc, "roc")$original.predictor <- original.predictor
