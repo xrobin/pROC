@@ -69,7 +69,7 @@ AucParams::AucParams(const List& l) {
 double aucCC(const vector<double>& controls, const vector<double>& cases, const AucParams& aucParams) {
     // Compute SE/SP of sample
     vector<double> thresholds = computeThresholds(controls, cases);
-    pair<vector<double>, vector<double>> sesp = computeSeSp(thresholds, controls, cases);
+    pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases);
     return computeAuc(sesp, aucParams);
 }
 
@@ -78,7 +78,7 @@ double aucCC(const vector<double>& controls, const vector<double>& cases,
              const AucParams& aucParams) {
     // Compute SE/SP of sample
     vector<double> thresholds = computeThresholds(controls, cases, controlsIdx, casesIdx);
-    pair<vector<double>, vector<double>> sesp = computeSeSp(thresholds, controls, cases, controlsIdx, casesIdx);
+    pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases, controlsIdx, casesIdx);
     return computeAuc(sesp, aucParams);
 }
 
@@ -147,6 +147,10 @@ double computePartialAuc(const vector<double>& se, const vector<double>& sp, con
     double proportion = (x[i] - aucParams.to) / (x[i] - x[i - 1]);
     double y_interpolated = y[i] + proportion * (y[i - 1] - y[i]);
     auc += (x[i] - aucParams.to) * (y[i] + y_interpolated) / 2;
+  }
+  
+  if (aucParams.correct) {
+    stop("Corrected pAUC not implemented in C++");
   }
 
   return auc;
