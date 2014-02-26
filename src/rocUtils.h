@@ -32,6 +32,6 @@ std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::v
 
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
   std::vector<T> y;
-  std::reverse_copy(x.begin(), x.end(), y.begin());
+  y.assign(x.rbegin(), x.rend());
   return y;
 }
