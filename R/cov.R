@@ -53,6 +53,10 @@ cov.roc <- function(roc1, roc2,
     roc2 <- attr(roc2, "roc")
     roc2$auc <- auc2
   }
+  
+  if (roc.utils.is.perfect.curve(roc1) && roc.utils.is.perfect.curve(roc2)) {
+  	message("cov() of two ROC curves with AUC == 1 is always 0 and can be misleading.")
+  }
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
