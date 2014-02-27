@@ -259,3 +259,10 @@ roc.utils.max.partial.auc <- function(partial.auc, percent) {
   return(max)
 }
 
+# Checks if the 
+# Input: roc object
+# Output: boolean, true the curve reaches 100%/100%, false otherwise
+roc.utils.is.perfect.curve <- function(roc) {
+	best.point <- max(roc$sensitivities + roc$specificities) / ifelse(roc$percent, 100, 1)
+	return(abs(best.point - 2) < .Machine$double.eps ^ 0.5) # or best.point == 2, with numerical tolerance
+}

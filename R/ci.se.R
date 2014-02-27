@@ -40,6 +40,10 @@ ci.se.smooth.roc <- function(smooth.roc,
                       ) {
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
+  
+  if (roc.utils.is.perfect.curve(smooth.roc)) {
+  	message("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
 
   # Check if called with density.cases or density.controls
   if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls))
@@ -90,6 +94,10 @@ ci.se.roc <- function(roc,
                       ) {
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
+  
+  if (roc.utils.is.perfect.curve(roc)) {
+  	message("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
 
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
