@@ -218,6 +218,11 @@ cov(...)
   will be issued and the observation will be ignored. If you have a large
   imbalance in your sample, it could be safer to keep
   \code{boot.stratified=TRUE}.
+  
+  When both ROC curves have an \code{\link{auc}} of 1 (or 100\%), their covariance will always be null.
+  This is true for both \dQuote{delong} and \dQuote{bootstrap} and methods. This result is misleading,
+  as the covariance is of course not null.
+  A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
 }
 
 \section{Messages}{
