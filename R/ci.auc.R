@@ -46,7 +46,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
     stop("conf.level must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(smooth.roc)) {
-  	message("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
+  	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
 
   # We need an auc
@@ -122,7 +122,7 @@ ci.auc.roc <- function(roc,
     stop("conf.level must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(roc)) {
-  	message("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
+  	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
 
   # We need an auc

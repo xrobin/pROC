@@ -51,7 +51,7 @@ var.roc <- function(roc,
     roc$auc <- auc(roc, ...)
   
   if (roc.utils.is.perfect.curve(roc)) {
-  	message("var() of a ROC curve with AUC == 1 is always 0 and can be misleading.")
+  	warning("var() of a ROC curve with AUC == 1 is always 0 and can be misleading.")
   }
 
   # do all the computations in fraction, re-transform in percent later

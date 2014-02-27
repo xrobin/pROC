@@ -42,7 +42,7 @@ ci.se.smooth.roc <- function(smooth.roc,
     stop("'conf.level' must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(smooth.roc)) {
-  	message("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
   # Check if called with density.cases or density.controls
@@ -96,7 +96,7 @@ ci.se.roc <- function(roc,
     stop("'conf.level' must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(roc)) {
-  	message("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
   if(class(progress) != "list")

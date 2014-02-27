@@ -132,7 +132,7 @@ roc.test.roc <- function(roc1, roc2,
   }
   
   if (roc.utils.is.perfect.curve(roc1) && roc.utils.is.perfect.curve(roc2)) {
-  	message("roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
+  	warning("roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
   }
 
   # store which objects are smoothed, and how

@@ -43,7 +43,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
     stop("'conf.level' must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(smooth.roc)) {
-  	message("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
  
   input <- match.arg(input)
@@ -114,7 +114,7 @@ ci.coords.roc <- function(roc,
     stop("'conf.level' must be within the interval [0,1].")
   
   if (roc.utils.is.perfect.curve(roc)) {
-  	message("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
  
   input <- match.arg(input)
