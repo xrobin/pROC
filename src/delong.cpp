@@ -52,7 +52,7 @@ List delongPlacementsCpp(List roc) {
     Y[j] /= xsize;
 	}
 	List ret;
-	ret["theta"] = sum / (xsize * ysize);
+	ret["theta"] = sum / xsize / ysize;
 	ret["X"] = X;
 	ret["Y"] = Y;
 	return(ret);
