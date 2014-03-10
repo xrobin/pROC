@@ -198,8 +198,8 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   else if (is.character(densfun.cases))
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
 
-  fit.controls <- fitdistr(roc$controls, densfun.controls, start.controls, ...)
-  fit.cases <- fitdistr(roc$cases, densfun.cases, start.cases, ...)
+  fit.controls <- MASS::fitdistr(roc$controls, densfun.controls, start.controls, ...)
+  fit.cases <- MASS::fitdistr(roc$cases, densfun.cases, start.cases, ...)
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function")
@@ -240,7 +240,7 @@ smooth.roc.logcondens <- function(roc, n) {
     stop("Package logcondens not available, required with method='logcondens'. Please install it with 'install.packages(\"logcondens\")'.")
 
   sp <- seq(0, 1, 1/(n-1))
-  logcondens <- logConROC(roc$cases, roc$controls, sp)
+  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC
 
   return(list(sensitivities = se * ifelse(roc$percent, 100, 1),
@@ -253,7 +253,7 @@ smooth.roc.logcondens.smooth <- function(roc, n) {
     stop("Package logcondens not available, required with method='logcondens.smooth'. Please install it with 'install.packages(\"logcondens\")'.")
 
   sp <- seq(0, 1, 1/(n-1))
-  logcondens <- logConROC(roc$cases, roc$controls, sp)
+  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC.smooth
 
   return(list(sensitivities = se * ifelse(roc$percent, 100, 1),

@@ -55,6 +55,11 @@ ci(...)
   default). Depending on the \code{of} argument, the specific
   \code{ci} functions \code{\link{ci.auc}}, \code{\link{ci.thresholds}},
   \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}} are called.
+  
+  When the ROC curve has an \code{\link{auc}} of 1 (or 100\%), the confidence interval will always be null
+  (there is no interval). This is true for both \dQuote{delong} and \dQuote{bootstrap} methods that can
+  not properly assess the variance in this case. This result is misleading, as the variance is of course not null.
+  A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
 }
 
 \value{

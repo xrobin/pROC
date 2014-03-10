@@ -274,6 +274,11 @@ na.rm=TRUE, method=NULL, ...)
   will be issued and the observation will be ignored. If you have a large
   imbalance in your sample, it could be safer to keep
   \code{boot.stratified=TRUE}.
+  
+  When both ROC curves have an \code{\link{auc}} of 1 (or 100\%), their variances and covariance will always be null,
+  and therefore the p-value will always be 1. This is true for both \dQuote{delong}, \dQuote{bootstrap} and 
+  \dQuote{venkatraman} methods. This result is misleading, as the variances and covariance are of course not null.
+  A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
 }
 
 \section{Errors}{
