@@ -1,6 +1,6 @@
 1.8 (*)
-  * Add a warning when computing statistics of ROC curve with AUC = 1.
-  * Fixed bug where 'ci.coords' with 'x="best"' would fail if one or more resampled ROC curve had multiple "best" thresholds. 
+  * Add a warning when computing statistics of ROC curve with AUC = 1
+  * Fixed bug where 'ci.coords' with 'x="best"' would fail if one or more resampled ROC curve had multiple "best" thresholds
   * Fixed bug in 'ci.coords': passing more than one value in 'x' now works
 
 1.7.1 (2014-02-20)
@@ -8,7 +8,7 @@
   * Fixed really use algorithm 1 when microbenchmark fails
 
 1.7 (2014-02-19)
-  * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation).
+  * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation)
   * Handling Math and Operations correctly on 'auc' and 'ci' objects (see '?groupGeneric.pROC')
   * The 'formula' for 'roc.formula' can now provide several predictors and a list of ROC curves will be returned
   * Fixed documentation of 'ci.coords' with examples
