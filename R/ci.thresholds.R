@@ -43,6 +43,10 @@ ci.thresholds.roc <- function(roc,
                    ) {
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
+  
+  if (roc.utils.is.perfect.curve(roc)) {
+  	warning("ci.thresholds() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
 
   # Check and prepare thresholds
   if (is.character(thresholds)) {

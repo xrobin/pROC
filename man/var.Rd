@@ -177,6 +177,11 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
   will be issued and the observation will be ignored. If you have a large
   imbalance in your sample, it could be safer to keep
   \code{boot.stratified=TRUE}.
+  
+  When the ROC curve has an \code{\link{auc}} of 1 (or 100\%), the variance will always be null.
+  This is true for both \dQuote{delong} and \dQuote{bootstrap} methods that can
+  not properly assess the variance in this case. This result is misleading, as the variance is of course not null.
+  A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
 }
 
 \section{Errors}{
