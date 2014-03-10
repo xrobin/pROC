@@ -141,22 +141,17 @@ ci.coords.roc <- function(roc,
     perfs <- perfs[!sapply(perfs, function(x) any(is.na(x)))]
   }
 
-  if (length(x) > 1) {
+  if (length(x) > 1 || length(ret) > 1) {
     ci <- t(apply(sapply(perfs, c), 1, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-    inputs <- paste(input, x)
-    rownames.ret <- paste(rep(inputs, each=length(ret)), ret, sep=": ")
-    
   }
-  else {
-    rownames.ret <- ret
+  else { # 1 x and 1 ret
     # If x == "best" coords may return multiple best thresholds
     # Be very conservative and take the most extreme ones
     ci.max <- quantile(sapply(perfs, max), probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
     ci.min <- quantile(sapply(perfs, min), probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
     ci <- t(ci.max * c(0, 0.5, 1) + ci.min * c(1, 0.5, 0))
   }
-
-  rownames(ci) <- rownames.ret
+  rownames(ci) <- paste(rep(paste(input, x), each=length(ret)), ret, sep=": ")
 
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
