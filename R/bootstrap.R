@@ -634,7 +634,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
+  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
 }
 
 nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
@@ -658,7 +658,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
   
-  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
+  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
 }
 
 ##########  Coords of a smooth ROC curve (ci.coords)  ##########
@@ -685,7 +685,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
+  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
 }
 
 nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
@@ -713,5 +713,5 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights)
+  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
 }

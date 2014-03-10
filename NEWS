@@ -1,5 +1,6 @@
 1.8 (*)
   * Add a warning when computing statistics of ROC curve with AUC = 1.
+  * Fixed bug where 'ci.coords' with 'x="best"' would fail if one or more resampled ROC curve had multiple "best" thresholds. 
 
 1.7.1 (2014-02-20)
   * Close SOCK cluster on Windows with parallel=TRUE

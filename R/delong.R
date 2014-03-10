@@ -83,7 +83,6 @@ ci.auc.delong <- function(roc, conf.level) {
 
   n <- length(YR)
   m <- length(XR)
-  mn <- m*n
 
   V <- delongPlacementsCpp(roc)
 
