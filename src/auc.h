@@ -27,9 +27,9 @@ struct AucParams {
 };
 
 
-double aucCC(const std::vector<double>& controls, const std::vector<double>& cases, const AucParams& aucParams);
-double aucCC(const std::vector<double>& controls, const std::vector<double>& cases, 
-             const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx, 
+double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, const AucParams& aucParams);
+double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
+             const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx, 
              const AucParams& aucParams);
 
 double computeAuc(const std::pair<std::vector<double>, std::vector<double>>&, const AucParams& aucParams);

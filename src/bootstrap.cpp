@@ -24,10 +24,11 @@
 
 using std::vector;
 using std::pair;
+using Rcpp::NumericVector;
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector<double> controls, const std::vector<double> cases, const Rcpp::List& aucParamsList) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, const NumericVector controls, const NumericVector cases, const Rcpp::List& aucParamsList) {
   // keep all AUCs in a vector of size bootN
   vector<double> aucs;
   aucs.reserve(bootN);
@@ -35,9 +36,9 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector
   // Get proper AUC params
   AucParams aucParams(aucParamsList);
 
-  size_t controlsSize(controls.size()),
+  int controlsSize(controls.size()),
          casesSize(cases.size());
-  vector<size_t> controlsIdx(controlsSize),
+  vector<int> controlsIdx(controlsSize),
                  casesIdx(casesSize);
 
   for (size_t i = 0; i < bootN; i++) {
@@ -54,7 +55,7 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const std::vector
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucNonStratified(const size_t bootN, const std::vector<double> controls, const std::vector<double> cases, const Rcpp::List& aucParamsList) {
+std::vector<double> bootstrapAucNonStratified(const int bootN, const NumericVector controls, const NumericVector cases, const Rcpp::List& aucParamsList) {
   // keep all AUCs in a vector of size bootN
   vector<double> aucs;
   aucs.reserve(bootN);
@@ -62,9 +63,9 @@ std::vector<double> bootstrapAucNonStratified(const size_t bootN, const std::vec
   // Get proper AUC params
   AucParams aucParams(aucParamsList);
   
-  vector<size_t> controlsIdx, casesIdx;
+  vector<int> controlsIdx, casesIdx;
 
-  for (size_t i = 0; i < bootN; i++) {
+  for (int i = 0; i < bootN; i++) {
     // Select random sample
     setRandomNonStratifiedSample(controls.size(), cases.size(), controlsIdx, casesIdx);
   

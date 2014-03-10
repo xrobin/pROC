@@ -20,6 +20,6 @@
 #include <vector>
 
 
-void setRandomIdx(const size_t size, std::vector<size_t>& idxVector);
-void setRandomNonStratifiedSample(const size_t controlsSize, const size_t casesSize,
-                             std::vector<size_t>& controlsIdx, std::vector<size_t>& casesIdx);
+void setRandomIdx(const int size, std::vector<int>& idxVector);
+void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
+                             std::vector<int>& controlsIdx, std::vector<int>& casesIdx);

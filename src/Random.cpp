@@ -23,16 +23,16 @@ using std::vector;
 using Rcpp::NumericVector;
 
 
-void setRandomIdx(const size_t size, vector<size_t>& idxVector) {
+void setRandomIdx(const int size, vector<int>& idxVector) {
   NumericVector idx = Rcpp::runif(size, 0, size);
   idxVector.clear();
   idxVector.insert(idxVector.begin(), idx.begin(), idx.end());
 }
 
-void setRandomNonStratifiedSample(const size_t controlsSize, const size_t casesSize,
-                             vector<size_t>& controlsIdx, vector<size_t>& casesIdx) {
+void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
+                             vector<int>& controlsIdx, vector<int>& casesIdx) {
   // relevant sizes
-  size_t totalSize = controlsSize + casesSize;
+  int totalSize = controlsSize + casesSize;
   // prepare return values
   controlsIdx.clear();
   casesIdx.clear();
@@ -46,7 +46,7 @@ void setRandomNonStratifiedSample(const size_t controlsSize, const size_t casesS
   controlsIdx.insert(controlsIdx.begin(), idx.begin(), firstCaseIdx);
   casesIdx.insert(casesIdx.begin(), firstCaseIdx, idx.end());
   // casesIdx has values too large by controlsSize
-  for (size_t& caseIdxVal: casesIdx) {
+  for (int& caseIdxVal: casesIdx) {
     caseIdxVal -= controlsSize;
   };
 }

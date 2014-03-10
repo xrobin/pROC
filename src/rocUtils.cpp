@@ -23,6 +23,7 @@
 #include "rocUtils.h"
 using std::vector;
 using std::pair;
+using Rcpp::NumericVector;
 
 
 void makeUniqueInPlace(vector<double>& thresholds) {
@@ -33,13 +34,13 @@ void makeUniqueInPlace(vector<double>& thresholds) {
   thresholds.resize(std::distance(thresholds.begin(), it));
 }
 
-vector<double> computeThresholds(const vector<double>& predictor) {
+/*vector<double> computeThresholds(const vector<double>& predictor) {
   vector<double> thresholds = predictor; // Hold thresholds in a copy of predictor
   makeUniqueInPlace(thresholds);
   return thresholds;
-}
+}*/
 
-vector<double> computeThresholds(const vector<double>& controls, const vector<double>& cases) {
+vector<double> computeThresholds(const NumericVector& controls, const NumericVector& cases) {
   vector<double> thresholds;
   thresholds.insert(thresholds.begin(), cases.begin(), cases.end());
   thresholds.insert(thresholds.begin(), controls.begin(), controls.end());
@@ -47,22 +48,22 @@ vector<double> computeThresholds(const vector<double>& controls, const vector<do
   return thresholds;
 }
 
-vector<double> computeThresholds(const vector<double>& controls, const vector<double>& cases, const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx) {
+vector<double> computeThresholds(const NumericVector& controls, const NumericVector& cases, const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx) {
   vector<double> thresholds;
   thresholds.reserve(controlsIdx.size() + casesIdx.size());
   // Insert cases
-  for (size_t idx: casesIdx) {
+  for (int idx: casesIdx) {
     thresholds.push_back(cases[idx]);
   }
   // Insert controls
-  for (size_t idx: controlsIdx) {
+  for (int idx: controlsIdx) {
     thresholds.push_back(controls[idx]);
   }
   makeUniqueInPlace(thresholds);
   return thresholds;
 }
 
-pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases) {
+pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const NumericVector& controls, const NumericVector& cases) {
   vector<double> se(thresholds.size()),
                  sp(thresholds.size());
   long tp, tn;
@@ -70,7 +71,7 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
   for (size_t t = 0; t < thresholds.size(); ++t) {
       double threshold = thresholds[t];
       tp = 0;
-      for (size_t i = 0; i < cases.size(); ++i) {
+      for (int i = 0; i < cases.size(); ++i) {
         if (cases[i] >= threshold) {
           tp++;
         }
@@ -78,7 +79,7 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
       se[t] = (double) tp / (double) cases.size();
 
       tn = 0;
-      for (size_t j = 0; j < controls.size(); ++j) {
+      for (int j = 0; j < controls.size(); ++j) {
         if (controls[j] < threshold) {
           tn++;
         }
@@ -91,8 +92,8 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
 
 
 
-pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const vector<double>& controls, const vector<double>& cases,
-                                                 const std::vector<size_t>& controlsIdx, const std::vector<size_t>& casesIdx) {
+pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thresholds, const NumericVector& controls, const NumericVector& cases,
+                                                 const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx) {
   vector<double> se(thresholds.size()), 
                  sp(thresholds.size());
   long tp, tn;
@@ -100,7 +101,7 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
   for (size_t t = 0; t < thresholds.size(); ++t) {
       double threshold = thresholds[t];
       tp = 0;
-      for (size_t idx: casesIdx) {
+      for (int idx: casesIdx) {
         if (cases[idx] >= threshold) {
           tp++;
         }
@@ -108,7 +109,7 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
       se[t] = (double) tp / (double) cases.size();
 
       tn = 0;
-      for (size_t idx: controlsIdx) {
+      for (int idx: controlsIdx) {
         if (controls[idx] < threshold) {
           tn++;
         }

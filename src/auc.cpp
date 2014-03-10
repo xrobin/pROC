@@ -66,15 +66,15 @@ AucParams::AucParams(const List& l) {
 
 
 
-double aucCC(const vector<double>& controls, const vector<double>& cases, const AucParams& aucParams) {
+double aucCC(const NumericVector& controls, const NumericVector& cases, const AucParams& aucParams) {
     // Compute SE/SP of sample
     vector<double> thresholds = computeThresholds(controls, cases);
     pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases);
     return computeAuc(sesp, aucParams);
 }
 
-double aucCC(const vector<double>& controls, const vector<double>& cases, 
-             const vector<size_t>& controlsIdx, const vector<size_t>& casesIdx,
+double aucCC(const NumericVector& controls, const NumericVector& cases, 
+             const vector<int>& controlsIdx, const vector<int>& casesIdx,
              const AucParams& aucParams) {
     // Compute SE/SP of sample
     vector<double> thresholds = computeThresholds(controls, cases, controlsIdx, casesIdx);
