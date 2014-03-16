@@ -16,29 +16,18 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <vector>
 #include <string>
+#include <vector>
 #include "Predictor.h"
 
 using std::vector;
 using std::string;
 
-vector<int> Predictor::getOrder() const {
-    vector<int> index(nTotal);
-    std::iota(index.begin(), index.end(), 0);
-    std::sort(index.begin(), index.end(), PredictorComparator(*this));
-    return index;
+vector<int> Predictor::getOrder(string direction) const {
+	return getPredictorOrder(*this, direction);
 }
 
-vector<int> Predictor::getOrder(const string direction) const {
-    vector<int> index(nTotal);
-    std::iota(index.begin(), index.end(), 0);
-    if (direction == ">") {
-      std::sort(index.begin(), index.end(), PredictorComparator(*this));
-    }
-    else {
-      std::sort(index.begin(), index.end(), PredictorReverseComparator(*this));
-    }
-    
-    return index;
+
+vector<int> ResampledPredictor::getOrder(string direction) const {
+	return getPredictorOrder(*this, direction);
 }

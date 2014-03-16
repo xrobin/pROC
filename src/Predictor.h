@@ -21,27 +21,26 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-
+#include <stdexcept> // std::out_of_range
 
 /** A Predictor behaves like a concatenated vector of cases and controls
  * The first indices represents the controls, the last ones the controls
  */
 
 class Predictor {
-  const Rcpp::NumericVector& controls;
-  const Rcpp::NumericVector& cases;
-  const int nControls, nCases, nTotal;
   public:
+  	const Rcpp::NumericVector& controls;
+  	const Rcpp::NumericVector& cases;
+  	const int nControls, nCases, nTotal;
     Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
               controls(someControls), cases(someCases),
               nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
     double operator[] (const int anIdx) const {
       return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
     }
-    
-    std::vector<int> getOrder() const;
-    std::vector<int> getOrder(std::string) const;
 
+    std::vector<int> getOrder(std::string direction = ">") const;
+    
     bool isControl(const int anIdx) const {
       return anIdx < nControls;
     }
@@ -54,7 +53,26 @@ class Predictor {
       return anIdx < nTotal;
     }
     
-    
+    /*double at(const size_t anIdx) const {
+    	if (isValid(anIdx)) return this[anIdx];
+    	throw std::out_of_range("Out of range!");
+    }*/
+};
+
+
+/** ResampledPredictor: derived class of Predictor, that takes additional resampling indices */
+class ResampledPredictor: public Predictor {
+  const std::vector<int>& controlsIdx;
+  const std::vector<int>& casesIdx;
+  public:
+    ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
+              Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+
+    double operator[] (const int anIdx) const {
+      return anIdx < nControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - nControls] + nControls);
+    }
+
+    std::vector<int> getOrder(std::string direction = ">") const;
 };
 
 
@@ -66,20 +84,38 @@ class Predictor {
  * std::iota(index.begin(), index.end(), 0);
  * std::sort(index.begin(), index.end(), ControlCasesComparator(controls, cases));
  */
-class PredictorComparator{
-   const Predictor& predictor;
+template <class P> class PredictorComparator{
+   const P& predictor;
  public:
-   PredictorComparator(const Predictor& somePredictor) : predictor(somePredictor) {}
+   PredictorComparator(const P& somePredictor) : predictor(somePredictor) {}
    bool operator() (int i, int j) const {
      return predictor[i] < predictor[j];
    }
 };
 
-class PredictorReverseComparator{
-   const Predictor& predictor;
+template <class P> class PredictorReverseComparator{
+   const P& predictor;
  public:
-   PredictorReverseComparator(const Predictor& somePredictor) : predictor(somePredictor) {}
+   PredictorReverseComparator(const P& somePredictor) : predictor(somePredictor) {}
    bool operator() (int i, int j) const {
      return predictor[j] < predictor[i];
    }
 };
+
+
+/** getOrder 
+ * Get the order (indices) of a Predictor or ResampledPredictor
+ */
+
+template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string direction = ">") {
+    std::vector<int> index(predictor.nTotal);
+    std::iota(index.begin(), index.end(), 0);
+    if (direction == ">") {
+      std::sort(index.begin(), index.end(), PredictorComparator<P>(predictor));
+    }
+    else {
+      std::sort(index.begin(), index.end(), PredictorReverseComparator<P>(predictor));
+    }
+    
+    return index;
+}
