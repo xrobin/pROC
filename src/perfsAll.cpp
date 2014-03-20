@@ -18,6 +18,7 @@
 
 #include <Rcpp.h>
 #include <vector>
+#include <string>
 #include "Predictor.h"
 using namespace Rcpp;
 using std::vector;
