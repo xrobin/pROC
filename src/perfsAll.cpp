@@ -63,13 +63,13 @@ List computeSeSpList(NumericVector thresholds, NumericVector controls, NumericVe
     }
   }
   
-  // Reverse - can we find a way to do it right from the start?
-  std::reverse(se.begin(), se.end() - 1);
-  std::reverse(sp.begin(), sp.end() - 1);
-  
   // Anchor the last position to 1/0
   se.push_back(0);
   sp.push_back(1);
+  
+  // Reverse - can we find a way to do it right from the start?
+  std::reverse(se.begin(), se.end() - 1);
+  std::reverse(sp.begin(), sp.end() - 1);
 
   // Ensure the sum of !duplicated == thresholds.size()
   // Todo: maybe remove this in a future version of pROC...
