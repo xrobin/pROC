@@ -16,31 +16,44 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <vector>
-#include <utility>
-#include <algorithm>
 #include <Rcpp.h>
+#include <vector>
+// #include <utility> // std::pair
+#include <algorithm>
+// #include <Rcpp.h>
+
 #include "rocUtils.h"
 using std::vector;
-using std::pair;
+// using std::pair;
 using Rcpp::NumericVector;
 
 
 void makeUniqueInPlace(vector<double>& thresholds) {
   // Sort and remove consecutive duplicate values
   std::sort(thresholds.begin(), thresholds.end());
-  std::vector<double>::iterator it = std::unique(thresholds.begin(), thresholds.end());
+  vector<double>::iterator it = std::unique(thresholds.begin(), thresholds.end());
   // The vector still contains duplicate values the end of the vector. The new end is in 'it', use it to resize the vector.
   thresholds.resize(std::distance(thresholds.begin(), it));
 }
 
-/*vector<double> computeThresholds(const vector<double>& predictor) {
-  vector<double> thresholds = predictor; // Hold thresholds in a copy of predictor
+vector<double> computeThresholds(const Predictor& predictor) {
+  vector<double> thresholds;
+  thresholds.insert(thresholds.begin(), cases.begin(), cases.end());
+  thresholds.insert(thresholds.begin(), controls.begin(), controls.end());
   makeUniqueInPlace(thresholds);
   return thresholds;
-}*/
+}
 
-vector<double> computeThresholds(const NumericVector& controls, const NumericVector& cases) {
+Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx); {
+	Rcpp::NumericVector resampled(x.size());
+	for (int i = 0; i < x.size(); ++i) {
+		resampled[i] = x[idx[i]];
+	}
+	return resampled;
+}
+
+
+/*vector<double> computeThresholds(const NumericVector& controls, const NumericVector& cases) {
   vector<double> thresholds;
   thresholds.insert(thresholds.begin(), cases.begin(), cases.end());
   thresholds.insert(thresholds.begin(), controls.begin(), controls.end());
@@ -119,3 +132,4 @@ pair<vector<double>, vector<double>> computeSeSpPair(const vector<double>& thres
   
   return std::make_pair(se, sp);
 }
+*/

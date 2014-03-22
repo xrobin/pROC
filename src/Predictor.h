@@ -28,51 +28,56 @@
  */
 
 class Predictor {
+	const Rcpp::NumericVector& controls;
+	const Rcpp::NumericVector& cases;
+  	
   public:
-  	const Rcpp::NumericVector& controls;
-  	const Rcpp::NumericVector& cases;
-  	const int nControls, nCases, nTotal;
-    Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
-              controls(someControls), cases(someCases),
-              nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
-    double operator[] (const int anIdx) const {
-      return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
-    }
+	const int nControls, nCases, nTotal;
+	Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
+	          controls(someControls), cases(someCases),
+	          nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
+	double operator[] (const int anIdx) const {
+		return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
+	}
+	
+	std::vector<int> getOrder(std::string direction = ">") const;
+	Rcpp::NumericVector getControls() const {return controls;};
+	Rcpp::NumericVector getCases() const {return cases;};
+	
+	bool isControl(const int anIdx) const {
+		return anIdx < nControls;
+	}
+	
+	bool isCase(const int anIdx) const {
+		return anIdx >= nControls;
+	}
+	
+	bool isValid(const int anIdx) const { // Is there a predictor at this index? 
+		return anIdx < nTotal;
+	}
 
-    std::vector<int> getOrder(std::string direction = ">") const;
-    
-    bool isControl(const int anIdx) const {
-      return anIdx < nControls;
-    }
-
-    bool isCase(const int anIdx) const {
-      return anIdx >= nControls;
-    }
-    
-    bool isValid(const int anIdx) const { // Is there a predictor at this index? 
-      return anIdx < nTotal;
-    }
-    
-    /*double at(const size_t anIdx) const {
-    	if (isValid(anIdx)) return this[anIdx];
-    	throw std::out_of_range("Out of range!");
-    }*/
+	/*double at(const size_t anIdx) const {
+		if (isValid(anIdx)) return this[anIdx];
+		throw std::out_of_range("Out of range!");
+	}*/
 };
 
 
 /** ResampledPredictor: derived class of Predictor, that takes additional resampling indices */
 class ResampledPredictor: public Predictor {
-  const std::vector<int>& controlsIdx;
-  const std::vector<int>& casesIdx;
-  public:
-    ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
-              Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+	const std::vector<int>& controlsIdx;
+	const std::vector<int>& casesIdx;
+	public:
+	ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
+	          Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+	
+	double operator[] (const int anIdx) const {
+		return anIdx < nControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - nControls] + nControls);
+	}
 
-    double operator[] (const int anIdx) const {
-      return anIdx < nControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - nControls] + nControls);
-    }
-
-    std::vector<int> getOrder(std::string direction = ">") const;
+	std::vector<int> getOrder(std::string direction = ">") const;
+	Rcpp::NumericVector getControls() const;
+	Rcpp::NumericVector getCases() const;
 };
 
 

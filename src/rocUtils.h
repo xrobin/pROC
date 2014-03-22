@@ -17,23 +17,29 @@
 */
 #pragma once 
 
-#include <vector>
-#include <utility> // std::pair
-#include <algorithm> // std::reverse_copy
 #include <Rcpp.h>
+#include <vector>
+// #include <utility> // std::pair
+#include <algorithm> // std::reverse_copy
+// #include <Rcpp.h>
+
+#include "Predictor.h"
 
 
-//std::vector<double> computeThresholds(const std::vector<double>& predictor);
-std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases);
-std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
-                                      const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
+std::vector<double> computeThresholds(const Predictor& predictor);
+//std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases);
+//std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
+//                                      const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
 
-std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&);
-std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&, 
-                                                                const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
+//std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&);
+//std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&, 
+//                                                                const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
 
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
   std::vector<T> y;
   y.assign(x.rbegin(), x.rend());
   return y;
 }
+
+Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int> idx);
+

@@ -16,12 +16,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <Rcpp.h>
+
 #include <string>
 #include <vector>
 #include "Predictor.h"
+#include "rocUtils.h"
 
 using std::vector;
 using std::string;
+using Rcpp::NumericVector;
 
 vector<int> Predictor::getOrder(string direction) const {
 	return getPredictorOrder(*this, direction);
@@ -30,4 +34,12 @@ vector<int> Predictor::getOrder(string direction) const {
 
 vector<int> ResampledPredictor::getOrder(string direction) const {
 	return getPredictorOrder(*this, direction);
+}
+
+NumericVector ResampledPredictor::getControls() const {
+	return getResampledVector(Predictor::getControls(), controlsIdx);
+}
+
+NumericVector ResampledPredictor::getCases() const {
+	return getResampledVector(Predictor::getCases(), casesIdx);
 }
