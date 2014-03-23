@@ -66,7 +66,7 @@ AucParams::AucParams(const List& l) {
 
 
 
-double aucCC(const NumericVector& controls, const NumericVector& cases, const AucParams& aucParams) {
+/*double aucCC(const NumericVector& controls, const NumericVector& cases, const AucParams& aucParams) {
     // Compute SE/SP of sample
     vector<double> thresholds = computeThresholds(controls, cases);
     pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases);
@@ -80,7 +80,7 @@ double aucCC(const NumericVector& controls, const NumericVector& cases,
     vector<double> thresholds = computeThresholds(controls, cases, controlsIdx, casesIdx);
     pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases, controlsIdx, casesIdx);
     return computeAuc(sesp, aucParams);
-}
+}*/
 
 double computeFullAuc(const vector<double>& se, const vector<double>& sp) {
   double auc = 0;
@@ -97,6 +97,17 @@ double computeFullAuc(const vector<double>& se, const vector<double>& sp) {
   auc += (1 - sp[lastElement]) * (se[lastElement]) / 2;
   
   return auc;
+}
+
+
+double computePartialAuc(const vector<double>& se, const vector<double>& sp, 
+                         double from, double to, string focus, bool correct) {
+	return computePartialAuc(se, sp, AucParams(from, to, focus, correct));
+}
+
+double computePartialAuc(const vector<double>& se, const vector<double>& sp, 
+                         double from, double to, bool focusOnSp, bool correct) {
+	return computePartialAuc(se, sp, AucParams(from, to, focusOnSp, correct));
 }
 
 double computePartialAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {

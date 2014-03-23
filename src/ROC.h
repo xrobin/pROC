@@ -6,6 +6,7 @@
 
 #include "Predictor.h"
 #include "rocUtils.h" // computeThresholds
+#include "auc.h"
 
 template <typename PredictorType>
 class ROC {
@@ -14,8 +15,10 @@ class ROC {
 	char direction;
 	
 	void computeSeSp();
-	double fullAUC();
-	double partialAUC(double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+	double fullAUC() {return computeFullAuc(sensitivity, specificity);}
+	double partialAUC(double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false) {
+		return computePartialAuc(sensitivity, specificity, from, to, focus, correct);
+	}
 	
 	public:
 		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, char aDirection): 

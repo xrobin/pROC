@@ -29,6 +29,13 @@ void setRandomIdx(const int size, vector<int>& idxVector) {
   idxVector.insert(idxVector.begin(), idx.begin(), idx.end());
 }
 
+vector<int> setRandomIdx(const int size) {
+	vector<int> ret(size);
+	setRandomIdx(size, ret);
+	return ret;
+}
+
+
 void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
                              vector<int>& controlsIdx, vector<int>& casesIdx) {
   // relevant sizes

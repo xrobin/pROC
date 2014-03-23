@@ -19,17 +19,32 @@
 
 #include <Rcpp.h>
 #include <vector>
+#include <string>
 
 struct AucParams {
   bool partial, focusOnSp, correct;
   double from, to;
-  explicit AucParams(const Rcpp::List& l);
+
+  AucParams(): partial(false) {}
+  explicit AucParams(const Rcpp::List& l); // non trivial constructor, defined in .cpp file
+  explicit AucParams(double aFrom = 0.9, double aTo = 1, std::string aFocus = "specificity", bool aCorrect = false):
+	partial(true), focusOnSp(aFocus == "specificity"), correct(aCorrect), from(aFrom), to(aTo) {}
+  explicit AucParams(double aFrom = 0.9, double aTo = 1, bool aFocusOnSp = true, bool aCorrect = false):
+	partial(true), focusOnSp(aFocusOnSp), correct(aCorrect), from(aFrom), to(aTo) {}
 };
 
 
-double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, const AucParams& aucParams);
+/*double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, const AucParams& aucParams);
 double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
              const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx, 
              const AucParams& aucParams);
-
+*/
 double computeAuc(const std::pair<std::vector<double>, std::vector<double>>&, const AucParams& aucParams);
+
+
+double computeFullAuc(const std::vector<double>& se, const std::vector<double>& sp);
+double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams);
+double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+	double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+	double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);

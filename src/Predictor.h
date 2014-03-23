@@ -63,13 +63,22 @@ class Predictor {
 };
 
 
-/** ResampledPredictor: derived class of Predictor, that takes additional resampling indices */
+/** ResampledPredictor: derived class of Predictor, that takes additional resampling indices.
+ * It however doesn't know how to resample, so either pass the indices directly or use the
+ * derived classes getResampledStratified or getResampledNonStratified.
+ */
 class ResampledPredictor: public Predictor {
-	const std::vector<int>& controlsIdx;
-	const std::vector<int>& casesIdx;
+	std::vector<int> controlsIdx;
+	std::vector<int> casesIdx;
+	/** Private constructor, creates an invalid object leaves controlsIdx and casesIdx empty
+	* used by the derived friend classes where we can make sure that they will be filled properly */
+	ResampledPredictor(const Predictor& somePredictor): Predictor(somePredictor) {}
 	public:
 	ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
-	          Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+	                   Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+	
+	friend class ResampledPredictorStratified; // Derived classes need access to controlsIdx and casesIdx
+	friend class ResampledPredictorNonStratified;
 	
 	double operator[] (const int anIdx) const {
 		return anIdx < nControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - nControls] + nControls);
@@ -78,6 +87,20 @@ class ResampledPredictor: public Predictor {
 	std::vector<int> getOrder(std::string direction = ">") const;
 	Rcpp::NumericVector getControls() const;
 	Rcpp::NumericVector getCases() const;
+};
+
+/** A specialization of ResampledPredictor that nows how to resample the indices in a stratified manner */
+class ResampledPredictorStratified: public ResampledPredictor {
+	ResampledPredictorStratified(const Predictor& somePredictor): ResampledPredictor(somePredictor) {resample();}
+	
+	void resample();
+};
+
+/** A specialization of ResampledPredictor that nows how to resample the indices in a non stratified manner */
+class ResampledPredictorNonStratified: public ResampledPredictor {
+	ResampledPredictorNonStratified(const Predictor& somePredictor): ResampledPredictor(somePredictor) {resample();}
+	
+	void resample();
 };
 
 

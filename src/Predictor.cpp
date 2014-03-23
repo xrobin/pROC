@@ -22,6 +22,7 @@
 #include <vector>
 #include "Predictor.h"
 #include "rocUtils.h"
+#include "Random.h"
 
 using std::vector;
 using std::string;
@@ -42,4 +43,13 @@ NumericVector ResampledPredictor::getControls() const {
 
 NumericVector ResampledPredictor::getCases() const {
 	return getResampledVector(Predictor::getCases(), casesIdx);
+}
+
+void ResampledPredictorStratified::resample() {
+	setRandomIdx(nControls, controlsIdx);
+	setRandomIdx(nCases, casesIdx);
+}
+
+void ResampledPredictorNonStratified::resample() {
+	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
 }
