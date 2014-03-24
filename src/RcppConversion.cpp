@@ -6,6 +6,8 @@ using std::string;
 
 #include "RcppConversions.h"
 #include "auc.h"
+#include "ROC.h"
+#include "Predictor.h"
 
 namespace Rcpp {
     template <> AucParams as(SEXP rParams) {
@@ -43,5 +45,16 @@ namespace Rcpp {
 			return cppParams;
 		}
 		stop("Reached a line that should be unreachable (end of as<AucParams>). Please report this bug to the maintainer of pROC. Type packageDescription(\"pROC\", fields=\"Maintainer\") to obtain this information.");
+		return cppParams; // dummy return statement to remove warning
     }
+   
+	template <> ROC<Predictor> as(SEXP aROC) {
+    	List listROC = as<List>(aROC);
+    	return ROC<Predictor>(listROC["controls"], listROC["cases"], listROC["direction"]);
+		
+	}
+	template <> SEXP wrap(const ROC<Predictor> &aROC) {
+		stop("wrap(ROC) not implemented");
+		return SEXP(); // dummy return statement to remove warning
+	}
 }   
