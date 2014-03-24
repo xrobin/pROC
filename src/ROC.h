@@ -30,8 +30,8 @@ class ROC {
 			else return fullAUC();
 		}
 		
-		std::vector<double> getSensitivity() {return sensitivity;}
-		std::vector<double> getSpecificity() {return sensitivity;}
-		std::vector<double> getThresholds() {return thresholds;}
+		std::vector<double> getSensitivity() const {return sensitivity;}
+		std::vector<double> getSpecificity() const {return sensitivity;}
+		std::vector<double> getThresholds() const {return thresholds;}
 };
 

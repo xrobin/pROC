@@ -51,10 +51,13 @@ namespace Rcpp {
 	template <> ROC<Predictor> as(SEXP aROC) {
     	List listROC = as<List>(aROC);
     	return ROC<Predictor>(listROC["controls"], listROC["cases"], listROC["direction"]);
-		
 	}
+
 	template <> SEXP wrap(const ROC<Predictor> &aROC) {
-		stop("wrap(ROC) not implemented");
-		return SEXP(); // dummy return statement to remove warning
+		return List::create(
+			Named("sensitivities") = wrap(aROC.getSensitivity()),
+			Named("specificities") = wrap(aROC.getSpecificity()),
+			Named("thresholds") = wrap(aROC.getThresholds())
+		);
 	}
 }   
