@@ -21,7 +21,7 @@ class ROC {
 	}
 	
 	public:
-		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, char aDirection): 
+		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, char aDirection):
 			predictor(someControls, someCases), thresholds(computeThresholds(predictor)), direction(aDirection) {
 				computeSeSp();
 			}
