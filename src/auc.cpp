@@ -32,22 +32,6 @@ using Rcpp::stop;
 using Rcpp::NumericVector;
 
 
-/*double aucCC(const NumericVector& controls, const NumericVector& cases, const AucParams& aucParams) {
-    // Compute SE/SP of sample
-    vector<double> thresholds = computeThresholds(controls, cases);
-    pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases);
-    return computeAuc(sesp, aucParams);
-}
-
-double aucCC(const NumericVector& controls, const NumericVector& cases, 
-             const vector<int>& controlsIdx, const vector<int>& casesIdx,
-             const AucParams& aucParams) {
-    // Compute SE/SP of sample
-    vector<double> thresholds = computeThresholds(controls, cases, controlsIdx, casesIdx);
-    pair<vector<double>, vector<double>> sesp = computeSeSpPair(thresholds, controls, cases, controlsIdx, casesIdx);
-    return computeAuc(sesp, aucParams);
-}*/
-
 double computeFullAuc(const vector<double>& se, const vector<double>& sp) {
   double auc = 0;
   size_t lastElement = se.size() - 1;

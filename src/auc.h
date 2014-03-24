@@ -32,14 +32,7 @@ struct AucParams {
 	partial(true), focusOnSp(aFocusOnSp), correct(aCorrect), from(aFrom), to(aTo) {}
 };
 
-
-/*double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, const AucParams& aucParams);
-double aucCC(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
-             const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx, 
-             const AucParams& aucParams);
-*/
 double computeAuc(const std::pair<std::vector<double>, std::vector<double>>&, const AucParams& aucParams);
-
 
 double computeFullAuc(const std::vector<double>& se, const std::vector<double>& sp);
 double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams);
