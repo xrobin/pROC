@@ -17,7 +17,6 @@
 */
 #pragma once 
 
-#include <Rcpp.h>
 #include <vector>
 #include <string>
 
@@ -25,11 +24,11 @@ struct AucParams {
   bool partial, focusOnSp, correct;
   double from, to;
 
-  AucParams(): partial(false) {}
-  explicit AucParams(const Rcpp::List& l); // non trivial constructor, defined in .cpp file
-  explicit AucParams(double aFrom = 0.9, double aTo = 1, std::string aFocus = "specificity", bool aCorrect = false):
+  /** Default constructor: full AUC */
+  AucParams(): partial(false) {} 
+  explicit AucParams(double aFrom, double aTo, std::string aFocus, bool aCorrect):
 	partial(true), focusOnSp(aFocus == "specificity"), correct(aCorrect), from(aFrom), to(aTo) {}
-  explicit AucParams(double aFrom = 0.9, double aTo = 1, bool aFocusOnSp = true, bool aCorrect = false):
+  explicit AucParams(double aFrom, double aTo, bool aFocusOnSp, bool aCorrect):
 	partial(true), focusOnSp(aFocusOnSp), correct(aCorrect), from(aFrom), to(aTo) {}
 };
 

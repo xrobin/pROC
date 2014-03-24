@@ -31,40 +31,6 @@ using Rcpp::List;
 using Rcpp::stop;
 using Rcpp::NumericVector;
 
-AucParams::AucParams(const List& l) {
-  try {
-    bool test = l["partial.auc"];
-    if (! test) {
-      partial = false;
-    }
-    else {
-      stop("Reached a line that should be unreachable (partial.auc=TRUE). Please report this bug to the maintainer of pROC. Please type packageDescription(\"pROC\", fields=\"Maintainer\") to obtain this information.");
-    }
-  }
-  catch (const Rcpp::not_compatible&) { // the test if (! test) { will throw for partial auc where test is a numeric vector of length 2.
-    NumericVector test = l["partial.auc"];
-    partial = true;
-    from = test[0];
-    to = test[1];
-    if (to > from) {
-      std::swap(from, to);
-    }
-    correct = l["partial.auc.correct"];
-    string paucFocus = l["partial.auc.focus"];
-    if (paucFocus == "specificity") {
-      focusOnSp = true;
-    }
-    else if (paucFocus == "sensitivity") {
-      focusOnSp = false;
-    }
-    else {
-      string errMsg = string("Invalid partial.auc.focus: ") + paucFocus + ". This probably denotes a bug in pROC. If so, please type packageDescription(\"pROC\", fields=\"Maintainer\") to and report it to the maintainer.";
-      stop(errMsg);
-    }
-  }
-}
-
-
 
 /*double aucCC(const NumericVector& controls, const NumericVector& cases, const AucParams& aucParams) {
     // Compute SE/SP of sample
@@ -167,7 +133,7 @@ double computePartialAuc(const vector<double>& se, const vector<double>& sp, con
   return auc;
 }
 
-double computeAuc(const pair<vector<double>, vector<double>>& sesp, const AucParams& aucParams) {
+double computeAuc(const pair<vector<double>, vector<double>>& sesp, const AucParams& aucParams = AucParams()) {
   const vector<double> se = sesp.first;
   const vector<double> sp = sesp.second;
   
@@ -179,13 +145,3 @@ double computeAuc(const pair<vector<double>, vector<double>>& sesp, const AucPar
   }
 }
 
-// [[Rcpp::export]]
-double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, const Rcpp::List& aucParamsList) {
-  AucParams aucParams(aucParamsList);
-  if (aucParams.partial) {
-    return computePartialAuc(se, sp, aucParams);
-  }
-  else {
-    return computeFullAuc(se, sp);
-  }
-}

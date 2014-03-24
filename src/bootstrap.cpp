@@ -21,6 +21,7 @@
 #include <algorithm>
 #include "Random.h"
 #include "auc.h"
+#include "RcppConversions.h"
 
 using std::vector;
 using std::pair;
@@ -34,7 +35,7 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const NumericVect
   aucs.reserve(bootN);
   
   // Get proper AUC params
-  AucParams aucParams(aucParamsList);
+  AucParams aucParams = as <AucParams>(aucParamsList);
 
   int controlsSize(controls.size()),
          casesSize(cases.size());
@@ -61,7 +62,7 @@ std::vector<double> bootstrapAucNonStratified(const int bootN, const NumericVect
   aucs.reserve(bootN);
   
   // Get proper AUC params
-  AucParams aucParams(aucParamsList);
+  AucParams aucParams = as <AucParams>(aucParamsList);
   
   vector<int> controlsIdx, casesIdx;
 
