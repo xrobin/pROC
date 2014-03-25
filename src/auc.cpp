@@ -18,14 +18,14 @@
 
 #include <Rcpp.h>
 #include <vector> // std::vector
-#include <utility> // std::pair
-#include <algorithm> // std::swap
+//#include <utility> // std::pair
+//#include <algorithm> // std::swap
 #include <string> // std::string
 #include "auc.h"
 #include "rocUtils.h"
 
 using std::vector;
-using std::pair;
+//using std::pair;
 using std::string;
 using Rcpp::List;
 using Rcpp::stop;
@@ -117,10 +117,7 @@ double computePartialAuc(const vector<double>& se, const vector<double>& sp, con
   return auc;
 }
 
-double computeAuc(const pair<vector<double>, vector<double>>& sesp, const AucParams& aucParams = AucParams()) {
-  const vector<double> se = sesp.first;
-  const vector<double> sp = sesp.second;
-  
+double computeAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {
   if (aucParams.partial) {
     return computePartialAuc(se, sp, aucParams);
   }
@@ -129,3 +126,22 @@ double computeAuc(const pair<vector<double>, vector<double>>& sesp, const AucPar
   }
 }
 
+double computeAuc(const vector<double>& se, const vector<double>& sp, 
+                  bool partial, double from, double to, bool focusOnSp, bool correct) {
+	if (partial) {
+		return computePartialAuc(se, sp, from, to, focusOnSp, correct);
+	}
+	else {
+		return computeFullAuc(se, sp);
+	}
+}
+                  	
+double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+                  bool partial, double from, double to, std::string focus, bool correct) {
+	if (partial) {
+		return computePartialAuc(se, sp, from, to, focus, correct);
+	}
+	else {
+		return computeFullAuc(se, sp);
+	}
+}

@@ -32,7 +32,11 @@ struct AucParams {
 	partial(true), focusOnSp(aFocusOnSp), correct(aCorrect), from(aFrom), to(aTo) {}
 };
 
-double computeAuc(const std::pair<std::vector<double>, std::vector<double>>&, const AucParams& aucParams);
+double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams = AucParams());
+double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+                  bool partial = false, double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+                  bool partial = false, double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
 
 double computeFullAuc(const std::vector<double>& se, const std::vector<double>& sp);
 double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams);
