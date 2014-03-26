@@ -41,5 +41,5 @@ template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
   return y;
 }
 
-Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int> idx);
+Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx);
 

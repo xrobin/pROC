@@ -91,6 +91,7 @@ class ResampledPredictor: public Predictor {
 
 /** A specialization of ResampledPredictor that nows how to resample the indices in a stratified manner */
 class ResampledPredictorStratified: public ResampledPredictor {
+	public:
 	ResampledPredictorStratified(const Predictor& somePredictor): ResampledPredictor(somePredictor) {resample();}
 	
 	void resample();
@@ -98,6 +99,7 @@ class ResampledPredictorStratified: public ResampledPredictor {
 
 /** A specialization of ResampledPredictor that nows how to resample the indices in a non stratified manner */
 class ResampledPredictorNonStratified: public ResampledPredictor {
+	public:
 	ResampledPredictorNonStratified(const Predictor& somePredictor): ResampledPredictor(somePredictor) {resample();}
 	
 	void resample();

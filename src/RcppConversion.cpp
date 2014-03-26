@@ -50,7 +50,7 @@ namespace Rcpp {
    
 	template <> ROC<Predictor> as(SEXP aROC) {
     	List listROC = as<List>(aROC);
-    	return ROC<Predictor>(listROC["controls"], listROC["cases"], listROC["direction"]);
+    	return ROC<Predictor>(listROC["controls"], listROC["cases"], listROC["direction"], listROC["sensitivities"], listROC["specificities"]);
 	}
 
 	template <> SEXP wrap(const ROC<Predictor> &aROC) {

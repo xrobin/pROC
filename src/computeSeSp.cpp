@@ -19,7 +19,6 @@
 #include <Rcpp.h>
 #include <vector>
 #include <string>
-#include <pair> 
 
 #include "ROC.h"
 
@@ -33,7 +32,7 @@ using std::string;
  */
 
 template <typename PredictorType>
-void ROC::computeSeSp() {
+void ROC<PredictorType>::computeSeSp() {
 
 	// Vector sizes
 	const int ncontrols {predictor.nControls};
@@ -66,22 +65,22 @@ void ROC::computeSeSp() {
 		}
 		// If different, add the Se/Sp as a valid position
 		if (!currentDupPred) {
-			se.push_back(static_cast<double>(currentTpSum) / static_cast<double>(ncases));
-			sp.push_back((static_cast<double>(ncontrols) - static_cast<double>(currentFpSum)) / static_cast<double>(ncontrols));
+			sensitivity.push_back(static_cast<double>(currentTpSum) / static_cast<double>(ncases));
+			specificity.push_back((static_cast<double>(ncontrols) - static_cast<double>(currentFpSum)) / static_cast<double>(ncontrols));
 		}
 	}
 	
 	// Anchor the last position to 1/0
-	se.push_back(0);
-	sp.push_back(1);
+	sensitivity.push_back(0);
+	specificity.push_back(1);
 	
 	// Reverse - can we find a way to do it right from the start?
-	std::reverse(se.begin(), se.end() - 1);
-	std::reverse(sp.begin(), sp.end() - 1);
+	std::reverse(sensitivity.begin(), sensitivity.end() - 1);
+	std::reverse(specificity.begin(), specificity.end() - 1);
 	
 	// Ensure the # of thresholds is the same as the lenght of se
 	// Todo: maybe remove this in a future version of pROC...
-	if (se.size() != thresholds.size()) {
+	if (sensitivity.size() != thresholds.size()) {
 		//stop(string("Bug in pROC: fast algorithm (C++ version) computed an incorrect number of sensitivities and specificities: ") + toString(se.size()) + " and " + toString(sp.size()) + " vs " + toString(nthresholds));
 		std::runtime_error("Bug in pROC: fast algorithm (C++ version) computed an incorrect number of sensitivities and specificities.");
 	}

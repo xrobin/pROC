@@ -38,13 +38,13 @@ void makeUniqueInPlace(vector<double>& thresholds) {
 
 vector<double> computeThresholds(const Predictor& predictor) {
   vector<double> thresholds;
-  thresholds.insert(thresholds.begin(), cases.begin(), cases.end());
-  thresholds.insert(thresholds.begin(), controls.begin(), controls.end());
+  thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
+  thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
   makeUniqueInPlace(thresholds);
   return thresholds;
 }
 
-Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx); {
+Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx) {
 	Rcpp::NumericVector resampled(x.size());
 	for (int i = 0; i < x.size(); ++i) {
 		resampled[i] = x[idx[i]];

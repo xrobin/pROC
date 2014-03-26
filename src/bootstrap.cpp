@@ -22,6 +22,7 @@
 #include "Random.h"
 #include "auc.h"
 #include "RcppConversions.h"
+#include "ROC.h"
 
 using std::vector;
 using std::pair;
@@ -29,52 +30,54 @@ using Rcpp::NumericVector;
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const size_t bootN, const NumericVector controls, const NumericVector cases, const Rcpp::List& aucParamsList) {
-  // keep all AUCs in a vector of size bootN
-  vector<double> aucs;
-  aucs.reserve(bootN);
-  
-  // Get proper AUC params
-  AucParams aucParams = as <AucParams>(aucParamsList);
+std::vector<double> bootstrapAucStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP) {
+	// Get proper ROC
+	ROC<Predictor> aROC = as<ROC<Predictor>>(aROCSEXP);
+	// Get proper AUC params
+	AucParams aucParams = as <AucParams>(aucParamsSEXP);
 
-  int controlsSize(controls.size()),
-         casesSize(cases.size());
-  vector<int> controlsIdx(controlsSize),
-                 casesIdx(casesSize);
-
-  for (size_t i = 0; i < bootN; i++) {
-    // Select random sample
-    setRandomIdx(controlsSize, controlsIdx);
-    setRandomIdx(casesSize, casesIdx);
-  
-    // Compute AUC
-    aucs.push_back(aucCC(controls, cases, controlsIdx, casesIdx, aucParams));
-  }
-  
-  return aucs;
+	// keep all AUCs in a vector of size bootN
+	vector<double> aucs;
+	aucs.reserve(bootN);
+	
+	ROC<ResampledPredictorStratified> aResampledROC = aROC.getResampled<ResampledPredictorStratified>();
+	
+	for (size_t i = 0; i < bootN; i++) {
+		// Resample
+		if (i > 0) { // A fresh ROC<ResampledPredictor> is already resampled, no need to resample again at the first step
+			aResampledROC.resample();
+		}
+		// Compute AUC
+		aucs.push_back(aResampledROC.auc(aucParams));
+	}
+	
+	return aucs;
 }
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucNonStratified(const int bootN, const NumericVector controls, const NumericVector cases, const Rcpp::List& aucParamsList) {
-  // keep all AUCs in a vector of size bootN
-  vector<double> aucs;
-  aucs.reserve(bootN);
-  
-  // Get proper AUC params
-  AucParams aucParams = as <AucParams>(aucParamsList);
-  
-  vector<int> controlsIdx, casesIdx;
+std::vector<double> bootstrapAucNonStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP) {
+	// Get proper ROC
+	ROC<Predictor> aROC = as<ROC<Predictor>>(aROCSEXP);
+	// Get proper AUC params
+	AucParams aucParams = as <AucParams>(aucParamsSEXP);
 
-  for (int i = 0; i < bootN; i++) {
-    // Select random sample
-    setRandomNonStratifiedSample(controls.size(), cases.size(), controlsIdx, casesIdx);
-  
-    // Compute AUC
-    aucs.push_back(aucCC(controls, cases, controlsIdx, casesIdx, aucParams));
-  }
-  
-  return aucs;
+	// keep all AUCs in a vector of size bootN
+	vector<double> aucs;
+	aucs.reserve(bootN);
+	
+	ROC<ResampledPredictorNonStratified> aResampledROC = aROC.getResampled<ResampledPredictorNonStratified>();
+	
+	for (size_t i = 0; i < bootN; i++) {
+		// Resample
+		if (i > 0) { // A fresh ROC<ResampledPredictor> is already resampled, no need to resample again at the first step
+			aResampledROC.resample();
+		}
+		// Compute AUC
+		aucs.push_back(aResampledROC.auc(aucParams));
+	}
+	
+	return aucs;
 }
 
 // // [[Rcpp::export]]
