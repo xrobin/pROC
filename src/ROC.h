@@ -87,3 +87,5 @@ class ROC {
 		char getDirection() const {return direction;}
 		PredictorType getPredictor() const {return predictor;}
 };
+
+#include "computeSeSp.h"

@@ -1,3 +1,5 @@
+#pragma once
+
 /* pROC: Tools Receiver operating characteristic (ROC curves) with
    (partial) area under the curve, confidence intervals and comparison. 
    Copyright (C) 2014 Xavier Robin
@@ -36,7 +38,7 @@ void ROC<PredictorType>::computeSeSp() {
 
 	// Vector sizes
 	const int ncontrols {predictor.nControls};
-	const int ncases {predictor.ncases};
+	const int ncases {predictor.nCases};
 	const int npredictors {ncontrols + ncases};
 	
 	// Compute an index vector for controls and cases as R's order() function
