@@ -40,7 +40,7 @@ class Predictor {
 		return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
 	}
 	
-	std::vector<int> getOrder(std::string direction = ">") const;
+	std::vector<int> getOrder(const std::string& direction = ">") const;
 	Rcpp::NumericVector getControls() const {return controls;};
 	Rcpp::NumericVector getCases() const {return cases;};
 	
@@ -84,7 +84,7 @@ class ResampledPredictor: public Predictor {
 		return anIdx < nControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - nControls] + nControls);
 	}
 
-	std::vector<int> getOrder(std::string direction = ">") const;
+	std::vector<int> getOrder(const std::string& direction = ">") const;
 	Rcpp::NumericVector getControls() const;
 	Rcpp::NumericVector getCases() const;
 };
@@ -137,7 +137,7 @@ template <class P> class PredictorReverseComparator{
  * Get the order (indices) of a Predictor or ResampledPredictor
  */
 
-template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string direction = ">") {
+template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">") {
     std::vector<int> index(predictor.nTotal);
     std::iota(index.begin(), index.end(), 0);
     if (direction == ">") {

@@ -6,7 +6,7 @@ using Rcpp::NumericVector;
 #include "RcppConversions.h"
 
 // [[Rcpp::export]]
-List computeSeSpList(const NumericVector& thresholds, const NumericVector& controls, const NumericVector& cases, const char direction) {
+List computeSeSpList(const NumericVector& thresholds, const NumericVector& controls, const NumericVector& cases, const std::string& direction) {
 	
 	ROC<Predictor> aROC(controls, cases, direction);
 

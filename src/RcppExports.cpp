@@ -55,7 +55,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // computeSeSpList
-List computeSeSpList(const NumericVector& thresholds, const NumericVector& controls, const NumericVector& cases, const char direction);
+List computeSeSpList(const NumericVector& thresholds, const NumericVector& controls, const NumericVector& cases, const std::string& direction);
 RcppExport SEXP pROC_computeSeSpList(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -64,7 +64,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const NumericVector& >::type thresholds(thresholdsSEXP );
         Rcpp::traits::input_parameter< const NumericVector& >::type controls(controlsSEXP );
         Rcpp::traits::input_parameter< const NumericVector& >::type cases(casesSEXP );
-        Rcpp::traits::input_parameter< const char >::type direction(directionSEXP );
+        Rcpp::traits::input_parameter< const std::string& >::type direction(directionSEXP );
         List __result = computeSeSpList(thresholds, controls, cases, direction);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }

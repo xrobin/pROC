@@ -28,12 +28,12 @@ using std::vector;
 using std::string;
 using Rcpp::NumericVector;
 
-vector<int> Predictor::getOrder(string direction) const {
+vector<int> Predictor::getOrder(const std::string& direction) const {
 	return getPredictorOrder(*this, direction);
 }
 
 
-vector<int> ResampledPredictor::getOrder(string direction) const {
+vector<int> ResampledPredictor::getOrder(const std::string& direction) const {
 	return getPredictorOrder(*this, direction);
 }
 

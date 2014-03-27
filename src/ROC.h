@@ -12,7 +12,7 @@ template <typename PredictorType>
 class ROC {
 	PredictorType predictor;
 	std::vector<double> sensitivity, specificity, thresholds;
-	char direction;
+	const std::string direction;
 	
 	void computeSeSp();
 	double fullAUC() {return computeFullAuc(sensitivity, specificity);}
@@ -30,14 +30,14 @@ class ROC {
 		/** Constructor with controls, cases and a direction.
 		 * Computes sensitivity and specificity
 		 */
-		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, char aDirection):
+		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const std::string& aDirection):
 			predictor(someControls, someCases), thresholds(computeThresholds(predictor)), direction(aDirection) {
 				computeSeSp();
 		}
 		/** Constructor with sensitivity and specificity pre-computed.
 		 * Warning: no attempt is made to check the correctness of the data
 		 */
-		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, char aDirection,
+		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const std::string& aDirection,
 		    std::vector<double> aSensitivity, std::vector<double> aSpecificity):
 			predictor(someControls, someCases),sensitivity(aSensitivity), specificity(aSpecificity),
 			thresholds(computeThresholds(predictor)), direction(aDirection) {}
@@ -45,12 +45,12 @@ class ROC {
 		/** Constructor from a Predictor.
 		 * Computes sensitivity and specificity
 		 */
-		ROC(const PredictorType& aPredictor, char aDirection):
+		ROC(const PredictorType& aPredictor, const std::string& aDirection):
 			predictor(aPredictor), thresholds(computeThresholds(aPredictor)), direction(aDirection) {
 				computeSeSp();
 		}
 			
-		double auc(bool partial = false, double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false) {
+		double auc(bool partial = false, double from = 0.9, double to = 1, std::string& focus = "specificity", bool correct = false) {
 			if (partial) return partialAUC(from, to, focus, correct);
 			else return fullAUC();
 		}
