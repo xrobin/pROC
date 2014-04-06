@@ -43,3 +43,15 @@ template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
 
 Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx);
 
+template<typename PredictorType> 
+vector<double> computeThresholds(const PredictorType& predictor) {
+	std::cout << "In computeThresholds" << std::endl;
+  vector<double> thresholds;
+  std::cout << *(predictor.getCases().begin()) << std::endl;
+  std::cout << *(predictor.getControls().begin()) << std::endl;
+  thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
+  thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
+	std::cout << "Thresholds inserted, going to make unique" << std::endl;
+  makeUniqueInPlace(thresholds);
+  return thresholds;
+}
