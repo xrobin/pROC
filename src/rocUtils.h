@@ -23,8 +23,6 @@
 #include <algorithm> // std::reverse_copy
 // #include <Rcpp.h>
 
-#include "Predictor.h"
-
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
   std::vector<T> y;
   y.assign(x.rbegin(), x.rend());

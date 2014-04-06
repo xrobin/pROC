@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <stdexcept> // std::out_of_range
 
+#include "rocUtils.h"
+
 /** A Predictor behaves like a concatenated vector of cases and controls
  * The first indices represents the controls, the last ones the controls
  */
@@ -68,14 +70,18 @@ class Predictor {
  * derived classes getResampledStratified or getResampledNonStratified.
  */
 class ResampledPredictor: public Predictor {
-	std::vector<int> controlsIdx;
-	std::vector<int> casesIdx;
+	std::vector<int> controlsIdx, casesIdx;
+	Rcpp::NumericVector resampledControls, resampledCases;
+	
 	/** Private constructor, creates an invalid object leaves controlsIdx and casesIdx empty
 	* used by the derived friend classes where we can make sure that they will be filled properly */
 	ResampledPredictor(const Predictor& somePredictor): Predictor(somePredictor) {}
 	public:
 	ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
-	                   Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx) {}
+	                   Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx),
+	                   resampledControls(getResampledVector(Predictor::getControls(), controlsIdx)),
+	                   resampledCases(getResampledVector(Predictor::getCases(), casesIdx))
+	                   {}
 	
 	friend class ResampledPredictorStratified; // Derived classes need access to controlsIdx and casesIdx
 	friend class ResampledPredictorNonStratified;
@@ -85,8 +91,8 @@ class ResampledPredictor: public Predictor {
 	}
 
 	std::vector<int> getOrder(const std::string& direction = ">") const;
-	Rcpp::NumericVector getControls() const;
-	Rcpp::NumericVector getCases() const;
+	Rcpp::NumericVector getControls() const {return resampledControls;}
+	Rcpp::NumericVector getCases() const {return resampledCases;}
 };
 
 /** A specialization of ResampledPredictor that nows how to resample the indices in a stratified manner */

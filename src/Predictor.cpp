@@ -37,14 +37,6 @@ vector<int> ResampledPredictor::getOrder(const std::string& direction) const {
 	return getPredictorOrder(*this, direction);
 }
 
-NumericVector ResampledPredictor::getControls() const {
-	return getResampledVector(Predictor::getControls(), controlsIdx);
-}
-
-NumericVector ResampledPredictor::getCases() const {
-	return getResampledVector(Predictor::getCases(), casesIdx);
-}
-
 void ResampledPredictorStratified::resample() {
 	setRandomIdx(nControls, controlsIdx);
 	setRandomIdx(nCases, casesIdx);
