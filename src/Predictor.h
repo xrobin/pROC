@@ -28,8 +28,8 @@
  */
 
 class Predictor {
-	const Rcpp::NumericVector& controls;
-	const Rcpp::NumericVector& cases;
+	const Rcpp::NumericVector controls;
+	const Rcpp::NumericVector cases;
   	
   public:
 	const int nControls, nCases, nTotal;
