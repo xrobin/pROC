@@ -36,13 +36,9 @@ void makeUniqueInPlace(std::vector<double>& thresholds);
 
 template <typename PredictorType>
 std::vector<double> computeThresholds(const PredictorType& predictor) {
-	std::cout << "In computeThresholds" << std::endl;
   std::vector<double> thresholds;
-  std::cout << *(predictor.getCases().begin()) << std::endl;
-  std::cout << *(predictor.getControls().begin()) << std::endl;
   thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
   thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
-	std::cout << "Thresholds inserted, going to make unique" << std::endl;
   makeUniqueInPlace(thresholds);
   return thresholds;
 }
