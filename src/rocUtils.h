@@ -25,15 +25,6 @@
 
 #include "Predictor.h"
 
-
-//std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases);
-//std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
-//                                      const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
-
-//std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&);
-//std::pair<std::vector<double>, std::vector<double>> computeSeSpPair(const std::vector<double>&, const Rcpp::NumericVector&, const Rcpp::NumericVector&, 
-//                                                                const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
-
 template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
   std::vector<T> y;
   y.assign(x.rbegin(), x.rend());
