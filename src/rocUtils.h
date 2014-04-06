@@ -26,7 +26,6 @@
 #include "Predictor.h"
 
 
-std::vector<double> computeThresholds(const Predictor& predictor);
 //std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases);
 //std::vector<double> computeThresholds(const Rcpp::NumericVector& controls, const Rcpp::NumericVector& cases, 
 //                                      const std::vector<int>& controlsIdx, const std::vector<int>& casesIdx);
@@ -42,11 +41,12 @@ template<typename T> std::vector<T> getReversedVector(const std::vector<T>& x) {
 }
 
 Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx);
+void makeUniqueInPlace(std::vector<double>& thresholds);
 
-template<typename PredictorType> 
-vector<double> computeThresholds(const PredictorType& predictor) {
+template <typename PredictorType>
+std::vector<double> computeThresholds(const PredictorType& predictor) {
 	std::cout << "In computeThresholds" << std::endl;
-  vector<double> thresholds;
+  std::vector<double> thresholds;
   std::cout << *(predictor.getCases().begin()) << std::endl;
   std::cout << *(predictor.getControls().begin()) << std::endl;
   thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
