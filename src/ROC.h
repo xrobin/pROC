@@ -78,6 +78,7 @@ class ROC {
 		 */
 		void resample() {
 			predictor.resample();
+			thresholds = computeThresholds(predictor, direction);
 			computeSeSp();
 		}
 		
