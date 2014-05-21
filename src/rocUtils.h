@@ -33,10 +33,14 @@ Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::
 void makeUniqueInPlace(std::vector<double>& thresholds);
 
 template <typename PredictorType>
-std::vector<double> computeThresholds(const PredictorType& predictor) {
+std::vector<double> computeThresholds(const PredictorType& predictor, const std::string& aDirection) {
   std::vector<double> thresholds;
   thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
   thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
   makeUniqueInPlace(thresholds);
+  if (aDirection == ">") { // reverse when ">"
+  Rcpp::Rcout << "Reversing thresholds\n";
+  	std::reverse(thresholds.begin(), thresholds.end());
+  }
   return thresholds;
 }

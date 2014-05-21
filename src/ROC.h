@@ -31,7 +31,7 @@ class ROC {
 		 * Computes sensitivity and specificity
 		 */
 		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const std::string& aDirection):
-			predictor(someControls, someCases), thresholds(computeThresholds(predictor)), direction(aDirection) {
+			predictor(someControls, someCases), thresholds(computeThresholds(predictor, aDirection)), direction(aDirection) {
 				computeSeSp();
 		}
 		/** Constructor with sensitivity and specificity pre-computed.
@@ -40,13 +40,13 @@ class ROC {
 		ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const std::string& aDirection,
 		    std::vector<double> aSensitivity, std::vector<double> aSpecificity):
 			predictor(someControls, someCases),sensitivity(aSensitivity), specificity(aSpecificity),
-			thresholds(computeThresholds(predictor)), direction(aDirection) {}
+			thresholds(computeThresholds(predictor, aDirection)), direction(aDirection) {}
 
 		/** Constructor from a Predictor.
 		 * Computes sensitivity and specificity
 		 */
 		ROC(const PredictorType& aPredictor, const std::string& aDirection):
-			predictor(aPredictor), thresholds(computeThresholds(aPredictor)), direction(aDirection) {
+			predictor(aPredictor), thresholds(computeThresholds(aPredictor, aDirection)), direction(aDirection) {
 				computeSeSp();
 		}
 			
