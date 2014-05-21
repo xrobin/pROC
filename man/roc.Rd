@@ -68,7 +68,7 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     median is higher and take the direction accordingly.
     \dQuote{>}: if the predictor values for the control group are
     higher than the values of the case group (controls > t >= cases).
-    \dQuote{<}: if the predictor values for the control group are higher
+    \dQuote{<}: if the predictor values for the control group are lower
     or equal than the values of the case group (controls < t <= cases).
   }
   \item{algorithm}{deprecated and ignored with a warning.}
