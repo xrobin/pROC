@@ -82,7 +82,7 @@ class ROC {
 		}
 		
 		std::vector<double> getSensitivity() const {return sensitivity;}
-		std::vector<double> getSpecificity() const {return sensitivity;}
+		std::vector<double> getSpecificity() const {return specificity;}
 		std::vector<double> getThresholds() const {return thresholds;}
 		char getDirection() const {return direction;}
 		PredictorType getPredictor() const {return predictor;}
