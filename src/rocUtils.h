@@ -39,7 +39,6 @@ std::vector<double> computeThresholds(const PredictorType& predictor, const std:
   thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
   makeUniqueInPlace(thresholds);
   if (aDirection == ">") { // reverse when ">"
-  Rcpp::Rcout << "Reversing thresholds\n";
   	std::reverse(thresholds.begin(), thresholds.end());
   }
   return thresholds;
