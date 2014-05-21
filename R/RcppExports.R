@@ -17,7 +17,39 @@ computeSeSpList <- function(thresholds, controls, cases, direction) {
     .Call('pROC_computeSeSpList', PACKAGE = 'pROC', thresholds, controls, cases, direction)
 }
 
-computeAuc <- function(se, sp, aucParamsList) {
-    .Call('pROC_computeAuc', PACKAGE = 'pROC', se, sp, aucParamsList)
+computeAuc <- function(aROCList, aucParamsList) {
+    .Call('pROC_computeAuc', PACKAGE = 'pROC', aROCList, aucParamsList)
+}
+
+computeAucSeSp <- function(se, sp, aucParamsList) {
+    .Call('pROC_computeAucSeSp', PACKAGE = 'pROC', se, sp, aucParamsList)
+}
+
+runit_Predictor_bracketOperator <- function(someControls, someCases, i) {
+    .Call('pROC_runit_Predictor_bracketOperator', PACKAGE = 'pROC', someControls, someCases, i)
+}
+
+runit_Predictor_bracketOperatorVector <- function(someControls, someCases) {
+    .Call('pROC_runit_Predictor_bracketOperatorVector', PACKAGE = 'pROC', someControls, someCases)
+}
+
+runit_Predictor_getOrder <- function(someControls, someCases) {
+    .Call('pROC_runit_Predictor_getOrder', PACKAGE = 'pROC', someControls, someCases)
+}
+
+runit_Predictor_getControls <- function(someControls, someCases) {
+    .Call('pROC_runit_Predictor_getControls', PACKAGE = 'pROC', someControls, someCases)
+}
+
+runit_Predictor_getCases <- function(someControls, someCases) {
+    .Call('pROC_runit_Predictor_getCases', PACKAGE = 'pROC', someControls, someCases)
+}
+
+runit_Predictor_isControl <- function(someControls, someCases, i) {
+    .Call('pROC_runit_Predictor_isControl', PACKAGE = 'pROC', someControls, someCases, i)
+}
+
+runit_Predictor_isCase <- function(someControls, someCases, i) {
+    .Call('pROC_runit_Predictor_isCase', PACKAGE = 'pROC', someControls, someCases, i)
 }
 
