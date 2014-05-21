@@ -4,7 +4,8 @@ Title: display and analyze ROC curves
 Version: 1.7.2
 Date: 2014-04-05
 Encoding: UTF-8
-Depends: R (>= 2.13)
+Depends: R (>= 3.1.0)
+SystemRequirements: C++11
 Imports: plyr, utils, methods, Rcpp (>= 0.11.1)
 Suggests: tcltk, MASS, logcondens, doMC, doSNOW
 LinkingTo: Rcpp
