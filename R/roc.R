@@ -148,9 +148,9 @@ roc.default <- function(response, predictor,
     if (length(cases) == 0)
       stop("No case observation.")
     if (!is.numeric(cases))
-      stop("Cases must be numeric or ordered.")
+      stop("Cases must be numeric.")
     if (!is.numeric(controls))
-      stop("Controls must be numeric or ordered.")
+      stop("Controls must be numeric.")
     # build response/predictor
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
     predictor <- c(controls, cases)
