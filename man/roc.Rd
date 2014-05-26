@@ -38,7 +38,7 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     observation. An ordered factor is coerced to a numeric.
   }
   \item{controls, cases}{instead of \code{response}, \code{predictor},
-    the data can be supplied as two vectors containing the predictor
+    the data can be supplied as two numeric vectors containing the predictor
     values for control and case observations.
   }
   \item{density.controls, density.cases}{a smoothed ROC curve can be
