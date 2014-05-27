@@ -7,16 +7,16 @@
 using namespace Rcpp;
 
 // bootstrapAucStratified
-std::vector<double> bootstrapAucStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP);
-RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP aROCSEXPSEXP, SEXP aucParamsSEXPSEXP) {
+std::vector<double> bootstrapAucStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams);
+RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP aROCSEXP, SEXP aucParamsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        Rcpp::traits::input_parameter< const SEXP& >::type aROCSEXP(aROCSEXPSEXP );
-        Rcpp::traits::input_parameter< const SEXP& >::type aucParamsSEXP(aucParamsSEXPSEXP );
-        std::vector<double> __result = bootstrapAucStratified(bootN, aROCSEXP, aucParamsSEXP);
+        Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP );
+        Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP );
+        std::vector<double> __result = bootstrapAucStratified(bootN, aROC, aucParams);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -24,16 +24,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // bootstrapAucNonStratified
-std::vector<double> bootstrapAucNonStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP);
-RcppExport SEXP pROC_bootstrapAucNonStratified(SEXP bootNSEXP, SEXP aROCSEXPSEXP, SEXP aucParamsSEXPSEXP) {
+std::vector<double> bootstrapAucNonStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams);
+RcppExport SEXP pROC_bootstrapAucNonStratified(SEXP bootNSEXP, SEXP aROCSEXP, SEXP aucParamsSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        Rcpp::traits::input_parameter< const SEXP& >::type aROCSEXP(aROCSEXPSEXP );
-        Rcpp::traits::input_parameter< const SEXP& >::type aucParamsSEXP(aucParamsSEXPSEXP );
-        std::vector<double> __result = bootstrapAucNonStratified(bootN, aROCSEXP, aucParamsSEXP);
+        Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP );
+        Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP );
+        std::vector<double> __result = bootstrapAucNonStratified(bootN, aROC, aucParams);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);

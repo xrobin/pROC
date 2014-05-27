@@ -33,11 +33,7 @@ using std::pair;
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP) {
-	// Get proper ROC
-	ROC<Predictor> aROC = as<ROC<Predictor>>(aROCSEXP);
-	// Get proper AUC params
-	AucParams aucParams = as <AucParams>(aucParamsSEXP);
+std::vector<double> bootstrapAucStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams) {
 
 	// keep all AUCs in a vector of size bootN
 	vector<double> aucs;
@@ -59,11 +55,7 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const SEXP& aROCS
 
 
 // [[Rcpp::export]]
-std::vector<double> bootstrapAucNonStratified(const size_t bootN, const SEXP& aROCSEXP, const SEXP& aucParamsSEXP) {
-	// Get proper ROC
-	ROC<Predictor> aROC = as<ROC<Predictor>>(aROCSEXP);
-	// Get proper AUC params
-	AucParams aucParams = as <AucParams>(aucParamsSEXP);
+std::vector<double> bootstrapAucNonStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams) {
 
 	// keep all AUCs in a vector of size bootN
 	vector<double> aucs;

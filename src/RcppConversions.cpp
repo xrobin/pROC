@@ -49,12 +49,12 @@ namespace Rcpp {
 		return cppParams; // dummy return statement to remove warning
     }
    
-	template <> ROC<Predictor> as(SEXP aROC) {
+	template <> ROC<> as(SEXP aROC) {
     	List listROC = as<List>(aROC);
-    	return ROC<Predictor>(listROC["controls"], listROC["cases"], listROC["direction"], listROC["sensitivities"], listROC["specificities"]);
+    	return ROC<>(listROC["controls"], listROC["cases"], listROC["direction"], listROC["sensitivities"], listROC["specificities"]);
 	}
 
-	template <> SEXP wrap(const ROC<Predictor> &aROC) {
+	template <> SEXP wrap(const ROC<> &aROC) {
 		return List::create(
 			Named("sensitivities") = wrap(aROC.getSensitivity()),
 			Named("specificities") = wrap(aROC.getSpecificity()),

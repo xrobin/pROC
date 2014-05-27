@@ -27,7 +27,7 @@
 
 namespace pROC {
 
-	template <typename PredictorType>
+	template <typename PredictorType = Predictor>
 	class ROC {
 		PredictorType predictor;
 		std::vector<double> sensitivity, specificity, thresholds;
@@ -87,7 +87,7 @@ namespace pROC {
 			 * ROC<ResampledPredictorNonStratified> myResampledROC = ROC.getResampled<ResampledPredictorNonStratified>()
 			 */
 			template <class ResampledPredictorType>
-			ROC<ResampledPredictorType> getResampled() {
+			ROC<ResampledPredictorType> getResampled() const {
 				ResampledPredictorType aResampledPredictor(predictor);
 				ROC<ResampledPredictorType> aResampledROC(aResampledPredictor, direction);
 				return aResampledROC;

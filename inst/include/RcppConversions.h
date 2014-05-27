@@ -9,6 +9,6 @@
 namespace Rcpp {
 	template <> pROC::AucParams as(SEXP someParams);
 
-	template <> pROC::ROC<pROC::Predictor> as(SEXP aROC);
-	template <> SEXP wrap(const pROC::ROC<pROC::Predictor> &aROC);
+	template <> pROC::ROC<> as(SEXP aROC);
+	template <> SEXP wrap(const pROC::ROC<> &aROC);
 }
