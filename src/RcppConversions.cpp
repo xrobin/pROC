@@ -1,13 +1,14 @@
 #include <Rcpp.h>
-using namespace Rcpp;
-
 #include <string>
-using std::string;
 
-#include "RcppConversions.h"
-#include "auc.h"
-#include "ROC.h"
-#include "Predictor.h"
+#include <pROC/auc.h>
+#include <pROC/Predictor.h>
+#include <pROC/ROC.h>
+#include <RcppConversions.h>
+
+using namespace pROC;
+using namespace Rcpp;
+using std::string;
 
 namespace Rcpp {
     template <> AucParams as(SEXP rParams) {

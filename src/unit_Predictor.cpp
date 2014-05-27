@@ -1,7 +1,9 @@
 #include <Rcpp.h>
-using namespace Rcpp ;
 
-#include "Predictor.h"
+#include <pROC/Predictor.h>
+
+using namespace pROC;
+using namespace Rcpp;
 
 // [[Rcpp::export]]
 NumericVector runit_Predictor_bracketOperator(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const int i) {

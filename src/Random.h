@@ -19,8 +19,10 @@
 
 #include <vector>
 
-
-void setRandomIdx(const int size, std::vector<int>& idxVector);
-std::vector<int> setRandomIdx(const int size);
-void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
-                             std::vector<int>& controlsIdx, std::vector<int>& casesIdx);
+namespace pROC {
+	void setRandomIdx(const int size, std::vector<int>& idxVector);
+	std::vector<int> setRandomIdx(const int size);
+	void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
+	                                  std::vector<int>& controlsIdx, std::vector<int>& casesIdx);
+	
+}

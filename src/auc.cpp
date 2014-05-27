@@ -17,22 +17,20 @@
 */
 
 #include <Rcpp.h>
-#include <vector> // std::vector
-//#include <utility> // std::pair
-//#include <algorithm> // std::swap
 #include <string> // std::string
-#include "auc.h"
-#include "rocUtils.h"
+#include <vector> // std::vector
 
-using std::vector;
-//using std::pair;
-using std::string;
+#include <pROC/auc.h>
+#include <pROC/rocUtils.h>
+
 using Rcpp::List;
-using Rcpp::stop;
 using Rcpp::NumericVector;
+using Rcpp::stop;
+using std::string;
+using std::vector;
 
 
-double computeFullAuc(const vector<double>& se, const vector<double>& sp) {
+double pROC::computeFullAuc(const vector<double>& se, const vector<double>& sp) {
   double auc = 0;
   size_t lastElement = se.size() - 1;
   
@@ -50,17 +48,17 @@ double computeFullAuc(const vector<double>& se, const vector<double>& sp) {
 }
 
 
-double computePartialAuc(const vector<double>& se, const vector<double>& sp, 
+double pROC::computePartialAuc(const vector<double>& se, const vector<double>& sp, 
                          double from, double to, string focus, bool correct) {
 	return computePartialAuc(se, sp, AucParams(from, to, focus, correct));
 }
 
-double computePartialAuc(const vector<double>& se, const vector<double>& sp, 
+double pROC::computePartialAuc(const vector<double>& se, const vector<double>& sp, 
                          double from, double to, bool focusOnSp, bool correct) {
 	return computePartialAuc(se, sp, AucParams(from, to, focusOnSp, correct));
 }
 
-double computePartialAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {
+double pROC::computePartialAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {
   double auc = 0;
   
   // Copy se/sp into y/x
@@ -117,7 +115,7 @@ double computePartialAuc(const vector<double>& se, const vector<double>& sp, con
   return auc;
 }
 
-double computeAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {
+double pROC::computeAuc(const vector<double>& se, const vector<double>& sp, const AucParams& aucParams) {
   if (aucParams.partial) {
     return computePartialAuc(se, sp, aucParams);
   }
@@ -126,7 +124,7 @@ double computeAuc(const vector<double>& se, const vector<double>& sp, const AucP
   }
 }
 
-double computeAuc(const vector<double>& se, const vector<double>& sp, 
+double pROC::computeAuc(const vector<double>& se, const vector<double>& sp, 
                   bool partial, double from, double to, bool focusOnSp, bool correct) {
 	if (partial) {
 		return computePartialAuc(se, sp, from, to, focusOnSp, correct);
@@ -136,7 +134,7 @@ double computeAuc(const vector<double>& se, const vector<double>& sp,
 	}
 }
                   	
-double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
+double pROC::computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
                   bool partial, double from, double to, std::string focus, bool correct) {
 	if (partial) {
 		return computePartialAuc(se, sp, from, to, focus, correct);

@@ -17,16 +17,19 @@
 */
 
 #include <Rcpp.h>
+#include <algorithm> // std::pair
 #include <vector>
-#include <algorithm>
-#include "Random.h"
-#include "auc.h"
-#include "RcppConversions.h"
-#include "ROC.h"
 
+#include <pROC/auc.h>
+#include <pROC/ROC.h>
+#include <RcppConversions.h>
+#include "Random.h"
+
+using namespace pROC;
+using Rcpp::as;
+using Rcpp::NumericVector;
 using std::vector;
 using std::pair;
-using Rcpp::NumericVector;
 
 
 // [[Rcpp::export]]

@@ -16,27 +16,30 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <vector>
-#include <algorithm>
 #include <Rcpp.h>
+#include <algorithm> // std::sort, std::lower_bound
+#include <vector>
+
+#include "Random.h"
+
 using std::vector;
 using Rcpp::NumericVector;
 
 
-void setRandomIdx(const int size, vector<int>& idxVector) {
+void pROC::setRandomIdx(const int size, vector<int>& idxVector) {
   NumericVector idx = Rcpp::runif(size, 0, size);
   idxVector.clear();
   idxVector.insert(idxVector.begin(), idx.begin(), idx.end());
 }
 
-vector<int> setRandomIdx(const int size) {
+vector<int> pROC::setRandomIdx(const int size) {
 	vector<int> ret(size);
 	setRandomIdx(size, ret);
 	return ret;
 }
 
 
-void setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
+void pROC::setRandomNonStratifiedSample(const int controlsSize, const int casesSize,
                              vector<int>& controlsIdx, vector<int>& casesIdx) {
   // relevant sizes
   int totalSize = controlsSize + casesSize;

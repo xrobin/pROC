@@ -15,33 +15,28 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once 
 
-#include <Rcpp.h>
-#include <string>
+#include <algorithm> // std::reverse_copy
 #include <vector>
 
-#include <pROC/Predictor.h>
-#include <pROC/rocUtils.h>
-#include "Random.h"
+namespace pROC {
+	template<typename T> 
+	std::vector<T> getReversedVector(const std::vector<T>& x) {
+		std::vector<T> y;
+		y.assign(x.rbegin(), x.rend());
+		return y;
+	}
 
-using Rcpp::NumericVector;
-using std::string;
-using std::vector;
-
-vector<int> pROC::Predictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
-}
-
-
-vector<int> pROC::ResampledPredictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
-}
-
-void pROC::ResampledPredictorStratified::resample() {
-	setRandomIdx(nControls, controlsIdx);
-	setRandomIdx(nCases, casesIdx);
-}
-
-void pROC::ResampledPredictorNonStratified::resample() {
-	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
+	template <typename PredictorType>
+	std::vector<double> computeThresholds(const PredictorType& predictor, const std::string& aDirection) {
+		std::vector<double> thresholds;
+		thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
+		thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
+		makeUniqueInPlace(thresholds);
+		if (aDirection == ">") { // reverse when ">"
+			std::reverse(thresholds.begin(), thresholds.end());
+		}
+		return thresholds;
+	}
 }

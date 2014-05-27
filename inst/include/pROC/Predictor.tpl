@@ -15,33 +15,23 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once 
 
-#include <Rcpp.h>
+#include <algorithm> // std::iota, std::sort
 #include <string>
 #include <vector>
 
-#include <pROC/Predictor.h>
-#include <pROC/rocUtils.h>
-#include "Random.h"
-
-using Rcpp::NumericVector;
-using std::string;
-using std::vector;
-
-vector<int> pROC::Predictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
-}
-
-
-vector<int> pROC::ResampledPredictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
-}
-
-void pROC::ResampledPredictorStratified::resample() {
-	setRandomIdx(nControls, controlsIdx);
-	setRandomIdx(nCases, casesIdx);
-}
-
-void pROC::ResampledPredictorNonStratified::resample() {
-	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
+namespace pROC {
+	template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">") {
+		std::vector<int> index(predictor.nTotal);
+		std::iota(index.begin(), index.end(), 0);
+		if (direction == ">") {
+			std::sort(index.begin(), index.end(), PredictorComparator<P>(predictor));
+		}
+		else {
+			std::sort(index.begin(), index.end(), PredictorReverseComparator<P>(predictor));
+		}
+		
+		return index;
+	}
 }

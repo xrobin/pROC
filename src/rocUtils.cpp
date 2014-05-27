@@ -17,18 +17,15 @@
 */
 
 #include <Rcpp.h>
+#include <algorithm> // std::sort, std::unique, std::distance
 #include <vector>
-// #include <utility> // std::pair
-#include <algorithm>
-// #include <Rcpp.h>
 
-#include "rocUtils.h"
-using std::vector;
-// using std::pair;
+#include <pROC/rocUtils.h>
+
 using Rcpp::NumericVector;
+using std::vector;
 
-
-void makeUniqueInPlace(vector<double>& thresholds) {
+void pROC::makeUniqueInPlace(vector<double>& thresholds) {
   // Sort and remove consecutive duplicate values
   std::sort(thresholds.begin(), thresholds.end());
   vector<double>::iterator it = std::unique(thresholds.begin(), thresholds.end());
@@ -36,7 +33,7 @@ void makeUniqueInPlace(vector<double>& thresholds) {
   thresholds.resize(std::distance(thresholds.begin(), it));
 }
 
-Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx) {
+Rcpp::NumericVector pROC::getResampledVector(const Rcpp::NumericVector& x, const vector<int>& idx) {
 	Rcpp::NumericVector resampled(x.size());
 	for (int i = 0; i < x.size(); ++i) {
 		resampled[i] = x[idx[i]];

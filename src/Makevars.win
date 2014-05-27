@@ -1,3 +1,11 @@
+## -*- mode: makefile; -*-
 
-## Use the R_HOME indirection to support installations of multiple R version
-PKG_LIBS = $(shell "${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" -e "Rcpp:::LdFlags()")
+PKG_CXXFLAGS = -I../inst/include
+
+## With Rcpp 0.11.0 and later, we no longer need to set PKG_LIBS for
+## Rcpp as there is no user-facing library. 
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+
+## With R 3.1.0 or later, you can uncomment the following line to tell R to 
+## enable compilation with C++11 (where available)
+CXX_STD = CXX11

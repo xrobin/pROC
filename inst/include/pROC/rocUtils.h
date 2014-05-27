@@ -15,33 +15,22 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#pragma once 
 
 #include <Rcpp.h>
-#include <string>
 #include <vector>
 
-#include <pROC/Predictor.h>
-#include <pROC/rocUtils.h>
-#include "Random.h"
-
-using Rcpp::NumericVector;
-using std::string;
-using std::vector;
-
-vector<int> pROC::Predictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
+namespace pROC {
+	Rcpp::NumericVector getResampledVector(const Rcpp::NumericVector& x, const std::vector<int>& idx);
+	void makeUniqueInPlace(std::vector<double>& thresholds);
+	
+	// Templates in rocUtils.tpl
+	template<typename T> 
+	std::vector<T> getReversedVector(const std::vector<T>& x);
+	template <typename PredictorType>
+	std::vector<double> computeThresholds(const PredictorType& predictor, const std::string& aDirection);
 }
 
+#include <pROC/rocUtils.tpl>
 
-vector<int> pROC::ResampledPredictor::getOrder(const string& direction) const {
-	return getPredictorOrder(*this, direction);
-}
 
-void pROC::ResampledPredictorStratified::resample() {
-	setRandomIdx(nControls, controlsIdx);
-	setRandomIdx(nCases, casesIdx);
-}
-
-void pROC::ResampledPredictorNonStratified::resample() {
-	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
-}
