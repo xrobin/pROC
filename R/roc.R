@@ -142,34 +142,56 @@ roc.default <- function(response, predictor,
 
   # Cases / Controls
   else if (!missing(cases) && !is.null(cases) && !missing(controls) && !is.null(controls)) {
+  	# remove nas
+  	if (na.rm) {
+  		if (any(is.na(controls)))
+  			controls <- na.omit(controls)
+  		if (any(is.na(cases)))
+  			controls <- na.omit(cases)
+  	}
+  	else if (any(is.na(c(controls, cases)))) # Unable to compute anything if there is any NA in the data we want to consider !
+  		return(NA)
+  	# are there empty cats?
+  	if (length(controls) == 0)
+  		stop("No control observation.")
+  	if (length(cases) == 0)
+  		stop("No case observation.")
+  	
     # check data consistency
-    if (length(controls) == 0)
-      stop("No control observation.")
-    if (length(cases) == 0)
-      stop("No case observation.")
-    if (!is.numeric(cases))
-      stop("Cases must be numeric.")
-    if (!is.numeric(controls))
-      stop("Controls must be numeric.")
-    # build response/predictor
-    response <- c(rep(0, length(controls)), rep(1, length(cases)))
-    predictor <- c(controls, cases)
-    original.predictor <- predictor
-    original.response <- response
-    # remove nas
-    if (na.rm) {
-      if (any(is.na(controls)))
-        controls <- na.omit(controls)
-      if (any(is.na(cases)))
-        controls <- na.omit(cases)
+    if (is.ordered(cases)) {
+    	if (is.ordered(controls)) {
+    		if (identical(attr(cases, "levels"), attr(controls, "levels"))) {
+    			# merge
+    			original.predictor <- ordered(c(as.character(cases), as.character(controls)), levels = attr(controls, "levels"))
+    			# Predictor, control and cases must be numeric from now on
+    			predictor <- as.numeric(original.predictor)
+    			controls <- as.numeric(controls)
+    			cases <- as.numeric(cases)
+    		}
+    		else {
+    			stop("Levels of cases and controls differ.")
+    		}
+    	}
+    	else {
+    		stop("Cases are of ordered type but controls are not.")
+    	}
     }
-    else if (any(is.na(c(controls, cases)))) # Unable to compute anything if there is any NA in the data we want to consider !
-      return(NA)
-    # are there empty cats?
-    if (length(controls) == 0)
-      stop("No control observation.")
-    if (length(cases) == 0)
-      stop("No case observation.")
+    else if (is.numeric(cases)) {
+    	if (is.numeric(controls)) {
+    		# build response/predictor
+    		predictor <- c(controls, cases)
+    		original.predictor <- predictor
+    	}
+    	else {
+    		stop("Cases are of numeric type but controls are not.")
+    	}
+    }
+    else { 
+    	stop("Cases and controls must be numeric ordered.")
+    }
+    
+    response <- c(rep(0, length(controls)), rep(1, length(cases)))
+    original.response <- response
     levels <- c(0, 1)
   }
   else if (!missing(density.cases) && !is.null(density.cases) && !missing(density.controls) && !is.null(density.controls)) {
