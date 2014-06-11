@@ -38,7 +38,7 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     observation. An ordered factor is coerced to a numeric.
   }
   \item{controls, cases}{instead of \code{response}, \code{predictor},
-    the data can be supplied as two numeric vectors containing the predictor
+    the data can be supplied as two numeric or ordered vectors containing the predictor
     values for control and case observations.
   }
   \item{density.controls, density.cases}{a smoothed ROC curve can be
@@ -262,8 +262,10 @@ with(aSAH, roc(outcome ~ s100b))
 # With a formula:
 roc(outcome ~ s100b, data=aSAH)
 
-# With controls/cases
+# With numeric controls/cases
 roc(controls=aSAH$s100b[aSAH$outcome=="Good"], cases=aSAH$s100b[aSAH$outcome=="Poor"])
+# With ordered controls/cases
+roc(controls=aSAH$wfns[aSAH$outcome=="Good"], cases=aSAH$wfns[aSAH$outcome=="Poor"])
 
 # Inverted the levels: "Poor" are now controls and "Good" cases:
 roc(aSAH$outcome, aSAH$s100b,
