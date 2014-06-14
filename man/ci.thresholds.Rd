@@ -47,7 +47,8 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   \item{thresholds}{on which thresholds to evaluate the CI. Either the
 	numeric values of the thresholds, a logical vector (as index of
 	\code{roc$thresholds}) or a character \dQuote{all}, \dQuote{local
-	  maximas} or \dQuote{best}.
+	  maximas} or \dQuote{best} that will be used to determine the threshold(s) 
+	  on the supplied curve with \code{\link{coords}} (not on the resampled curves).
   }
   \item{progress}{the name of progress bar to display. Typically
     \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
@@ -63,7 +64,8 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
     especially arguments for \code{\link{roc}} and \code{ci.thresholds.roc}
     when calling \code{ci.thresholds.default} or \code{ci.thresholds.formula}.
     Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable.
+    \code{char} and \code{style}) if applicable. 
+    Arguments \code{best.method} and \code{best.weights} to \code{\link{coords}}.
   }
 }
 

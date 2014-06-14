@@ -83,7 +83,7 @@ auc.roc <- function(roc,
   if (identical(partial.auc, FALSE)) {
     if (is(roc, "smooth.roc") && ! is.null(roc$smoothing.args) && roc$smoothing.args$method == "binormal") {
       coefs <- coefficients(roc$model)
-      auc <- pnorm(coefs[1] / sqrt(1+coefs[2]^2))
+      auc <- unname(pnorm(coefs[1] / sqrt(1+coefs[2]^2)) * ifelse(percent, 100^2, 1))
     }
     else {
       diffs.x <- sp[-1] - sp[-length(sp)]
