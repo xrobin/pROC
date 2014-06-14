@@ -80,6 +80,9 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   curve, and evaluates the sensitivity and specificity at thresholds
   given by the \code{thresholds} argument. Then it computes the
   confidence interval as the percentiles given by \code{conf.level}.
+  
+  A threshold given as a \code{logical} vector or \code{character} is converted to the corresponding numeric vector once
+  \emph{using the supplied ROC curve}, and not at each bootstrap iteration. See \code{\link{ci.coords}} for the latter behaviour.
 
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
