@@ -1,9 +1,9 @@
 context("roc")
 
-test_roc <- function(roc, expected, expected.direction, info) {
-	expect_that(as.numeric(auc(roc)), equals(expected$auc), info=info)
-	expect_that(roc$se, equals(expected$se), info=info)
-	expect_that(roc$sp, equals(expected$sp), info=info)
+test_roc <- function(roc, expected, expected.direction, info, percent = 1) {
+	expect_that(as.numeric(auc(roc)), equals(expected$auc * percent), info=info)
+	expect_that(roc$se, equals(expected$se * percent), info=info)
+	expect_that(roc$sp, equals(expected$sp * percent), info=info)
 	expect_that(roc$thresholds, equals(expected$thresholds), info=info)
 	expect_that(is.unsorted(roc$thresholds), is_false(), info=info)
 	expect_that(roc$direction, equals(expected.direction), info=info)
@@ -19,17 +19,22 @@ test_rocs_aSAH <- function(marker, expected) {
 	
 	# Standard
 	test_roc(roc(aSAH$outcome, aSAH[[marker]]), expected, "<", marker)
+	test_roc(roc(aSAH$outcome, aSAH[[marker]], percent = TRUE), expected, "<", paste(marker, "%", sep="_"), percent = 100)
 	
 	# Controls and cases - only for numeric
 	if (!is.ordered(aSAH[[marker]])) {
 		test_roc(roc(controls = aSAH[aSAH$outcome == "Good", marker], cases = aSAH[aSAH$outcome == "Poor", marker]), expected, "<", paste(marker, "cc", sep="_"))
 		# Inversed controls and cases
 		test_roc(roc(cases = aSAH[aSAH$outcome == "Good", marker],  controls= aSAH[aSAH$outcome == "Poor", marker]), expected.reversed, ">", paste(marker, "cc.reversed", sep="_"))		
+		# And in %
+		test_roc(roc(controls = aSAH[aSAH$outcome == "Good", marker], cases = aSAH[aSAH$outcome == "Poor", marker], percent = TRUE), expected, "<", paste(marker, "cc", "%", sep="_"), percent = 100)
+		test_roc(roc(cases = aSAH[aSAH$outcome == "Good", marker],  controls= aSAH[aSAH$outcome == "Poor", marker], percent = TRUE), expected.reversed, ">", paste(marker, "cc.reversed", "%", sep="_"), percent = 100)		
 	}
 	
 	# Negative  - only for numeric
 	if (!is.ordered(aSAH[[marker]])) {
-		test_roc(roc(aSAH$outcome, -aSAH[[marker]]), expected.negative, ">", paste("-", marker,  sep=""))
+		test_roc(roc(aSAH$outcome, -aSAH[[marker]]), expected.negative, ">", paste("-", marker, sep=""))
+		test_roc(roc(aSAH$outcome, -aSAH[[marker]], percent = TRUE), expected.negative, ">", paste("-", marker, "%", sep=""), percent = 100)
 	}
 }
 
