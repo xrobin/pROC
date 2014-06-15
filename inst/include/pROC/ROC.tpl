@@ -43,6 +43,10 @@ namespace pROC {
 		
 		// Compute an index vector for controls and cases as R's order() function
 		vector<int> index = predictor.getOrder(direction);
+
+		// Clear previous se/sp
+		sensitivity.clear();
+		specificity.clear();
 		
 		// Cummulative sum
 		// no need for tp/fp, compute se/sp directly during the cummulative sum
