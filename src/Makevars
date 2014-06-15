@@ -1,6 +1,6 @@
 ## -*- mode: makefile; -*-
 
-PKG_CXXFLAGS = -I../inst/include
+PKG_CXXFLAGS = -I../inst/include -isystem `$(R_HOME)/bin/Rscript -e 'cat(system.file("include", package="Rcpp"))'`
 
 ## With Rcpp 0.11.0 and later, we no longer need to set PKG_LIBS for
 ## Rcpp as there is no user-facing library. 

@@ -39,6 +39,7 @@ namespace pROC {
 		Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
 		          controls(someControls), cases(someCases),
 		          nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
+		virtual ~Predictor(){}
 		double operator[] (const int anIdx) const {
 			return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
 		}
@@ -76,7 +77,8 @@ namespace pROC {
 		
 		/** Private constructor, creates an invalid object leaves controlsIdx and casesIdx empty
 		* used by the derived friend classes where we can make sure that they will be filled properly */
-		ResampledPredictor(const Predictor& somePredictor): Predictor(somePredictor) {}
+		ResampledPredictor(const Predictor& somePredictor): Predictor(somePredictor),
+		                   controlsIdx(), casesIdx(), resampledControls(), resampledCases() {}
 		public:
 		ResampledPredictor(const Predictor& somePredictor, const std::vector<int>& someControlsIdx, const std::vector<int>& someCasesIdx):
 		                   Predictor(somePredictor), controlsIdx(someControlsIdx), casesIdx(someCasesIdx),
@@ -84,7 +86,7 @@ namespace pROC {
 		                   resampledCases(getResampledVector(Predictor::getCases(), casesIdx))
 		                   {}
 		
-		friend class ResampledPredictorStratified; // Derived classes need access to controlsIdx and casesIdx
+		friend class ResampledPredictorStratified; // Derived classes need access to controlsIdx and casesIdx and the private ctor
 		friend class ResampledPredictorNonStratified;
 		
 		double operator[] (const int anIdx) const {

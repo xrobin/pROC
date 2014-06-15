@@ -50,7 +50,9 @@ namespace pROC {
 			 * Computes sensitivity and specificity
 			 */
 			ROC(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const std::string& aDirection):
-				predictor(someControls, someCases), thresholds(computeThresholds(predictor, aDirection)), direction(aDirection) {
+				predictor(someControls, someCases), sensitivity(), specificity(), 
+				thresholds(computeThresholds(predictor, aDirection)), direction(aDirection)
+				{
 					computeSeSp();
 			}
 			/** Constructor with sensitivity and specificity pre-computed.
@@ -65,7 +67,8 @@ namespace pROC {
 			 * Computes sensitivity and specificity
 			 */
 			ROC(const PredictorType& aPredictor, const std::string& aDirection):
-				predictor(aPredictor), thresholds(computeThresholds(aPredictor, aDirection)), direction(aDirection) {
+				predictor(aPredictor), sensitivity(), specificity(), thresholds(computeThresholds(aPredictor, aDirection)), 
+				direction(aDirection) {
 					computeSeSp();
 			}
 				

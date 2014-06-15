@@ -26,7 +26,7 @@ namespace pROC {
 		double from, to;
 		
 		/** Default constructor: full AUC */
-		AucParams(): partial(false) {} 
+		AucParams(): partial(false), focusOnSp(true), correct(false), from(.9), to(1.0) {} 
 		explicit AucParams(double aFrom, double aTo, std::string aFocus, bool aCorrect):
 		                   partial(true), focusOnSp(aFocus == "specificity"), correct(aCorrect), from(aFrom), to(aTo) {}
 		explicit AucParams(double aFrom, double aTo, bool aFocusOnSp, bool aCorrect):
