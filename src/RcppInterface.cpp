@@ -42,7 +42,7 @@ List computeSeSpList(const NumericVector& thresholds, const NumericVector& contr
 double computeAuc(const Rcpp::List& aROCList, const Rcpp::List& aucParamsList) {
   AucParams aucParams = as<AucParams>(aucParamsList);
   ROC<Predictor> aROC = as<ROC<Predictor>>(aROCList);
-  return aROC.auc(aucParams);
+  return computeAuc(aROC, aucParams);
 }
 
 // [[Rcpp::export]]

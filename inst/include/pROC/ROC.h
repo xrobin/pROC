@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-#include <pROC/auc.h>
 #include <pROC/Predictor.h>
 #include <pROC/rocUtils.h> // computeThresholds
 
@@ -34,16 +33,6 @@ namespace pROC {
 		const std::string direction;
 		
 		void computeSeSp();
-		double fullAUC() {return computeFullAuc(sensitivity, specificity);}
-		double partialAUC(double from, double to, std::string focus, bool correct) {
-			return computePartialAuc(sensitivity, specificity, from, to, focus, correct);
-		}
-		double partialAUC(double from, double to, bool focusOnSp, bool correct) {
-			return computePartialAuc(sensitivity, specificity, from, to, focusOnSp, correct);
-		}
-		double partialAUC(AucParams params) {
-			return computePartialAuc(sensitivity, specificity, params);
-		}
 		
 		public:
 			/** Constructor with controls, cases and a direction.
@@ -70,19 +59,6 @@ namespace pROC {
 				predictor(aPredictor), sensitivity(), specificity(), thresholds(computeThresholds(aPredictor, aDirection)), 
 				direction(aDirection) {
 					computeSeSp();
-			}
-				
-			double auc(bool partial = false, double from = 0.9, double to = 1, std::string& focus = "specificity", bool correct = false) {
-				if (partial) return partialAUC(from, to, focus, correct);
-				else return fullAUC();
-			}
-			double auc(bool partial = false, double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false) {
-				if (partial) return partialAUC(from, to, focusOnSp, correct);
-				else return fullAUC();
-			}
-			double auc(AucParams params) {
-				if (params.partial) return partialAUC(params);
-				else return fullAUC();	
 			}
 					
 			/** returns a ROC curve with a resampled predictor. Call as:

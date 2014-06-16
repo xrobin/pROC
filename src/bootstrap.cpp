@@ -47,7 +47,7 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const pROC::ROC<>
 			aResampledROC.resample();
 		}
 		// Compute AUC
-		aucs.push_back(aResampledROC.auc(aucParams));
+		aucs.push_back(computeAuc(aResampledROC, aucParams));
 	}
 	
 	return aucs;
@@ -69,7 +69,7 @@ std::vector<double> bootstrapAucNonStratified(const size_t bootN, const pROC::RO
 			aResampledROC.resample();
 		}
 		// Compute AUC
-		aucs.push_back(aResampledROC.auc(aucParams));
+		aucs.push_back(computeAuc(aResampledROC, aucParams));
 	}
 	
 	return aucs;
