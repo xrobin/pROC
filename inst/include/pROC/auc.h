@@ -65,6 +65,9 @@ namespace pROC {
 	template<class Predictor>
 	double computePartialAuc(const pROC::ROC<Predictor>&, 
 	                         double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+	                         
+	/** Computes the corrected pAUC from from to to */
+	double correctpAuc(double pAUC, double from, double to);
 }
 
 #include <pROC/auc_tpl.h>

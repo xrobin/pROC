@@ -143,3 +143,9 @@ double pROC::computeAuc(const std::vector<double>& se, const std::vector<double>
 		return computeFullAuc(se, sp);
 	}
 }
+
+double pROC::correctpAuc(double pAUC, double from, double to) {
+	double min = (from - to) * ((1 - from) + (1 - to)) / 2;
+	double max = from - to;
+	return (1+(pAUC-min)/(max-min))/2;
+}
