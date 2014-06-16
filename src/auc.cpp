@@ -109,7 +109,7 @@ double pROC::computePartialAuc(const vector<double>& se, const vector<double>& s
   }
   
   if (aucParams.correct) {
-    stop("Corrected pAUC not implemented in C++");
+  	return correctPartialAuc(auc, from, to);
   }
 
   return auc;
@@ -144,8 +144,8 @@ double pROC::computeAuc(const std::vector<double>& se, const std::vector<double>
 	}
 }
 
-double pROC::correctpAuc(double pAUC, double from, double to) {
+double pROC::correctPartialAuc(double auc, double from, double to) {
 	double min = (from - to) * ((1 - from) + (1 - to)) / 2;
 	double max = from - to;
-	return (1+(pAUC-min)/(max-min))/2;
+	return (1 + (auc - min) / (max - min)) / 2;
 }
