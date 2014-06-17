@@ -36,38 +36,38 @@ namespace pROC {
 	
 	double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams = AucParams());
 	double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
-	                  bool partial = false, double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+	                  const bool partial = false, const double from = 0.9, const double to = 1, const bool focusOnSp = true, const bool correct = false);
 	double computeAuc(const std::vector<double>& se, const std::vector<double>& sp, 
-	                  bool partial = false, double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+	                  const bool partial = false, const double from = 0.9, const double to = 1, const std::string focus = "specificity", const bool correct = false);
 	
 	template<class Predictor>
 	double computeAuc(const pROC::ROC<Predictor>&, const AucParams& aucParams = AucParams());
 	template<class Predictor>
 	double computeAuc(const pROC::ROC<Predictor>&, 
-	                  bool partial = false, double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+	                  const bool partial = false, const double from = 0.9, const double to = 1, const bool focusOnSp = true, const bool correct = false);
 	template<class Predictor>
 	double computeAuc(const pROC::ROC<Predictor>&, 
-	                  bool partial = false, double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+	                  const bool partial = false, const double from = 0.9, const double to = 1, const std::string focus = "specificity", const bool correct = false);
 
 	double computeFullAuc(const std::vector<double>& se, const std::vector<double>& sp);
 	double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, const AucParams& aucParams);
 	double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, 
-	                         double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+	                         const double from = 0.9, const double to = 1, const std::string focus = "specificity", const bool correct = false);
 	double computePartialAuc(const std::vector<double>& se, const std::vector<double>& sp, 
-	                         double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+	                         const double from = 0.9, const double to = 1, const bool focusOnSp = true, const bool correct = false);
 
 	template<class Predictor>
 	double computeFullAuc(const pROC::ROC<Predictor>&);
 	template<class Predictor>
 	double computePartialAuc(const pROC::ROC<Predictor>&, const AucParams& aucParams);
 	double computePartialAuc(const pROC::ROC<Predictor>&, 
-	                         double from = 0.9, double to = 1, std::string focus = "specificity", bool correct = false);
+	                         const double from = 0.9, const double to = 1, const std::string focus = "specificity", const bool correct = false);
 	template<class Predictor>
 	double computePartialAuc(const pROC::ROC<Predictor>&, 
-	                         double from = 0.9, double to = 1, bool focusOnSp = true, bool correct = false);
+	                         const double from = 0.9, const double to = 1, const bool focusOnSp = true, const bool correct = false);
 	                         
 	/** Computes the corrected pAUC from from to to */
-	double correctpAuc(double pAUC, double from, double to);
+	double correctPartialAuc(const double pAUC, const double from, const double to);
 }
 
 #include <pROC/auc_tpl.h>

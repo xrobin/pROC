@@ -29,13 +29,13 @@ double pROC::computeAuc(const pROC::ROC<Predictor>& roc, const pROC::AucParams& 
 
 template<class Predictor>
 double pROC::computeAuc(const pROC::ROC<Predictor>& roc, 
-                  bool partial, double from, double to, bool focusOnSp, bool correct) {
+                  const bool partial, const double from, const double to, const bool focusOnSp, const bool correct) {
 	return computeAuc(roc.getSensitivity(), roc.getSpecificity(), partial, from, to, focusOnSp, correct);
 }
 
 template<class Predictor>
 double pROC::computeAuc(const pROC::ROC<Predictor>& roc, 
-                  bool partial, double from, double to, std::string focus, bool correct) {
+                  const bool partial, const double from, const double to, const std::string focus, const bool correct) {
 	return computeAuc(roc.getSensitivity(), roc.getSpecificity(), partial, from, to, focus, correct);
 }
 
@@ -49,13 +49,14 @@ double pROC::computePartialAuc(const pROC::ROC<Predictor>& roc, const pROC::AucP
 	return pROC::computePartialAuc(roc.getSensitivity(), roc.getSpecificity(), aucParams);
 }
 
+template<class Predictor>
 double pROC::computePartialAuc(const pROC::ROC<Predictor>& roc, 
-                         double from, double to, std::string focus, bool correct) {
+                         const double from, const double to, const std::string focus, const bool correct) {
 	return computePartialAuc(roc.getSensitivity(), roc.getSpecificity(), from, to, focus, correct);
 }
 
 template<class Predictor>
 double pROC::computePartialAuc(const pROC::ROC<Predictor>& roc, 
-                         double from, double to, bool focusOnSp, bool correct) {
+                         const double from, const double to, const bool focusOnSp, const bool correct) {
 	return computePartialAuc(roc.getSensitivity(), roc.getSpecificity(), from, to, focusOnSp, correct);
 }
