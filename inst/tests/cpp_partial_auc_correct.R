@@ -7,9 +7,9 @@ test_that("Partial auc correct on null ROC works (c++)", {
 	expect_that(pROC:::runit_partial_auc_correct(0.005, 1, .9), equals(0.5))
 	expect_that(pROC:::runit_partial_auc_correct(0.02, 1, .8), equals(0.5))
 	expect_that(pROC:::runit_partial_auc_correct(0.015, .9, .8), equals(0.5))
-	expect_that(pROC:::runit_partial_auc_correct(0.24, .5, .1), equals(0.5))
+	expect_that(pROC:::runit_partial_auc_correct(0.28, .5, .1), equals(0.5))
 	expect_that(pROC:::runit_partial_auc_correct(0.375, .5, .0), equals(0.5))
-	expect_that(pROC:::runit_partial_auc_correct(0.08, .1, .0), equals(0.5))
+	expect_that(pROC:::runit_partial_auc_correct(0.095, .1, .0), equals(0.5))
 })
 		  
 test_that("Partial auc correct on perfect ROC works (c++)", {
@@ -24,17 +24,18 @@ test_that("Partial auc correct on perfect ROC works (c++)", {
 	expect_that(pROC:::runit_partial_auc_correct(0.1, .1, .0), equals(1.0))
 })
 
-test_that("Partial auc correct on opposite ROC works (c++)", {
-	
-	# Diagonal null ROC
-	expect_that(pROC:::runit_partial_auc_correct(0, 1, .99), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, 1, .9), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, 1, .8), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, .9, .8), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, .5, .1), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, .5, .0), equals(0))
-	expect_that(pROC:::runit_partial_auc_correct(0, .1, .0), equals(0))
-})
+# test_that("Partial auc correct on opposite ROC works (c++)", {
+# This actually doesn't make sense with McClish formula
+# 	
+# 	# Diagonal null ROC
+# 	expect_that(pROC:::runit_partial_auc_correct(0, 1, .99), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, 1, .9), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, 1, .8), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, .9, .8), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, .5, .1), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, .5, .0), equals(0))
+# 	expect_that(pROC:::runit_partial_auc_correct(0, .1, .0), equals(0))
+# })
 
 test_that("Partial auc correct on WFNS ROC works (c++)", {
 	
