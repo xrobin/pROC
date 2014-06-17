@@ -106,6 +106,23 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// runit_partial_auc_correct
+double runit_partial_auc_correct(const double pauc, const double from, const double to);
+RcppExport SEXP pROC_runit_partial_auc_correct(SEXP paucSEXP, SEXP fromSEXP, SEXP toSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const double >::type pauc(paucSEXP );
+        Rcpp::traits::input_parameter< const double >::type from(fromSEXP );
+        Rcpp::traits::input_parameter< const double >::type to(toSEXP );
+        double __result = runit_partial_auc_correct(pauc, from, to);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // runit_Predictor_bracketOperator
 NumericVector runit_Predictor_bracketOperator(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const int i);
 RcppExport SEXP pROC_runit_Predictor_bracketOperator(SEXP someControlsSEXP, SEXP someCasesSEXP, SEXP iSEXP) {

@@ -25,6 +25,10 @@ computeAucSeSp <- function(se, sp, aucParamsList) {
     .Call('pROC_computeAucSeSp', PACKAGE = 'pROC', se, sp, aucParamsList)
 }
 
+runit_partial_auc_correct <- function(pauc, from, to) {
+    .Call('pROC_runit_partial_auc_correct', PACKAGE = 'pROC', pauc, from, to)
+}
+
 runit_Predictor_bracketOperator <- function(someControls, someCases, i) {
     .Call('pROC_runit_Predictor_bracketOperator', PACKAGE = 'pROC', someControls, someCases, i)
 }
