@@ -7,7 +7,7 @@ Encoding: UTF-8
 Depends: R (>= 3.1.0)
 SystemRequirements: C++11
 Imports: plyr, utils, methods, Rcpp (>= 0.11.1)
-Suggests: tcltk, MASS, logcondens, doMC, doSNOW
+Suggests: tcltk, MASS, logcondens, doMC, doSNOW, testthat
 LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller.
 Maintainer: Xavier Robin <robin@lindinglab.org>
