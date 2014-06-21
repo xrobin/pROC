@@ -114,8 +114,6 @@ ci.auc.roc <- function(roc,
                    boot.n = 2000,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
-                   progress = getOption("pROCProgress")$name,
-                   parallel = FALSE,
                    ...
                    ) {
   if (conf.level > 1 | conf.level < 0)
@@ -170,7 +168,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong")
     ci <- ci.auc.delong(roc, conf.level)
   else
-    ci <- ci.auc.bootstrap(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
+    ci <- ci.auc.bootstrap(roc, conf.level, boot.n, boot.stratified, ...)
 
   if (percent) {
     ci <- ci * 100

@@ -20,8 +20,7 @@
 \usage{
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
-"bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
+"bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
 progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
@@ -102,6 +101,9 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 
   With \code{method="delong"}, the variance of the AUC is computed as
   defined by DeLong \emph{et al.} (1988) and the CI is deduced with \code{\link{qnorm}}.
+  
+  Since \pkg{pROC} 1.8, the bootstrap for a \code{roc} object is performed with fast \pkg{Rcpp}/C++ code. 
+  As a side effect, no progress bars are displayed.
 }
 
 \section{AUC specification}{

@@ -119,8 +119,10 @@
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Progress bars}{
-	  A progressbar shows the progress of bootstrap operations. It is handled by the \pkg{plyr} package (Wickham, 2011),
-	  and is created by the \code{progress_*} family of functions.
+	  A progressbar shows the progress of some bootstrap operations, currently all but \code{\link{ci.auc.roc}}.
+	  
+	  Progress bars are handled by the \pkg{plyr} package (Wickham, 2011),
+	  and are created by the \code{progress_*} family of functions.
 	  Sensible defaults are guessed during the package loading:
 	  \itemize{
 	    \item In non-\link{interactive} mode, no progressbar is displayed.
