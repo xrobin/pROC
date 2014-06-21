@@ -149,4 +149,4 @@ namespace pROC {
 	template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">");
 }
 
-#include <pROC/Predictor.tpl>
+#include <pROC/Predictor_tpl.h>

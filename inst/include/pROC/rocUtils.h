@@ -31,6 +31,6 @@ namespace pROC {
 	std::vector<double> computeThresholds(const PredictorType& predictor, const std::string& aDirection);
 }
 
-#include <pROC/rocUtils.tpl>
+#include <pROC/rocUtils_tpl.h>
 
 

@@ -84,4 +84,4 @@ namespace pROC {
 	};
 }
 
-#include <pROC/ROC.tpl>
+#include <pROC/ROC_tpl.h>
