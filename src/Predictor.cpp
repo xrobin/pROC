@@ -28,6 +28,10 @@ using Rcpp::NumericVector;
 using std::string;
 using std::vector;
 
+double pROC::ResampledPredictor::operator[] (const int anIdx) const {
+	return anIdx < resampledNControls ? Predictor::operator[] (controlsIdx[anIdx]) : Predictor::operator[] (casesIdx[anIdx - resampledNControls] + resampledNControls);
+}
+
 vector<int> pROC::Predictor::getOrder(const string& direction) const {
 	return getPredictorOrder(*this, direction);
 }
@@ -40,8 +44,12 @@ vector<int> pROC::ResampledPredictor::getOrder(const string& direction) const {
 void pROC::ResampledPredictorStratified::resample() {
 	setRandomIdx(nControls, controlsIdx);
 	setRandomIdx(nCases, casesIdx);
+	resampledNControls = controlsIdx.size();
+	resampledNCases = casesIdx.size();
 }
 
 void pROC::ResampledPredictorNonStratified::resample() {
 	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
+	resampledNControls = controlsIdx.size();
+	resampledNCases = casesIdx.size();
 }
