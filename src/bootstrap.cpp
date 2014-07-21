@@ -42,6 +42,7 @@ std::vector<double> bootstrapAucStratified(const size_t bootN, const pROC::ROC<>
 	ROC<ResampledPredictorStratified> aResampledROC = aROC.getResampled<ResampledPredictorStratified>();
 	
 	for (size_t i = 0; i < bootN; i++) {
+		Rcpp::checkUserInterrupt();
 		// Resample
 		if (i > 0) { // A fresh ROC<ResampledPredictor> is already resampled, no need to resample again at the first step
 			aResampledROC.resample();
@@ -64,6 +65,7 @@ std::vector<double> bootstrapAucNonStratified(const size_t bootN, const pROC::RO
 	ROC<ResampledPredictorNonStratified> aResampledROC = aROC.getResampled<ResampledPredictorNonStratified>();
 	
 	for (size_t i = 0; i < bootN; i++) {
+		Rcpp::checkUserInterrupt();
 		// Resample
 		if (i > 0) { // A fresh ROC<ResampledPredictor> is already resampled, no need to resample again at the first step
 			aResampledROC.resample();
