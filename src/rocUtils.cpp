@@ -34,8 +34,8 @@ void pROC::makeUniqueInPlace(vector<double>& thresholds) {
 }
 
 Rcpp::NumericVector pROC::getResampledVector(const Rcpp::NumericVector& x, const vector<int>& idx) {
-	Rcpp::NumericVector resampled(x.size());
-	for (int i = 0; i < x.size(); ++i) {
+	Rcpp::NumericVector resampled(idx.size());
+	for (int i = 0; i < idx.size(); ++i) {
 		resampled[i] = x[idx[i]];
 	}
 	return resampled;
