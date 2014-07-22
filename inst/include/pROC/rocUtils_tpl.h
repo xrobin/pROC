@@ -31,8 +31,10 @@ namespace pROC {
 	template <typename PredictorType>
 	std::vector<double> computeThresholds(const PredictorType& predictor, const std::string& aDirection) {
 		std::vector<double> thresholds;
-		thresholds.insert(thresholds.begin(), predictor.getCases().begin(), predictor.getCases().end());
-		thresholds.insert(thresholds.begin(), predictor.getControls().begin(), predictor.getControls().end());
+		Rcpp::NumericVector cases = predictor.getCases();
+		Rcpp::NumericVector controls = predictor.getControls();
+		thresholds.insert(thresholds.begin(), cases.begin(), cases.end());
+		thresholds.insert(thresholds.begin(), controls.begin(), controls.begin());
 		makeUniqueInPlace(thresholds);
 		if (aDirection == ">") { // reverse when ">"
 			std::reverse(thresholds.begin(), thresholds.end());

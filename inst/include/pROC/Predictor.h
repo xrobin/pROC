@@ -92,8 +92,8 @@ namespace pROC {
 		double operator[] (const int anIdx) const;
 	
 		std::vector<int> getOrder(const std::string& direction = ">") const;
-		Rcpp::NumericVector getControls() const {getResampledVector(Predictor::getControls(), controlsIdx);}
-		Rcpp::NumericVector getCases() const {getResampledVector(Predictor::getCases(), casesIdx);}
+		Rcpp::NumericVector getControls() const {return getResampledVector(Predictor::getControls(), controlsIdx);}
+		Rcpp::NumericVector getCases() const {return getResampledVector(Predictor::getCases(), casesIdx);}
 	};
 	
 	/** A specialization of ResampledPredictor that nows how to resample the indices in a stratified manner */
