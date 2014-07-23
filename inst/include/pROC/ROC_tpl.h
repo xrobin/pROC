@@ -37,9 +37,9 @@ namespace pROC {
 		using std::string;
 	
 		// Vector sizes
-		const int ncontrols {predictor.nControls};
-		const int ncases {predictor.nCases};
-		const int npredictors {ncontrols + ncases};
+		const int ncontrols {predictor.getNControls()};
+		const int ncases {predictor.getNCases()};
+		const int ntotal {ncontrols + ncases};
 		
 		// Compute an index vector for controls and cases as R's order() function
 		vector<int> index = predictor.getOrder(direction);
@@ -54,7 +54,7 @@ namespace pROC {
 		// And store the cummulative sums (tp, fp) in two variables
 		int currentTpSum = 0, currentFpSum = 0;
 		
-		for (int i = 0; i < npredictors; ++i) {
+		for (int i = 0; i < ntotal; ++i) {
 			// Compute Se/Sp
 			if (predictor.isControl(index[i])) { // we have one control
 				++currentFpSum;
@@ -66,7 +66,7 @@ namespace pROC {
 			// Determine if if is a duplicate
 			bool currentDupPred = false;
 			// Is predictor[i] the same as predictor[i+1]?
-			if (i < npredictors - 1) {
+			if (i < ntotal - 1) {
 				currentDupPred = predictor[index[i + 1]] == predictor[index[i]];
 			}
 			// If different, add the Se/Sp as a valid position

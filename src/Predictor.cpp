@@ -42,14 +42,14 @@ vector<int> pROC::ResampledPredictor::getOrder(const string& direction) const {
 }
 
 void pROC::ResampledPredictorStratified::resample() {
-	setRandomIdx(nControls, controlsIdx);
-	setRandomIdx(nCases, casesIdx);
+	setRandomIdx(Predictor::getNControls(), controlsIdx);
+	setRandomIdx(Predictor::getNCases(), casesIdx);
 	resampledNControls = controlsIdx.size();
 	resampledNCases = casesIdx.size();
 }
 
 void pROC::ResampledPredictorNonStratified::resample() {
-	setRandomNonStratifiedSample(nControls, nCases, controlsIdx, casesIdx);
+	setRandomNonStratifiedSample(Predictor::getNControls(), Predictor::getNCases(), controlsIdx, casesIdx);
 	resampledNControls = controlsIdx.size();
 	resampledNCases = casesIdx.size();
 }
