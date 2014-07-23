@@ -60,6 +60,7 @@ namespace pROC {
 	double computeFullAuc(const pROC::ROC<Predictor>&);
 	template<class Predictor>
 	double computePartialAuc(const pROC::ROC<Predictor>&, const AucParams& aucParams);
+	template<class Predictor>
 	double computePartialAuc(const pROC::ROC<Predictor>&, 
 	                         const double from = 0.9, const double to = 1, const std::string focus = "specificity", const bool correct = false);
 	template<class Predictor>
