@@ -39,6 +39,7 @@ namespace pROC {
 		Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
 		          controls(someControls), cases(someCases),
 		          nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
+		Predictor(const Predictor&) = default;
 		virtual ~Predictor(){}
 		double operator[] (const int anIdx) const {
 			return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
