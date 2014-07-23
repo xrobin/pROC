@@ -45,8 +45,8 @@ namespace pROC {
 		}
 		
 		std::vector<int> getOrder(const std::string& direction = ">") const;
-		Rcpp::NumericVector getControls() const {return controls;};
-		Rcpp::NumericVector getCases() const {return cases;};
+		Rcpp::NumericVector getControls() const {return controls;}
+		Rcpp::NumericVector getCases() const {return cases;}
 		
 		bool isControl(const int anIdx) const {
 			return anIdx < nControls;
