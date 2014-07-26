@@ -52,11 +52,11 @@ namespace pROC {
 		Rcpp::NumericVector getCases() const {return cases;};
 		
 		bool isControl(const int anIdx) const {
-			return anIdx < nControls;
+			return anIdx < getNControls();
 		}
 		
 		bool isCase(const int anIdx) const {
-			return anIdx >= nControls;
+			return anIdx >= getNControls();
 		}
 		
 		bool isValid(const int anIdx) const { // Is there a predictor at this index? 
@@ -100,6 +100,14 @@ namespace pROC {
 		std::vector<int> getOrder(const std::string& direction = ">") const;
 		Rcpp::NumericVector getControls() const {return getResampledVector(Predictor::getControls(), controlsIdx);}
 		Rcpp::NumericVector getCases() const {return getResampledVector(Predictor::getCases(), casesIdx);}
+		
+		bool isControl(const int anIdx) const {
+			return anIdx < getNControls();
+		}
+		
+		bool isCase(const int anIdx) const {
+			return anIdx >= getNControls();
+		}
 	};
 	
 	/** A specialization of ResampledPredictor that nows how to resample the indices in a stratified manner */
