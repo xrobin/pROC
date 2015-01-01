@@ -43,6 +43,18 @@ namespace pROC {
 		
 		// Compute an index vector for controls and cases as R's order() function
 		vector<int> index = predictor.getOrder(direction);
+		
+		/*Rcpp::NumericVector controls = predictor.getControls();
+		Rcpp::NumericVector cases = predictor.getCases();
+		std::cout << "cases = ";
+		for (double c: cases) {
+			std::cout << c << ", ";
+		}
+		std::cout << std::endl << "controls = ";
+		for (double c: controls) {
+			std::cout << c << ", ";
+		}
+		std::cout << std::endl;*/
 
 		// Clear previous se/sp
 		sensitivity.clear();
@@ -83,6 +95,16 @@ namespace pROC {
 		// Reverse - can we find a way to do it right from the start?
 		std::reverse(sensitivity.begin(), sensitivity.end() - 1);
 		std::reverse(specificity.begin(), specificity.end() - 1);
+		
+		/*std::cout << "SE = ";
+		for (double x: sensitivity) {
+			std::cout << x << ", " << std::endl;
+		}
+		std::cout << std::endl << "SP = ";
+		for (double x: specificity) {
+			std::cout << x << ", " << std::endl;
+		}
+		std::cout << std::endl;*/
 		
 		// Ensure the # of thresholds is the same as the lenght of se
 		// Todo: maybe remove this in a future version of pROC...
