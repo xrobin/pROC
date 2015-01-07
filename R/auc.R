@@ -159,7 +159,12 @@ auc.roc <- function(roc,
   if (all(!identical(partial.auc, FALSE), partial.auc.correct)) { # only for pAUC
     min <- roc.utils.min.partial.auc(partial.auc, percent)
     max <- roc.utils.max.partial.auc(partial.auc, percent)
-    if (percent) {
+    # The correction is defined only when auc >= min
+    if (auc < min) {
+    	warning("Partial AUC correction not defined for ROC curves below the diagonal.")
+    	auc <- NA
+    }
+    else if (percent) {
       auc <- (100+((auc-min)*100/(max-min)))/2 # McClish formula adapted for %
     }
     else {

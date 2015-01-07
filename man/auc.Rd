@@ -93,6 +93,9 @@ auc(...)
   in the region and max is the maximum possible AUC in the region. With this correction, the AUC
   will be 0.5 if non discriminant and 1.0 if maximal, whatever the region
   defined. This correction is fully compatible with \code{percent}.
+  
+  Note that this correction is undefined for curves below the diagonal (auc < min). Attempting
+  to correct such an AUC will return \code{NA} with a warning.
 }
 \section{Smoothed ROC curves}{
   There is no difference in the computation of the area under a smoothed
