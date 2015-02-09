@@ -2,6 +2,11 @@ context("ci.auc")
 
 test_that("ci.auc works", {
 	
+	# For debugging
+	as.numeric(ci(roc(aSAH$outcome, aSAH$wfns), method="bootstrap", boot.stratified = FALSE))
+	# On the CLI:
+	# Rscript -e 'set.seed(42); library(pROC); data(aSAH); ci(roc(aSAH$outcome, aSAH$s100b), boot.stratified=F, method="b", boot.n = 100)'
+
 	# DeLong
 	expect_that(as.numeric(ci(roc(aSAH$outcome, aSAH$wfns))), is_equivalent_to(c(0.748534887819453, 0.823678861788618, 0.898822835757783)))
 	
