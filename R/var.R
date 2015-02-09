@@ -136,6 +136,7 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
     smooth.roc.call <- as.call(c(match.fun("smooth.roc"), roc$smoothing.args))
     auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
+    auc.args$allow.invalid.partial.auc.correct <- TRUE
     auc.call <- as.call(c(match.fun("auc.smooth.roc"), auc.args))
 
     if (boot.stratified) {
