@@ -33,9 +33,9 @@ namespace pROC {
 	class Predictor {
 		const Rcpp::NumericVector controls;
 		const Rcpp::NumericVector cases;
+		const int nControls, nCases, nTotal;
 	  	
 	  public:
-		const int nControls, nCases, nTotal;
 		Predictor(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases): 
 		          controls(someControls), cases(someCases),
 		          nControls(someControls.size()), nCases(someCases.size()), nTotal(nControls + nCases) {}
@@ -45,6 +45,9 @@ namespace pROC {
 			return anIdx < nControls ? controls[anIdx] : cases[anIdx - nControls];
 		}
 		
+		int getNControls() const {return nControls;}
+		int getNCases() const {return nCases;}
+		int getNTotal() const {return nControls + nCases;}
 		std::vector<int> getOrder(const std::string& direction = ">") const;
 		Rcpp::NumericVector getControls() const {return controls;}
 		Rcpp::NumericVector getCases() const {return cases;}
@@ -74,7 +77,7 @@ namespace pROC {
 	 */
 	class ResampledPredictor: public Predictor {
 		std::vector<int> controlsIdx, casesIdx;
-		size_t resampledNControls, resampledNCases;
+		int resampledNControls, resampledNCases;
 		
 		/** Private constructor, creates an invalid object leaves controlsIdx and casesIdx empty
 		* used by the derived friend classes where we can make sure that they will be filled properly */
@@ -92,6 +95,9 @@ namespace pROC {
 		
 		double operator[] (const int anIdx) const;
 	
+		int getNControls() const {return resampledNControls;}
+		int getNCases() const {return resampledNCases;}
+		int getNTotal() const {return resampledNControls + resampledNCases;}
 		std::vector<int> getOrder(const std::string& direction = ">") const;
 		Rcpp::NumericVector getControls() const {return getResampledVector(Predictor::getControls(), controlsIdx);}
 		Rcpp::NumericVector getCases() const {return getResampledVector(Predictor::getCases(), casesIdx);}

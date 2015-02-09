@@ -22,8 +22,8 @@
 #include <vector>
 
 namespace pROC {
-	template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction) {
-		std::vector<int> index(predictor.nTotal);
+	template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">") {
+		std::vector<int> index(predictor.getNTotal());
 		std::iota(index.begin(), index.end(), 0);
 		if (direction == ">") {
 			std::sort(index.begin(), index.end(), PredictorComparator<P>(predictor));
