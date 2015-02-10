@@ -1,4 +1,5 @@
 1.8 (?)
+  * NAMESPACE now properly exports the methods as S3 methods.
   * Add ability to supply two ordered factors with identical levels as control / cases
   * Deprecate dangerous use of a matrix as response / predictor with a warning
   * Forward 'best.method' and 'best.weights' arguments to 'coords' in 'ci.thresholds'

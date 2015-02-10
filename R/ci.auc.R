@@ -74,10 +74,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
   }
 
   # prepare the calls
-  smooth.roc.call <- as.call(c(match.fun("smooth.roc"), smooth.roc$smoothing.args))
+  smooth.roc.call <- as.call(c(getS3method("smooth", "roc"), smooth.roc$smoothing.args))
   auc.args <- attributes(smooth.roc$auc)[grep("partial.auc", names(attributes(smooth.roc$auc)))]
   auc.args$allow.invalid.partial.auc.correct <- TRUE
-  auc.call <- as.call(c(match.fun("auc.smooth.roc"), auc.args))
+  auc.call <- as.call(c(getS3method("auc", "smooth.roc"), auc.args))
 
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
