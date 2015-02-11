@@ -32,12 +32,14 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   auc1skeleton$direction <- roc1$direction
   auc1skeleton$class <- NULL
   auc1skeleton$fun.sesp <- roc1$fun.sesp
+  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
   auc2skeleton$fun.sesp <- roc2$fun.sesp
+  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
 
   auc1skeleton$auc <- auc2skeleton$auc <- TRUE
@@ -95,12 +97,14 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   auc1skeleton$direction <- roc1$direction
   auc1skeleton$class <- NULL
   auc1skeleton$fun.sesp <- roc1$fun.sesp
+  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
   auc2skeleton$fun.sesp <- roc2$fun.sesp
+  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
   
   auc1skeleton$auc <- auc2skeleton$auc <- test == "boot"
@@ -284,7 +288,7 @@ stratified.ci.auc <- function(n, roc) {
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
 
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
+  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
 }
 
 nonstratified.ci.auc <- function(n, roc) {
@@ -300,7 +304,7 @@ nonstratified.ci.auc <- function(n, roc) {
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
   
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
+  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
 }
 
 ##########  AUC of a smooth ROC curve (ci.smooth.auc)  ##########

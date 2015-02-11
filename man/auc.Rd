@@ -21,7 +21,8 @@
 \usage{
 auc(...)
 \S3method{auc}{roc}(roc, partial.auc=FALSE, partial.auc.focus=c("specificity",
-"sensitivity"), partial.auc.correct=FALSE, ...)
+"sensitivity"), partial.auc.correct=FALSE, 
+allow.invalid.partial.auc.correct = FALSE, ...)
 \S3method{auc}{smooth.roc}(smooth.roc, ...)
 \S3method{auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{auc}{formula}(formula, data, ...)
@@ -50,6 +51,12 @@ auc(...)
     non-discriminant AUC of 0.5 whatever the \code{partial.auc}
     defined. Ignored if \code{partial.auc=FALSE}. Default: \code{FALSE}.
   }
+  \item{allow.invalid.partial.auc.correct}{logical indicating if
+  the correction must return \code{NA} (with a \code{\link{warning}})
+  when attempting to correct a pAUC below the diagonal.
+  Set to \code{TRUE} to return a (probably invalid) corrected AUC.
+  This is useful especially to avoid introducing a bias against low
+  pAUCs in bootstrap operations.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} when calling
 	\code{auc.default}, \code{auc.formula}, \code{auc.smooth.roc}.
@@ -93,6 +100,9 @@ auc(...)
   in the region and max is the maximum possible AUC in the region. With this correction, the AUC
   will be 0.5 if non discriminant and 1.0 if maximal, whatever the region
   defined. This correction is fully compatible with \code{percent}.
+  
+  Note that this correction is undefined for curves below the diagonal (auc < min). Attempting
+  to correct such an AUC will return \code{NA} with a warning.
 }
 \section{Smoothed ROC curves}{
   There is no difference in the computation of the area under a smoothed
