@@ -314,6 +314,11 @@ coords(smooth(rocobj), "best", ret=c("threshold", "specificity", "sensitivity", 
 coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
                            "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+                           
+# You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
+
+plot(specificity + sensitivity ~ threshold, t(coords(rocobj, seq(0, 1, 0.01))), type = "l")
+
 }
 
 \keyword{univar}

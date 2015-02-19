@@ -60,6 +60,7 @@ auc.roc <- function(roc,
                     partial.auc=FALSE, # false (consider total area) or numeric length 2: boundaries of the AUC to consider, between 0 and 1, or 0 and 100 if percent is TRUE
                     partial.auc.focus=c("specificity", "sensitivity"), # if partial.auc is not FALSE: do the boundaries
                     partial.auc.correct=FALSE,
+					allow.invalid.partial.auc.correct = FALSE,
                     ... # unused required to allow roc passing arguments to plot or ci.
                     ) {
   if (!identical(partial.auc, FALSE)) {
@@ -83,7 +84,7 @@ auc.roc <- function(roc,
   if (identical(partial.auc, FALSE)) {
     if (is(roc, "smooth.roc") && ! is.null(roc$smoothing.args) && roc$smoothing.args$method == "binormal") {
       coefs <- coefficients(roc$model)
-      auc <- pnorm(coefs[1] / sqrt(1+coefs[2]^2))
+      auc <- unname(pnorm(coefs[1] / sqrt(1+coefs[2]^2)) * ifelse(percent, 100^2, 1))
     }
     else {
       diffs.x <- sp[-1] - sp[-length(sp)]
@@ -159,7 +160,12 @@ auc.roc <- function(roc,
   if (all(!identical(partial.auc, FALSE), partial.auc.correct)) { # only for pAUC
     min <- roc.utils.min.partial.auc(partial.auc, percent)
     max <- roc.utils.max.partial.auc(partial.auc, percent)
-    if (percent) {
+    # The correction is defined only when auc >= min
+    if (!allow.invalid.partial.auc.correct && auc < min) {
+    	warning("Partial AUC correction not defined for ROC curves below the diagonal.")
+    	auc <- NA
+    }
+    else if (percent) {
       auc <- (100+((auc-min)*100/(max-min)))/2 # McClish formula adapted for %
     }
     else {

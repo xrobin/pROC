@@ -1,13 +1,28 @@
-1.8 (*)
-  * Add a warning when computing statistics of ROC curve with AUC = 1.
-  * Fixed bug where 'ci.coords' with 'x="best"' would fail if one or more resampled ROC curve had multiple "best" thresholds. 
+1.8 (?)
+  * NAMESPACE now properly exports the methods as S3 methods.
+  * Add ability to supply two ordered factors with identical levels as control / cases
+  * Deprecate dangerous use of a matrix as response / predictor with a warning
+  * Forward 'best.method' and 'best.weights' arguments to 'coords' in 'ci.thresholds'
+  * Fix CITATION file as per CRAN request
+  * pAUC correction is undefined for partial AUC below the diagonal (result < 0.5) and now returns NA (with a warning). Thanks Vincenzo Lagani for the report.
+
+1.7.3 (2014-06-14)
+  * Fixed AUC of binomial-smoothed ROC off by 100^2 (thanks Bao-Li Chang for the report)
+  * Fix print of logcondens-smoothed ROC
+
+1.7.2 (2014-04-05)
+  * Fixed bug where 'ci.coords' with 'x="best"' would fail if one or more resampled ROC curve had multiple "best" thresholds
+  * Fixed bug in 'ci.coords': passing more than one value in 'x' now works
+  * Fixed typo in documentation of 'direction' argument to 'roc' (thanks Le Kang for the report)
+  * Add a warning when computing statistics of ROC curve with AUC = 1
+  * Require latest version of Rcpp to avoid weird errors (thanks Tom Liptrot for the report)
 
 1.7.1 (2014-02-20)
   * Close SOCK cluster on Windows with parallel=TRUE
   * Fixed really use algorithm 1 when microbenchmark fails
 
 1.7 (2014-02-19)
-  * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation).
+  * Faster algorithm for DeLong 'roc.test', 'power.roc.test', 'ci.auc', 'var' and 'cov' function (no large matrix allocation)
   * Handling Math and Operations correctly on 'auc' and 'ci' objects (see '?groupGeneric.pROC')
   * The 'formula' for 'roc.formula' can now provide several predictors and a list of ROC curves will be returned
   * Fixed documentation of 'ci.coords' with examples

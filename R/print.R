@@ -29,16 +29,16 @@ print.smooth.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRU
   if (is.null(x$smoothing.args)) {
     cat("density with controls: ", as.character(x$call[match("density.controls", names(x$call))]), "; and cases: ", as.character(x$call[match("density.cases", names(x$call))]), "\n", sep="")
   }
-  else if (x$smoothing.args$method == "binormal")
-    cat("binormal\n")
   else if (x$smoothing.args$method == "density")
     cat("density (bandwidth: ", x$smoothing.args$bw, "; adjust: ", ifelse(is.null(x$smoothing.args$adjust), 1, x$smoothing.args$adjust), ")\n", sep="")
-  else {
+  else if (x$smoothing.args$method == "density") {
     cat("fitting ", x$fit.controls$densfun, " distribution for controls:\n", sep="")
     print(x$fit.controls$estimate)
     cat("fitting ", x$fit.cases$densfun, " distribution for cases:\n", sep="")
     print(x$fit.cases$estimate)
   }
+  else
+  	cat(x$smoothing.args$method, "\n")
 
   # AUC if exists
   if (!is.null(x$auc)) {
