@@ -100,7 +100,8 @@ progress=getOption("pROCProgress")$name, ...)
 \value{
   A matrix of class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{matrix} (in this order), with the confidence
   intervals of the CI. The matrix has 3 columns (lower bound, median and upper bound) and
-  as many rows as confidence intervals computed. If more than one element was provided in \code{x},
+  as many rows as \code{x} * \code{ret} were requested. Rows are sorted by \code{x} and then by \code{ret}
+  and named as \dQuote{input x: return}.
   
   Additionally, the list has the following attributes: 
   \item{conf.level}{the width of the CI, in fraction.}
@@ -143,7 +144,10 @@ ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
 
 # With a roc object:
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ci.coords(rocobj, x=0.9, input = "sensitivity", ret="specificity")
 ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
+ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity")
+ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"))
 
 # With a smoothed roc:
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
@@ -158,7 +162,10 @@ ci.coords(rocobj, x="best", input = "threshold", ret=rets)
 ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
           ret=c("specificity", "ppv", "tp"), boot.n=10)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ci.coords(rocobj, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
 ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
+ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
+ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
 ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"),
           boot.n=10)
