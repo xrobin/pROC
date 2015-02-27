@@ -1,0 +1,5 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^packrat/
+^\.Rprofile$
+pROC-Ex.R
