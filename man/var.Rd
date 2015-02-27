@@ -24,7 +24,7 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
 \arguments{
   \item{roc, smooth.roc, auc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function or an \dQuote{auc} object from
+	\code{\link[=smooth.roc]{smooth}} function or an \dQuote{auc} object from
 	the \code{\link{auc}} function.
   }
   \item{method}{the method to use, either \dQuote{delong} or

@@ -32,7 +32,7 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 \arguments{
   \item{roc, smooth.roc, multiclass.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function, or a  \dQuote{multiclass.roc} from the
+	\code{\link[=smooth.roc]{smooth}} function, or a  \dQuote{multiclass.roc} from the
 	\code{\link{multiclass.roc}} function.
   }
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}

@@ -30,7 +30,7 @@ are.paired(...)
   }
   \item{reuse.auc, reuse.ci, reuse.smooth}{
     if \code{return.paired.rocs=TRUE}, determines if \code{\link{auc}},
-    \code{\link{ci}} and \code{\link{smooth.roc}} should be re-computed
+    \code{\link{ci}} and \code{\link[=smooth.roc]{smooth}} should be re-computed
     (with the same parameters than the original ROC curves)
   }
   \item{\dots}{additionnal arguments for \code{are.paired.roc}. Ignored

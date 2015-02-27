@@ -20,7 +20,7 @@
   requested (if \code{ci=TRUE}) and plot the curve if requested (if
   \code{plot=TRUE}). 
 
-  The \code{\link{roc}} function will call \code{\link{smooth.roc}},
+  The \code{\link{roc}} function will call \code{\link[=smooth.roc]{smooth}},
   \code{\link{auc}},
   \code{\link{ci}} and \code{\link{plot}} as necessary. See these
   individual functions for the arguments that can be passed to them
@@ -79,7 +79,7 @@
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
     \code{\link{roc.test}} \tab Compare the AUC of two ROC curves \cr
-    \code{\link{smooth}} \tab Smooth a ROC curve \cr
+    \code{\link[=smooth.roc]{smooth}} \tab Smooth a ROC curve \cr
     \code{\link[=var.roc]{var}} \tab Variance of the AUC
   }
 }

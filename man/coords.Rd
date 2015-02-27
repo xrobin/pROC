@@ -26,7 +26,7 @@ best.weights=c(1, 0.5), ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{x}{
 		the coordinates to look for. Numeric (if so, their meaning is

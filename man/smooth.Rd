@@ -1,6 +1,6 @@
 \encoding{UTF-8}
-\name{smooth.roc}
-\alias{smooth}
+\name{smooth}
+\alias{smooth.roc}
 \alias{smooth.roc}
 \alias{smooth.smooth.roc}
 \alias{smooth.default}
@@ -27,7 +27,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{method}{\dQuote{binormal}, \dQuote{density}, \dQuote{fitdistr},
     \dQuote{logcondens}, \dQuote{"logcondens.smooth"},
