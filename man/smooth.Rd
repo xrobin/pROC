@@ -1,6 +1,6 @@
 \encoding{UTF-8}
 \name{smooth}
-\alias{smooth.roc}
+\alias{smooth}
 \alias{smooth.roc}
 \alias{smooth.smooth.roc}
 \alias{smooth.default}
