@@ -341,7 +341,7 @@ na.rm=TRUE, method=NULL, ...)
   
   Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
   (2009) ``Combination of protein biomarkers''. \emph{useR! 2009}, Rennes.
-  \url{http://www.r-project.org/conferences/useR-2009/abstracts/user_author.html}
+  \url{http://www.r-project.org/nosvn/conferences/useR-2009/abstracts/user_author.html}
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
