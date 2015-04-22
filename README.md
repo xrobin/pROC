@@ -110,10 +110,9 @@ plot(ci.thresholds(roc2))
 Development
 -------
 
-Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtool](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process (make sure you follow [the full instructions to get started](http://www.rstudio.com/projects/devtools/)):
+Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtools](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process (make sure you follow [the full instructions to get started](http://www.rstudio.com/projects/devtools/)):
 
 ```R
 install.packages("devtools")
-library("devtools")
-install_github(repo = "pROC", username = "xrobin", ref = "master")
+devtools::install_github("xrobin/pROC")
 ```
