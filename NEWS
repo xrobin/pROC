@@ -1,5 +1,6 @@
-1.8 (?)
+1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
+  * Now uses and works with 'requireNamespace'
   * Add ability to supply two ordered factors with identical levels as control / cases
   * Deprecate dangerous use of a matrix as response / predictor with a warning
   * Forward 'best.method' and 'best.weights' arguments to 'coords' in 'ci.thresholds'
