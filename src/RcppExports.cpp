@@ -9,32 +9,24 @@ using namespace Rcpp;
 List delongPlacementsCpp(List roc);
 RcppExport SEXP pROC_delongPlacementsCpp(SEXP rocSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< List >::type roc(rocSEXP );
-        List __result = delongPlacementsCpp(roc);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< List >::type roc(rocSEXP);
+    __result = Rcpp::wrap(delongPlacementsCpp(roc));
+    return __result;
 END_RCPP
 }
 // rocUtilsPerfsAllC
 List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
 RcppExport SEXP pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP );
-        Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP );
-        Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP );
-        List __result = rocUtilsPerfsAllC(thresholds, controls, cases, direction);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP);
+    Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP);
+    __result = Rcpp::wrap(rocUtilsPerfsAllC(thresholds, controls, cases, direction));
+    return __result;
 END_RCPP
 }
