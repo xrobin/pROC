@@ -8,4 +8,5 @@ pROC-Ex.R
 R/emacs23.desktop
 src/*.o
 src/pROC.so
+src/pROC.dylib
 src/symbols.rds
