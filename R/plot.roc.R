@@ -144,12 +144,10 @@ plot.roc.roc <- function(x,
     if (axes) {
       box()
       suppressWarnings(axis(side=2, ...))
-      lab.at <- seq(1, 0, -.2)
-      if (x$percent)
-        lab.at <- lab.at * 100
+      lab.at <- axTicks(side=1)
       lab.labels <- lab.at
       if (legacy.axes)
-        lab.labels <- rev(lab.labels)
+      	lab.labels <- ifelse(x$percent, 100, 1) - lab.labels
       suppressWarnings(axis(side=1, at=lab.at, labels=as.graphicsAnnot(sprintf(ifelse(x$percent, "%.0f", "%.1f"), lab.labels)), ...))
     }
   }
