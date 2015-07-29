@@ -24,17 +24,17 @@ plot.roc <- function(x, ...) {
 plot.roc.formula <- function(x, data, ...) {
   roc <- roc(x, data, plot=TRUE, ...)
   roc$call <- match.call()
-  return(roc)
+  invisible(roc)
 }
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot=TRUE, ...)
   roc$call <- match.call()
-  return(roc)
+  invisible(roc)
 }
 
 plot.roc.smooth.roc <- plot.smooth.roc <- function(x, ...) {
-  plot.roc.roc(x, ...) # force usage of plot.roc.roc: only print.thres not working
+  invisible(plot.roc.roc(x, ...)) # force usage of plot.roc.roc: only print.thres not working
 }
 
 plot.roc.roc <- function(x,
@@ -298,5 +298,5 @@ plot.roc.roc <- function(x,
     suppressWarnings(text(print.auc.x, print.auc.y, labels, adj=print.auc.adj, cex=print.auc.cex, col=print.auc.col, ...))
   }
   
-  return(x)
+  invisible(x)
 }
