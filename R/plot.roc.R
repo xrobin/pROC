@@ -147,7 +147,7 @@ plot.roc.roc <- function(x,
       if (legacy.axes) {
       	lab.at <- axTicks(side=1)
       	lab.labels <- ifelse(x$percent, 100, 1) - lab.at
-      	suppressWarnings(axis(side=1, at=lab.at, labels=as.graphicsAnnot(sprintf(ifelse(x$percent, "%.0f", "%.1f"), lab.labels)), ...))
+      	suppressWarnings(axis(side=1, at=lab.at, labels=lab.labels, ...))
       } 
       else {
       	suppressWarnings(axis(side=1, ...))
