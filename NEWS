@@ -1,3 +1,6 @@
+1.8.0.9 (*)
+  * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
+
 1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
   * Now uses and works with 'requireNamespace'
