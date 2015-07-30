@@ -143,14 +143,18 @@ plot.roc.roc <- function(x,
     # As we had axes=FALSE we need to add them again unless axes=FALSE
     if (axes) {
       box()
-      suppressWarnings(axis(side=2, ...))
+      # axis behave differently when at and labels are passed (no decimals on 1 and 0), 
+      # so handle each case separately and consistently across axes
       if (legacy.axes) {
       	lab.at <- axTicks(side=1)
       	lab.labels <- ifelse(x$percent, 100, 1) - lab.at
       	suppressWarnings(axis(side=1, at=lab.at, labels=lab.labels, ...))
+      	lab.at <- axTicks(side=2)
+      	suppressWarnings(axis(side=2, at=lab.at, labels=lab.at, ...))
       } 
       else {
       	suppressWarnings(axis(side=1, ...))
+      	suppressWarnings(axis(side=2, ...))
       }
     }
   }
