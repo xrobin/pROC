@@ -5,7 +5,7 @@ Version: 1.8.0.9
 Date: 2015-05-04
 Encoding: UTF-8
 Depends: R (>= 2.14)
-Imports: plyr, utils, methods, Rcpp (>= 0.11.1)
+Imports: plyr, utils, methods, Rcpp (>= 0.11.1), ggplot2
 Suggests: microbenchmark, tcltk, MASS, logcondens, doParallel
 LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller.
