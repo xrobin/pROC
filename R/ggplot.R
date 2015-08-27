@@ -4,14 +4,17 @@ ggplot.roc <- function(data, ...) {
 
 	# Prepare the aesthetics
 	if(data$percent) {
-		aes <- ggplot2::aes_string(x = "100 - specificity", y = "sensitivity")
+		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
+		xlims <- scale_x_reverse(lim=c(100, 0))
 	}
 	else {
-		aes <- ggplot2::aes_string(x = "1 - specificity", y = "sensitivity")
+		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
+		xlims <- scale_x_reverse(lim=c(1, 0))
 	}
 
 	# Do the plotting
-	ggplot(df[rev(seq(nrow(df))),]) + ggplot2::geom_line(aes, ...)
+	ggplot(df[rev(seq(nrow(df))),]) + ggplot2::geom_line(aes, ...) + xlims
+		
 	# Or with ggvis:
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
