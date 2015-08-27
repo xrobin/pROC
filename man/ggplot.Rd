@@ -14,13 +14,13 @@
 }
 		   
 \arguments{
-  \item{data}{a roc object from the \link{roc} function.
+  \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
   \item{...}{additional aesthetics for \code{\link{geom_line}} to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.}
 }
 
 \details{
-  This function initializes a ggplot object from a ROC curve. It returns the ggplot with a line layer on it. You can print it directly or add your own layers and theme elements.
+  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer on it. You can print it directly or add your own layers and theme elements.
 }
 
 
@@ -31,6 +31,7 @@
 # Create a basic roc object
 data(aSAH)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
+rocobj2 <- roc(aSAH$outcome, aSAH$wfns)
 
 library(ggplot2)
 g <- ggplot(rocobj)
@@ -40,6 +41,12 @@ ggplot(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
 
 # You can then your own theme, etc.
 g + theme_minimal() + ggtitle("My ROC curve")
+
+# Multiple curves:
+g2 <- ggplot(list(s100b=rocobj, wfns=rocobj2))
+g2
+# with additional aesthetics:
+...
 }
 
 
