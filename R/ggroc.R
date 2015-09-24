@@ -18,8 +18,11 @@ get.aes.for.ggplot <- function(roc) {
 	return(list(aes=aes, xlims=xlims))
 }
 
+ggroc <- function(data, ...) {
+	UseMethod("ggroc")
+}
 
-ggplot.roc <- function(data, ...) {
+ggroc.roc <- function(data, ...) {
 	# Get the roc data with coords
 	df <- get.coords.for.ggplot(data)
 
@@ -33,7 +36,7 @@ ggplot.roc <- function(data, ...) {
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
 
-ggplot.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), ...) {
+ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), ...) {
 	aes <- match.arg(aes)
 	
 	# Make sure data is a list and every element is a roc object

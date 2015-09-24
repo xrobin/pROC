@@ -1,8 +1,8 @@
 \encoding{UTF-8}
-\name{ggplot.roc}
-\alias{ggplot.roc}
-\alias{ggplot.list}
-\alias{ggplot}
+\name{ggroc.roc}
+\alias{ggroc.roc}
+\alias{ggroc.list}
+\alias{ggroc}
 
 \title{
   Plot a ROC curve with ggplot2
@@ -11,8 +11,8 @@
   This function plots a ROC curve with ggplot2.
 }
 \usage{
-\S3method{ggplot}{roc}(data, ...)
-\S3method{ggplot}{list}(data, aes = c("colour", "alpha", "linetype", "size"), ...)
+\S3method{ggroc}{roc}(data, ...)
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size"), ...)
 }
 		   
 \arguments{
@@ -28,7 +28,7 @@
 
 
 \seealso{
-\code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{ggplot}}
+\code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{ggplot2}}
 }
 \examples{
 # Create a basic roc object
@@ -37,20 +37,20 @@ rocobj <- roc(aSAH$outcome, aSAH$s100b)
 rocobj2 <- roc(aSAH$outcome, aSAH$wfns)
 
 library(ggplot2)
-g <- ggplot(rocobj)
+g <- ggroc(rocobj)
 g
 # with additional aesthetics:
-ggplot(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
+ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
 
 # You can then your own theme, etc.
 g + theme_minimal() + ggtitle("My ROC curve")
 
 # Multiple curves:
-g2 <- ggplot(list(s100b=rocobj, wfns=rocobj2))
+g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2))
 g2
 # with additional aesthetics:
-g2 <- ggplot(list(s100b=rocobj, wfns=rocobj2), linetype=2)
-ggplot(list(s100b=rocobj, wfns=rocobj2), aes="linetype", color="red")
+g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2), linetype=2)
+ggroc(list(s100b=rocobj, wfns=rocobj2), aes="linetype", color="red")
 
 }
 
