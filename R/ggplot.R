@@ -9,11 +9,11 @@ get.aes.for.ggplot <- function(roc) {
 	# Prepare the aesthetics
 	if(roc$percent) {
 		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
-		xlims <- scale_x_reverse(lim=c(100, 0))
+		xlims <- ggplot2::scale_x_reverse(lim=c(100, 0))
 	}
 	else {
 		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
-		xlims <- scale_x_reverse(lim=c(1, 0))
+		xlims <- ggplot2::scale_x_reverse(lim=c(1, 0))
 	}
 	return(list(aes=aes, xlims=xlims))
 }
@@ -27,13 +27,15 @@ ggplot.roc <- function(data, ...) {
 	aes <- get.aes.for.ggplot(data)
 
 	# Do the plotting
-	ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims()
+	ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims
 		
 	# Or with ggvis:
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
 
-ggplot.list <- function(data, ...) {
+ggplot.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), ...) {
+	aes <- match.arg(aes)
+	
 	# Make sure data is a list and every element is a roc object
 	if (! all(sapply(data, is, "roc"))) {
 		stop("All elements in 'data' must be 'roc' objects.")
@@ -49,6 +51,11 @@ ggplot.list <- function(data, ...) {
 	if (is.null(names(data))) {
 		names(data) <- seq(data)
 	}
+	# Make sure names are unique:
+	if (any(duplicated(names(data)))) {
+		stop("Names of 'data' must be unique")
+	}
+	
 	# Get the coords
 	coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE)
 	
@@ -58,12 +65,13 @@ ggplot.list <- function(data, ...) {
 	}
 	
 	# Make a big data.frame
-	coord.dfs <- dplyr::rbind_all(coord.dfs)
+	coord.dfs <- do.call(rbind, coord.dfs)
 	
 	# Prepare the aesthetics
-	aes <- get.aes.for.ggplot(data[[1]])
+	aes.ggplot <- get.aes.for.ggplot(data[[1]])
+	aes.ggplot$aes[[aes]] <- as.symbol("name")
 
 	# Do the plotting
-	ggplot(coord.dfs, aes$aes) + ggplot2::geom_line(aes(color=name)) + aes$xlims
+	ggplot(coord.dfs, aes.ggplot$aes) + ggplot2::geom_line(...) + aes.ggplot$xlims
 
 }

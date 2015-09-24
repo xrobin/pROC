@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{ggplot.roc}
 \alias{ggplot.roc}
+\alias{ggplot.list}
 \alias{ggplot}
 
 \title{
@@ -11,11 +12,13 @@
 }
 \usage{
 \S3method{ggplot}{roc}(data, ...)
+\S3method{ggplot}{list}(data, aes = c("colour", "alpha", "linetype", "size"), ...)
 }
 		   
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
+  \item{aes}{the name of the aesthetics for \code{\link{geom_line}} to map to the different ROC curves supplied}
   \item{...}{additional aesthetics for \code{\link{geom_line}} to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.}
 }
 
@@ -46,7 +49,9 @@ g + theme_minimal() + ggtitle("My ROC curve")
 g2 <- ggplot(list(s100b=rocobj, wfns=rocobj2))
 g2
 # with additional aesthetics:
-...
+g2 <- ggplot(list(s100b=rocobj, wfns=rocobj2), linetype=2)
+ggplot(list(s100b=rocobj, wfns=rocobj2), aes="linetype", color="red")
+
 }
 
 

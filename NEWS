@@ -1,6 +1,6 @@
 1.8.0.9 (*)
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
-  * Basic ggplot2 support
+  * Basic ggplot2 support (one and multiple ROC curves)
 
 1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
