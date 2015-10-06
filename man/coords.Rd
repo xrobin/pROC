@@ -131,11 +131,10 @@ best.weights=c(1, 0.5), ...)
 
   In addition, weights can be supplied if false positive and false
   negative predictions are not equivalent: a numeric vector of length 2
-  to the \code{best.weights} argument. The indices define
+  to the \code{best.weights} argument. The elements define
   \enumerate{
-    \item the cost of of a false negative classification
-    \item the prevalence, or the proportion of cases in the total
-      population (\eqn{\frac{n_{cases}}{n_{controls}+n_{cases}}}{n.cases/(n.controls+n.cases)}). 
+    \item the relative cost of of a false negative classification (as compared with a false positive classification)
+    \item the prevalence, or the proportion of cases in the population (\eqn{\frac{n_{cases}}{n_{controls}+n_{cases}}}{n.cases/(n.controls+n.cases)}). 
   }
 
   The optimality criteria are modified as proposed by Perkins and Schisterman:
