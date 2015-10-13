@@ -21,7 +21,7 @@ roc <- function(...) {
   UseMethod("roc")
 }
 
-roc.formula <- function (formula, ...){
+roc.formula <- function (formula, data, ...){
   # Get predictors (easy)
   predictors <- attr(terms(formula), "term.labels")
   

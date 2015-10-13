@@ -16,7 +16,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, ...)
+\S3method{roc}{formula}(formula, data, ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
@@ -45,7 +45,7 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link[=smooth.roc]{smooth}}.
   }
-  \item{formula}{a formula of the type \code{response~predictor}. If mulitple predictors 
+  \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
     \code{data}, \code{subset} and \code{na.action} are supported, see 
     \code{\link{model.frame}} for more details.
