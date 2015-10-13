@@ -16,7 +16,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, ...)
+\S3method{roc}{formula}(formula, ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
@@ -46,9 +46,10 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     \code{\link[=smooth.roc]{smooth}}.
   }
   \item{formula}{a formula of the type \code{response~predictor}. If mulitple predictors 
-    are passed, a named list of \code{roc} objects will be returned.}
-  \item{data}{a matrix or data.frame containing the variables in the
-    formula. See \code{\link{model.frame}} for more details.}
+    are passed, a named list of \code{roc} objects will be returned. Additional arguments
+    \code{data}, \code{subset} and \code{na.action} are supported, see 
+    \code{\link{model.frame}} for more details.
+  }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of
     \code{levels(as.factor(response))} are taken, and the remaining levels are ignored.
@@ -62,7 +63,9 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.}
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
+    (ignored by \code{roc.formula}).
+  }
   \item{direction}{in which direction to make the comparison?
     \dQuote{auto} (default): automatically define in which group the
     median is higher and take the direction accordingly.

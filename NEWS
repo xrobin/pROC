@@ -1,4 +1,5 @@
 1.8.0.9 (*)
+  * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
 
 1.8 (2015-05-04)

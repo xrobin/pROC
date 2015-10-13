@@ -21,17 +21,22 @@ roc <- function(...) {
   UseMethod("roc")
 }
 
-roc.formula <- function (formula, data, ...){
+roc.formula <- function (formula, ...){
   # Get predictors (easy)
   predictors <- attr(terms(formula), "term.labels")
   
-  # Get the data (complicated)
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m$... <- NULL
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
+  # Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
+  Call <- match.call()
+  indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
+  if (indx[1] == 0) {
+  	stop("A formula argument is required")
+  }
+  # Keep the standard arguments and run them in model.frame
+  temp <- Call[c(1,indx)]  
+  temp[[1]] <- as.name('model.frame')
+  m <- eval(temp, parent.frame())
+  
+  if (!is.null(model.weights(m))) stop("weights are not supported")
   
   # Get response (easy)
   response <- model.response(m)
@@ -48,15 +53,15 @@ roc.formula <- function (formula, data, ...){
     return(roc)
   }
   else if (length(predictors) > 1) {
-    roclist <- lapply(predictors, function(predictor, formula, data, call, ...) {
+    roclist <- lapply(predictors, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
-      roc <- roc.default(response, data[[predictor]], ...)
+      roc <- roc.default(response, m.data[[predictor]], ...)
       # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
       roc$call <- call
       return(roc)
-    }, formula = formula, data = m, call = match.call(), ...)
+    }, formula = formula, m.data = m, call = match.call(), ...)
     # Set the list names
     names(roclist) <- predictors
     return(roclist)
