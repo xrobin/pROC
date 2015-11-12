@@ -104,6 +104,20 @@ roc.default <- function(response, predictor,
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
+    
+    # Validate levels
+    if (missing(levels)) {
+    	if (length(levels) > 2) {
+    		levels <- levels[1:2]
+    	}
+    	else if (length(levels) < 2) {
+    		stop("'response' must have at least two levels")
+    	}
+    }
+    if (length(levels) != 2) {
+    	stop("'levels' argument must have length 2")
+    }
+
     # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
