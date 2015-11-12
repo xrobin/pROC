@@ -81,6 +81,7 @@ roc.default <- function(response, predictor,
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
                         algorithm=1,
+						quiet = FALSE,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object
@@ -113,7 +114,7 @@ roc.default <- function(response, predictor,
     	else if (length(levels) < 2) {
     		stop("'response' must have at least two levels")
     	}
-    	message(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
+    	ifelse(quiet, invisible, message)(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
     }
     if (length(levels) != 2) {
     	stop("'levels' argument must have length 2")
@@ -257,11 +258,11 @@ roc.default <- function(response, predictor,
 
   if (direction == "auto" && median(controls) <= median(cases)) {
   	direction <- "<"
-  	message("Setting direction: controls < cases")
+  	ifelse(quiet, invisible, message)("Setting direction: controls < cases")
   }
   else if (direction == "auto" && median(controls) > median(cases)) {
   	direction <- ">"
-  	message("Setting direction: controls > cases")
+  	ifelse(quiet, invisible, message)("Setting direction: controls > cases")
   }
   
   # smooth with densities, but only density was provided, not density.controls/cases

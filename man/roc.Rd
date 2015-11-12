@@ -20,8 +20,9 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 1, smooth=FALSE, auc=TRUE, ci=FALSE,
-plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
+direction=c("auto", "<", ">"), algorithm = 1, quiet = FALSE, 
+smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
+ci.method=NULL, density=NULL, ...)
 
 }
 
@@ -88,6 +89,8 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     runs all 3 algorithms and makes sure they return the same values.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
+  \item{quiet}{set to \code{TRUE} to turn off the \code{\link{message}}s
+	 displayed when \code{direction} and \code{levels} are auto-detected.}
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
   }
@@ -291,6 +294,10 @@ roc(aSAH$outcome, aSAH$s100b,
 # The following will give an AUC < 0.5:
 roc(aSAH$outcome, aSAH$s100b,
     levels=c("Poor", "Good"), direction="<")
+
+# If we are sure about levels and direction auto-detection,
+# we can turn off the messages:
+roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 
 # If we prefer counting in percent:
 roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
