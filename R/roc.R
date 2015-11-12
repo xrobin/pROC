@@ -255,10 +255,14 @@ roc.default <- function(response, predictor,
     stop("No valid data provided.")
   }
 
-  if (direction == "auto" && median(controls) <= median(cases))
-    direction <- "<"
-  else if (direction == "auto" && median(controls) > median(cases))
-    direction <- ">"
+  if (direction == "auto" && median(controls) <= median(cases)) {
+  	direction <- "<"
+  	message("Setting direction: controls < cases")
+  }
+  else if (direction == "auto" && median(controls) > median(cases)) {
+  	direction <- ">"
+  	message("Setting direction: controls > cases")
+  }
   
   # smooth with densities, but only density was provided, not density.controls/cases
   if (smooth) {
