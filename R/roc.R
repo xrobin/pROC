@@ -113,6 +113,7 @@ roc.default <- function(response, predictor,
     	else if (length(levels) < 2) {
     		stop("'response' must have at least two levels")
     	}
+    	message(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
     }
     if (length(levels) != 2) {
     	stop("'levels' argument must have length 2")
