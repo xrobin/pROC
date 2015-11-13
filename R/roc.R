@@ -109,14 +109,15 @@ roc.default <- function(response, predictor,
     # Validate levels
     if (missing(levels)) {
     	if (length(levels) > 2) {
+    		warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
     		levels <- levels[1:2]
     	}
     	else if (length(levels) < 2) {
-    		stop("'response' must have at least two levels")
+    		stop("'response' must have two levels")
     	}
     	ifelse(quiet, invisible, message)(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
     }
-    if (length(levels) != 2) {
+    else if (length(levels) != 2) {
     	stop("'levels' argument must have length 2")
     }
 

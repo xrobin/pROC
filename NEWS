@@ -1,7 +1,7 @@
 1.8.0.9 (*)
   * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
-  * Print a message when auto-detecting 'levels' and 'direction'; Use 'quiet' to turn off
+  * Improved validation of input class 'levels' and 'direction'; messages when auto-detecting, use 'quiet' to turn off
 
 1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
