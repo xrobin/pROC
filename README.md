@@ -9,7 +9,7 @@ For more information, see:
 2. [The official web page on ExPaSy](http://www.expasy.org/tools/pROC/)
 3. [The CRAN page](http://stat.ethz.ch/CRAN/web/packages/pROC/)
 4. [My blog](http://xavier.robin.name/tag/pROC/)
-5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ-%E2%80%93-Frequently-asked-questions)
+5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
 
 Stable
 -------
