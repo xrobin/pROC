@@ -72,10 +72,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call), .progress=progress)
+    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call), .progress=progress)
+    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress)
   }
 
   if (any(is.na(perfs))) {
