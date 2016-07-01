@@ -33,6 +33,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
 											x, 
 											input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), 
 											best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+											best.policy = c("stop", "omit", "random"),
 											conf.level = 0.95,
 											boot.n = 2000,
 											boot.stratified = TRUE,
@@ -48,6 +49,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
  
   input <- match.arg(input)
   ret <- roc.utils.match.coords.ret.args(ret)
+  best.policy <- match.arg(best.policy)
   if (is.character(x)) {
     x <- match.arg(x, c("all", "local maximas", "best"))
     if (x == "all" || x == "local maximas") {
@@ -104,6 +106,7 @@ ci.coords.roc <- function(roc,
 								  x,
 								  input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
 								  best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+								  best.policy = c("stop", "omit", "random"),
 								  conf.level = 0.95,
 								  boot.n = 2000,
 								  boot.stratified = TRUE,
@@ -119,6 +122,7 @@ ci.coords.roc <- function(roc,
  
   input <- match.arg(input)
   ret <- roc.utils.match.coords.ret.args(ret)
+  best.policy <- match.arg(best.policy)
   if (is.character(x)) {
     x <- match.arg(x, c("all", "local maximas", "best"))
     if (x == "all" || x == "local maximas") {
@@ -130,10 +134,10 @@ ci.coords.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rlply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress)
+    perfs <- rlply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights), .progress=progress)
+    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress)
   }
 
   if (any(sapply(perfs, function(x) any(is.na(x))))) {
@@ -159,4 +163,23 @@ ci.coords.roc <- function(roc,
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "roc") <- roc
   return(ci)
+}
+
+# Function to be called when "best" threshold returned more than 1 column
+# Will follow the action defined by best.policy
+# For instance:
+#   if (x == "best" && ncol(res) != 1) {
+# return(enfore.best.policy(res, best.policy))
+# }
+enfore.best.policy <- function(res, best.policy) {
+	if (best.policy == "stop") {
+		stop("More than one \"best\" threshold was found, aborting.")
+	}
+	else if (best.policy == "omit") {
+		res[, 1] <- NA
+		return(res[, 1, drop = FALSE])
+	}
+	else {
+		return(res[, sample(seq_len(ncol(res)), size = 1), drop = FALSE])
+	}
 }
