@@ -7,7 +7,7 @@ For more information, see:
 
 1. Xavier Robin, Natacha Turck, Alexandre Hainard, *et al.* (2011) “pROC: an open-source package for R and S+ to analyze and compare ROC curves”. *BMC Bioinformatics*, **7**, 77. DOI: [10.1186/1471-2105-12-77](http://dx.doi.org/10.1186/1471-2105-12-77)
 2. [The official web page on ExPaSy](http://www.expasy.org/tools/pROC/)
-3. [The CRAN page](http://stat.ethz.ch/CRAN/web/packages/pROC/)
+3. [The CRAN page](https://cran.r-project.org/package=pROC)
 4. [My blog](http://xavier.robin.name/tag/pROC/)
 5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
 
