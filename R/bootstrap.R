@@ -637,7 +637,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   	return(enfore.best.policy(res, best.policy))
   }
   else {
-  	return(ret)
+  	return(res)
   }
 }
 
@@ -668,7 +668,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   	return(enfore.best.policy(res, best.policy))
   }
   else {
-  	return(ret)
+  	return(res)
   }
 }
 
@@ -702,7 +702,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   	return(enfore.best.policy(res, best.policy))
   }
   else {
-  	return(ret)
+  	return(res)
   }
 }
 
@@ -737,6 +737,6 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   	return(enfore.best.policy(res, best.policy))
   }
   else {
-  	return(ret)
+  	return(res)
   }
 }
