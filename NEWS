@@ -1,5 +1,6 @@
 1.8.0.9 (*)
   * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)
+  * Added policies to handle the case where a ROC curve has multiple "best" threshold in 'ci' (thanks Nicola Toschi for the report)
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
   * Improved validation of input class 'levels' and 'direction'; messages when auto-detecting, use 'quiet' to turn off
 
