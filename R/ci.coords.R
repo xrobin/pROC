@@ -173,7 +173,7 @@ ci.coords.roc <- function(roc,
 # }
 enfore.best.policy <- function(res, best.policy) {
 	if (best.policy == "stop") {
-		stop("More than one \"best\" threshold was found, aborting.")
+		stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
 	}
 	else if (best.policy == "omit") {
 		res[, 1] <- NA
