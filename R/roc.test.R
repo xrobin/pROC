@@ -416,6 +416,8 @@ roc.test.roc <- function(roc1, roc2,
 
   htest$roc1 <- roc1
   htest$roc2 <- roc2
+  # Remove name from p value
+  htest$p.value <- unname(htest$p.value)
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth)
     htest$roc1 <- do.call("smooth.roc", c(list(roc=roc1), smoothing.args$roc1))
