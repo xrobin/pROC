@@ -48,7 +48,7 @@ best.weights=c(1, 0.5), ...)
   \item{ret}{The coordinates to return. One or more of
     \dQuote{threshold}, \dQuote{specificity}, \dQuote{sensitivity}, \dQuote{accuracy},
     \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
-    \dQuote{fn} (false negativge count), \dQuote{fp} (false positive count), 
+    \dQuote{fn} (false negative count), \dQuote{fp} (false positive count), 
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
     as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
