@@ -97,8 +97,8 @@ ci.method=NULL, density=NULL, ...)
   \item{auc}{compute the area under the curve (AUC)? If \code{TRUE}
     (default), additional arguments can be passed to \code{\link{auc}}.
   }
-  \item{ci}{compute the confidence interval (CI)? If \code{TRUE}
-    (default), additional arguments can be passed to \code{\link{ci}}.
+  \item{ci}{compute the confidence interval (CI)? If set to \code{TRUE}, 
+    additional arguments can be passed to \code{\link{ci}}.
   }
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
     arguments can be passed to \code{\link{plot.roc}}.
