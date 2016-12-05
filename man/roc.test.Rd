@@ -201,7 +201,12 @@ na.rm=TRUE, method=NULL, ...)
   DeLong \emph{et al.} (1988) for paired ROC curves. Only comparison of
   two ROC curves is implemented. The method has been extended for
   unpaired ROC curves where the p-value is computed with an unpaired
-  t-test with unequal sample size and unequal variance.
+  t-test with unequal sample size and unequal variance, with 
+  \deqn{
+    D=\frac{V^r(\theta^r) - V^s(\theta^s) }{ \sqrt{S^r + S^s}}
+  }{
+    D=(V^r(\theta^r) - V^s(\theta^s)) / sqrt(S^r + S^s)
+  }
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
