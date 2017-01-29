@@ -6,7 +6,8 @@ Date: 2015-05-04
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: plyr, utils, methods, Rcpp (>= 0.11.1)
-Suggests: microbenchmark, tcltk, MASS, logcondens, doParallel
+Suggests: microbenchmark, tcltk, MASS, logcondens, doParallel,
+    testthat
 LinkingTo: Rcpp
 Author: Xavier Robin, Natacha Turck, Alexandre Hainard, Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller.
 Maintainer: Xavier Robin <robin@lindinglab.org>
