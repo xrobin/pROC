@@ -42,5 +42,14 @@ for (marker in c("ndka", "wfns", "s100b")) {
 	})
 }
 
-
-
+for (marker in c("ndka", "wfns", "s100b")) {
+	desc <- sprintf("delongPlacementsCpp runs with reversed levels reversed direction and %s", marker)
+	r <- roc(aSAH$outcome, aSAH[[marker]], levels = c("Poor", "Good"), direction = ">")
+	test_that(desc, {
+		placements <- pROC:::delongPlacementsCpp(r)
+		expect_identical(names(placements), c("theta", "X", "Y"))
+		expect_equal(length(placements$theta), 1)
+		expect_equal(length(placements$X), sum(aSAH$outcome == "Poor"))
+		expect_equal(length(placements$Y), sum(aSAH$outcome == "Good"))
+	})
+}
