@@ -1,8 +1,8 @@
 library(pROC)
 data(aSAH)
-r_ndka <- roc(aSAH$outcome, aSAH$ndka)
-r_wfns <- roc(aSAH$outcome, aSAH$wfns)
-r_s100b <- roc(aSAH$outcome, aSAH$s100b)
+
+# Get static, correct output of the function
+source(system.file("extdata", "test-deLongPlacementsCpp-expected.R", package="pROC"))
 
 context("DeLong Placements C++ code works")
 
@@ -12,10 +12,7 @@ for (percent in c(FALSE, TRUE)) {
 		r <- roc(aSAH$outcome, aSAH[[marker]], percent = percent)
 		test_that(desc, {
 			placements <- pROC:::delongPlacementsCpp(r)
-			expect_identical(names(placements), c("theta", "X", "Y"))
-			expect_equal(length(placements$theta), 1)
-			expect_equal(length(placements$X), sum(aSAH$outcome == "Poor"))
-			expect_equal(length(placements$Y), sum(aSAH$outcome == "Good"))
+			expect_equal(placements, expected.placements[[marker]][["forward"]])
 		})
 	}
 	
@@ -25,9 +22,6 @@ for (percent in c(FALSE, TRUE)) {
 		test_that(desc, {
 			placements <- pROC:::delongPlacementsCpp(r)
 			expect_identical(names(placements), c("theta", "X", "Y"))
-			expect_equal(length(placements$theta), 1)
-			expect_equal(length(placements$X), sum(aSAH$outcome == "Good"))
-			expect_equal(length(placements$Y), sum(aSAH$outcome == "Poor"))
 		})
 	}
 	
@@ -37,9 +31,6 @@ for (percent in c(FALSE, TRUE)) {
 		test_that(desc, {
 			placements <- pROC:::delongPlacementsCpp(r)
 			expect_identical(names(placements), c("theta", "X", "Y"))
-			expect_equal(length(placements$theta), 1)
-			expect_equal(length(placements$X), sum(aSAH$outcome == "Poor"))
-			expect_equal(length(placements$Y), sum(aSAH$outcome == "Good"))
 		})
 	}
 	
@@ -49,9 +40,6 @@ for (percent in c(FALSE, TRUE)) {
 		test_that(desc, {
 			placements <- pROC:::delongPlacementsCpp(r)
 			expect_identical(names(placements), c("theta", "X", "Y"))
-			expect_equal(length(placements$theta), 1)
-			expect_equal(length(placements$X), sum(aSAH$outcome == "Poor"))
-			expect_equal(length(placements$Y), sum(aSAH$outcome == "Good"))
 		})
 	}
 }
