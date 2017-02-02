@@ -130,7 +130,7 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
   }
 
   With \code{method="delong"}, the processing is done as described in
-  Hanley and Hajian-Tilaki (1997).
+  Hanley and Hajian-Tilaki (1997) using the algorithm by Sun and Xu (2014).
 
   With \code{method="obuchowski"}, the processing is done as described
   in Obuchowski and McClish (1997), Table 1 and Equation 4, p. 1530--1531. The
@@ -207,6 +207,11 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
   determination for diagnostic accurary studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
   1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.

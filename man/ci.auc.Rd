@@ -101,7 +101,8 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   be performed and an error is issued.
 
   With \code{method="delong"}, the variance of the AUC is computed as
-  defined by DeLong \emph{et al.} (1988) and the CI is deduced with \code{\link{qnorm}}.
+  defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014) 
+  and the CI is deduced with \code{\link{qnorm}}.
 }
 
 \section{AUC specification}{
@@ -179,6 +180,11 @@ consistency reasons.
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and

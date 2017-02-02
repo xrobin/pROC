@@ -198,7 +198,8 @@ na.rm=TRUE, method=NULL, ...)
   \link[=pROC-package]{this package's documentation}.
 
   With \code{method="delong"}, the processing is done as described in
-  DeLong \emph{et al.} (1988) for paired ROC curves. Only comparison of
+  DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
+  of Sun and Xu (2014). Only comparison of
   two ROC curves is implemented. The method has been extended for
   unpaired ROC curves where the p-value is computed with an unpaired
   t-test with unequal sample size and unequal variance, with 
@@ -352,6 +353,11 @@ na.rm=TRUE, method=NULL, ...)
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
 
   E. S. Venkatraman and Colin B. Begg (1996) ``A distribution-free
   procedure for comparing receiver operating characteristic curves from
