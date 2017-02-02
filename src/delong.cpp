@@ -1,8 +1,6 @@
 /* pROC: Tools Receiver operating characteristic (ROC curves) with
    (partial) area under the curve, confidence intervals and comparison. 
-   Copyright (C) 2014 Xavier Robin
-
-   * modified by Stefan Siegert <stefan_siegert@gmx.de>, January 2016
+   Copyright (C) 2016 Xavier Robin, Stefan Siegert <stefan_siegert@gmx.de>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
