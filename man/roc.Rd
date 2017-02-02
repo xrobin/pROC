@@ -89,8 +89,10 @@ ci.method=NULL, density=NULL, ...)
     runs all 3 algorithms and makes sure they return the same values.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
-  \item{quiet}{set to \code{TRUE} to turn off the \code{\link{message}}s
-	 displayed when \code{direction} and \code{levels} are auto-detected.}
+  \item{quiet}{set to \code{FALSE} to turn on \code{\link{message}}s
+	 when \code{direction} and \code{levels} are auto-detected.
+	 This default will be changed to \code{TRUE} in the future.
+  }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
   }
