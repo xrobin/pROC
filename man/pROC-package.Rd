@@ -216,10 +216,8 @@ stopCluster(cl)
   }
   
   \subsection{Using DeLong instead of boostrap}{
-    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)) which is typically faster than boostrapping. By default, pROC will choose the DeLong method whenever possible.
+    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)). Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is always faster than bootstrapping. By default, pROC will choose the DeLong method whenever possible.
   
-    Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is in practice nearly always faster than bootstrapping. Some very edge cases may still exist (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
-    
         \preformatted{
 rocobj <- roc(response, round(predictor), algorithm=3)
 system.time(ci(rocobj, method="delong"))
