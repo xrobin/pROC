@@ -283,6 +283,10 @@ with(aSAH, roc(outcome ~ s100b))
 # With a formula:
 roc(outcome ~ s100b, data=aSAH)
 
+# Using subset (only with formula)
+roc(outcome ~ s100b, data=aSAH, subset=(gender == "Male"))
+roc(outcome ~ s100b, data=aSAH, subset=(gender == "Female"))
+
 # With numeric controls/cases
 roc(controls=aSAH$s100b[aSAH$outcome=="Good"], cases=aSAH$s100b[aSAH$outcome=="Poor"])
 # With ordered controls/cases
