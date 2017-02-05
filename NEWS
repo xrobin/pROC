@@ -1,4 +1,4 @@
-1.8.0.9 (*)
+1.9 (2017-02-05)
   * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)
   * Added policies to handle the case where a ROC curve has multiple "best" threshold in 'ci' (thanks Nicola Toschi for the report)
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
