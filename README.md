@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/xrobin/pROC.svg?branch=master)](https://travis-ci.org/xrobin/pROC)
+[![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](http://cran.r-project.org/web/packages/pROC)
+[![Downloads](http://cranlogs.r-pkg.org/badges/pROC)](http://cran.rstudio.com/package=pROC)
+
 pROC
 =============
 
