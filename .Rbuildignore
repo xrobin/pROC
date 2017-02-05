@@ -3,3 +3,4 @@
 ^packrat/
 ^\.Rprofile$
 pROC-Ex.R
+.travis.yml
