@@ -13,19 +13,21 @@ for (marker in c("ndka", "wfns", "s100b")) {
 	for (levels.direction in names(level.values)) {
 		for (percent in c(FALSE, TRUE)) {
 			for (direction in c("auto", "<", ">")) {
-				context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s", percent, marker, levels.direction, direction))
-				r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
-
-				expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
-				
-				expect_is(r, "roc")
-				expect_identical(r$percent, percent)
-				expect_identical(r$direction, expected.direction)
-				expect_identical(r$levels, level.values[[levels.direction]])
-				
-				expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
-				expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
-				expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
+				for (algorithm in 1:4) {
+					context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s and algorithm = %s", percent, marker, levels.direction, direction, algorithm))
+					r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+					
+					expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
+					
+					expect_is(r, "roc")
+					expect_identical(r$percent, percent)
+					expect_identical(r$direction, expected.direction)
+					expect_identical(r$levels, level.values[[levels.direction]])
+					
+					expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
+					expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
+					expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
+				}
 			}
 		}
 	}
