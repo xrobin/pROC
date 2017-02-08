@@ -17,6 +17,19 @@ for (marker in c("ndka", "wfns", "s100b")) {
 					context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s and algorithm = %s", percent, marker, levels.direction, direction, algorithm))
 					r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
 					
+					test_that("roc.formula produces the same results as roc.default", {
+						rf <- roc(as.formula(sprintf("outcome ~ %s", marker)), data = aSAH, levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+						expect_is(rf, "roc")
+						for (item in c("auc", "percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp", "original.predictor", "original.response", "predictor", "response", "levels")) {
+							expect_identical(rf$auc, r$auc)
+							expect_identical(rf$percent, r$percent)
+							expect_identical(rf$auc, r$auc)
+							expect_identical(rf$auc, r$auc)
+							expect_identical(rf$auc, r$auc)
+							expect_identical(rf$auc, r$auc)
+						}
+					})
+
 					expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
 					
 					expect_is(r, "roc")
