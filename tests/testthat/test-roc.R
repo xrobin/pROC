@@ -20,13 +20,11 @@ for (marker in c("ndka", "wfns", "s100b")) {
 					test_that("roc.formula produces the same results as roc.default", {
 						rf <- roc(as.formula(sprintf("outcome ~ %s", marker)), data = aSAH, levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
 						expect_is(rf, "roc")
-						for (item in c("auc", "percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp", "original.predictor", "original.response", "predictor", "response", "levels")) {
-							expect_identical(rf$auc, r$auc)
-							expect_identical(rf$percent, r$percent)
-							expect_identical(rf$auc, r$auc)
-							expect_identical(rf$auc, r$auc)
-							expect_identical(rf$auc, r$auc)
-							expect_identical(rf$auc, r$auc)
+						for (item in c("auc", "percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp")) {
+							expect_identical(rf[[item]], r[[item]], label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
+						}
+						for (item in c("original.predictor", "original.response", "predictor", "response", "levels")) {
+							expect_identical(unname(rf[[item]]), unname(r[[item]]), label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
 						}
 					})
 
