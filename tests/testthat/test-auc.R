@@ -176,3 +176,33 @@ test_that("auc can create a roc curve with percent", {
 	expect_equal(as.numeric(auc(outcome ~ wfns, aSAH, percent = TRUE)), as.numeric(auc(r.wfns.percent)))
 	expect_equal(as.numeric(auc(outcome ~ ndka, aSAH, percent = TRUE)), as.numeric(auc(r.ndka.percent)))
 })
+
+
+test_that("auc.formula behaves", {
+	expect_equal(
+		as.numeric(auc(outcome ~ wfns, data = aSAH)),
+		as.numeric(auc(aSAH$outcome, aSAH$wfns))
+	)
+	
+	expect_equal(
+		as.numeric(auc(outcome ~ wfns, data = aSAH, subset = (gender == "Female"))),
+		as.numeric(auc(aSAH$outcome[aSAH$gender == "Female"], aSAH$wfns[aSAH$gender == "Female"]))
+	)
+	
+	# Generate missing values
+	aSAH.missing <- aSAH
+	aSAH.missing$ndka[1:20] <- NA
+	expect_equal(
+		as.numeric(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit)),
+		as.numeric(auc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka))
+	)
+	#na.fail should fail
+	expect_error(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
+	
+	# Both na.action and subset
+	expect_equal(
+		as.numeric(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female"))),
+		as.numeric(auc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"]))
+	)
+})
+
