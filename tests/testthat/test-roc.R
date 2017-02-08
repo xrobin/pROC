@@ -35,9 +35,7 @@ for (marker in c("ndka", "wfns", "s100b")) {
 							expect_identical(rcs[[item]], r[[item]])
 						}
 					})
-						
-
-
+					
 					test_that("roc.default produces the expected results", {
 						expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
 					
