@@ -54,6 +54,24 @@ for (marker in c("ndka", "wfns", "s100b")) {
 	}
 }
 
+
+test_that("roc.default handles NAs", {
+	# Generate missing values
+	aSAH.missing <- aSAH
+	aSAH.missing$ndka[1:20] <- NA
+	
+	# na.rm=FALSE works
+	expect_true(is.na(roc(aSAH.missing$outcome, aSAH.missing$ndka, na.rm = FALSE)))
+	expect_false(is.na(auc(roc(aSAH.missing$outcome, aSAH.missing$ndka, na.rm = TRUE))))
+	
+	# Same as subset
+	expect_identical(
+		as.numeric(auc(roc(aSAH.missing$outcome, aSAH.missing$ndka, na.rm = TRUE))),
+		as.numeric(auc(roc(aSAH[21:113,]$outcome, aSAH.missing[21:113,]$ndka))))
+
+})
+})
+
 test_that("roc can't take both response/predictor and case/control", {
 	skip("This doesn't throw an error currently.")
 	expect_error(roc(aSAH$outcome, aSAH$ndka, controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"]))
