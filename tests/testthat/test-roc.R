@@ -56,6 +56,11 @@ for (marker in c("ndka", "wfns", "s100b")) {
 	}
 }
 
+test_that("roc can't take both response/predictor and case/control", {
+	skip("This doesn't throw an error currently.")
+	expect_error(roc(aSAH$outcome, aSAH$ndka, controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"]))
+})
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
