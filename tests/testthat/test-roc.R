@@ -28,6 +28,18 @@ for (marker in c("ndka", "wfns", "s100b")) {
 						}
 					})
 					
+					test_that("roc.default works with control/cases as well", {
+						rcs <- roc(controls = r$controls, cases = r$cases, levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+						expect_is(rcs, "roc")
+						for (item in c("auc", "percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp")) {
+							expect_identical(rcs[[item]], r[[item]])
+						}
+					})
+						
+
+
+					test_that("roc.default produces the expected results", {
+						expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
 					
 						expect_is(r, "roc")
 						expect_identical(r$percent, percent)
