@@ -70,6 +70,36 @@ test_that("roc.default handles NAs", {
 		as.numeric(auc(roc(aSAH[21:113,]$outcome, aSAH.missing[21:113,]$ndka))))
 
 })
+
+test_that("roc.formula behaves", {
+	# By this point we've tested the main stuff, so just check a few basic elements
+	roc.check.only.items <- c("sensitivities", "specificities", "thresholds", "cases", "controls")
+	
+	expect_identical(
+		roc(outcome ~ wfns, data = aSAH)[roc.check.only.items],
+		roc(aSAH$outcome, aSAH$wfns)[roc.check.only.items]
+	)
+	
+	expect_identical(
+		roc(outcome ~ wfns, data = aSAH, subset = (gender == "Female"))[roc.check.only.items],
+		roc(aSAH$outcome[aSAH$gender == "Female"], aSAH$wfns[aSAH$gender == "Female"])[roc.check.only.items]
+	)
+	
+	# Generate missing values
+	aSAH.missing <- aSAH
+	aSAH.missing$ndka[1:20] <- NA
+	expect_identical(
+		roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit)[roc.check.only.items],
+		roc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka)[roc.check.only.items]
+	)
+	#na.fail should fail
+	expect_error(roc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
+	
+	# Both na.action and subset
+	expect_identical(
+		roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female"))[roc.check.only.items],
+		roc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"])[roc.check.only.items]
+	)
 })
 
 test_that("roc can't take both response/predictor and case/control", {
