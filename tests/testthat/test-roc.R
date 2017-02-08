@@ -27,17 +27,17 @@ for (marker in c("ndka", "wfns", "s100b")) {
 							expect_identical(unname(rf[[item]]), unname(r[[item]]), label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
 						}
 					})
-
-					expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
 					
-					expect_is(r, "roc")
-					expect_identical(r$percent, percent)
-					expect_identical(r$direction, expected.direction)
-					expect_identical(r$levels, level.values[[levels.direction]])
 					
-					expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
-					expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
-					expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
+						expect_is(r, "roc")
+						expect_identical(r$percent, percent)
+						expect_identical(r$direction, expected.direction)
+						expect_identical(r$levels, level.values[[levels.direction]])
+						
+						expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
+						expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
+						expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
+					})
 				}
 			}
 		}
