@@ -155,6 +155,8 @@ test_that("roc.formula supports subset and na.omit", {
 	)
 	#na.fail should fail
 	expect_error(roc.test(outcome ~ wfns + ndka, data = aSAH.missing, na.action = na.fail, quiet = TRUE))
+	#weights should fail too
+	expect_error(roc.test(outcome ~ wfns + ndka, data = aSAH, weights = seq_len(nrow(aSAH))), regexp = "weights are not supported")
 	
 	# Both na.action and subset
 	expect_identical(

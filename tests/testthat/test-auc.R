@@ -198,6 +198,8 @@ test_that("auc.formula behaves", {
 	)
 	#na.fail should fail
 	expect_error(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
+	#weights should fail too
+	expect_error(auc(outcome ~ ndka, data = aSAH, weights = seq_len(nrow(aSAH))), regexp = "weights are not supported")
 	
 	# Both na.action and subset
 	expect_equal(
