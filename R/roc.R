@@ -343,6 +343,10 @@ roc.default <- function(response, predictor,
   roc$response <- response
   roc$levels <- levels
   
+  if (auc) {
+  	attr(roc$auc, "roc") <- roc
+  }
+  
   # compute CI
   if (ci)
     roc$ci <- ci(roc, method=ci.method, ...)
