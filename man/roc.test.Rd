@@ -44,7 +44,10 @@ na.rm=TRUE, method=NULL, ...)
   \item{predictor2}{only if predictor1 was a vector, the second
     predictor as a numeric vector.
   }
-  \item{formula}{a formula of the type response~predictor1+predictor2.}
+  \item{formula}{a formula of the type response~predictor1+predictor2.
+  	Additional arguments  \code{data}, \code{subset} and \code{na.action}
+	 are supported, see \code{\link{model.frame}} for more details.
+  }
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
