@@ -136,6 +136,33 @@ test_that("roc.formula works", {
 	expect_identical(t1upc$alternative, "two.sided")
 })
 
+
+test_that("roc.formula supports subset and na.omit", {
+	check.only.items <- c("p.value", "statistic")
+	
+	expect_identical(
+		roc.test(outcome ~ wfns + ndka, data = aSAH, subset = (gender == "Female"), quiet = TRUE)[check.only.items],
+		roc.test(aSAH$outcome[aSAH$gender == "Female"], aSAH$wfns[aSAH$gender == "Female"], aSAH$ndka[aSAH$gender == "Female"], quiet = TRUE)[check.only.items]
+	)
+	
+	# Generate missing values
+	aSAH.missing <- aSAH
+	aSAH.missing$wfns[1:20] <- NA
+	aSAH.missing$ndka[1:20] <- NA
+	expect_identical(
+		roc.test(outcome ~ wfns + ndka, data = aSAH.missing, na.action = na.omit, quiet = TRUE)[check.only.items],
+		roc.test(aSAH$outcome[21:113], aSAH$wfns[21:113], aSAH$ndka[21:113], quiet = TRUE)[check.only.items]
+	)
+	#na.fail should fail
+	expect_error(roc.test(outcome ~ wfns + ndka, data = aSAH.missing, na.action = na.fail, quiet = TRUE))
+	
+	# Both na.action and subset
+	expect_identical(
+		roc.test(outcome ~ wfns + ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female"), quiet = TRUE)[check.only.items],
+		roc.test(aSAH$outcome[21:113][aSAH[21:113,]$gender == "Female"], aSAH$wfns[21:113][aSAH[21:113,]$gender == "Female"], aSAH$ndka[21:113][aSAH[21:113,]$gender == "Female"], quiet = TRUE)[check.only.items]
+	)
+})
+
 test_that("paired tests don't work on unpaired curves", {
 	# Make an unpaired ROC curve
 	up.r.ndka <- roc(controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"], quiet = TRUE)
