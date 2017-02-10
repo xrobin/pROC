@@ -10,34 +10,26 @@ using namespace Rcpp;
 std::vector<double> bootstrapAucStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams);
 RcppExport SEXP pROC_bootstrapAucStratified(SEXP bootNSEXP, SEXP aROCSEXP, SEXP aucParamsSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP );
-        Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP );
-        std::vector<double> __result = bootstrapAucStratified(bootN, aROC, aucParams);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP);
+    Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP);
+    Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrapAucStratified(bootN, aROC, aucParams));
+    return rcpp_result_gen;
 END_RCPP
 }
 // bootstrapAucNonStratified
 std::vector<double> bootstrapAucNonStratified(const size_t bootN, const pROC::ROC<>& aROC, const pROC::AucParams& aucParams);
 RcppExport SEXP pROC_bootstrapAucNonStratified(SEXP bootNSEXP, SEXP aROCSEXP, SEXP aucParamsSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP );
-        Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP );
-        Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP );
-        std::vector<double> __result = bootstrapAucNonStratified(bootN, aROC, aucParams);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const size_t >::type bootN(bootNSEXP);
+    Rcpp::traits::input_parameter< const pROC::ROC<>& >::type aROC(aROCSEXP);
+    Rcpp::traits::input_parameter< const pROC::AucParams& >::type aucParams(aucParamsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bootstrapAucNonStratified(bootN, aROC, aucParams));
+    return rcpp_result_gen;
 END_RCPP
 }
 // delongPlacementsCpp
@@ -55,193 +47,138 @@ END_RCPP
 List computeSeSpList(const NumericVector& thresholds, const NumericVector& controls, const NumericVector& cases, const std::string& direction);
 RcppExport SEXP pROC_computeSeSpList(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const NumericVector& >::type thresholds(thresholdsSEXP );
-        Rcpp::traits::input_parameter< const NumericVector& >::type controls(controlsSEXP );
-        Rcpp::traits::input_parameter< const NumericVector& >::type cases(casesSEXP );
-        Rcpp::traits::input_parameter< const std::string& >::type direction(directionSEXP );
-        List __result = computeSeSpList(thresholds, controls, cases, direction);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type thresholds(thresholdsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type controls(controlsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type cases(casesSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type direction(directionSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeSeSpList(thresholds, controls, cases, direction));
+    return rcpp_result_gen;
 END_RCPP
 }
 // computeAuc
 double computeAuc(const Rcpp::List& aROCList, const Rcpp::List& aucParamsList);
 RcppExport SEXP pROC_computeAuc(SEXP aROCListSEXP, SEXP aucParamsListSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::List& >::type aROCList(aROCListSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::List& >::type aucParamsList(aucParamsListSEXP );
-        double __result = computeAuc(aROCList, aucParamsList);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type aROCList(aROCListSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type aucParamsList(aucParamsListSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeAuc(aROCList, aucParamsList));
+    return rcpp_result_gen;
 END_RCPP
 }
 // computeAucSeSp
 double computeAucSeSp(const std::vector<double>& se, const std::vector<double>& sp, const Rcpp::List& aucParamsList);
 RcppExport SEXP pROC_computeAucSeSp(SEXP seSEXP, SEXP spSEXP, SEXP aucParamsListSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const std::vector<double>& >::type se(seSEXP );
-        Rcpp::traits::input_parameter< const std::vector<double>& >::type sp(spSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::List& >::type aucParamsList(aucParamsListSEXP );
-        double __result = computeAucSeSp(se, sp, aucParamsList);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type se(seSEXP);
+    Rcpp::traits::input_parameter< const std::vector<double>& >::type sp(spSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type aucParamsList(aucParamsListSEXP);
+    rcpp_result_gen = Rcpp::wrap(computeAucSeSp(se, sp, aucParamsList));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_partial_auc_correct
 double runit_partial_auc_correct(const double pauc, const double from, const double to);
 RcppExport SEXP pROC_runit_partial_auc_correct(SEXP paucSEXP, SEXP fromSEXP, SEXP toSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const double >::type pauc(paucSEXP );
-        Rcpp::traits::input_parameter< const double >::type from(fromSEXP );
-        Rcpp::traits::input_parameter< const double >::type to(toSEXP );
-        double __result = runit_partial_auc_correct(pauc, from, to);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type pauc(paucSEXP);
+    Rcpp::traits::input_parameter< const double >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< const double >::type to(toSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_partial_auc_correct(pauc, from, to));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_bracketOperator
 NumericVector runit_Predictor_bracketOperator(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const int i);
 RcppExport SEXP pROC_runit_Predictor_bracketOperator(SEXP someControlsSEXP, SEXP someCasesSEXP, SEXP iSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        Rcpp::traits::input_parameter< const int >::type i(iSEXP );
-        NumericVector __result = runit_Predictor_bracketOperator(someControls, someCases, i);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    Rcpp::traits::input_parameter< const int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_bracketOperator(someControls, someCases, i));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_bracketOperatorVector
 NumericVector runit_Predictor_bracketOperatorVector(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases);
 RcppExport SEXP pROC_runit_Predictor_bracketOperatorVector(SEXP someControlsSEXP, SEXP someCasesSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        NumericVector __result = runit_Predictor_bracketOperatorVector(someControls, someCases);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_bracketOperatorVector(someControls, someCases));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_getOrder
 IntegerVector runit_Predictor_getOrder(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases);
 RcppExport SEXP pROC_runit_Predictor_getOrder(SEXP someControlsSEXP, SEXP someCasesSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        IntegerVector __result = runit_Predictor_getOrder(someControls, someCases);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_getOrder(someControls, someCases));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_getControls
 NumericVector runit_Predictor_getControls(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases);
 RcppExport SEXP pROC_runit_Predictor_getControls(SEXP someControlsSEXP, SEXP someCasesSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        NumericVector __result = runit_Predictor_getControls(someControls, someCases);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_getControls(someControls, someCases));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_getCases
 NumericVector runit_Predictor_getCases(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases);
 RcppExport SEXP pROC_runit_Predictor_getCases(SEXP someControlsSEXP, SEXP someCasesSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        NumericVector __result = runit_Predictor_getCases(someControls, someCases);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_getCases(someControls, someCases));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_isControl
 bool runit_Predictor_isControl(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const int i);
 RcppExport SEXP pROC_runit_Predictor_isControl(SEXP someControlsSEXP, SEXP someCasesSEXP, SEXP iSEXP) {
 BEGIN_RCPP
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        Rcpp::traits::input_parameter< const int >::type i(iSEXP );
-        bool __result = runit_Predictor_isControl(someControls, someCases, i);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    Rcpp::traits::input_parameter< const int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_isControl(someControls, someCases, i));
+    return rcpp_result_gen;
 END_RCPP
 }
 // runit_Predictor_isCase
 bool runit_Predictor_isCase(const Rcpp::NumericVector& someControls, const Rcpp::NumericVector& someCases, const int i);
 RcppExport SEXP pROC_runit_Predictor_isCase(SEXP someControlsSEXP, SEXP someCasesSEXP, SEXP iSEXP) {
 BEGIN_RCPP
-<<<<<<< HEAD
-    SEXP __sexp_result;
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP );
-        Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP );
-        Rcpp::traits::input_parameter< const int >::type i(iSEXP );
-        bool __result = runit_Predictor_isCase(someControls, someCases, i);
-        PROTECT(__sexp_result = Rcpp::wrap(__result));
-    }
-    UNPROTECT(1);
-    return __sexp_result;
-=======
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP);
-    rcpp_result_gen = Rcpp::wrap(rocUtilsPerfsAllC(thresholds, controls, cases, direction));
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someControls(someControlsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type someCases(someCasesSEXP);
+    Rcpp::traits::input_parameter< const int >::type i(iSEXP);
+    rcpp_result_gen = Rcpp::wrap(runit_Predictor_isCase(someControls, someCases, i));
     return rcpp_result_gen;
->>>>>>> master
 END_RCPP
 }
