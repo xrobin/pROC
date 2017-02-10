@@ -1,0 +1,3 @@
+## -*- mode: makefile; -*-
+
+PKG_CXXFLAGS = -I../inst/include
