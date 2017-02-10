@@ -122,7 +122,8 @@ alternative = c("two.sided", "one.sided"), ...)
 
   The variance and covariance of the ROC curve are computed with the
   \code{\link{var}} and \code{\link{cov}} functions. By default, DeLong
-  method is used for full AUCs and the bootstrap for partial AUCs. It is
+  method using the algorithm by Sun and Xu (2014) is used for full
+  AUCs and the bootstrap for partial AUCs. It is
   possible to force the use of Obuchowski's variance by specifying
   \code{method="obuchowski"}.
 
@@ -173,6 +174,11 @@ alternative = c("two.sided", "one.sided"), ...)
 }
 
 \references{
+  Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
+  (1988) ``Comparing the areas under two or more correlated receiver
+  operating characteristic curves: a nonparametric
+  approach''. \emph{Biometrics} \bold{44}, 837--845.
+
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
   determination for diagnostic accurary studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16},
@@ -182,6 +188,11 @@ alternative = c("two.sided", "one.sided"), ...)
   Jr. (2004). ``ROC Curves in Clinical Chemistry: Uses, Misuses, and
   Possible Solutions''. \emph{Clinical Chemistry}, \bold{50}, 1118--1125. DOI:
   \href{http://dx.doi.org/10.1373/clinchem.2004.031823}{10.1373/clinchem.2004.031823}.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
 }
 
 \seealso{

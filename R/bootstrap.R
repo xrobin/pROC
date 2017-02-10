@@ -615,7 +615,7 @@ nonstratified.ci.thresholds <- function(n, roc, thresholds) {
 
 
 ##########  Coords of one ROC curves (ci.coords)  ##########
-stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, best.policy) {
   controls <- sample(roc$controls, replace=TRUE)
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
@@ -631,10 +631,17 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  # Return a random column with "best"
+  if (x == "best" && ncol(res) != 1) {
+  	return(enfore.best.policy(res, best.policy))
+  }
+  else {
+  	return(res)
+  }
 }
 
-nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights) {
+nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, best.policy) {
   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
@@ -655,12 +662,19 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
   
-  coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  # Return a random column with "best"
+  if (x == "best" && ncol(res) != 1) {
+  	return(enfore.best.policy(res, best.policy))
+  }
+  else {
+  	return(res)
+  }
 }
 
 ##########  Coords of a smooth ROC curve (ci.coords)  ##########
 
-stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
+stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy) {
   controls <- sample(roc$controls, replace=TRUE)
   cases <- sample(roc$cases, replace=TRUE)
   thresholds <- roc.utils.thresholds(c(cases, controls))
@@ -682,10 +696,17 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  # Return a random column with "best"
+  if (x == "best" && ncol(res) != 1) {
+  	return(enfore.best.policy(res, best.policy))
+  }
+  else {
+  	return(res)
+  }
 }
 
-nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call) {
+nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy) {
   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
@@ -710,5 +731,12 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (is(smooth.roc, "try-error"))
     return(NA)
-  coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  # Return a random column with "best"
+  if (x == "best" && ncol(res) != 1) {
+  	return(enfore.best.policy(res, best.policy))
+  }
+  else {
+  	return(res)
+  }
 }

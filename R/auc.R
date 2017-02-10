@@ -22,7 +22,23 @@ auc <- function(...) {
 }
 
 auc.formula <- function(formula, data, ...) {
-  roc.formula(formula, data, auc=TRUE, ...)$auc
+	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
+	Call <- match.call()
+	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
+	if (indx[1] == 0) {
+		stop("A formula argument is required")
+	}
+	# Keep the standard arguments and run them in model.frame
+	temp <- Call[c(1,indx)]  
+	temp[[1]] <- as.name('model.frame')
+	m <- eval(temp, parent.frame())
+	
+	if (!is.null(model.weights(m))) stop("weights are not supported")
+	
+	response <- model.response(m)
+	predictor <- m[[attr(terms(formula), "term.labels")]]
+	
+	roc(response, predictor, auc = TRUE, ...)$auc
 }
 
 auc.default <- function(response, predictor, ...) {
