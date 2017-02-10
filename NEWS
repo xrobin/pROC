@@ -1,5 +1,14 @@
-1.8 (?)
+1.9.1 (2017-02-05)
+  * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)
+  * Added policies to handle the case where a ROC curve has multiple "best" threshold in 'ci' (thanks Nicola Toschi for the report)
+  * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
+  * Improved validation of input class 'levels' and 'direction'; messages when auto-detecting, use 'quiet' to turn on
+  * Removed extraneous 'name' attribute on the 'p.value' (thanks Paweł Kleka for the report)
+  * Faster DeLong algorithm (code contributed Stefan Siegert)
+
+1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
+  * Now uses and works with 'requireNamespace'
   * Add ability to supply two ordered factors with identical levels as control / cases
   * Deprecate dangerous use of a matrix as response / predictor with a warning
   * Forward 'best.method' and 'best.weights' arguments to 'coords' in 'ci.thresholds'

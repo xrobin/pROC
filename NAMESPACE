@@ -140,5 +140,5 @@ S3method("plot.roc", "smooth.roc")
 S3method("plot.roc", "formula")
 S3method("plot.roc", "default")
 
-import(plyr, methods, utils, Rcpp)
+import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
 useDynLib(pROC)

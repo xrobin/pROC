@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/xrobin/pROC.svg?branch=master)](https://travis-ci.org/xrobin/pROC)
+[![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://codecov.io/github/xrobin/pROC) 
+[![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](http://cran.r-project.org/web/packages/pROC)
+[![Downloads](http://cranlogs.r-pkg.org/badges/pROC)](http://cran.rstudio.com/package=pROC)
+
 pROC
 =============
 
@@ -7,8 +12,9 @@ For more information, see:
 
 1. Xavier Robin, Natacha Turck, Alexandre Hainard, *et al.* (2011) “pROC: an open-source package for R and S+ to analyze and compare ROC curves”. *BMC Bioinformatics*, **7**, 77. DOI: [10.1186/1471-2105-12-77](http://dx.doi.org/10.1186/1471-2105-12-77)
 2. [The official web page on ExPaSy](http://www.expasy.org/tools/pROC/)
-3. [The CRAN page](http://stat.ethz.ch/CRAN/web/packages/pROC/)
+3. [The CRAN page](https://cran.r-project.org/package=pROC)
 4. [My blog](http://xavier.robin.name/tag/pROC/)
+5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
 
 Stable
 -------
@@ -110,10 +116,9 @@ plot(ci.thresholds(roc2))
 Development
 -------
 
-Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtool](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process (make sure you follow [the full instructions to get started](http://www.rstudio.com/projects/devtools/)):
+Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtools](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process (make sure you follow [the full instructions to get started](http://www.rstudio.com/projects/devtools/)):
 
 ```R
 install.packages("devtools")
-library("devtools")
-install_github(repo = "pROC", username = "xrobin", ref = "master")
+devtools::install_github("xrobin/pROC")
 ```

@@ -20,7 +20,7 @@
   requested (if \code{ci=TRUE}) and plot the curve if requested (if
   \code{plot=TRUE}). 
 
-  The \code{\link{roc}} function will call \code{\link{smooth.roc}},
+  The \code{\link{roc}} function will call \code{\link[=smooth.roc]{smooth}},
   \code{\link{auc}},
   \code{\link{ci}} and \code{\link{plot}} as necessary. See these
   individual functions for the arguments that can be passed to them
@@ -79,7 +79,7 @@
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
     \code{\link{roc.test}} \tab Compare the AUC of two ROC curves \cr
-    \code{\link{smooth}} \tab Smooth a ROC curve \cr
+    \code{\link[=smooth.roc]{smooth}} \tab Smooth a ROC curve \cr
     \code{\link[=var.roc]{var}} \tab Variance of the AUC
   }
 }
@@ -216,10 +216,8 @@ stopCluster(cl)
   }
   
   \subsection{Using DeLong instead of boostrap}{
-    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)) which is typically faster than boostrapping. By default, pROC will choose the DeLong method whenever possible.
+    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)). Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is always faster than bootstrapping. By default, pROC will choose the DeLong method whenever possible.
   
-    Since version 1.7, pROC does not allocate an m * n matrix (with m = number of controls and n = number of case observations) in all DeLong computations, so it is in practice nearly always faster than bootstrapping. However it still goes with O(m*n) so it might be slower than bootstrap in some very edge cases (i.e. when generating a \code{\link{roc}} curve with \code{algorithm=3} that has a small number of thresholds but a large number of observations).
-    
         \preformatted{
 rocobj <- roc(response, round(predictor), algorithm=3)
 system.time(ci(rocobj, method="delong"))
@@ -253,6 +251,11 @@ Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.

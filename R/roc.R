@@ -25,13 +25,18 @@ roc.formula <- function (formula, data, ...){
   # Get predictors (easy)
   predictors <- attr(terms(formula), "term.labels")
   
-  # Get the data (complicated)
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m$... <- NULL
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
+  # Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
+  Call <- match.call()
+  indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
+  if (indx[1] == 0) {
+  	stop("A formula argument is required")
+  }
+  # Keep the standard arguments and run them in model.frame
+  temp <- Call[c(1,indx)]  
+  temp[[1]] <- as.name('model.frame')
+  m <- eval(temp, parent.frame())
+  
+  if (!is.null(model.weights(m))) stop("weights are not supported")
   
   # Get response (easy)
   response <- model.response(m)
@@ -42,21 +47,21 @@ roc.formula <- function (formula, data, ...){
 
   if (length(predictors) == 1) {
     roc <- roc.default(response, m[[predictors]], ...)
-    roc$call <- match.call()
+    roc$call <- Call
     if (!is.null(roc$smooth))
       attr(roc, "roc")$call <- roc$call
     return(roc)
   }
   else if (length(predictors) > 1) {
-    roclist <- lapply(predictors, function(predictor, formula, data, call, ...) {
+    roclist <- lapply(predictors, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
-      roc <- roc.default(response, data[[predictor]], ...)
+      roc <- roc.default(response, m.data[[predictor]], ...)
       # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
       roc$call <- call
       return(roc)
-    }, formula = formula, data = m, call = match.call(), ...)
+    }, formula = formula, m.data = m, call = match.call(), ...)
     # Set the list names
     names(roclist) <- predictors
     return(roclist)
@@ -76,6 +81,7 @@ roc.default <- function(response, predictor,
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
                         algorithm=1,
+						quiet = TRUE,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object
@@ -99,6 +105,22 @@ roc.default <- function(response, predictor,
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
+    
+    # Validate levels
+    if (missing(levels)) {
+    	if (length(levels) > 2) {
+    		warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
+    		levels <- levels[1:2]
+    	}
+    	else if (length(levels) < 2) {
+    		stop("'response' must have two levels")
+    	}
+    	ifelse(quiet, invisible, message)(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
+    }
+    else if (length(levels) != 2) {
+    	stop("'levels' argument must have length 2")
+    }
+
     # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
       if (is.ordered(predictor))
@@ -235,10 +257,14 @@ roc.default <- function(response, predictor,
     stop("No valid data provided.")
   }
 
-  if (direction == "auto" && median(controls) <= median(cases))
-    direction <- "<"
-  else if (direction == "auto" && median(controls) > median(cases))
-    direction <- ">"
+  if (direction == "auto" && median(controls) <= median(cases)) {
+  	direction <- "<"
+  	ifelse(quiet, invisible, message)("Setting direction: controls < cases")
+  }
+  else if (direction == "auto" && median(controls) > median(cases)) {
+  	direction <- ">"
+  	ifelse(quiet, invisible, message)("Setting direction: controls > cases")
+  }
   
   # smooth with densities, but only density was provided, not density.controls/cases
   if (smooth) {
@@ -249,7 +275,7 @@ roc.default <- function(response, predictor,
   }
   
   # Choose algorithm
-  if (identical(algorithm, 0)) {
+  if (isTRUE(algorithm == 0)) {
     if (!requireNamespace("microbenchmark"))
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
@@ -279,16 +305,16 @@ roc.default <- function(response, predictor,
       }
     }
   }
-  if (identical(algorithm, 1)) {
+  if (isTRUE(algorithm ==  1)) {
     fun.sesp <- roc.utils.perfs.all.safe
   }
-  else if (identical(algorithm, 2)) {
+  else if (isTRUE(algorithm == 2)) {
     fun.sesp <- roc.utils.perfs.all.fast
   }
-  else if (identical(algorithm, 3)) {
+  else if (isTRUE(algorithm  == 3)) {
     fun.sesp <- rocUtilsPerfsAllC
   }
-  else if (identical(algorithm, 4)) {
+  else if (isTRUE(algorithm == 4)) {
     fun.sesp <- roc.utils.perfs.all.test
   }
   else {
@@ -316,6 +342,10 @@ roc.default <- function(response, predictor,
   roc$predictor <- predictor
   roc$response <- response
   roc$levels <- levels
+  
+  if (auc) {
+  	attr(roc$auc, "roc") <- roc
+  }
   
   # compute CI
   if (ci)

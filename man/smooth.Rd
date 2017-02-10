@@ -1,5 +1,5 @@
 \encoding{UTF-8}
-\name{smooth.roc}
+\name{smooth}
 \alias{smooth}
 \alias{smooth.roc}
 \alias{smooth.smooth.roc}
@@ -27,7 +27,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{method}{\dQuote{binormal}, \dQuote{density}, \dQuote{fitdistr},
     \dQuote{logcondens}, \dQuote{"logcondens.smooth"},
@@ -158,6 +158,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   Smoothed ROC curves can be passed to smooth again. In this case, the
   smoothing is not re-applied on the smoothed ROC curve but the
   original \dQuote{\link{roc}} object will be re-used.
+  
+  Note that a \code{smooth.roc} curve has no threshold.
 }
 
 \value{
@@ -168,9 +170,6 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     reported in percent, as defined in argument.
   }
   \item{direction}{the direction of the comparison, as defined in argument.}
-  \item{thresholds}{the thresholds at which the sensitivities and
-    specificities were computed.
-  }
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
@@ -190,14 +189,17 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     additional \dQuote{densfun} item indicating the density function, if
     possible as character.
   }
-  \item{logcondens}{with \code{method="logcondens"} and \code{method="logcondens"} only: 
+  \item{logcondens}{with \code{method="logcondens"} and \code{method="logcondens.smooth"} only: 
     the result of \pkg{logcondens}'s \link[logcondens]{logConROC} function.
+  }
+  \item{model}{with \code{method="binormal"} only: 
+    the linear model from \code{\link{lm}} used to smooth the ROC curve.
   }
   \subsection{Attributes}{
     Additionally, the original \code{\link{roc}} object is stored as a
     \dQuote{roc} attribute.
   }
-}
+} 
 
 \section{Errors}{
   If \code{method} is a function, the return values will be checked
