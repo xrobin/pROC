@@ -121,6 +121,15 @@ test_that("roc can't take both response/predictor and case/control", {
 	expect_error(roc(aSAH$outcome, aSAH$ndka, controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"]))
 })
 
+
+test_that("microbenchmark works", {
+	skip_if_not_installed("microbenchmark")
+	# Algorithm 3 (C) should be selected with small low number of thresholds like aSAH$wfns
+	expect_output(r <- roc(aSAH$outcome, aSAH$wfns, algorithm = 0), "Selecting algorithm 3")
+	# Algorithm 2 (R cumsum) should be selected with large datasets with many thresholds
+	expect_output(r <- roc(round(runif(10000)), rnorm(10000), algorithm = 0), "Selecting algorithm 2")
+})
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
