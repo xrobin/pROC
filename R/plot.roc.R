@@ -24,17 +24,17 @@ plot.roc <- function(x, ...) {
 plot.roc.formula <- function(x, data, ...) {
   roc <- roc(x, data, plot=TRUE, ...)
   roc$call <- match.call()
-  return(roc)
+  invisible(roc)
 }
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot=TRUE, ...)
   roc$call <- match.call()
-  return(roc)
+  invisible(roc)
 }
 
 plot.roc.smooth.roc <- plot.smooth.roc <- function(x, ...) {
-  plot.roc.roc(x, ...) # force usage of plot.roc.roc: only print.thres not working
+  invisible(plot.roc.roc(x, ...)) # force usage of plot.roc.roc: only print.thres not working
 }
 
 plot.roc.roc <- function(x,
@@ -143,14 +143,19 @@ plot.roc.roc <- function(x,
     # As we had axes=FALSE we need to add them again unless axes=FALSE
     if (axes) {
       box()
-      suppressWarnings(axis(side=2, ...))
-      lab.at <- seq(1, 0, -.2)
-      if (x$percent)
-        lab.at <- lab.at * 100
-      lab.labels <- lab.at
-      if (legacy.axes)
-        lab.labels <- rev(lab.labels)
-      suppressWarnings(axis(side=1, at=lab.at, labels=as.graphicsAnnot(sprintf(ifelse(x$percent, "%.0f", "%.1f"), lab.labels)), ...))
+      # axis behave differently when at and labels are passed (no decimals on 1 and 0), 
+      # so handle each case separately and consistently across axes
+      if (legacy.axes) {
+      	lab.at <- axTicks(side=1)
+      	lab.labels <- ifelse(x$percent, 100, 1) - lab.at
+      	suppressWarnings(axis(side=1, at=lab.at, labels=lab.labels, ...))
+      	lab.at <- axTicks(side=2)
+      	suppressWarnings(axis(side=2, at=lab.at, labels=lab.at, ...))
+      } 
+      else {
+      	suppressWarnings(axis(side=1, ...))
+      	suppressWarnings(axis(side=2, ...))
+      }
     }
   }
 
@@ -298,5 +303,5 @@ plot.roc.roc <- function(x,
     suppressWarnings(text(print.auc.x, print.auc.y, labels, adj=print.auc.adj, cex=print.auc.cex, col=print.auc.col, ...))
   }
   
-  return(x)
+  invisible(x)
 }

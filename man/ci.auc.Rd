@@ -32,7 +32,7 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{auc}{an \dQuote{auc} object from the \code{\link{auc}} function.}
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
@@ -100,7 +100,8 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   be performed and an error is issued.
 
   With \code{method="delong"}, the variance of the AUC is computed as
-  defined by DeLong \emph{et al.} (1988) and the CI is deduced with \code{\link{qnorm}}.
+  defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014) 
+  and the CI is deduced with \code{\link{qnorm}}.
   
   Since \pkg{pROC} 1.8, the bootstrap for a \code{roc} object is performed with fast \pkg{Rcpp}/C++ code. 
   As a side effect, no progress bars are displayed.
@@ -181,6 +182,11 @@ consistency reasons.
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and

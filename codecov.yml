@@ -1,0 +1,3 @@
+coverage:
+  round: nearest
+  range: "0...100"

@@ -44,7 +44,10 @@ na.rm=TRUE, method=NULL, ...)
   \item{predictor2}{only if predictor1 was a vector, the second
     predictor as a numeric vector.
   }
-  \item{formula}{a formula of the type response~predictor1+predictor2.}
+  \item{formula}{a formula of the type response~predictor1+predictor2.
+  	Additional arguments  \code{data}, \code{subset} and \code{na.action}
+	 are supported, see \code{\link{model.frame}} for more details.
+  }
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
@@ -198,10 +201,16 @@ na.rm=TRUE, method=NULL, ...)
   \link[=pROC-package]{this package's documentation}.
 
   With \code{method="delong"}, the processing is done as described in
-  DeLong \emph{et al.} (1988) for paired ROC curves. Only comparison of
+  DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
+  of Sun and Xu (2014). Only comparison of
   two ROC curves is implemented. The method has been extended for
   unpaired ROC curves where the p-value is computed with an unpaired
-  t-test with unequal sample size and unequal variance.
+  t-test with unequal sample size and unequal variance, with 
+  \deqn{
+    D=\frac{V^r(\theta^r) - V^s(\theta^s) }{ \sqrt{S^r + S^s}}
+  }{
+    D=(V^r(\theta^r) - V^s(\theta^s)) / sqrt(S^r + S^s)
+  }
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
@@ -341,12 +350,17 @@ na.rm=TRUE, method=NULL, ...)
   
   Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
   (2009) ``Combination of protein biomarkers''. \emph{useR! 2009}, Rennes.
-  \url{http://www.r-project.org/conferences/useR-2009/abstracts/user_author.html}
+  \url{https://www.r-project.org/nosvn/conferences/useR-2009/abstracts/user_author.html}
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
   DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  
+  Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
+  the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
+  Processing Letters}, \bold{21}, 1389--1393. 
+  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
 
   E. S. Venkatraman and Colin B. Begg (1996) ``A distribution-free
   procedure for comparing receiver operating characteristic curves from

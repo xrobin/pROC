@@ -31,7 +31,7 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, .
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type

@@ -26,7 +26,7 @@ best.weights=c(1, 0.5), ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link{smooth.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{x}{
 		the coordinates to look for. Numeric (if so, their meaning is
@@ -48,7 +48,7 @@ best.weights=c(1, 0.5), ...)
   \item{ret}{The coordinates to return. One or more of
     \dQuote{threshold}, \dQuote{specificity}, \dQuote{sensitivity}, \dQuote{accuracy},
     \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
-    \dQuote{fn} (false negativge count), \dQuote{fp} (false positive count), 
+    \dQuote{fn} (false negative count), \dQuote{fp} (false positive count), 
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
     as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
@@ -131,11 +131,10 @@ best.weights=c(1, 0.5), ...)
 
   In addition, weights can be supplied if false positive and false
   negative predictions are not equivalent: a numeric vector of length 2
-  to the \code{best.weights} argument. The indices define
+  to the \code{best.weights} argument. The elements define
   \enumerate{
-    \item the cost of of a false negative classification
-    \item the prevalence, or the proportion of cases in the total
-      population (\eqn{\frac{n_{cases}}{n_{controls}+n_{cases}}}{n.cases/(n.controls+n.cases)}). 
+    \item the relative cost of of a false negative classification (as compared with a false positive classification)
+    \item the prevalence, or the proportion of cases in the population (\eqn{\frac{n_{cases}}{n_{controls}+n_{cases}}}{n.cases/(n.controls+n.cases)}). 
   }
 
   The optimality criteria are modified as proposed by Perkins and Schisterman:
