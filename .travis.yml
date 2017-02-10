@@ -6,3 +6,6 @@ r_packages:
 
 after_success:
   - Rscript -e 'library(covr); codecov()'
+
+env:
+  - RUN_SLOW_TESTS=true
