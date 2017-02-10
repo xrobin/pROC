@@ -20,8 +20,9 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 1, smooth=FALSE, auc=TRUE, ci=FALSE,
-plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
+direction=c("auto", "<", ">"), algorithm = 1, quiet = TRUE, 
+smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
+ci.method=NULL, density=NULL, ...)
 
 }
 
@@ -45,10 +46,11 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link[=smooth.roc]{smooth}}.
   }
-  \item{formula}{a formula of the type \code{response~predictor}. If mulitple predictors 
-    are passed, a named list of \code{roc} objects will be returned.}
-  \item{data}{a matrix or data.frame containing the variables in the
-    formula. See \code{\link{model.frame}} for more details.}
+  \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
+    are passed, a named list of \code{roc} objects will be returned. Additional arguments
+    \code{data}, \code{subset} and \code{na.action} are supported, see 
+    \code{\link{model.frame}} for more details.
+  }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of
     \code{levels(as.factor(response))} are taken, and the remaining levels are ignored.
@@ -62,7 +64,9 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.}
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
+    (ignored by \code{roc.formula}).
+  }
   \item{direction}{in which direction to make the comparison?
     \dQuote{auto} (default): automatically define in which group the
     median is higher and take the direction accordingly.
@@ -85,14 +89,18 @@ plot=FALSE, smooth.method="binormal", ci.method=NULL, density=NULL, ...)
     runs all 3 algorithms and makes sure they return the same values.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
+  \item{quiet}{set to \code{FALSE} to turn on \code{\link{message}}s
+	 when \code{direction} and \code{levels} are auto-detected.
+	 This default will be changed to \code{TRUE} in the future.
+  }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
   }
   \item{auc}{compute the area under the curve (AUC)? If \code{TRUE}
     (default), additional arguments can be passed to \code{\link{auc}}.
   }
-  \item{ci}{compute the confidence interval (CI)? If \code{TRUE}
-    (default), additional arguments can be passed to \code{\link{ci}}.
+  \item{ci}{compute the confidence interval (CI)? If set to \code{TRUE}, 
+    additional arguments can be passed to \code{\link{ci}}.
   }
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
     arguments can be passed to \code{\link{plot.roc}}.
@@ -275,6 +283,10 @@ with(aSAH, roc(outcome ~ s100b))
 # With a formula:
 roc(outcome ~ s100b, data=aSAH)
 
+# Using subset (only with formula)
+roc(outcome ~ s100b, data=aSAH, subset=(gender == "Male"))
+roc(outcome ~ s100b, data=aSAH, subset=(gender == "Female"))
+
 # With numeric controls/cases
 roc(controls=aSAH$s100b[aSAH$outcome=="Good"], cases=aSAH$s100b[aSAH$outcome=="Poor"])
 # With ordered controls/cases
@@ -288,6 +300,10 @@ roc(aSAH$outcome, aSAH$s100b,
 # The following will give an AUC < 0.5:
 roc(aSAH$outcome, aSAH$s100b,
     levels=c("Poor", "Good"), direction="<")
+
+# If we are sure about levels and direction auto-detection,
+# we can turn off the messages:
+roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 
 # If we prefer counting in percent:
 roc(aSAH$outcome, aSAH$s100b, percent=TRUE)

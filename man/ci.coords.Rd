@@ -22,6 +22,7 @@
 input=c("threshold", "specificity", "sensitivity"),
 ret=c("threshold", "specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+best.policy = c("stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress=getOption("pROCProgress")$name, ...) 
@@ -29,6 +30,7 @@ progress=getOption("pROCProgress")$name, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
+best.policy = c("stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress=getOption("pROCProgress")$name, ...)
@@ -47,6 +49,11 @@ progress=getOption("pROCProgress")$name, ...)
   \item{x, input, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
     See there for more details. The only difference is on the \code{x} argument which cannot be
     \dQuote{all} or \dQuote{local maximas}.
+  }
+  \item{best.policy}{The policy follow when multiple \dQuote{best} thresholds are returned by \code{\link{coords}}.
+  	\dQuote{stop} will abort the processing with \code{\link{stop}} (default),
+  	\dQuote{omit} will ignore the sample (as in \code{\link{NA}}) 
+  	and \dQuote{random} will select one of the threshold randomly.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
     in percent. Default: 0.95, resulting in a 95\% CI.
@@ -95,6 +102,10 @@ progress=getOption("pROCProgress")$name, ...)
   will be issued and the observation will be ignored. If you have a large
   imbalance in your sample, it could be safer to keep
   \code{boot.stratified=TRUE}.
+  
+  This warning will also be displayed if you chose \code{best.policy = "omit"}
+  and a ROC curve with multiple \dQuote{best} threshold was generated
+  during at least one of the replicates.
 }
 
 \value{

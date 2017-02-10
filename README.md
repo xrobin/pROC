@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/xrobin/pROC.svg?branch=master)](https://travis-ci.org/xrobin/pROC)
+[![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://codecov.io/github/xrobin/pROC) 
+[![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](http://cran.r-project.org/web/packages/pROC)
+[![Downloads](http://cranlogs.r-pkg.org/badges/pROC)](http://cran.rstudio.com/package=pROC)
+
 pROC
 =============
 
@@ -7,8 +12,9 @@ For more information, see:
 
 1. Xavier Robin, Natacha Turck, Alexandre Hainard, *et al.* (2011) “pROC: an open-source package for R and S+ to analyze and compare ROC curves”. *BMC Bioinformatics*, **7**, 77. DOI: [10.1186/1471-2105-12-77](http://dx.doi.org/10.1186/1471-2105-12-77)
 2. [The official web page on ExPaSy](http://www.expasy.org/tools/pROC/)
-3. [The CRAN page](http://stat.ethz.ch/CRAN/web/packages/pROC/)
+3. [The CRAN page](https://cran.r-project.org/package=pROC)
 4. [My blog](http://xavier.robin.name/tag/pROC/)
+5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
 
 Stable
 -------

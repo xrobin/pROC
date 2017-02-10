@@ -146,5 +146,5 @@ export(ggroc)
 S3method("ggroc", "roc")
 S3method("ggroc", "list")
 
-import(plyr, methods, utils, Rcpp)
+import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
 useDynLib(pROC)
