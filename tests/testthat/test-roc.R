@@ -126,7 +126,10 @@ test_that("microbenchmark works", {
 	skip_if_not_installed("microbenchmark")
 	# Algorithm 3 (C) should be selected with small low number of thresholds like aSAH$wfns
 	expect_output(r <- roc(aSAH$outcome, aSAH$wfns, algorithm = 0), "Selecting algorithm 3")
+	
 	# Algorithm 2 (R cumsum) should be selected with large datasets with many thresholds
+	# This is going to be slow, so skip unless we're running slow tests
+	skip_if_not(run_slow_tests, message = "Slow test skipped")
 	expect_output(r <- roc(round(runif(10000)), rnorm(10000), algorithm = 0), "Selecting algorithm 2")
 })
 
