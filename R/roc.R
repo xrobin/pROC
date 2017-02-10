@@ -275,7 +275,7 @@ roc.default <- function(response, predictor,
   }
   
   # Choose algorithm
-  if (identical(algorithm, 0)) {
+  if (isTRUE(algorithm == 0)) {
     if (!requireNamespace("microbenchmark"))
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
@@ -305,16 +305,16 @@ roc.default <- function(response, predictor,
       }
     }
   }
-  if (identical(algorithm, 1)) {
+  if (isTRUE(algorithm ==  1)) {
     fun.sesp <- roc.utils.perfs.all.safe
   }
-  else if (identical(algorithm, 2)) {
+  else if (isTRUE(algorithm == 2)) {
     fun.sesp <- roc.utils.perfs.all.fast
   }
-  else if (identical(algorithm, 3)) {
+  else if (isTRUE(algorithm  == 3)) {
     fun.sesp <- rocUtilsPerfsAllC
   }
-  else if (identical(algorithm, 4)) {
+  else if (isTRUE(algorithm == 4)) {
     fun.sesp <- roc.utils.perfs.all.test
   }
   else {
