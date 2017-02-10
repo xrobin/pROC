@@ -159,7 +159,7 @@ namespace pROC {
 	 * Get the order (indices) of a Predictor or ResampledPredictor
 	 */
 	
-	template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">");
+	// template <class P> std::vector<int> getPredictorOrder(const P& predictor, const std::string& direction = ">");
 }
 
 #include <pROC/Predictor_tpl.h>
