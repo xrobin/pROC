@@ -70,3 +70,11 @@ test_that("coords with specificity works with percent", {
 })
 
 
+test_that("coords with specificity works with as.list", {
+	obtained <- coords(r.s100b.percent, "best", ret = c("threshold", "specificity", "accuracy"), as.list = TRUE)
+	expect_equal(obtained, list(
+		threshold = 0.205,
+		specificity = expected.coords["specificity", 18],
+		accuracy = expected.coords["accuracy", 18],
+	))
+})
