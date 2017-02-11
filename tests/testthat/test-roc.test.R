@@ -3,10 +3,6 @@ data(aSAH)
 
 context("roc.test")
 
-r.wfns <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
-r.ndka <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE)
-r.s100b <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
-
 
 test_that("roc.test works", {
 	t1 <<- roc.test(r.wfns, r.s100b)

@@ -1,9 +1,6 @@
 library(pROC)
 data(aSAH)
 
-r.wfns <- roc(aSAH$outcome, aSAH$wfns)
-r.ndka <- roc(aSAH$outcome, aSAH$ndka)
-r.s100b <- roc(aSAH$outcome, aSAH$s100b)
 
 test_that("var with delong works", {
 	expect_equal(var(r.wfns), 0.00146991470882363)

@@ -1,11 +1,6 @@
 library(pROC)
 data(aSAH)
 
-r.wfns <- roc(aSAH$outcome, aSAH$wfns)
-r.ndka <- roc(aSAH$outcome, aSAH$ndka)
-r.wfns.percent <- roc(aSAH$outcome, aSAH$wfns, percent = TRUE)
-r.ndka.percent <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE)
-
 context("auc")
 
 test_that("full auc works", {
