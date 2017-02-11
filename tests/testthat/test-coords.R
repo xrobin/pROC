@@ -31,12 +31,20 @@ test_that("coords with best threshold works", {
 	expect_equivalent(obtained, expected.coords[,expected.coords["threshold",] == 0.205])
 })
 
+
+test_that("coords with arbitrary threshold works", {
+	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equivalent(obtained, expected.coords[, c(18, 4)])
+})
+
+
 test_that("coords with sensitivity works", {
 	obtained <- coords(r.s100b, seq(0, 1, .1), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"))
 	expect_equal(unname(obtained["threshold",]), c(Inf, rep(NA, 9), -Inf))
 	expect_equal(unname(obtained["sensitivity",]), seq(0, 1, .1))
 	expect_equal(unname(obtained["specificity",]), c(1, 1, 1, 0.972222222222222, 0.888888888888889, 0.833333333333333, 0.805555555555556, 0.56875, 0.447222222222222, 0.230555555555556, 0))
 })
+
 
 test_that("coords with sensitivity works with percent", {
 	obtained <- coords(r.s100b.percent, seq(0, 100, 10), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"))
