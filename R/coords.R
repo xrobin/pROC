@@ -77,9 +77,10 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
       fn <- ncases - tp
       tn <- sp * ncontrols / 100
       fp <- ncontrols - tn
-      substr.percent <- 100
       npv <- 100 * tn / (tn + fn)
       ppv <- 100 * tp / (tp + fp)
+      accuracy <- 100 * (tp + tn) / (tp + tn + fp + fn)
+      substr.percent <- 100
     }
     else {
       tp <- se * ncases
@@ -88,9 +89,9 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
       fp <- ncontrols - tn
       npv <- tn / (tn + fn)
       ppv <- tp / (tp + fp)
+      accuracy <- (tp + tn) / (tp + tn + fp + fn)
       substr.percent <- 1
     }
-    accuracy <- (tp + tn) / (tp + tn + fp + fn)
     if (length(se) == 1) {
       if (as.list) {
         list <- list(sensitivity=se, specificity=sp, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv)[ret]
@@ -295,9 +296,10 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       fn <- ncases - tp
       tn <- sp * ncontrols / 100
       fp <- ncontrols - tn
-      substr.percent <- 100
       npv <- 100 * tn / (tn + fn)
       ppv <- 100 * tp / (tp + fp)
+      accuracy <- 100 * (tp + tn) / (tp + tn + fp + fn)
+      substr.percent <- 100
     }
     else {
       tp <- se * ncases
@@ -306,9 +308,9 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       fp <- ncontrols - tn
       npv <- tn / (tn + fn)
       ppv <- tp / (tp + fp)
+      accuracy <- 1 * (tp + tn) / (tp + tn + fp + fn)
       substr.percent <- 1
     }
-    accuracy <- (tp + tn) / (tp + tn + fp + fn)
     if (as.list) {
       list <- list(threshold=res[1], specificity=sp, sensitivity=se, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv)
       list <- list[ret]
