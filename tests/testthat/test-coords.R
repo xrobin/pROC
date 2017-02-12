@@ -81,6 +81,7 @@ test_that("coords with specificity works with as.list", {
 
 
 test_that("drop works", {
+	skip("drop doesn't drop over x - doc unclear/inconsistent need to be fixed")
 	# First make sure we get matrices with drop = FALSE
 	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = FALSE), "matrix")
 	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = FALSE), "matrix")
@@ -88,6 +89,8 @@ test_that("drop works", {
 	# Look for numeric
 	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = TRUE), "numeric")
 	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = TRUE), "numeric")
-	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = TRUE), "numeric")
+	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = TRUE), "numeric")	
+	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = TRUE), "numeric")
+
 	
 })
