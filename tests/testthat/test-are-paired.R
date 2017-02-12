@@ -3,9 +3,6 @@ data(aSAH)
 
 context("are.paired")
 
-r.wfns <- roc(aSAH$outcome, aSAH$wfns)
-r.ndka <- roc(aSAH$outcome, aSAH$ndka)
-
 test_that("are.paired works", {
 	# most basic example
 	expect_true(are.paired(r.wfns, r.ndka))
