@@ -75,28 +75,11 @@ ci.method=NULL, density=NULL, ...)
     \dQuote{<}: if the predictor values for the control group are lower
     or equal than the values of the case group (controls < t <= cases).
   }
-<<<<<<< HEAD
   \item{algorithm}{deprecated and ignored with a warning.}
-=======
-  \item{algorithm}{the method used to compute sensitivity and specificity, 
-    an integer of length 1 between \code{0} and \code{4}.
-    \code{1} (default): a safe, well-tested, pure-\R code that is efficient when the 
-    number of thresholds is low. It goes with O(T*N).
-    \code{2}: an alternative pure-\R algorithm that goes in
-    O(N). Typically faster than \code{1} when the number of thresholds of
-    the ROC curve is above 1000. Less tested than \code{1}.
-    \code{3}: a C++ 
-    implementation of \code{1}, about 3-5x faster. Typically the fastest with
-    ROC curves with less than 3000-5000 thresholds. 
-    \code{4} (debug only, slow):
-    runs all 3 algorithms and makes sure they return the same values.
-    \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
-  }
   \item{quiet}{set to \code{FALSE} to turn on \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
 	 This default will be changed to \code{TRUE} in the future.
   }
->>>>>>> master
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
   }
