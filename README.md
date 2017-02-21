@@ -120,5 +120,5 @@ Download the source code from git, unzip it if necessary, and then type `R CMD I
 
 ```R
 install.packages("devtools")
-devtools::install_github("xrobin/pROC")
+devtools::install_github("xrobin/pROC@RcppBootstrap")
 ```
