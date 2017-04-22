@@ -141,4 +141,4 @@ S3method("plot.roc", "formula")
 S3method("plot.roc", "default")
 
 import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
-useDynLib(pROC)
+useDynLib(pROC, .registration = TRUE)
