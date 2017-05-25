@@ -81,6 +81,10 @@ test_that("roc.default handles NAs", {
 		as.numeric(auc(roc(aSAH.missing$outcome, aSAH.missing$ndka, na.rm = TRUE))),
 		as.numeric(auc(roc(aSAH[21:113,]$outcome, aSAH.missing[21:113,]$ndka))))
 
+	# Also with case/controls
+	expect_identical(
+		as.numeric(auc(roc(controls = aSAH.missing$ndka[aSAH.missing$outcome == "Good"], cases = aSAH.missing$ndka[aSAH.missing$outcome == "Poor"]))),
+		as.numeric(auc(roc(aSAH[21:113,]$outcome, aSAH.missing[21:113,]$ndka))))
 })
 
 test_that("roc.formula behaves", {
