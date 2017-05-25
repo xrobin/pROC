@@ -175,7 +175,7 @@ roc.default <- function(response, predictor,
   		if (any(is.na(controls)))
   			controls <- na.omit(controls)
   		if (any(is.na(cases)))
-  			controls <- na.omit(cases)
+  			cases <- na.omit(cases)
   	}
   	else if (any(is.na(c(controls, cases)))) # Unable to compute anything if there is any NA in the data we want to consider !
   		return(NA)
