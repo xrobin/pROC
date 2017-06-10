@@ -30,3 +30,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"pROC_delongPlacementsCpp", (DL_FUNC) &pROC_delongPlacementsCpp, 1},
+    {"pROC_rocUtilsPerfsAllC", (DL_FUNC) &pROC_rocUtilsPerfsAllC, 4},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_pROC(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
