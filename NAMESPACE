@@ -140,5 +140,11 @@ S3method("plot.roc", "smooth.roc")
 S3method("plot.roc", "formula")
 S3method("plot.roc", "default")
 
+# Generic ggplot from ggplot2
+importFrom(ggplot2, ggplot)
+export(ggroc)
+S3method("ggroc", "roc")
+S3method("ggroc", "list")
+
 import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
 useDynLib(pROC, .registration = TRUE)

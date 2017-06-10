@@ -73,6 +73,7 @@
     \code{\link{ci.coords}} \tab Compute the CI of arbitrary coordinates \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
+    \code{\link{ggroc}} \tab Plot a ROC curve with \pkg{ggplot2} (Experimental)\cr
     \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
