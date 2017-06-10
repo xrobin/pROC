@@ -1,4 +1,4 @@
-1.9.2 (2017-*)
+1.10.0 (2017-06-10)
   * Fix: properly handle NAs in cases when passing cases/controls to 'roc' (thanks Thomas König for the report)
   * Fix various minor bugs detected with new unit tests
   * Implement 'precision' and 'recall' for 'coords'
