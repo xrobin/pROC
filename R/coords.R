@@ -27,10 +27,7 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
   # match input 
   input <- match.arg(input)
   # match return
-  valid.ret.args <- c("specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-  ret <- replace(ret, ret=="npe", "1-npv")
-  ret <- replace(ret, ret=="ppe", "1-ppv")
-  ret <- match.arg(ret, valid.ret.args, several.ok=TRUE)
+  ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
 
   if (is.character(x)) {
     x <- match.arg(x, c("best")) # no thresholds in smoothed roc: only best is possible
