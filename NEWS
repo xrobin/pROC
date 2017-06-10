@@ -1,6 +1,7 @@
 1.9.2 (2017-*)
   * Fix: properly handle NAs in cases when passing cases/controls to 'roc' (thanks Thomas König for the report)
   * Fix various minor bugs detected with new unit tests
+  * Implement 'precision' and 'recall' for 'coords'
 
 1.9.1 (2017-02-05)
   * Fix: 'subset' and 'na.action' arguments now handled properly in 'roc.formula' (thanks Terry Therneau for the report)

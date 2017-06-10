@@ -49,7 +49,8 @@ best.weights=c(1, 0.5), ...)
     \dQuote{threshold}, \dQuote{specificity}, \dQuote{sensitivity}, \dQuote{accuracy},
     \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
     \dQuote{fn} (false negative count), \dQuote{fp} (false positive count), 
-    \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value).
+    \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value),
+    \dQuote{precision}, \dQuote{recall}.
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
     as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
     Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
@@ -266,17 +267,23 @@ plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft",
 # Return more values:
 coords(rocobj, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+                           "precision", "recall"))
 coords(smooth(rocobj), "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+                           "precision", "recall"))
 coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+                           "precision", "recall"))
                            
 # You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
 
 plot(specificity + sensitivity ~ threshold, t(coords(rocobj, seq(0, 1, 0.01))), type = "l")
+
+# Plot the Precision-Recall curve
+plot(precision ~ recall, t(coords(rocobj, "all", ret = c("recall", "precision"))), type="l")
 
 }
 
