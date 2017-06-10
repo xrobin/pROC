@@ -5,7 +5,7 @@
 \alias{ggroc}
 
 \title{
-  Plot a ROC curve with ggplot2
+  Plot a ROC curve with ggplot2 (Experimental)
 }
 \description{
   This function plots a ROC curve with ggplot2.
@@ -24,6 +24,8 @@
 
 \details{
   This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer on it. You can print it directly or add your own layers and theme elements.
+  
+  This function is experimental and may change in the future. Please \href{https://github.com/xrobin/pROC/issues}{report bugs and feedback on the GitHub issue tracker}.
 }
 
 
