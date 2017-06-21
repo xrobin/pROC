@@ -146,7 +146,7 @@ test_that("microbenchmark works", {
 	
 	# Algorithm 2 (R cumsum) should be selected with large datasets with many thresholds
 	# This is going to be slow, so skip unless we're running slow tests
-	skip_if_not(run_slow_tests, message = "Slow test skipped")
+	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	expect_output(r <- roc(round(runif(10000)), rnorm(10000), algorithm = 0), "Selecting algorithm 2")
 })
 
