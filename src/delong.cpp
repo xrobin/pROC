@@ -102,7 +102,7 @@ List delongPlacementsCpp(List roc) {
   }
 
   List ret;
-  ret["theta"] = sum / (m*n);
+  ret["theta"] = sum / m / n;
   ret["X"] = X;
   ret["Y"] = Y;
   return(ret);
