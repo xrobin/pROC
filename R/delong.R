@@ -22,8 +22,8 @@ delong.paired.test <- function(roc1, roc2) {
   n <- length(roc1$controls)
   m <- length(roc1$cases)
 
-  VR <- delongPlacementsCpp(roc1)
-  VS <- delongPlacementsCpp(roc2)
+  VR <- delongPlacements(roc1)
+  VS <- delongPlacements(roc2)
 
   SX <- matrix(NA, ncol=2, nrow=2)
   SX[1,1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(m-1)
@@ -55,8 +55,8 @@ delong.unpaired.test <- function(roc1, roc2) {
   nS <- length(roc2$controls)
   mS <- length(roc2$cases)
   
-  VR <- delongPlacementsCpp(roc1)
-  VS <- delongPlacementsCpp(roc2)
+  VR <- delongPlacements(roc1)
+  VS <- delongPlacements(roc2)
 
   SRX <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(mR-1)
   SSX <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(mS-1)
@@ -84,7 +84,7 @@ ci.auc.delong <- function(roc, conf.level) {
   n <- length(YR)
   m <- length(XR)
 
-  V <- delongPlacementsCpp(roc)
+  V <- delongPlacements(roc)
 
   SX <- sum((V$X - V$theta) * (V$X - V$theta))/(m-1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta))/(n-1)
@@ -107,4 +107,22 @@ ci.auc.delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
+}
+
+# Calls delongPlacementsCpp safely
+# Ensures that the theta value calculated is correct
+delongPlacements <- function(roc) {
+	placements <- delongPlacementsCpp(roc)
+
+	# Ensure theta equals auc
+	auc <- roc$auc / ifelse(roc$percent, 100, 1) 
+	if (roc$direction == ">") {
+		auc <- 1 - auc
+	}
+	if (! isTRUE(all.equal(placements$theta, auc))) {
+		browser()
+		stop(sprintf("A problem occured while calculating DeLong's theta: got %.20f instead of %.20f. This is a bug in pROC, please report it to the maintainer.", placements$theta, auc))
+	}
+	
+	return(placements)
 }

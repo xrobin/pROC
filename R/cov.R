@@ -176,10 +176,10 @@ cov.roc <- function(roc1, roc2,
     n <- length(roc1$controls)
     m <- length(roc1$cases)
 
-    V1 <- delongPlacementsCpp(roc1)
+    V1 <- delongPlacements(roc1)
     var1 <- var(V1$Y) / n + var(V1$X) / m
 
-    V2 <- delongPlacementsCpp(roc2)
+    V2 <- delongPlacements(roc2)
     var2 <- var(V2$Y) / n + var(V2$X) / m
 
     cov <- cov(V2$X, V1$X) / m + cov(V2$Y, V1$Y) / n
