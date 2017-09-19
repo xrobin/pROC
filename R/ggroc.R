@@ -5,15 +5,27 @@ get.coords.for.ggplot <- function(roc) {
 	return(df[rev(seq(nrow(df))),])
 }
 
-get.aes.for.ggplot <- function(roc) {
+get.aes.for.ggplot <- function(roc, legacy.axes) {
 	# Prepare the aesthetics
 	if(roc$percent) {
-		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
-		xlims <- ggplot2::scale_x_reverse(lim=c(100, 0))
+		if (legacy.axes) {
+			aes <- ggplot2::aes_string(x = "1-specificity", y = "sensitivity")
+			xlims <- ggplot2::scale_x_continuous(lim=c(0, 100))		
+		}
+		else {
+			aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
+			xlims <- ggplot2::scale_x_reverse(lim=c(100, 0))
+		}
 	}
 	else {
-		aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
-		xlims <- ggplot2::scale_x_reverse(lim=c(1, 0))
+		if (legacy.axes) {
+			aes <- ggplot2::aes_string(x = "1-specificity", y = "sensitivity")
+			xlims <- ggplot2::scale_x_continuous(lim=c(0, 1))
+		}
+		else {
+			aes <- ggplot2::aes_string(x = "specificity", y = "sensitivity")
+			xlims <- ggplot2::scale_x_reverse(lim=c(1, 0))
+		}
 	}
 	return(list(aes=aes, xlims=xlims))
 }
@@ -22,12 +34,12 @@ ggroc <- function(data, ...) {
 	UseMethod("ggroc")
 }
 
-ggroc.roc <- function(data, ...) {
+ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 	# Get the roc data with coords
 	df <- get.coords.for.ggplot(data)
 
 	# Prepare the aesthetics
-	aes <- get.aes.for.ggplot(data)
+	aes <- get.aes.for.ggplot(data, legacy.axes)
 
 	# Do the plotting
 	ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims
@@ -36,7 +48,7 @@ ggroc.roc <- function(data, ...) {
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
 
-ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), ...) {
+ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), legacy.axes = FALSE, ...) {
 	aes <- match.arg(aes)
 	
 	# Make sure data is a list and every element is a roc object
@@ -71,7 +83,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), ...
 	coord.dfs <- do.call(rbind, coord.dfs)
 	
 	# Prepare the aesthetics
-	aes.ggplot <- get.aes.for.ggplot(data[[1]])
+	aes.ggplot <- get.aes.for.ggplot(data[[1]], legacy.axes)
 	aes.ggplot$aes[[aes]] <- as.symbol("name")
 
 	# Do the plotting

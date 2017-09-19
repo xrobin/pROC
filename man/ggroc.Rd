@@ -11,14 +11,18 @@
   This function plots a ROC curve with ggplot2.
 }
 \usage{
-\S3method{ggroc}{roc}(data, ...)
-\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size"), ...)
+\S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size"), legacy.axes = FALSE, ...)
 }
 		   
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
   \item{aes}{the name of the aesthetics for \code{\link{geom_line}} to map to the different ROC curves supplied}
+  \item{legacy.axes}{a logical indicating if the specificity axis (x
+    axis) must be plotted as as decreasing \dQuote{specificity}
+    (\code{FALSE}, the default) or increasing \dQuote{1 - specificity}
+    (\code{TRUE}) as in most legacy software.}
   \item{...}{additional aesthetics for \code{\link{geom_line}} to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.}
 }
 
