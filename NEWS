@@ -1,3 +1,6 @@
+1.11.0 (*)
+  * Added argument 'legacy.axes' to 'ggroc'
+
 1.10.0 (2017-06-10)
   * Basic ggplot2 support (one and multiple ROC curves)
   * Implement 'precision' and 'recall' for 'coords'
