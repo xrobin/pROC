@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 delongPlacementsCpp <- function(roc) {
-    .Call(pROC_delongPlacementsCpp, roc)
+    .Call(`_pROC_delongPlacementsCpp`, roc)
 }
 
 rocUtilsPerfsAllC <- function(thresholds, controls, cases, direction) {
-    .Call(pROC_rocUtilsPerfsAllC, thresholds, controls, cases, direction)
+    .Call(`_pROC_rocUtilsPerfsAllC`, thresholds, controls, cases, direction)
 }
 

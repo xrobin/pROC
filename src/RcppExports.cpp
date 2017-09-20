@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // delongPlacementsCpp
 List delongPlacementsCpp(List roc);
-RcppExport SEXP pROC_delongPlacementsCpp(SEXP rocSEXP) {
+RcppExport SEXP _pROC_delongPlacementsCpp(SEXP rocSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,7 +18,7 @@ END_RCPP
 }
 // rocUtilsPerfsAllC
 List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
-RcppExport SEXP pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
+RcppExport SEXP _pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,8 +32,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"pROC_delongPlacementsCpp", (DL_FUNC) &pROC_delongPlacementsCpp, 1},
-    {"pROC_rocUtilsPerfsAllC", (DL_FUNC) &pROC_rocUtilsPerfsAllC, 4},
+    {"_pROC_delongPlacementsCpp", (DL_FUNC) &_pROC_delongPlacementsCpp, 1},
+    {"_pROC_rocUtilsPerfsAllC", (DL_FUNC) &_pROC_rocUtilsPerfsAllC, 4},
     {NULL, NULL, 0}
 };
 
