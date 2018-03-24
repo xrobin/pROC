@@ -16,6 +16,7 @@ S3method("ci", "roc")
 S3method("ci", "smooth.roc")
 S3method("ci", "default")
 S3method("ci", "formula")
+S3method("ci", "auc")
 
 export(ci.coords)
 S3method("ci.coords", "roc")
@@ -145,6 +146,15 @@ importFrom(ggplot2, ggplot)
 export(ggroc)
 S3method("ggroc", "roc")
 S3method("ggroc", "list")
+
+# Fix R CMD check warning false positives
+# "apparent S3 methods exported but not registered"
+# Note: these methods have an export() above
+S3method("roc", "test")
+S3method("ci", "coords")
+S3method("ci", "se")
+S3method("ci", "sp")
+S3method("ci", "thresholds")
 
 import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
 useDynLib(pROC, .registration = TRUE)
