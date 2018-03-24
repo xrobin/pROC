@@ -10,7 +10,7 @@ Suggests: microbenchmark, tcltk, MASS, logcondens, doParallel,
     testthat, vdiffr
 LinkingTo: Rcpp
 Authors@R: c(person("Xavier", "Robin", role = c("cre", "aut"), 
-                    email = "robin@lindinglab.org"),
+                    email = "pROC-cran@xavier.robin.name"),
              person("Natacha", "Turck", role = "aut"),
              person("Alexandre", "Hainard", role = "aut"),
              person("Natalia", "Tiberti", role = "aut"),
