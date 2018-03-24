@@ -203,7 +203,7 @@ best.weights=c(1, 0.5), ...)
 
   W. J. Youden (1950) ``Index for rating diagnostic tests''. \emph{Cancer}, 
   \bold{3}, 32--35. DOI: 
-  \href{http://dx.doi.org/10.1002/1097-0142(1950)3:1<32::AID-CNCR2820030106>3.0.CO;2-3}{10.1002/1097-0142(1950)3:1<32::AID-CNCR2820030106>3.0.CO;2-3}.
+  \href{http://dx.doi.org/10.1002/1097-0142(1950)3\%3A1\%3C32\%3A\%3AAID-CNCR2820030106\%3E3.0.CO\%3B2-3}{10.1002/1097-0142(1950)3:1<32::AID-CNCR2820030106>3.0.CO;2-3}.
 }
 
 \seealso{

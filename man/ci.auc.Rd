@@ -174,7 +174,7 @@ consistency reasons.
   James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
-  DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
+  DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19\%3A9\%3C1141\%3A\%3AAID-SIM479\%3E3.0.CO\%3B2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
 
   Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
   (1988) ``Comparing the areas under two or more correlated receiver

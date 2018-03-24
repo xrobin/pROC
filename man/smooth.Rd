@@ -263,7 +263,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   non-parametric receiver operating characteristic (ROC) curves for
   continuous diagnostic tests''. \emph{Statistics in Medicine}
   \bold{18}, 2143--2156. DOI: 
-  \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}{10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}.
+  \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19971015)16\%3A19\%3C2143\%3A\%3AAID-SIM655\%3E3.0.CO\%3B2-3}{10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}.
 }
 
 \seealso{
