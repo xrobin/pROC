@@ -1,9 +1,6 @@
 library(pROC)
 data(aSAH)
 
-# Get static, correct output of the function
-source(system.file("extdata", "test-roc-expected.R", package="pROC"))
-
 level.values <- list(
 	forward = c("Good", "Poor"),
 	reversed = c("Poor", "Good")

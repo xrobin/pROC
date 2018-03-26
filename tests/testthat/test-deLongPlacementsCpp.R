@@ -1,9 +1,6 @@
 library(pROC)
 data(aSAH)
 
-# Get static, correct output of the function
-source(system.file("extdata", "test-deLongPlacementsCpp-expected.R", package="pROC"))
-
 context("DeLong Placements C++ code works")
 
 for (percent in c(FALSE, TRUE)) {
