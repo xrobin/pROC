@@ -12,6 +12,15 @@ test_that("power.roc.test basic function", {
   expect_equal(res$power, 0.9904833, tolerance = 0.000001)
 })
 
+test_that("power.roc.test with percent works", {
+	res <- power.roc.test(r.s100b.percent)
+	expect_equal(as.numeric(res$auc), as.numeric(r.s100b$auc))
+	expect_equal(res$ncases, length(r.s100b$cases))
+	expect_equal(res$ncontrols, length(r.s100b$controls))
+	expect_equal(res$sig.level, 0.05)
+	expect_equal(res$power, 0.9904833, tolerance = 0.000001)
+})
+
 test_that("power.roc.test with given auc function", {
   res <- power.roc.test(ncases=41, ncontrols=72, auc=0.73, sig.level=0.05)
   expect_equal(as.numeric(res$auc), 0.73)
@@ -64,6 +73,18 @@ test_that("power.roc.test can take 2 ROC curves with DeLong variance", {
   expect_equal(res$power, 0.7131594, tolerance = 0.000001)
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$alternative, "two.sided")
+})
+
+
+test_that("power.roc.test can take 2 percent ROC curves with DeLong variance", {
+	res <- power.roc.test(r.ndka.percent, r.wfns.percent)
+	expect_equal(res$ncases, 41)
+	expect_equal(res$ncontrols, 72)
+	expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
+	expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
+	expect_equal(res$power, 0.7131594, tolerance = 0.000001)
+	expect_equal(res$sig.level, 0.05)
+	expect_equal(res$alternative, "two.sided")
 })
 
 test_that("power.roc.test can take 2 ROC curves with Obuchowski variance", {

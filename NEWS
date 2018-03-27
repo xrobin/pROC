@@ -1,3 +1,6 @@
+1.11.1 (2018-??-??)
+  * Fix 'power.roc.curve' failed with curves having 'percent=TRUE'
+
 1.11.0 (2018-03-24)
   * Added argument 'legacy.axes' to 'ggroc'
   * Fix NOTE about 'apparent S3 methods exported but not registered' in 'R CMD check'

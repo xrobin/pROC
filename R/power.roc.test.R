@@ -34,15 +34,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
   if (!is.null(attr(roc1$auc, "partial.auc.correct")) && attr(roc1$auc, "partial.auc.correct")) {
     stop("Cannot compute power with corrected partial AUCs")
   }
-  if (attr(roc1$auc, "percent")) {
-    roc1$auc <- roc1$auc / 100
-    if (is.numeric(attr(roc1$auc, "partial.auc"))) {
-      attr(roc1$auc, "partial.auc") <- attr(roc1$auc, "partial.auc") / 100
-    }
-    attr(roc1$auc, "percent") <- FALSE
-    roc1$percent <- FALSE
-  }
-    
+  roc1 <- roc.utils.unpercent(roc1)
 
   if (!missing(roc2) && !is.null(roc2)) {
     alternative <- match.arg(alternative)
@@ -58,14 +50,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       if (!is.null(attr(roc2$auc, "partial.auc.correct")) && attr(roc2$auc, "partial.auc.correct")) {
         stop("Cannot compute power with corrected partial AUCs")
       }
-      if (attr(roc2$auc, "percent")) {
-        roc2$auc <- roc2$auc / 100
-        if (is.numeric(attr(roc2$auc, "partial.auc"))) {
-          attr(roc2$auc, "partial.auc") <- attr(roc2$auc, "partial.auc") / 100
-        }
-        attr(roc2$auc, "percent") <- FALSE
-        roc2$percent <- FALSE
-      }
+      roc2 <- roc.utils.unpercent(roc2)
 
       # Make sure the ROC curves are paired
       rocs.are.paired <- are.paired(roc1, roc2)
