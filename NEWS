@@ -1,5 +1,6 @@
 1.11.1 (2018-??-??)
   * Fix 'power.roc.curve' failed with curves having 'percent=TRUE'
+  * Better error message for 'ci.coords' attempting to return 'threshold'
 
 1.11.0 (2018-03-24)
   * Added argument 'legacy.axes' to 'ggroc'

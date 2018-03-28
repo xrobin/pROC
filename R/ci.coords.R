@@ -129,6 +129,10 @@ ci.coords.roc <- function(roc,
       stop("'all' and 'local maximas' are not available for confidence intervals.")
     }
   }
+  
+  if ("threshold" %in% ret && ! identical(x, "best")) {
+  	stop("'threshold' output is only supported for best ROC point ('x = \"best\"')")
+  }
 
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
