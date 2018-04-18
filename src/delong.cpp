@@ -42,14 +42,17 @@ List delongPlacementsCpp(List roc) {
     Z.push_back(std::pair<int, double>(i, cases.at(i)));
     labels.push_back(true);
   }
+  Rcpp::checkUserInterrupt();
   for (j = 0; j < n; j++) {
     Z.push_back(std::pair<int, double>(m+j, controls.at(j)));
     labels.push_back(false);
   }
+  Rcpp::checkUserInterrupt();
 
   // sort Z from smallest to largest value, so Z holds the order indices and
   // order statistics of all classifiers
   std::sort(Z.begin(), Z.end(), _cmp);
+  Rcpp::checkUserInterrupt();
 
   // the following calculates the "Delong-placements" X and Y in a single pass
   // over the vector Z, instead of having to double loop over all pairs of
@@ -61,6 +64,7 @@ List delongPlacementsCpp(List roc) {
     X_inds.clear();
     Y_inds.clear();
     mdupl = ndupl = 0;
+    if (i % 10000 == 0) Rcpp::checkUserInterrupt();
     while(1) {
       j = Z.at(i).first;
       if (labels.at(j)) {
@@ -91,6 +95,7 @@ List delongPlacementsCpp(List roc) {
 
   double sum = 0.0;
   std::vector<double> X, Y;
+  Rcpp::checkUserInterrupt();
 
   for (i = 0; i < L; i++) {
     if (labels.at(i)) {

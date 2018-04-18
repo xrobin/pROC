@@ -28,6 +28,7 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
   
   if (direction == ">") {
     for (long t = 0; t < thresholds.size(); t++) {
+      if (t % 100 == 0) Rcpp::checkUserInterrupt();
       double threshold = thresholds(t);
         tp = 0;
         for (i = 0; i < cases.size(); i++) {
@@ -47,6 +48,7 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
   }
  else {
     for (long t = 0; t < thresholds.size(); t++) {
+      if (t % 100 == 0) Rcpp::checkUserInterrupt();
       double threshold = thresholds(t);
       tp = 0;
       for (i = 0; i < cases.size(); i++) {
