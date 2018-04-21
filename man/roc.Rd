@@ -20,7 +20,7 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 5, quiet = TRUE, 
+direction=c("auto", "<", ">"), algorithm = 1, quiet = TRUE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 ci.method=NULL, density=NULL, ...)
 
@@ -77,7 +77,7 @@ ci.method=NULL, density=NULL, ...)
   }
   \item{algorithm}{the method used to compute sensitivity and specificity, 
     an integer of length 1 between \code{0} and \code{4}.
-    \code{1}: a safe, well-tested, pure-\R code that is efficient when the 
+    \code{1} (default): a safe, well-tested, pure-\R code that is efficient when the 
     number of thresholds is low. It goes with O(T*N).
     \code{2}: an alternative pure-\R algorithm that goes in
     O(N). Typically faster than \code{1} when the number of thresholds of
@@ -88,7 +88,7 @@ ci.method=NULL, density=NULL, ...)
     when that number increases.
     \code{4} (debug only, slow):
     runs all 3 algorithms and makes sure they return the same values.
-    \code{5} (default): quickly select 2 or 3 based on the number of thresholds.
+    \code{5}: quickly select 2 or 3 based on the number of thresholds.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
   \item{quiet}{set to \code{FALSE} to turn on \code{\link{message}}s
