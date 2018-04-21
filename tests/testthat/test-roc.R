@@ -10,7 +10,8 @@ expected.algorithm <- list(
 	pROC:::roc.utils.perfs.all.safe,
 	pROC:::roc.utils.perfs.all.fast,
 	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc.utils.perfs.all.test
+	pROC:::roc.utils.perfs.all.test,
+	pROC:::rocUtilsPerfsAllC
 )
 
 for (marker in c("ndka", "wfns", "s100b")) {
