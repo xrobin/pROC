@@ -80,7 +80,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
-                        algorithm=1,
+                        algorithm=5,
 						quiet = TRUE,
 
                         # what computation must be done
@@ -281,6 +281,7 @@ roc.default <- function(response, predictor,
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases))
     benchmark <- try(microbenchmark::microbenchmark(
+      "1" = roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
@@ -316,6 +317,14 @@ roc.default <- function(response, predictor,
   }
   else if (isTRUE(algorithm == 4)) {
     fun.sesp <- roc.utils.perfs.all.test
+  }
+  else if (isTRUE(algorithm == 5)) {
+  	thresholds <- length(roc.utils.thresholds(c(controls, cases)))
+  	if (thresholds > 1437) { # critical number determined in inst/extra/algorithms.speed.test.R
+  		fun.sesp <- roc.utils.perfs.all.fast
+  	} else {
+  		fun.sesp <- rocUtilsPerfsAllC
+  	}
   }
   else {
     stop("Unknown algorithm (must be 0, 1, 2, 3 or 4).")
