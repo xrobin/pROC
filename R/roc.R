@@ -296,14 +296,8 @@ roc.default <- function(response, predictor,
         warning("Microbenchmark returned NA. Using default algorithm 1.")
         algorithm <- 1
       }
-      else if (which.min(tapply(benchmark$time, benchmark$expr, sum)) == 1) {
-        algorithm <- 2
-        cat("Selecting algorithm 2.\n")
-      }
-      else {
-        algorithm <- 3
-        cat("Selecting algorithm 3.\n")
-      }
+      algorithm <- as.integer(which.min(tapply(benchmark$time, benchmark$expr, sum)))
+      cat(sprintf("Selecting algorithm %s.\n", algorithm))
     }
   }
   if (isTRUE(algorithm ==  1)) {
