@@ -296,7 +296,7 @@ roc.default <- function(response, predictor,
         warning("Microbenchmark returned NA. Using default algorithm 1.")
         algorithm <- 1
       }
-      algorithm <- as.integer(which.min(tapply(benchmark$time, benchmark$expr, sum)))
+      algorithm <- as.integer(names(which.min(tapply(benchmark$time, benchmark$expr, sum))))
       cat(sprintf("Selecting algorithm %s.\n", algorithm))
     }
   }
