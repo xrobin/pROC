@@ -20,7 +20,7 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 1, quiet = TRUE, 
+direction=c("auto", "<", ">"), algorithm = 5, quiet = TRUE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 ci.method=NULL, density=NULL, ...)
 
