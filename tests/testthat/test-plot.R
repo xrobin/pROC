@@ -3,6 +3,7 @@ context("plot")
 # Tests powered by vdiffr. 
 # To update the reference with vdiffr:
 # > library(vdiffr)
+# > source("tests/testthat.R")
 # > manage_cases()
 
 test_that("plot draws correctly", {
