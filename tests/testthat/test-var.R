@@ -28,3 +28,9 @@ test_that("var works with auc and percent", {
 	expect_equal(var(auc(r.ndka.percent)), 31.908105493913)
 	expect_equal(var(auc(r.s100b.percent)), 26.6868245717244)
 })
+
+
+test_that("var with delong and percent works", {
+	expect_equal(var(roc(aSAH$outcome, -aSAH$ndka, percent=TRUE)), 31.908105493913)
+	expect_equal(var(roc(aSAH$outcome, -aSAH$s100b, percent=TRUE)), 26.6868245717244)
+})
