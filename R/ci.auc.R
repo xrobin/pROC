@@ -132,12 +132,9 @@ ci.auc.roc <- function(roc,
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- roc$percent
-  roc$percent <- FALSE
   oldauc <- roc$auc
   if (percent) {
-    attr(roc$auc, "percent") <- FALSE
-    if (! identical(attr(roc$auc, "partial.auc"), FALSE))
-      attr(roc$auc, "partial.auc") <- attr(roc$auc, "partial.auc") / 100
+  	roc <- roc.utils.unpercent(roc)
   }
 
   # Check the method
