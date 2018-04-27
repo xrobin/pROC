@@ -32,3 +32,13 @@ test_that("ci.auc works with a formula", {
 test_that("ci.auc works with a response, predictor", {
 	expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$ndka)), expected.ci.auc)
 })
+
+
+test_that("ci.auc works with a direction = >", {
+	expect_equal(as.numeric(ci.auc(aSAH$outcome, -aSAH$ndka)), expected.ci.auc)
+})
+
+
+test_that("ci.auc works with a direction = > and percent", {
+	expect_equal(as.numeric(ci.auc(aSAH$outcome, -aSAH$ndka, percent = TRUE)), expected.ci.auc * 100)
+})
