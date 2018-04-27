@@ -38,12 +38,9 @@ ci.multiclass.roc <- function(multiclass.roc,
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- multiclass.roc$percent
-  multiclass.roc$percent <- FALSE
   oldauc <- multiclass.roc$auc
   if (percent) {
-    attr(multiclass.roc$auc, "percent") <- FALSE
-    if (! identical(attr(multiclass.roc$auc, "partial.auc"), FALSE))
-      attr(multiclass.roc$auc, "partial.auc") <- attr(multiclass.roc$auc, "partial.auc") / 100
+  	multiclass.roc <- roc.utils.unpercent(multiclass.roc)
   }
 
   ci <- ci.multiclass.auc.bootstrap(multiclass.roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
