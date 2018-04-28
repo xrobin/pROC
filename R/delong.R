@@ -83,6 +83,11 @@ ci.auc.delong <- function(roc, conf.level) {
 
   n <- length(YR)
   m <- length(XR)
+  
+  # If controls or cases have a single observation, we would produce NaNs in SX and SY
+  if (m <= 1 || n <= 1) {
+  	return(rep(NA, 3))
+  }
 
   V <- delongPlacements(roc)
 
