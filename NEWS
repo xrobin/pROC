@@ -1,4 +1,5 @@
 1.12.0 (2018-??-??)
+  * Fix bug that crashed DeLong calculations when predictor had near-ties close to the floating point precision limit that were rounded back to a predictor value (issue #25)
   * Fix bug that crashed 'ci.auc' and 'var' if 'direction' was ">" and 'percent=TRUE' (issue #25)
   * Fix bug causing 'ci' to return 'NaN' values with 'method="delong"' when cases or controls had a single observation (issue #27)
   * Fix 'power.roc.curve' failed with curves having 'percent=TRUE'
