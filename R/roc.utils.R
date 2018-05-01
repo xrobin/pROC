@@ -114,6 +114,52 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
 roc.utils.thresholds <- function(predictor, direction) {
   unique.candidates <- sort(unique(predictor))
   thresholds <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
+  if (any(o <- outer(thresholds, predictor, `==`))) {
+  	# If we get here, some thresholds are identical to the predictor
+  	# This is caused by near numeric ties that caused the mean to equal
+  	# one of the candidate
+  	# We need to make sure we select the right threshold more carefully
+  	if (direction == '>') {
+  		# We have:
+  		# tp <- sum(cases <= threshold)
+  		# tn <- sum(controls > threshold)
+  		# We need to make sure the selected threshold
+  		# Corresponds to the lowest observation of the predictor
+  		# Identify problematic thresholds
+  		# rows <- which(apply(o, 1, any))
+  		for (row in which(apply(o, 1, any))) {
+  			if (thresholds[row] == unique.candidates[row - 1]) {
+  				# We're already good, nothing to do
+  			}
+  			else if (thresholds[row] == unique.candidates[row]) {
+  				thresholds[row] <- unique.candidates[row - 1]
+  			}
+  			else {
+  				stop("Couldn't fix near ties in thresholds: %s, %s, %s, %s. This is a bug in pROC, please report it to the maintainer.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction)
+  			}
+  		}
+  	}
+  	else if (direction == '<') {
+  		# We have:
+  		# tp <- sum(cases >= threshold)
+  		# tn <- sum(controls < threshold)
+  		# We need to make sure the selected threshold
+  		# Corresponds to the highest observation of the predictor
+  		# Identify the problematic thresholds:
+  		# rows <- which(apply(o, 1, any))
+  		for (row in which(apply(o, 1, any))) {
+  			if (thresholds[row] == unique.candidates[row - 1]) {
+  				# Easy to fix: should be unique.candidates[row]
+  				thresholds[row] <- unique.candidates[row]
+  			} else if (thresholds[row] == unique.candidates[row]) {
+  				# We're already good, nothing to do
+  			}
+  			else {
+  				stop("Couldn't fix near ties in thresholds: %s, %s, %s, %s. This is a bug in pROC, please report it to the maintainer.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction)
+  			}
+  		}
+  	}
+  }
   return(thresholds)
 }
 
