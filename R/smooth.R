@@ -228,7 +228,7 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   density.controls <- do.call(densfun.controls, c(list(x=x), fit.controls$estimate, dots.controls))
   density.cases <- do.call(densfun.cases, c(list(x=x), fit.cases$estimate, dots.cases))
 
-  perfs <- sapply(roc.utils.thresholds(x), roc.utils.perfs.dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
+  perfs <- sapply(roc.utils.thresholds(x, roc$direction), roc.utils.perfs.dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
 
   return(list(sensitivities = perfs[2,] * ifelse(roc$percent, 100, 1),
               specificities = perfs[1,] * ifelse(roc$percent, 100, 1),

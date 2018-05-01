@@ -279,7 +279,7 @@ roc.default <- function(response, predictor,
     if (!requireNamespace("microbenchmark"))
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
-    thresholds <- roc.utils.thresholds(c(controls, cases))
+    thresholds <- roc.utils.thresholds(c(controls, cases), direction)
     benchmark <- try(microbenchmark::microbenchmark(
 #      "1" = roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
@@ -313,7 +313,7 @@ roc.default <- function(response, predictor,
     fun.sesp <- roc.utils.perfs.all.test
   }
   else if (isTRUE(algorithm == 5)) {
-  	thresholds <- length(roc.utils.thresholds(c(controls, cases)))
+  	thresholds <- length(roc.utils.thresholds(c(controls, cases), direction))
   	if (thresholds > 1437) { # critical number determined in inst/extra/algorithms.speed.test.R
   		fun.sesp <- roc.utils.perfs.all.fast
   	} else {
@@ -381,7 +381,7 @@ roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
   roc$percent <- percent
 
   # compute SE / SP
-  thresholds <- roc.utils.thresholds(c(controls, cases))
+  thresholds <- roc.utils.thresholds(c(controls, cases), direction)
   perfs <- fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 
   se <- perfs$se

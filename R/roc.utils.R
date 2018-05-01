@@ -111,9 +111,9 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
 }
 
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
-roc.utils.thresholds <- function(predictor) {
   thresholds <- sort(unique(predictor))
   return((c(-Inf, thresholds) + c(thresholds, +Inf))/2)
+roc.utils.thresholds <- function(predictor, direction) {
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
