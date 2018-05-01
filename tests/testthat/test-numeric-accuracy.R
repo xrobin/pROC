@@ -32,7 +32,6 @@ test_that("delong theta is consistent with auc", {
 	expect_equal(pROC:::delongPlacements(r1)$theta, as.numeric(auc(r1)))
 	expect_equal(pROC:::delongPlacements(r2)$theta, as.numeric(auc(r2)))
 	expect_equal(pROC:::delongPlacements(r3)$theta, as.numeric(auc(r3)))
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r3)))
 })
 
 test_that("delong theta is consistent with auc and direction = >", {
@@ -42,5 +41,4 @@ test_that("delong theta is consistent with auc and direction = >", {
 	expect_equal(pROC:::delongPlacements(r1)$theta, as.numeric(auc(r1)))
 	expect_equal(pROC:::delongPlacements(r2)$theta, as.numeric(auc(r2)))
 	expect_equal(pROC:::delongPlacements(r3)$theta, as.numeric(auc(r3)))
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r3)))
 })
