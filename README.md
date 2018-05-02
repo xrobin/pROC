@@ -122,3 +122,13 @@ Download the source code from git, unzip it if necessary, and then type `R CMD I
 if (! requireNamespace("devtools")) install.packages("devtools")
 devtools::install_github("xrobin/pROC")
 ```
+
+To run all automated tests, including slow tests:
+
+```
+cd .. # Run from parent directory
+VERSION=$(grep Version pROC/DESCRIPTION | sed "s/.\+ //")
+R CMD build pROC
+RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
+```
+
