@@ -43,7 +43,7 @@
   Type \code{citation("pROC")} for a BibTeX entry.
 
   The authors would be glad to hear how pROC is employed. You are kindly
-  encouraged to notify Xavier Robin <Xavier.Robin@unige.ch>
+  encouraged to notify Xavier Robin <pROC-cran@xavier.robin.name>
   about any work you publish.
 }
 
@@ -230,7 +230,7 @@ system.time(ci(rocobj, method="bootstrap", parallel = TRUE))
 \author{
 Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
 
-Maintainer: Xavier Robin <Xavier.Robin@unige.ch>
+Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
 }
 
 \references{

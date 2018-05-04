@@ -32,9 +32,9 @@ roc.utils.perfs.all.test <- function(thresholds, controls, cases, direction) {
 	perfs.fast <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 	perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 	if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
-		pROCpackageDescription <- packageDescription("pROC")
-		save(thresholds, controls, cases, direction, pROCpackageDescription, file="pROC_bug.RData")
-		stop(sprintf("Bug in pROC: algorithms returned different values. Diagnostic data saved in pROC_bug.RData. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
+		sessionInfo <- sessionInfo()
+		save(thresholds, controls, cases, direction, sessionInfo, file="pROC_bug.RData")
+		stop(sprintf("pROC: algorithms returned different values. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", packageDescription("pROC")$BugReports))
 	}
 	return(perfs.safe)
 }
@@ -61,7 +61,9 @@ roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
   dups <- dups.pred | dups.sesp
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
-    stop(sprintf("Bug in pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Please report this bug to the package maintainer %s", packageDescription("pROC")$Maintainer))
+  	sessionInfo <- sessionInfo()
+  	save(thresholds, controls, cases, direction, sessionInfo, file="pROC_bug.RData")
+    stop(sprintf("pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", packageDescription("pROC")$BugReports))
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))

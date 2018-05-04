@@ -125,7 +125,9 @@ delongPlacements <- function(roc) {
 		auc <- 1 - auc
 	}
 	if (! isTRUE(all.equal(placements$theta, auc))) {
-		stop(sprintf("A problem occured while calculating DeLong's theta: got %.20f instead of %.20f. This is a bug in pROC, please report it to the maintainer.", placements$theta, auc))
+		sessionInfo <- sessionInfo()
+		save(roc, placements, sessionInfo, file="pROC_bug.RData")
+		stop(sprintf("pROC: error in calculating DeLong's theta: got %.20f instead of %.20f. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", placements$theta, auc, packageDescription("pROC")$BugReports))
 	}
 	
 	return(placements)
