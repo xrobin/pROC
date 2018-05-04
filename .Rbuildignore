@@ -5,3 +5,4 @@
 pROC-Ex.R
 .travis.yml
 codecov.yml
+^\.github
