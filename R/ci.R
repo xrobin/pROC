@@ -38,6 +38,10 @@ ci.smooth.roc <- function(smooth.roc, of = c("auc", "sp", "se", "coords"), ...) 
     ci <- ci.sp.smooth.roc(smooth.roc, ...)
   else if (of == "se")
     ci <- ci.se.smooth.roc(smooth.roc, ...)
+  else if (of == "coords")
+  	ci <- ci.coords.smooth.roc(smooth.roc, ...)
+  else
+  	stop(sprintf("Unknown 'of' for CI: %s", of))
 
   return(ci)
 }
@@ -53,6 +57,10 @@ ci.roc <- function(roc, of = c("auc", "thresholds", "sp", "se", "coords"), ...) 
     ci <- ci.sp.roc(roc, ...)
   else if (of == "se")
     ci <- ci.se.roc(roc, ...)
+  else if (of == "coords")
+  	ci <- ci.coords.roc(roc, ...)
+  else
+  	stop(sprintf("Unknown 'of' for CI: %s", of))
 
   return(ci)
 }
