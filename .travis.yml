@@ -1,6 +1,10 @@
 language: r
 cache: packages
 
+r:
+  - release
+  - devel
+
 r_packages:
   - covr
 
