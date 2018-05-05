@@ -40,5 +40,15 @@ test_that("roc.utils.unpercent works with CI", {
 	r.percent <- roc(aSAH$outcome, aSAH$wfns, ci=TRUE, percent = TRUE)
 	expect_equal_ignore_call(pROC:::roc.utils.unpercent.roc(r.percent), r)
 })
+
+test_that("roc.utils.topercent works without AUC", {
+	r <- roc(aSAH$outcome, aSAH$wfns, auc=FALSE)
+	r.percent <- roc(aSAH$outcome, aSAH$wfns, auc=FALSE, percent = TRUE)
+	expect_equal_ignore_call(pROC:::roc.utils.topercent.roc(r), r.percent)
+})
+
+test_that("roc.utils.unpercent works without AUC", {
+	r <- roc(aSAH$outcome, aSAH$wfns, auc=FALSE)
+	r.percent <- roc(aSAH$outcome, aSAH$wfns, auc=FALSE, percent = TRUE)
 	expect_equal_ignore_call(pROC:::roc.utils.unpercent.roc(r.percent), r)
 })
