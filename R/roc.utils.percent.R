@@ -69,6 +69,35 @@ roc.utils.unpercent.ci.auc <- function(x) {
 	return(x)
 }
 
+roc.utils.unpercent.ci.thresholds <- function(x) {
+	if (attr(x, "roc")$percent) {
+		x$sensitivity[] <- x$sensitivity / 100
+		x$specificity[] <- x$specificity / 100
+		attr(x, "roc") <- roc.utils.unpercent(attr(x, "roc"))
+	}
+	return(x)
+}
+
+roc.utils.unpercent.ci.sp <- function(x) {
+	if (attr(x, "roc")$percent) {
+		x[] <- x / 100
+		attr(x, "sensitivities") <- attr(x, "sensitivities") / 100
+		rownames(x) <- attr(x, "sensitivities")
+		attr(x, "roc") <- roc.utils.unpercent(attr(x, "roc"))
+	}
+	return(x)
+}
+
+roc.utils.unpercent.ci.se <- function(x) {
+	if (attr(x, "roc")$percent) {
+		x[] <- x / 100
+		attr(x, "specificities") <- attr(x, "specificities") / 100
+		rownames(x) <- attr(x, "specificities")
+		attr(x, "roc") <- roc.utils.unpercent(attr(x, "roc"))
+	}
+	return(x)
+}
+
 # Returns a ROC curve with percent=TRUE
 roc.utils.topercent <- function(x) {
   UseMethod("roc.utils.topercent")
@@ -113,6 +142,35 @@ roc.utils.topercent.ci.auc <- function(x) {
 	if (! attr(attr(x, "auc"), "percent")) {
 		x[] <- x * 100
 		attr(x, "auc") <- roc.utils.topercent(attr(x, "auc"))
+	}
+	return(x)
+}
+
+roc.utils.topercent.ci.thresholds <- function(x) {
+	if (! attr(x, "roc")$percent) {
+		x$sensitivity[] <- x$sensitivity * 100
+		x$specificity[] <- x$specificity * 100
+		attr(x, "roc") <- roc.utils.topercent(attr(x, "roc"))
+	}
+	return(x)
+}
+
+roc.utils.topercent.ci.sp <- function(x) {
+	if (! attr(x, "roc")$percent) {
+		x[] <- x * 100
+		attr(x, "sensitivities") <- attr(x, "sensitivities") * 100
+		rownames(x) <- paste(attr(x, "sensitivities"), "%", sep="")
+		attr(x, "roc") <- roc.utils.topercent(attr(x, "roc"))
+	}
+	return(x)
+}
+
+roc.utils.topercent.ci.se <- function(x) {
+	if (! attr(x, "roc")$percent) {
+		x[] <- x * 100
+		attr(x, "specificities") <- attr(x, "specificities") * 100
+		rownames(x) <- paste(attr(x, "specificities"), "%", sep="")
+		attr(x, "roc") <- roc.utils.topercent(attr(x, "roc"))
 	}
 	return(x)
 }
