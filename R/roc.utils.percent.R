@@ -38,7 +38,7 @@ roc.utils.unpercent.roc <- function(x) {
 		  x$call$percent <- FALSE
 		}
 		if (!is.null(x$ci)) {
-			stop("ROC curves with a ci can't be converted to percent=TRUE")
+			x$ci <- roc.utils.unpercent(x$ci)
 		}
 	}
 	
@@ -61,6 +61,14 @@ roc.utils.unpercent.auc <- function(x) {
 	return(x)
 }
 
+roc.utils.unpercent.ci.auc <- function(x) {
+	if (attr(attr(x, "auc"), "percent")) {
+		x[] <- x / 100
+		attr(x, "auc") <- roc.utils.unpercent(attr(x, "auc"))
+	}
+	return(x)
+}
+
 # Returns a ROC curve with percent=TRUE
 roc.utils.topercent <- function(x) {
   UseMethod("roc.utils.topercent")
@@ -78,7 +86,7 @@ roc.utils.topercent.roc <- function(x) {
 		  x$call$percent <- TRUE
 		}
 		if (!is.null(x$ci)) {
-			stop("ROC curves with a ci can't be converted to percent=TRUE")
+			x$ci <- roc.utils.topercent(x$ci)
 		}
 	}
  
@@ -97,6 +105,14 @@ roc.utils.topercent.auc <- function(x) {
 		if (! is.null(attr(x, "roc"))) {
 			attr(x, "roc") <- roc.utils.topercent(attr(x, "roc"))
 		}
+	}
+	return(x)
+}
+
+roc.utils.topercent.ci.auc <- function(x) {
+	if (! attr(attr(x, "auc"), "percent")) {
+		x[] <- x * 100
+		attr(x, "auc") <- roc.utils.topercent(attr(x, "auc"))
 	}
 	return(x)
 }

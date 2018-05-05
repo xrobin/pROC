@@ -8,8 +8,8 @@ expect_equal_ignore_call <- function(x, y, ...) {
 	y$call <- NULL
 	attr(x$auc, "roc")$call <- NULL
 	attr(y$auc, "roc")$call <- NULL
-	#attr(attr(x$auc, "roc")$auc, "roc")$call <- NULL
-	#attr(attr(y$auc, "roc")$auc, "roc")$call <- NULL
+	attr(attr(x$ci, "auc"), "roc")$call <- NULL
+	attr(attr(y$ci, "auc"), "roc")$call <- NULL
 	expect_equal(x, y, ...)
 }
 
