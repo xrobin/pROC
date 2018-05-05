@@ -137,7 +137,9 @@ roc.utils.thresholds <- function(predictor, direction) {
   				thresholds[row] <- unique.candidates[row - 1]
   			}
   			else {
-  				stop("Couldn't fix near ties in thresholds: %s, %s, %s, %s. This is a bug in pROC, please report it to the maintainer.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction)
+  				sessionInfo <- sessionInfo()
+  				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
+  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction, packageDescription("pROC")$BugReports))
   			}
   		}
   	}
@@ -157,7 +159,9 @@ roc.utils.thresholds <- function(predictor, direction) {
   				# We're already good, nothing to do
   			}
   			else {
-  				stop("Couldn't fix near ties in thresholds: %s, %s, %s, %s. This is a bug in pROC, please report it to the maintainer.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction)
+  				sessionInfo <- sessionInfo()
+  				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
+  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction, packageDescription("pROC")$BugReports))
   			}
   		}
   	}
