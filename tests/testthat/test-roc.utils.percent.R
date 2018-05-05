@@ -68,8 +68,8 @@ test_that("roc.utils.topercent works with different types of CI", {
 	expect_equal_ignore_call(pROC:::roc.utils.topercent.roc(r), r.percent)
 })
 
-test_that("roc.utils.to/unpercent works with different types of CI", {
-	for (of in c("auc", "thresholds", "sp", "se", "coords")) {
+test_that("roc.utils.to/unpercent works with ci .thresholds, .sp, .se", {
+	for (of in c("thresholds", "sp", "se")) {
 		set.seed(42)
 		r <- roc(aSAH$outcome, aSAH$wfns, ci=TRUE, of = of)
 		set.seed(42)

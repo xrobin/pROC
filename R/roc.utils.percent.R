@@ -98,6 +98,10 @@ roc.utils.unpercent.ci.se <- function(x) {
 	return(x)
 }
 
+roc.utils.unpercent.ci.coords <- function(x) {
+	stop("Cannot convert ci.coords object to percent = FALSE")
+}
+
 # Returns a ROC curve with percent=TRUE
 roc.utils.topercent <- function(x) {
   UseMethod("roc.utils.topercent")
@@ -173,4 +177,8 @@ roc.utils.topercent.ci.se <- function(x) {
 		attr(x, "roc") <- roc.utils.topercent(attr(x, "roc"))
 	}
 	return(x)
+}
+
+roc.utils.topercent.ci.coords <- function(x) {
+	stop("Cannot convert ci.coords object to percent = TRUE")
 }
