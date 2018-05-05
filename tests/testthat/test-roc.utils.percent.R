@@ -27,7 +27,7 @@ test_that("roc.utils.topercent works on partial AUC", {
 
 test_that("roc.utils.unpercent works on partial AUC", {
 	expect_equal_ignore_call(pROC:::roc.utils.unpercent.roc(r.wfns.percent.partial1), r.wfns.partial1)
-})	
+})
 
 test_that("roc.utils.topercent works with CI", {
 	r <- roc(aSAH$outcome, aSAH$wfns, ci=TRUE)
