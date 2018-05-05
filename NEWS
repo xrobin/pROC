@@ -1,9 +1,10 @@
-1.12.0 (2018-??-??)
+1.12.0 (2018-05-05)
   * Fix bug that crashed DeLong calculations when predictor had near-ties close to the floating point precision limit that were rounded back to a predictor value (issue #25)
   * Fix bug that crashed 'ci.auc' and 'var' if 'direction' was ">" and 'percent=TRUE' (issue #25)
   * Fix bug causing 'ci' to return 'NaN' values with 'method="delong"' when cases or controls had a single observation (issue #27)
   * Fix 'power.roc.curve' failed with curves having 'percent=TRUE'
   * Fix 'ci(..., of="coords")' returned the 'ci' function instead of the CI
+  * C++ code now check for user interrupts regularly with 
   * Better error message for 'ci.coords' attempting to return 'threshold'
   * New algorithm = 5 (used by default) chooses the algorithm based on the number of thresholds to avoid worst case with algorithm = 3
 

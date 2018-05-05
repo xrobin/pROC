@@ -1,8 +1,8 @@
 Package: pROC
 Type: Package
 Title: Display and Analyze ROC Curves
-Version: 1.11.9
-Date: 2018-03-24
+Version: 1.12.0
+Date: 2018-05-05
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: plyr, utils, methods, Rcpp (>= 0.11.1), ggplot2,
@@ -10,7 +10,8 @@ Suggests: microbenchmark, tcltk, MASS, logcondens, doParallel,
     testthat, vdiffr
 LinkingTo: Rcpp
 Authors@R: c(person("Xavier", "Robin", role = c("cre", "aut"), 
-                    email = "pROC-cran@xavier.robin.name"),
+                    email = "pROC-cran@xavier.robin.name",
+                    comment = c(ORCID = "0000-0002-6813-3200")),
              person("Natacha", "Turck", role = "aut"),
              person("Alexandre", "Hainard", role = "aut"),
              person("Natalia", "Tiberti", role = "aut"),
