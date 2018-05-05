@@ -4,7 +4,7 @@
   * Fix bug causing 'ci' to return 'NaN' values with 'method="delong"' when cases or controls had a single observation (issue #27)
   * Fix 'power.roc.curve' failed with curves having 'percent=TRUE'
   * Fix 'ci(..., of="coords")' returned the 'ci' function instead of the CI
-  * C++ code now check for user interrupts regularly with 
+  * C++ code now check for user interrupts regularly with Rcpp::checkUserInterrupt()
   * Better error message for 'ci.coords' attempting to return 'threshold'
   * New algorithm = 5 (used by default) chooses the algorithm based on the number of thresholds to avoid worst case with algorithm = 3
 
