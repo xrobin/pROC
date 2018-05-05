@@ -69,6 +69,7 @@ test_that("roc.utils.topercent works with different types of CI", {
 })
 
 test_that("roc.utils.to/unpercent works with ci .thresholds, .sp, .se", {
+	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	for (of in c("thresholds", "sp", "se")) {
 		set.seed(42)
 		r <- roc(aSAH$outcome, aSAH$wfns, ci=TRUE, of = of)
