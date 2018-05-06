@@ -116,12 +116,16 @@ plot(ci.thresholds(roc2))
 Development
 -------
 
+### Installing the development version
+
 Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtools](https://github.com/hadley/devtools/wiki) package by [Hadley Wickham](http://had.co.nz/) to automate the process (make sure you follow [the full instructions to get started](http://www.rstudio.com/projects/devtools/)):
 
 ```R
 if (! requireNamespace("devtools")) install.packages("devtools")
 devtools::install_github("xrobin/pROC")
 ```
+
+### Check
 
 To run all automated tests, including slow tests:
 
@@ -132,3 +136,12 @@ R CMD build pROC
 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
 ```
 
+### Release steps
+
+1. Build & check package: `R CMD build pROC && R CMD check --as-cran pROC_1.12.0.tar.gz`
+2. Check with R-devel: `rhub::check_with_rdevel()`
+3. Chec reverse dependencies: `devtools::revdep_check(libpath = rappdirs::user_cache_dir("revdep_lib"), srcpath = rappdirs::user_cache_dir("revdep_src"))`
+4. Update `Version` and `Date` in `DESCRIPTION`
+5. Update version and date in `NEWS`
+6. Create a tag: `git tag v1.12.0`
+7. [Submit to CRAN](https://cran.r-project.org/submit.html)
