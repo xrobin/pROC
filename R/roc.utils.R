@@ -116,7 +116,7 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
 roc.utils.thresholds <- function(predictor, direction) {
   unique.candidates <- sort(unique(predictor))
   thresholds <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
-  if (any(o <- outer(thresholds, predictor, `==`))) {
+  if (any(ties <- thresholds %in% predictor)) {
   	# If we get here, some thresholds are identical to the predictor
   	# This is caused by near numeric ties that caused the mean to equal
   	# one of the candidate
@@ -128,18 +128,18 @@ roc.utils.thresholds <- function(predictor, direction) {
   		# We need to make sure the selected threshold
   		# Corresponds to the lowest observation of the predictor
   		# Identify problematic thresholds
-  		# rows <- which(apply(o, 1, any))
-  		for (row in which(apply(o, 1, any))) {
-  			if (thresholds[row] == unique.candidates[row - 1]) {
+  		# rows <- which(ties)
+  		for (tie.idx in which(ties)) {
+  			if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
   				# We're already good, nothing to do
   			}
-  			else if (thresholds[row] == unique.candidates[row]) {
-  				thresholds[row] <- unique.candidates[row - 1]
+  			else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
+  				thresholds[tie.idx] <- unique.candidates[tie.idx - 1]
   			}
   			else {
   				sessionInfo <- sessionInfo()
   				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
-  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction, packageDescription("pROC")$BugReports))
+  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, packageDescription("pROC")$BugReports))
   			}
   		}
   	}
@@ -151,17 +151,17 @@ roc.utils.thresholds <- function(predictor, direction) {
   		# Corresponds to the highest observation of the predictor
   		# Identify the problematic thresholds:
   		# rows <- which(apply(o, 1, any))
-  		for (row in which(apply(o, 1, any))) {
-  			if (thresholds[row] == unique.candidates[row - 1]) {
-  				# Easy to fix: should be unique.candidates[row]
-  				thresholds[row] <- unique.candidates[row]
-  			} else if (thresholds[row] == unique.candidates[row]) {
+  		for (tie.idx in which(ties)) {
+  			if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
+  				# Easy to fix: should be unique.candidates[tie.idx]
+  				thresholds[tie.idx] <- unique.candidates[tie.idx]
+  			} else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
   				# We're already good, nothing to do
   			}
   			else {
   				sessionInfo <- sessionInfo()
   				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
-  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[row], unique.candidates[row - 1], unique.candidates[row], direction, packageDescription("pROC")$BugReports))
+  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, packageDescription("pROC")$BugReports))
   			}
   		}
   	}
