@@ -153,34 +153,23 @@
 
 
 \section{Handling large datasets}{
-  Versions 1.6 and 1.7 of pROC focused on execution speed to handle large datasets. Let's say we have the following dataset with 100 thousands observations:
-  
-  \preformatted{
-response <- round(runif(1E5))
-predictor <- rnorm(1E5)
-system.time(rocobj <- roc(response, predictor)) # Very slow!
-  }
-  
-  \subsection{Choosing an algorithm for \code{roc}}{
+	\subsection{Algorithms}{
+	Since version 1.12, pROC can automatically select the fastest algorithm for your dataset. The choice is based on the number of thresholds of the ROC curve: until about 1500 thresholds, algorithm 3 is used. Above that limit, pROC switches to algorithm 2.
     
-    By default, pROC uses an algorithm that linearly depends on the number of thresholds. An naive optimization is to reduce the precision of the predictor by generating ties in the data 
+    This simple selection should work in most cases. However if you are unsure or want to test it for yourself, use \code{algorithm=0} to run a quick benchmark between 2 and 3. Make sure \pkg{microbenchmark} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
     
     \preformatted{
-system.time(rocobj <- roc(response, round(predictor))) # Faster - but losing precision
-    }
-    
-    Since version 1.6, pROC contains an alternative algorithm with an overhead growing linearly as a function of the number of observations. Use the \code{algorithm=2} arguments when calling \code{\link{roc}}.
-    
-    \preformatted{
-system.time(rocobj <- roc(response, predictor, algorithm = 2)) # Better
-    }
-    
-    When unsure about the fastest algorithm, use \code{algorithm=0} to choose between 2 and 3. Make sure \pkg{microbenchmark} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
-    
-    \preformatted{
-if (!require(microbenchmark))
-  install.packages("microbenchmark")
-rocobj <- roc(response, round(predictor), algorithm = 0)
+if (!requireNamespace("microbenchmark")) install.packages("microbenchmark")
+
+# First a ROC curve with many thresholds
+response <- rbinom(5E4, 1, .5)
+predictor <- rnorm(5E4)
+rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
+
+
+# Next a ROC curve with few thresholds but more data points
+response <- rbinom(1E6, 1, .5)
+predictor <- rpois(1E6, 1)
 rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
     }
   }
