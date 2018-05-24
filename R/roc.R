@@ -220,7 +220,7 @@ roc.default <- function(response, predictor,
   	
   	# Check infinities
   	if (any(which <- is.infinite(predictor))) {
-  		stop(sprintf("Infinite value%s in predictor.", if(sum(which) > 0) "s" else ""))
+  		stop(sprintf("Infinite value%s in predictor.", if(sum(which) > 1) "s" else ""))
   	}
     
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
