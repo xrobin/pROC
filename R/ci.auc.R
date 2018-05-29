@@ -156,12 +156,10 @@ ci.auc.roc <- function(roc,
     method <- match.arg(method, c("delong", "bootstrap"))
     # delong NA to pAUC: warn + change
     if (has.partial.auc(roc) && method == "delong") {
-      warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
-      method <- "bootstrap"
+      stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
     }
     else if ("smooth.roc" %in% class(roc)) {
-      warning("Using DeLong's test for smoothed ROCs is not supported. Using bootstrap instead.")
-      method <- "bootstrap"
+      stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
     }
   }
 

@@ -147,28 +147,24 @@ cov.roc <- function(roc1, roc2,
     if (method == "delong") {
       # delong NA to pAUC: warn + change
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
-        warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+      	stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
       }
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
-        warning("Using DeLong for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+      	stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if (roc1$direction != roc2$direction)
-        warning("DeLong should not be applied to ROC curves with a different direction.")
+        warning("DeLong method should not be applied to ROC curves with a different direction.")
     }
     else if (method == "obuchowski") {
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
-        warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+        stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity")
           || (has.partial.auc(roc2) && attr(roc2$auc, "partial.auc.focus") == "sensitivity")) {
-        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+        stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
       if (roc1$direction != roc2$direction)
-        warning("Obuchowski should not be applied to ROC curves with a different direction.")
+        warning("Obuchowski method should not be applied to ROC curves with a different direction.")
     }
   }
   

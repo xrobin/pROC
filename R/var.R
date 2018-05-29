@@ -80,23 +80,19 @@ var.roc <- function(roc,
     # delong NA to pAUC: warn + change
     if (method == "delong") {
       if (has.partial.auc(roc)) {
-        warning("Using DeLong for partial AUC is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+      	stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
       }
       else if ("smooth.roc" %in% class(roc)) {
-        warning("Using DeLong for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+      	stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
     }
 
     else if (method == "obuchowski") {
       if ("smooth.roc" %in% class(roc)) {
-        warning("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+        stop("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
       }
       if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-        warning("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
-        method <- "bootstrap"
+        stop("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
       }
     }
   }
