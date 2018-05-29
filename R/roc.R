@@ -285,25 +285,19 @@ roc.default <- function(response, predictor,
       stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases), direction)
-    benchmark <- try(microbenchmark::microbenchmark(
+    benchmark <- microbenchmark::microbenchmark(
 #      "1" = roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
-    ))
-    if (is(benchmark, "try-error")) {
-      warning("Microbenchmark failed. Using default algorithm 1.")
+    )
+    print(summary(benchmark))
+    if (any(is.na(benchmark))) {
+      warning("Microbenchmark returned NA. Using default algorithm 1.")
       algorithm <- 1
-    } 
-    else {
-      print(summary(benchmark))
-      if (any(is.na(benchmark))) {
-        warning("Microbenchmark returned NA. Using default algorithm 1.")
-        algorithm <- 1
-      }
-      algorithm <- as.integer(names(which.min(tapply(benchmark$time, benchmark$expr, sum))))
-      cat(sprintf("Selecting algorithm %s.\n", algorithm))
     }
+    algorithm <- as.integer(names(which.min(tapply(benchmark$time, benchmark$expr, sum))))
+    cat(sprintf("Selecting algorithm %s.\n", algorithm))
   }
   if (isTRUE(algorithm ==  1)) {
     fun.sesp <- roc.utils.perfs.all.safe
