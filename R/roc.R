@@ -129,7 +129,7 @@ roc.default <- function(response, predictor,
         stop("Predictor must be numeric or ordered.")
     }
     if (is.matrix(predictor)) {
-    	warning("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
+    	stop("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
     }
     if (is.matrix(response)) {
     	warning("Deprecated use a matrix as response. Unexpected results may be produced, please pass a vector or factor.")
