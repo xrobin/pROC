@@ -262,13 +262,13 @@ roc.test.roc <- function(roc1, roc2,
 		}
 		else if (method == "venkatraman") {
 			if (has.partial.auc(roc1))
-				warning("Partial AUC is ignored in Venkatraman's test.")
+				stop("Partial AUC is not supported for Venkatraman's test.")
 			if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth)
 				stop("Venkatraman's test is not supported for smoothed ROCs")
 			if (roc1$direction != roc2$direction)
 				warning("Venkatraman's test should not be applied to ROC curves with different directions.")
 			if (alternative != "two.sided") {
-				warning("Only two-sided tests are available for Venkatraman.")
+				stop("Only two-sided tests are available for Venkatraman.")
 			}
 		}
 	}
