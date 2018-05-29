@@ -83,12 +83,10 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   or a formula (response~predictor) arguments, the \code{\link{roc}}
   function is called to build the ROC curve first.
 
-  Default is to use
+  The default is to use
   \dQuote{delong} method except for comparison of partial AUC and smoothed
   curves, where \code{bootstrap} is used. Using \dQuote{delong} for
-  partial AUC and smoothed ROCs is not supported in pROC (with smoothed
-  ROCs, \code{method} is ignored, otherwise for pAUC a warning is
-  produced and \dQuote{bootstrap} is employed instead).
+  partial AUC and smoothed ROCs is not supported.
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in

@@ -120,12 +120,12 @@ na.rm=TRUE, method=NULL, ...)
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
   curves and curves with different \code{direction}, where \code{bootstrap}
   is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported in pROC (a warning is produced and \dQuote{bootstrap} is employed instead).
+  supported in pROC and result in an error.
   It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
   \code{direction} (a warning is issued but the spurious comparison is
   enforced). \dQuote{venkatraman}'s test cannot be employed to compare smoothed
-  ROC curves. Additionally, partial AUC specifications are ignored (with
-  a warning), and comparison of ROC curves with different
+  ROC curves, or curves with partial AUC specifications. In addition,
+  and comparison of ROC curves with different
   \code{direction} should be used with care (a warning is produced as well).
 
   If \code{alternative="two.sided"}, a two-sided test for difference in AUC is performed. If
@@ -243,20 +243,6 @@ na.rm=TRUE, method=NULL, ...)
   with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
   functions (such as plot), or if you really want to compare two ROC
   curves smoothed differently.
-
-  If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the warning \dQuote{Using DeLong's test for partial AUC is
-    not supported. Using bootstrap test instead.} is issued. The
-  \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
-
-  If \code{method="delong"} and the ROC curve is smoothed, the warning
-  \dQuote{Using DeLong's test for smoothed ROCs is not supported. Using
-    bootstrap test instead.} is issued. The \code{method} argument is
-  ignored and \dQuote{bootstrap} is used instead.
-
-  If \code{method="venkatraman"}, and the AUC specification specifies a
-  partial AUC, the AUC specification is ignored with the warning
-  \dQuote{Partial AUC is ignored in Venkatraman's test.}.
 
   If \code{method="venkatraman"}, and \code{alternative} is
   \dQuote{less} or \dQuote{greater}, the warning \dQuote{Only two-sided

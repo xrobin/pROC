@@ -81,8 +81,7 @@ cov(...)
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported (a warning is produced and \dQuote{bootstrap} is employed
-  instead).
+  supported.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
