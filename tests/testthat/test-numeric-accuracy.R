@@ -47,20 +47,54 @@ test_that("delong theta is consistent with auc and direction = >", {
 # Multiple sequencial near-tie that will break the thresholding algorithm at the limits close to +-Inf or 0
 # Compare that with an "easy" curve with values with well defined intermediate averages
 test_that("Hard predictor has same results as easy one", {
-	numacc.predictor.hard <- c(-0x1.fffffffffffffp+1023, -0x1.ffffffffffffep+1023, -0x1.ffffffffffffdp+1023,
-							   -0x0.0000000000003p-1022, -0x0.0000000000002p-1022, -0x0.0000000000001p-1022, -0x0p+0,
-							   0x0p+0, 0x0.0000000000001p-1022, 0x0.0000000000002p-1022, 0x0.0000000000003p-1022,
-							   0x1.ffffffffffffdp+1023, 0x1.ffffffffffffep+1023, 0x1.fffffffffffffp+1023)
-	numacc.predictor.easy <- c(-10, -9, -8,
+	numacc.predictor.hard <- c(-0x1.fffffffffffffp+1023, -0x1.ffffffffffffep+1023, -0x1.ffffffffffffdp+1023, # Close to -Inf
+							   -0x1.249ad2594c37fp+332, -0x1.249ad2594c37ep+332, -0x1.249ad2594c37dp+332, -0x1.249ad2594c37cp+332, -0x1.249ad2594c37bp+332, -0x1.249ad2594c37ap+332, # Close to -1e100
+							   -0x0.0000000000003p-1022, -0x0.0000000000002p-1022, -0x0.0000000000001p-1022, -0x0p+0, # Close to -0
+							   0x0p+0, 0x0.0000000000001p-1022, 0x0.0000000000002p-1022, 0x0.0000000000003p-1022, # Close to +0
+							   0x1.249ad2594c37ap+332, 0x1.249ad2594c37bp+332, 0x1.249ad2594c37cp+332, 0x1.249ad2594c37dp+332, 0x1.249ad2594c37ep+332, 0x1.249ad2594c37fp+332, # Close to +1e100
+							   0x1.ffffffffffffdp+1023, 0x1.ffffffffffffep+1023, 0x1.fffffffffffffp+1023) # Close to +Inf
+	numacc.predictor.easy <- c(-103, -102, -101,
+							   -10, -9, -8, -7, -6, -5,
 							   -0.1, -0.01, -0.001, 0,
 							   0, 0.001, 0.01, 0.1,
-							   8, 9, 10)
+							   5, 6, 7, 8, 9, 10,
+							   101, 102, 103)
 	response <- rbinom(length(numacc.predictor.easy), 1, 0.5)
-	sample.vector <- sample(length(numacc.predictor.easy))
 	roc.hard <- roc(response, numacc.predictor.hard)
 	roc.easy <- roc(response, numacc.predictor.easy)
-	expect_equal(roc.hard$sensitivities, roc.easy$sensitivities)
-	expect_equal(roc.hard$specificities, roc.easy$specificities)
-	expect_equal(roc.hard$direction, roc.easy$direction)
+	expect_equal(roc.hard$sensitivities, roc.easy$sensitivities, info = paste("Random response: ", paste(response, collapse=",")))
+	expect_equal(roc.hard$specificities, roc.easy$specificities, info = paste("Random response: ", paste(response, collapse=",")))
+	expect_equal(roc.hard$direction, roc.easy$direction, info = paste("Random response: ", paste(response, collapse=",")))
 })
 
+test_that("Hard predictor has same results as easy one, random sampling", {
+	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	numacc.predictor.hard <- c(-0x1.fffffffffffffp+1023, -0x1.ffffffffffffep+1023, -0x1.ffffffffffffdp+1023, # Close to -Inf
+							   -0x1.249ad2594c37fp+332, -0x1.249ad2594c37ep+332, -0x1.249ad2594c37dp+332, -0x1.249ad2594c37cp+332, -0x1.249ad2594c37bp+332, -0x1.249ad2594c37ap+332, # Close to -1e100
+							   -0x0.0000000000003p-1022, -0x0.0000000000002p-1022, -0x0.0000000000001p-1022, -0x0p+0, # Close to -0
+							   0x0p+0, 0x0.0000000000001p-1022, 0x0.0000000000002p-1022, 0x0.0000000000003p-1022, # Close to +0
+							   0x1.249ad2594c37ap+332, 0x1.249ad2594c37bp+332, 0x1.249ad2594c37cp+332, 0x1.249ad2594c37dp+332, 0x1.249ad2594c37ep+332, 0x1.249ad2594c37fp+332, # Close to +1e100
+							   0x1.ffffffffffffdp+1023, 0x1.ffffffffffffep+1023, 0x1.fffffffffffffp+1023) # Close to +Inf
+	numacc.predictor.easy <- c(-103, -102, -101,
+							   -10, -9, -8, -7, -6, -5,
+							   -0.1, -0.01, -0.001, 0,
+							   0, 0.001, 0.01, 0.1,
+							   5, 6, 7, 8, 9, 10,
+							   101, 102, 103)
+	a <- replicate(1000, function(n) {
+		response <- rbinom(length(numacc.predictor.easy), 1, 0.5)
+		sample.vector <- sample(length(numacc.predictor.easy), replace = as.logical(rbinom(1, 1, 0.5)))
+		roc.hard <- roc(response, numacc.predictor.hard[sample.vector])
+		roc.easy <- roc(response, numacc.predictor.easy[sample.vector])
+		expect_equal(roc.hard$sensitivities, roc.easy$sensitivities, info = 
+					 	c(paste("Random response: ", paste(response,      collapse=",")),
+					 	  paste("Random sample:",    paste(sample.vector, collapse=","))))
+		expect_equal(roc.hard$specificities, roc.easy$specificities, info = 
+					 	c(paste("Random response: ", paste(response,      collapse=",")),
+					 	  paste("Random sample:",    paste(sample.vector, collapse=","))))
+		expect_equal(roc.hard$direction, roc.easy$direction, info = 
+					 	c(paste("Random response: ", paste(response,      collapse=",")),
+					 	  paste("Random sample:",    paste(sample.vector, collapse=","))))
+		
+	})
+})
