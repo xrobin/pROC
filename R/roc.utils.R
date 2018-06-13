@@ -115,7 +115,9 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
 roc.utils.thresholds <- function(predictor, direction) {
   unique.candidates <- sort(unique(predictor))
-  thresholds <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
+  thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
+  thresholds2 <- (c(-Inf, unique.candidates)/2 + c(unique.candidates, +Inf)/2)
+  thresholds <- ifelse(abs(thresholds1) > 1e100, thresholds2, thresholds1)
   if (any(ties <- thresholds %in% predictor)) {
   	# If we get here, some thresholds are identical to the predictor
   	# This is caused by near numeric ties that caused the mean to equal
