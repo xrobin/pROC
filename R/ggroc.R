@@ -48,7 +48,7 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
 
-ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size"), legacy.axes = FALSE, ...) {
+ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...) {
 	aes <- match.arg(aes)
 	
 	# Make sure data is a list and every element is a roc object
