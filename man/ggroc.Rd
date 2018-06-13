@@ -52,11 +52,20 @@ ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
 g + theme_minimal() + ggtitle("My ROC curve")
 
 # Multiple curves:
-g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2))
+g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2, ndka=roc(aSAH$outcome, aSAH$ndka)))
 g2
+
+# This is equivalent to using roc.formula:
+roc.list <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
+g.list <- ggroc(roc.list)
+g.list
+
 # with additional aesthetics:
 g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2), linetype=2)
 ggroc(list(s100b=rocobj, wfns=rocobj2), aes="linetype", color="red")
+
+# OR faceting
+g.list + facet_grid(.~name) + theme(legend.position="none")
 
 }
 
