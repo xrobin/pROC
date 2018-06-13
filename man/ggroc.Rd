@@ -5,20 +5,21 @@
 \alias{ggroc}
 
 \title{
-  Plot a ROC curve with ggplot2 (Experimental)
+  Plot a ROC curve with ggplot2
 }
 \description{
   This function plots a ROC curve with ggplot2.
 }
 \usage{
 \S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
-\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size"), legacy.axes = FALSE, ...)
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...)
 }
 		   
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
-  \item{aes}{the name of the aesthetics for \code{\link{geom_line}} to map to the different ROC curves supplied}
+  \item{aes}{the name of the aesthetics for \code{\link{geom_line}} to map to the different ROC curves supplied. Use \dQuote{group} if
+  you want the curves to appear with the same aestetic, for instance if you are faceting instead.}
   \item{legacy.axes}{a logical indicating if the specificity axis (x
     axis) must be plotted as as decreasing \dQuote{specificity}
     (\code{FALSE}, the default) or increasing \dQuote{1 - specificity}
@@ -61,12 +62,16 @@ g.list <- ggroc(roc.list)
 g.list
 
 # with additional aesthetics:
-g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2), linetype=2)
-ggroc(list(s100b=rocobj, wfns=rocobj2), aes="linetype", color="red")
+g3 <- ggroc(roc.list, linetype=2)
+g3
+g4 <- ggroc(roc.list, aes="linetype", color="red")
+g4
 
 # OR faceting
 g.list + facet_grid(.~name) + theme(legend.position="none")
+# To have all the curves of the same color, use aes="group":
+g.group <- ggroc(roc.list, aes="group")
+g.group
+g.group + facet_grid(.~name)
 
 }
-
-
