@@ -220,8 +220,8 @@ roc.default <- function(response, predictor,
   	
   	# Check infinities
   	if (any(which <- is.infinite(predictor))) {
-  		warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NA returned instead.")
-  		return(NA)
+  		warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
+  		return(NaN)
   	}
     
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
