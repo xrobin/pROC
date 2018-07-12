@@ -60,8 +60,8 @@ test_that("Hard predictor has same results as easy one", {
 							   5, 6, 7, 8, 9, 10,
 							   101, 102, 103)
 	response <- rbinom(length(numacc.predictor.easy), 1, 0.5)
-	roc.hard <- roc(response, numacc.predictor.hard)
-	roc.easy <- roc(response, numacc.predictor.easy)
+	roc.hard <- roc(response, numacc.predictor.hard, direction="<")
+	roc.easy <- roc(response, numacc.predictor.easy, direction="<")
 	expect_equal(roc.hard$sensitivities, roc.easy$sensitivities, info = paste("Random response: ", paste(response, collapse=",")))
 	expect_equal(roc.hard$specificities, roc.easy$specificities, info = paste("Random response: ", paste(response, collapse=",")))
 	expect_equal(roc.hard$direction, roc.easy$direction, info = paste("Random response: ", paste(response, collapse=",")))
@@ -84,8 +84,8 @@ test_that("Hard predictor has same results as easy one, random sampling", {
 	a <- replicate(1000, function(n) {
 		response <- rbinom(length(numacc.predictor.easy), 1, 0.5)
 		sample.vector <- sample(length(numacc.predictor.easy), replace = as.logical(rbinom(1, 1, 0.5)))
-		roc.hard <- roc(response, numacc.predictor.hard[sample.vector])
-		roc.easy <- roc(response, numacc.predictor.easy[sample.vector])
+		roc.hard <- roc(response, numacc.predictor.hard[sample.vector], direction="<")
+		roc.easy <- roc(response, numacc.predictor.easy[sample.vector], direction="<")
 		expect_equal(roc.hard$sensitivities, roc.easy$sensitivities, info = 
 					 	c(paste("Random response: ", paste(response,      collapse=",")),
 					 	  paste("Random sample:",    paste(sample.vector, collapse=","))))

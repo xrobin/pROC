@@ -12,7 +12,8 @@
 }
 \usage{
 \S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
-\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...)
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size", "group"),
+      legacy.axes = FALSE, ...)
 }
 		   
 \arguments{
