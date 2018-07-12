@@ -252,7 +252,7 @@ ci.method=NULL, density=NULL, ...)
   
   Infinite values of the predictor cannot always be thresholded by
   infinity and can cause ROC curves to not reach 0 or 100\% 
-  specificity or sensitivity. Since version 1.13.0, pROC returns \code{NA}
+  specificity or sensitivity. Since version 1.13.0, pROC returns \code{NaN}
   with a warning message \dQuote{Infinite value(s) in predictor} if
   \code{predictor} contains any \link[=is.infinite]{infinite} values.
 }
