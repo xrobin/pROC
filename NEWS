@@ -2,7 +2,7 @@
   * Turn several warning into errors
 
 1.12.9 (2018-*-*)
-  * Infinite values in predictor now correctly produce an error (issue #30)
+  * 'roc' now returns 'NaN' when predictor contains infinite values (issue #30)
   * Better handling of near-ties near +-Infinity and 0
   * 'ggroc' supports aes="group" to allow curves with identical aesthetics
 
