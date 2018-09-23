@@ -1,7 +1,7 @@
 1.13.9 (future)
-  * Turn several warning into errors
+  * Turn several warnings into errors
 
-1.12.9 (2018-*-*)
+1.13.0 (2018-09-23)
   * 'roc' now returns 'NaN' when predictor contains infinite values (issue #30)
   * Better handling of near-ties near +-Infinity and 0
   * 'ggroc' supports aes="group" to allow curves with identical aesthetics
