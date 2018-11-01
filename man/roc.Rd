@@ -74,6 +74,9 @@ ci.method=NULL, density=NULL, ...)
     higher than the values of the case group (controls > t >= cases).
     \dQuote{<}: if the predictor values for the control group are lower
     or equal than the values of the case group (controls < t <= cases).
+    You should set this explicity to \dQuote{>} or \dQuote{<} whenever
+    you are resampling or randomizing the data, otherwise the 
+    curves will be biased towards higher AUC values.
   }
   \item{algorithm}{the method used to compute sensitivity and specificity, 
     an integer of length 1 between \code{0} and \code{4}.
