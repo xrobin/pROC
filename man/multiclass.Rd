@@ -24,8 +24,9 @@ percent=FALSE, ...)
     responses, typically encoded with 0 (controls) and 1 (cases), as in
     \code{\link{roc}}.
   }
-  \item{predictor}{a numeric vector, containing the value of each
-    observation, as in \code{\link{roc}}.
+  \item{predictor}{either a numeric vector, containing the value of each
+    observation, as in \code{\link{roc}}, or, a matrix giving the decision value
+    (e.g. probability) for each class.
   }
   \item{formula}{a formula of the type \code{response~predictor}.}
   \item{data}{a matrix or data.frame containing the variables in the
@@ -52,7 +53,7 @@ intervals and comparison tests are not implemented yet.
 }
 
 \value{
-  A list of class \dQuote{multiclass.roc} with the following fields: 
+  If \code{predictor} is a vector, a list of class \dQuote{multiclass.roc} with the following fields: 
   \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
     defined in \code{\link{auc}}. Note that this is not the standard AUC
     but the multi-class AUC as defined by Hand and Till.
@@ -75,6 +76,8 @@ intervals and comparison tests are not implemented yet.
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
+  If \code{predictor} is a matrix, a numeric giving the overall AUC. The attribute
+  \code{pair_AUCs} is a vector indicating the pairwise AUCs, A(i,j), for individual pairs of classes (i,j).
 }
 
 \section{Warnings}{
