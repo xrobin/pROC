@@ -78,6 +78,121 @@ multiclass.roc.univariate <- function(response, predictor,
   return(multiclass.roc)
 }
 
+compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, ... ) {
+    # computes A(i|j), the probability that a randomly 
+    # chosen member of class j has a lower estimated probability (or score) 
+    # of belonging to class i than a randomly chosen member of class i
+
+    pred.i <- pred.matrix[which(ref.outcome == i), i] # p(G = i) assigned to class i observations
+    pred.j <- pred.matrix[which(ref.outcome == j), i] # p(G = i) assigned to class j observations
+    classes <- factor(c(rep(i, length(pred.i)), rep(j, length(pred.j))))
+    # override levels argument by new levels
+    levels <- unique(classes)
+    predictor <- c(pred.i, pred.j)
+    auc <- roc(classes, predictor, levels = levels, percent = percent, auc = FALSE, ci = FALSE, ...)
+    return(auc)
+}
+
+compute.new.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, ... ) {
+    # computes A(i|j), the probability that a randomly 
+    # chosen member of class j has a lower estimated probability (or score) 
+    # of belonging to class i than a randomly chosen member of class i
+
+    pred.i <- pred.matrix[which(ref.outcome == i), i] # p(G = i) assigned to class i observations
+    pred.j <- pred.matrix[which(ref.outcome == j), i] # p(G = i) assigned to class j observations
+    classes <- factor(c(rep(i, length(pred.i)), rep(j, length(pred.j))))
+    # override levels argument by new levels
+    levels <- unique(classes)
+    predictor <- c(pred.i, pred.j)
+    auc <- roc(classes, predictor, levels = levels, percent = percent, auc = FALSE, ci = FALSE, ...)
+    return(auc)
+}
+
+multiclass.roc.multivariate <- function(response, predictor, levels, percent, ...) {
+    # Reference: "A Simple Generalisation of the Area Under the ROC 
+    # Curve for Multiple Class Classification Problems" (Hand and Till, 2001)
+    if (!is(predictor, "matrix")) {
+        stop("Please provide a matrix via 'predictor'.")
+    }
+    if (nrow(predictor) != length(response)) {
+        stop("Number of rows in 'predictor' does not agree with 'response'");
+    }
+    # check whether the columns of the prediction matrix agree with the factors in 'response'
+    m <- match(colnames(predictor), levels)
+    levels <- colnames(predictor)[!is.na(m)]
+    if (length(levels) == 1) {
+        stop("For a single decision value, please provide 'predictor' as a vector.")
+    } else if (length(levels) == 0) {
+        stop("The column names of 'predictor' could not be matched to the levels of 'response'.")
+    }
+    missing.classes <- levels[setdiff(seq_along(levels), m)]
+    if (length(missing.classes) != 0) {
+        out.classes <- paste0(missing.classes, collapse = ",")
+        if (length(missing.classes) == length(levels)) {
+            # no decision values found
+            stop("Could not find any decision values in 'predictor' matching the 'response' levels. Could not find the following classes: ", out.classes, ". Check your column names!")
+        } else {
+            # some decision values found
+            warning("You did not provide decision values for the following classes: ", out.classes, ".")
+        }
+    }
+    additional.classes <- colnames(predictor)[which(is.na(m))]
+    if (length(additional.classes) != 0) {
+        out.classes <- paste0(additional.classes, collapse = ",")
+        warning("The following classes were not found in 'response': ", out.classes, ".")
+    }
+    multiclass.roc <- list(
+                         response = response,
+                         predictor = predictor,
+                         percent = percent,
+                         call=match.call())
+    class(multiclass.roc) <- "multiclass.roc"
+    multiclass.roc$levels <- levels
+    rocs <- utils::combn(levels, 2, function(x, predictor, response, levels, percent, ...) {
+        A1 <- compute.pair.AUC(predictor, x[1], x[2], response, levels, percent, ...)
+        A2 <- compute.pair.AUC(predictor, x[2], x[1], response, levels, percent, ...)
+        #print(auc(A1))
+        #print(auc(A2))
+        # merging A1 and A2 is infeasible as auc() would not be well-defined
+        A <- list(A1, A2) 
+        return(A)
+    }, simplify = FALSE, predictor = predictor, response = response, 
+        levels = levels, percent = percent, ...)
+    pairs <- unlist(lapply(combn(levels, 2, simplify = FALSE), 
+                           function(x) paste(x, collapse = "/")))
+    names(rocs) <- pairs
+    multiclass.roc$rocs <- rocs
+    # can't use 'auc.multiclass.roc' because mean of ROCs needs to be computed before ...
+    #A.total <- auc.multiclass.roc(multiclass.roc)
+    mean.AUCs <- unlist(lapply(rocs, function(x) mean(auc(x[[1]]), auc(x[[2]]))))
+    A.ij.total <- sum(mean.AUCs)
+    c <- length(levels)
+    M <- 2 / (c * (c-1)) * A.ij.total 
+    multiclass.roc$auc <- M # manually store auc; TODO: improve functioning of auc function
+    multiclass.roc$pair_aucs <- mean.AUCs # manually store pairwise AUCs
+    return(multiclass.roc)
+}
+
+multiclass.roc.default <- function(response, predictor,
+                                   levels=base::levels(as.factor(response)),
+                                   percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
+                                   # what computation must be done
+                                   #auc=TRUE, # call auc.roc on the current object
+                                   #ci=FALSE, # call ci.roc on the current object
+                                   ...) {
+    # implements the approach from Hand & Till (2001)
+
+    if (is(predictor, "matrix")) {
+        # for decision values for multiple classes (e.g. probabilities of individual classes)
+        return(multiclass.roc.multivariate(response, predictor, levels, percent, ...))
+    } else {
+        # for a single decision value for separating the classes
+        return(multiclass.roc.univariate(response, predictor, levels, percent, ...))
+    }
+}
+
+# Previous code included for testing: results are different!
+
 compute.A.conditional <- function(pred.matrix, i, j, ref.outcome) {
     # computes A(i|j), the probability that a randomly 
     # chosen member of class j has a lower estimated probability (or score) 
@@ -100,7 +215,7 @@ compute.A.conditional <- function(pred.matrix, i, j, ref.outcome) {
     return(A)
 }
 
-multiclass.roc.multivariate <- function(response, predictor) {
+multiclass.roc.multivariate.custom <- function(response, predictor) {
     # Reference: "A Simple Generalisation of the Area Under the ROC 
     # Curve for Multiple Class Classification Problems" (Hand and Till, 2001)
     if (!is(predictor, "matrix")) {
@@ -149,22 +264,4 @@ multiclass.roc.multivariate <- function(response, predictor) {
     M <- 2 / (c * (c-1)) * A.ij.total 
     attr(M, "pair_AUCs") <- A.ij.joint
     return(M)
-}
-
-multiclass.roc.default <- function(response, predictor,
-                                   levels=base::levels(as.factor(response)),
-                                   percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
-                                   # what computation must be done
-                                   #auc=TRUE, # call auc.roc on the current object
-                                   #ci=FALSE, # call ci.roc on the current object
-                                   ...) {
-    # implements the approach from Hand & Till (2001)
-
-    if (is(predictor, "matrix")) {
-        # for decision values for multiple classes (e.g. probabilities of individual classes)
-        return(multiclass.roc.multivariate(response, predictor))
-    } else {
-        # for a single decision value for separating the classes
-        return(multiclass.roc.univariate(response, predictor, levels, percent, ...))
-    }
 }

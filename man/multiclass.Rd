@@ -98,6 +98,9 @@ intervals and comparison tests are not implemented yet.
 }
 
 \examples{
+####
+# Examples for a univariate decision value
+####
 data(aSAH)
 
 # Basic example
@@ -110,6 +113,44 @@ multiclass.roc(aSAH$gos6, aSAH$s100b, levels=c(3, 4, 5))
 # Give the result in percent
 multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
 
+####
+# Examples for multivariate decision values (e.g. class probabilities)
+####
+n <- c(100, 80, 150)
+responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
+# construct prediction matrix: one column per class
+set.seed(42)
+
+# Perfect separation
+preds <- lapply(n, function(x) runif(x, 0.8, 1))
+predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.3)),
+                                  "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0, 0.2)),
+                                  "X3" = c(runif(n[1] + n[2], 0, 0.5), preds[[3]])))
+multiclass.roc(responses, predictor)
+
+# Imperfect separation
+
+preds <- lapply(n, function(x) runif(x, 0.4, 0.6))
+predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.7)),
+                                  "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0.2, 0.8)),
+                                  "X3" = c(runif(n[1] + n[2], 0.3, 0.7), preds[[3]])))
+multiclass.roc(responses, predictor)
+
+# AUC of random classifier
+
+preds <- lapply(n, function(x) runif(x, 0, 1))
+predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 1)),
+                                  "X2" = c(runif(n[1], 0, 1), preds[[2]], runif(n[3], 0, 1)),
+                                  "X3" = c(runif(n[1] + n[2], 0, 1), preds[[3]])))
+multiclass.roc(responses, predictor)
+
+# AUC of worst-case classifier
+
+preds <- lapply(n, function(x) rep(0, x))
+predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0.1, 1)),
+                                  "X2" = c(runif(n[1], 0, 1), preds[[2]], runif(n[3], 0.1, 1)),
+                                  "X3" = c(runif(n[1] + n[2], 0.1, 1), preds[[3]])))
+multiclass.roc(responses, predictor)
 
 
 }
