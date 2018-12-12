@@ -15,7 +15,7 @@ multiclass.roc(...)
 \S3method{multiclass.roc}{formula}(formula, data, ...)
 \S3method{multiclass.roc}{default}(response, predictor,
 levels=base::levels(as.factor(response)), 
-percent=FALSE, ...)
+percent=FALSE, direction = ">", ...)
 
 }
 
@@ -171,14 +171,8 @@ responses <- factor(c("X1", "X2", "X3"))
 predictor <- data.frame("X1" = c(0.9, 0.0, 0.1),
                                   "X2" = c(0.05, 0.1, 0.7),
                                   "X3" = c(0.05, 0.9, 0.2))
-# AUC will be 1 if direction is 'auto' because individual observations have different decision rules (inconsistent!)
-# o X1/X2 comparison: High score for X1 indicates membership in class X1, high score for X2 indicates membership in X2
-# o X1/X3 comparison: High score for X1 indicates membership in class X1, high score for X3 indicates membership in X3
-# o X2/X3 comparison: Low score for X2 indicates memberhsip in class X2, low score for X3 indicates membership in X3
-# o Contradiction: interpretation of decision values for X2 and X3 are inconsistent
-# -> calculated AUC is overly optimistic; solution: need to fix the interpretation of the decision values
-multiclass.roc(responses, predictor) # use direction = '>' s.t. AUC will be 0.66 instead of 1
-multiclass.roc(responses, predictor, percent=TRUE) # result in percent
+multiclass.roc(responses, predictor)
+multiclass.roc(responses, predictor, percent=TRUE)
 # Limit set of levels
 multiclass.roc(responses, predictor, levels = c("X1", "X2"))
 # Use with formula

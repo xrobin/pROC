@@ -176,7 +176,7 @@ multiclass.roc.multivariate <- function(response, predictor, levels, percent, di
 multiclass.roc.default <- function(response, predictor,
                                    levels = base::levels(as.factor(response)),
                                    percent = FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80)),
-                                   direction = "auto",
+                                   direction = ">",
                                    # what computation must be done
                                    #auc=TRUE, # call auc.roc on the current object
                                    #ci=FALSE, # call ci.roc on the current object
