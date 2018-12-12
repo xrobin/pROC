@@ -39,6 +39,15 @@ percent=FALSE, ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
+  \item{direction}{in which direction to make the comparison?
+    \dQuote{>} (default): if the predictor values for the control group are
+    higher than the values of the case group (controls > t >= cases).
+    \dQuote{<}: if the predictor values for the control group are lower
+    or equal than the values of the case group (controls < t <= cases).
+    Since setting the parameter to \dQuote{auto} would lead to inconsistent
+    AUC values, a setting of \dQuote{auto} is automatically adjusted to
+    the default setting.
+  }
   \item{...}{further arguments passed to \code{\link{roc}}.
   }
 }
@@ -126,14 +135,16 @@ preds <- lapply(n, function(x) runif(x, 0.8, 1))
 predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.3)),
                                   "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0, 0.2)),
                                   "X3" = c(runif(n[1] + n[2], 0, 0.5), preds[[3]])))
-multiclass.roc(responses, predictor) # nb: direction will be set to ">" automatically if not supplied
+multiclass.roc(responses, predictor)
 
 # Imperfect separation
 
 preds <- lapply(n, function(x) runif(x, 0.4, 0.6))
-predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.7)),
-                                  "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0.2, 0.8)),
-                                  "X3" = c(runif(n[1] + n[2], 0.3, 0.7), preds[[3]])))
+predictor <- as.matrix(data.frame(
+                "X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.7)),
+                "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0.2, 0.8)),
+                "X3" = c(runif(n[1] + n[2], 0.3, 0.7), preds[[3]])
+             ))
 multiclass.roc(responses, predictor)
 multiclass.roc(responses, predictor, direction = ">")
 
