@@ -3,6 +3,7 @@
 \alias{print.roc}
 \alias{print.smooth.roc}
 \alias{print.multiclass.roc}
+\alias{print.mv.multiclass.roc}
 \alias{print.ci.auc}
 \alias{print.ci.thresholds}
 \alias{print.ci.coords}
@@ -21,6 +22,8 @@
 \S3method{print}{roc}(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...)
 \S3method{print}{multiclass.roc}(x, digits=max(3, getOption("digits") -
   3), call=TRUE, ...) 
+\S3method{print}{mv.multiclass.roc}(x, digits=max(3, getOption("digits") -
+  3), call=TRUE, ...) 
 \S3method{print}{smooth.roc}(x, digits=max(3, getOption("digits") - 3),
 call=TRUE, ...)
 \S3method{print}{auc}(x, digits=max(3, getOption("digits") - 3), ...)
@@ -31,6 +34,7 @@ call=TRUE, ...)
 \S3method{print}{ci.sp}(x, digits=max(3, getOption("digits") - 3), ...)
 \S3method{print}{ci.coords}(x, digits=max(3, getOption("digits") - 3), ...)
 }
+
 		   
 \arguments{
   \item{x}{a roc, auc or ci object, from the \link{roc}, \link{auc} or
