@@ -88,6 +88,39 @@ print.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call
   invisible(x)
 }
 
+print.mv.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...) {
+	# do we print the call?
+	if (call)
+		cat("\nCall:\n", deparse(x$call), "\n\n", sep="")
+	# get predictor name
+	if ("predictor" %in% names(x$call))
+		predictor.name <- as.character(x$call[match("predictor", names(x$call))])
+	else if (!is.null(x$call$formula)) 
+		predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+	# Get response
+	if ("response" %in% names(x$call))
+		response.name <- as.character(x$call[match("response", names(x$call))])
+	else if (!is.null(x$call$formula)) {
+		formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+		response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
+	}
+	cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse=", "),  ".\n", sep="")
+	
+	# AUC if exists
+	if (!is.null(x$auc)) {
+		print(x$auc, digits=digits, ...)
+	}
+	else
+		cat("Multi-class area under the curve not computed.\n")
+	
+	# CI if exists, print it
+	if(!is.null(x$ci)) {
+		print(x$ci, digits=digits, ...)
+	}
+	
+	invisible(x)
+}
+
 print.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...) {
   # do we print the call?
   if (call)
