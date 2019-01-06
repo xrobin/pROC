@@ -15,7 +15,7 @@ multiclass.roc(...)
 \S3method{multiclass.roc}{formula}(formula, data, ...)
 \S3method{multiclass.roc}{default}(response, predictor,
 levels=base::levels(as.factor(response)), 
-percent=FALSE, direction = ">", ...)
+percent=FALSE, direction = c("auto", "<", ">"), ...)
 
 }
 
@@ -40,29 +40,41 @@ percent=FALSE, direction = ">", ...)
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
   \item{direction}{in which direction to make the comparison?
-    \dQuote{>} (default): if the predictor values for the control group are
+    \dQuote{auto} (default for univariate curves):
+    automatically define in which group the
+    median is higher and take the direction accordingly. 
+    Not available for multivariate curves.
+    \dQuote{>} (default for multivariate curves):
+    if the predictor values for the control group are
     higher than the values of the case group (controls > t >= cases).
     \dQuote{<}: if the predictor values for the control group are lower
     or equal than the values of the case group (controls < t <= cases).
-    Since setting the parameter to \dQuote{auto} would lead to inconsistent
-    AUC values, a setting of \dQuote{auto} is automatically adjusted to
-    the default setting.
   }
   \item{...}{further arguments passed to \code{\link{roc}}.
   }
 }
 \details{
 This function performs multiclass AUC as defined by Hand and Till
-(2001). A multiclass AUC is a mean of \code{\link{auc}} and cannot be
-plotted.
+(2001). A multiclass AUC is a mean of several \code{\link{auc}} and
+cannot be plotted. Only AUCs can be computed for such curves.
+Confidence intervals, standard deviation, smoothing and
+comparison tests are not implemented.
+
+The \code{multiclass.roc} function can handle two types of datasets: uni- and multi-variate.
+In the univariate case, a single \code{predictor} vector is passed
+and all the combinations of responses are assessed.
+I the multivariate case, a \code{\link{matrix}} or \code{\link{data.frame}}
+is passed as \code{predictor}. The columns must be named according to the
+levels of the \code{response}.
 
 This function has been much less tested than the rest of the package and
-is more subject to bugs. Please report them if you find one. Confidence
-intervals and comparison tests are not implemented yet.
+is more subject to bugs. Please report them if you find one.
 }
 
 \value{
-  If \code{predictor} is a vector, a list of class \dQuote{multiclass.roc} with the following fields: 
+  If \code{predictor} is a vector, a list of class \dQuote{multiclass.roc} 
+  (univariate) or \dQuote{mv.multiclass.roc} (multivariate), 
+  with the following fields: 
   \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
     defined in \code{\link{auc}}. Note that this is not the standard AUC
     but the multi-class AUC as defined by Hand and Till.
@@ -85,8 +97,10 @@ intervals and comparison tests are not implemented yet.
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
-  If \code{predictor} is a matrix, a numeric giving the overall AUC. The attribute
-  \code{pair_AUCs} is a vector indicating the pairwise AUCs, A(i,j), for individual pairs of classes (i,j).
+  \item{pair_AUCs}{for multivariate \code{mv.multiclass.roc} only: 
+  a numeric giving the overall AUC. The attribute
+  \code{} is a vector indicating the pairwise AUCs, A(i,j), for individual pairs of classes (i,j).
+  }
 }
 
 \section{Warnings}{
