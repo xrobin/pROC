@@ -51,7 +51,14 @@ g
 ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
 
 # You can then your own theme, etc.
-g + theme_minimal() + ggtitle("My ROC curve")
+g + theme_minimal() + ggtitle("My ROC curve") + 
+    geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed")
+
+# And change axis labels to FPR/FPR
+gl <- ggroc(rocobj, legacy.axes = TRUE)
+gl
+gl + xlab("FPR") + ylab("TPR") + 
+    geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed")
 
 # Multiple curves:
 g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2, ndka=roc(aSAH$outcome, aSAH$ndka)))
