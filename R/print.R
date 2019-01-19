@@ -158,12 +158,14 @@ print.multiclass.auc <- function(x, digits=max(3, getOption("digits") - 3), ...)
   if (identical(attr(x, "partial.auc"), FALSE))
     cat("Multi-class area under the curve: ", signif(x, digits=digits), ifelse(attr(x, "percent"), "%", ""), "\n", sep="")
   else {
-    cat(ifelse(identical(attr(x, "partial.auc.correct"), TRUE), "Corrected p", "P"), "artial area under the curve", sep="")
+    cat("Multi-class ", ifelse(identical(attr(x, "partial.auc.correct"), TRUE), "corrected ", ""), "partial area under the curve", sep="")
     cat(" (", attr(x, "partial.auc.focus"), " ", attr(x, "partial.auc")[1], ifelse(attr(x, "percent"), "%", ""), "-", attr(x, "partial.auc")[2], ifelse(attr(x, "percent"), "%", ""), ")", sep="")
     cat(": ", signif(x, digits=digits), ifelse(attr(x, "percent"), "%", ""), "\n", sep="")
   }
   invisible(x)
 }
+
+print.mv.multiclass.auc <- print.multiclass.auc
 
 print.ci.auc <- function(x, digits=max(3, getOption("digits") - 3), ...) {
   signif.ci <- signif(x, digits=digits)
