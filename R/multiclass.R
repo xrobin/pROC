@@ -163,14 +163,9 @@ multiclass.roc.multivariate <- function(response, predictor, levels, percent, di
                            function(x) paste(x, collapse = "/")))
     names(rocs) <- pairs
     multiclass.roc$rocs <- rocs
-    # can't use 'auc.multiclass.roc' because mean of ROCs needs to be computed before ...
-    #A.total <- auc.multiclass.roc(multiclass.roc)
-    mean.AUCs <- unlist(lapply(rocs, function(x) mean(auc(x[[1]]), auc(x[[2]]))))
-    A.ij.total <- sum(mean.AUCs)
-    c <- length(levels)
-    M <- 2 / (c * (c-1)) * A.ij.total 
-    multiclass.roc$auc <- M # manually store auc; TODO: improve functioning of auc function
-    multiclass.roc$pair_aucs <- mean.AUCs # manually store pairwise AUCs
+    
+    multiclass.roc$auc <- auc.mv.multiclass.roc(multiclass.roc, ...)
+    
     return(multiclass.roc)
 }
 

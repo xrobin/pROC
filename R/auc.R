@@ -71,6 +71,27 @@ auc.multiclass.roc <- function(multiclass.roc, ...) {
   return(auc)
 }
 
+auc.mv.multiclass.roc <- function(mv.multiclass.roc, ...) {
+	aucs <- lapply(mv.multiclass.roc$rocs, function(x) list(auc(x[[1]], ...), auc(x[[2]], ...)))
+	A.ij.total <- sum(sapply(aucs, function(x) mean(unlist(x))))
+	c <- length(mv.multiclass.roc$levels)
+	auc <- 2 / (c * (c-1)) * A.ij.total
+	
+	# Prepare auc object
+	auc <- as.vector(auc) # remove potential pre-existing attributes
+	attr(auc, "percent") <- mv.multiclass.roc$percent
+	attr(auc, "roc") <- mv.multiclass.roc
+	
+	# Get partial auc details from first computed auc
+	attr(auc, "partial.auc") <- attr(aucs[[1]][[1]], "partial.auc")
+	if (!identical(attr(aucs[[1]], "partial.auc"), FALSE)) {
+		attr(auc, "partial.auc.focus") <- attr(aucs[[1]][[1]], "partial.auc.focus")
+		attr(auc, "partial.auc.correct") <- attr(aucs[[1]][[1]], "partial.auc.correct") 
+	}
+	class(auc) <- c("mv.multiclass.auc", "numeric")
+	return(auc)
+}
+
 auc.roc <- function(roc,
                     # Partial auc definition
                     partial.auc=FALSE, # false (consider total area) or numeric length 2: boundaries of the AUC to consider, between 0 and 1, or 0 and 100 if percent is TRUE
