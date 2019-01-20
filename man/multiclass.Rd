@@ -135,19 +135,28 @@ multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
 ####
 # Examples for multivariate decision values (e.g. class probabilities)
 ####
+
+# Example with a multinomial log-linear model from nnet
+# We use the iris dataset and split into a training and test set
+requireNamespace("nnet")
+data(iris)
+iris.sample <- sample(1:150)
+iris.train <- iris[iris.sample[1:75],]
+iris.test <- iris[iris.sample[76:150],]
+mn.net <- nnet::multinom(Species ~ ., iris.train)
+
+# Use predict with type="prob" to get class probabilities
+iris.predictions <- predict(mn.net, newdata=iris.test, type="prob")
+head(iris.predictions)
+
+# This can be used directly in multiclass.roc:
+multiclass.roc(iris.test$Species, iris.predictions)
+
+
+# Let's see an other example with an artificial dataset
 n <- c(100, 80, 150)
 responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
 # construct prediction matrix: one column per class
-set.seed(42)
-
-# Perfect separation
-preds <- lapply(n, function(x) runif(x, 0.8, 1))
-predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.3)),
-                                  "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0, 0.2)),
-                                  "X3" = c(runif(n[1] + n[2], 0, 0.5), preds[[3]])))
-multiclass.roc(responses, predictor)
-
-# Imperfect separation
 
 preds <- lapply(n, function(x) runif(x, 0.4, 0.6))
 predictor <- as.matrix(data.frame(
@@ -156,37 +165,17 @@ predictor <- as.matrix(data.frame(
                 "X3" = c(runif(n[1] + n[2], 0.3, 0.7), preds[[3]])
              ))
 multiclass.roc(responses, predictor)
+
+# One can change direction , partial.auc, percent, etc:
 multiclass.roc(responses, predictor, direction = ">")
-
-# AUC of random classifier
-
-preds <- lapply(n, function(x) runif(x, 0, 1))
-predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 1)),
-                                  "X2" = c(runif(n[1], 0, 1), preds[[2]], runif(n[3], 0, 1)),
-                                  "X3" = c(runif(n[1] + n[2], 0, 1), preds[[3]])))
-multiclass.roc(responses, predictor)
-
-# AUC of worst-case classifier
-
-preds <- lapply(n, function(x) rep(0, x))
-predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0.1, 1)),
-                                  "X2" = c(runif(n[1], 0, 1), preds[[2]], runif(n[3], 0.1, 1)),
-                                  "X3" = c(runif(n[1] + n[2], 0.1, 1), preds[[3]])))
-multiclass.roc(responses, predictor)
-multiclass.roc(formula = X3 ~ X2, data = predictor)
+multiclass.roc(responses, predictor, percent = TRUE, 
+	partial.auc = c(100, 90), partial.auc.focus = "se")
 
 
-# Minimum example for preventing the use of direction = "auto"
-responses <- factor(c("X1", "X2", "X3"))
-predictor <- data.frame("X1" = c(0.9, 0.0, 0.1),
-                                  "X2" = c(0.05, 0.1, 0.7),
-                                  "X3" = c(0.05, 0.9, 0.2))
-multiclass.roc(responses, predictor)
-multiclass.roc(responses, predictor, percent=TRUE)
 # Limit set of levels
 multiclass.roc(responses, predictor, levels = c("X1", "X2"))
-# Use with formula
-data <- cbind(predictor, "response" = responses)
+# Use with formula. Here we need a data.frame to store the responses as characters
+data <- cbind(as.data.frame(predictor), "response" = responses)
 multiclass.roc(response ~ X1+X3, data)
 
 }
