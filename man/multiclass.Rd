@@ -97,10 +97,6 @@ is more subject to bugs. Please report them if you find one.
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
-  \item{pair_AUCs}{for multivariate \code{mv.multiclass.roc} only: 
-  a numeric giving the overall AUC. The attribute
-  \code{} is a vector indicating the pairwise AUCs, A(i,j), for individual pairs of classes (i,j).
-  }
 }
 
 \section{Warnings}{

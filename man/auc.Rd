@@ -32,8 +32,8 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 \arguments{
   \item{roc, smooth.roc, multiclass.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, a \dQuote{smooth.roc} object from the
-	\code{\link[=smooth.roc]{smooth}} function, or a  \dQuote{multiclass.roc} from the
-	\code{\link{multiclass.roc}} function.
+	\code{\link[=smooth.roc]{smooth}} function, or a \dQuote{multiclass.roc}
+	or \dQuote{mv.multiclass.roc} from the \code{\link{multiclass.roc}} function.
   }
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type response~predictor for the \code{\link{roc}} function.}
@@ -127,7 +127,8 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 
 \value{
   The numeric AUC value, of class \code{c("auc", "numeric")} (or
-  \code{c("multiclass.auc", "numeric")} if a \dQuote{multiclass.roc} was supplied), in
+  \code{c("multiclass.auc", "numeric")} or \code{c("mv.multiclass.auc", "numeric")}
+  if a \dQuote{multiclass.roc} was supplied), in
   fraction of the area or in percent if \code{percent=TRUE}, with the
   following attributes:
   \item{partial.auc}{if the AUC is full (FALSE) or partial (and in this
