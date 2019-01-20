@@ -13,6 +13,17 @@ test_that("univariate multiclass roc/auc works", {
 	expect_false(attributes(uv.mr$auc)$percent)
 })
 
+test_that("univariate multiclass roc works with formula", {
+	uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH)
+	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
+	uv.mr <- multiclass.roc(aSAH$gos6 ~ aSAH$s100b)
+	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
+	
+	uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH, subset = (gender == "Female"))
+	expect_equal(length(uv.mr$response), sum(aSAH$gender == "Female"))
+	expect_error(multiclass.roc(gos6 ~ s100b, aSAH, weights=age))
+})
+
 test_that("univariate multiclass roc/auc works with percent=TRUE", {
 	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
 	uv.ma <- auc(uv.mr)
@@ -91,6 +102,34 @@ test_that("multivariate multiclass roc/auc works", {
 	expect_false(mv.mr$percent)
 	expect_false(attributes(mv.mr$auc)$partial.auc)
 	expect_false(attributes(mv.mr$auc)$percent)
+})
+
+
+
+test_that("multivariate multiclass with formula works", {
+	n <- c(100, 80, 150)
+	responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
+	# construct prediction matrix: one column per class
+	set.seed(42)
+	
+	# Imperfect separation
+	preds <- lapply(n, function(x) runif(x, 0.4, 0.6))
+	predictor <- as.matrix(data.frame(
+		"X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.7)),
+		"X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0.2, 0.8)),
+		"X3" = c(runif(n[1] + n[2], 0.3, 0.7), preds[[3]])
+	))
+	test_data <- cbind(as.data.frame(predictor), "response" = responses)
+	mv.mr <- multiclass.roc(responses, predictor)
+	mv.mr.f <- multiclass.roc(response ~ ., data=test_data)
+	expect_equal(as.numeric(auc(mv.mr.f)), as.numeric(auc(mv.mr)))
+	
+	mv.mr.f <- multiclass.roc(response ~ X1 + X2 + X3, data=test_data)
+	expect_equal(as.numeric(auc(mv.mr)), as.numeric(auc(mv.mr)))
+	
+	subset <- rbinom(sum(n), 1, .5) == 1
+	mv.mr.f <- multiclass.roc(response ~ X1 + X2 + X3, data=test_data, subset = subset)
+	expect_equal(length(mv.mr.f$response), sum(subset))
 })
 
 
