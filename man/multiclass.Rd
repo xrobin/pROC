@@ -136,6 +136,7 @@ multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
 # Examples for multivariate decision values (e.g. class probabilities)
 ####
 
+\dontrun{
 # Example with a multinomial log-linear model from nnet
 # We use the iris dataset and split into a training and test set
 requireNamespace("nnet")
@@ -151,6 +152,7 @@ head(iris.predictions)
 
 # This can be used directly in multiclass.roc:
 multiclass.roc(iris.test$Species, iris.predictions)
+}
 
 
 # Let's see an other example with an artificial dataset
