@@ -63,12 +63,12 @@ print.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call
   if ("predictor" %in% names(x$call))
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   else if (!is.null(x$call$formula)) 
-    predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+    predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
   # Get response
   if ("response" %in% names(x$call))
     response.name <- as.character(x$call[match("response", names(x$call))])
   else if (!is.null(x$call$formula)) {
-    formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+    formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
     response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
   }
   cat("Data: ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse=", "),  ".\n", sep="")
@@ -96,12 +96,12 @@ print.mv.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), c
 	if ("predictor" %in% names(x$call))
 		predictor.name <- as.character(x$call[match("predictor", names(x$call))])
 	else if (!is.null(x$call$formula)) 
-		predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+		predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
 	# Get response
 	if ("response" %in% names(x$call))
 		response.name <- as.character(x$call[match("response", names(x$call))])
 	else if (!is.null(x$call$formula)) {
-		formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+		formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
 		response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
 	}
 	cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse=", "),  ".\n", sep="")
@@ -230,14 +230,14 @@ print.dataline <- function(x) {
     if ("predictor" %in% names(x$call))
       predictor.name <- as.character(x$call[match("predictor", names(x$call))])
     else if (!is.null(x$call$formula)) 
-      predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+      predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
     else
       return()
     # Get response
     if ("response" %in% names(x$call))
       response.name <- as.character(x$call[match("response", names(x$call))])
     else if (!is.null(x$call$formula)) {
-      formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+      formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
       response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
     }
     else if ("x" %in% names(x$call))
