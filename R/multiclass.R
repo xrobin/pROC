@@ -65,7 +65,7 @@ multiclass.roc.univariate <- function(response, predictor,
   
   rocs <- combn(levels, 2, function(X, response, predictor, percent, ...) {
     roc(response, predictor, levels=X, percent=percent, auc=FALSE, ci=FALSE, ...)
-  }, simplify=FALSE, response=response, predictor=predictor, percent=percent, ...)
+  }, simplify=FALSE, response=response, predictor=predictor, percent=percent, direction=direction, ...)
 
   multiclass.roc$rocs <- rocs
 
