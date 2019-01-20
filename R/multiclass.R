@@ -21,25 +21,44 @@ multiclass.roc <- function(...)
   UseMethod("multiclass.roc")
 
 multiclass.roc.formula <- function(formula, data, ...) {
-  cl <- match.call()
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m$... <- NULL
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
-  term.labels <- attr(attr(m, "terms"), "term.labels")
-  response <- model.extract(m, "response")
-  if (length(response) == 0) {
-    stop("Error in the formula: a response is required in a formula of type response~predictor.")
-  }
-  predictor <- m[term.labels]
-  if (ncol(predictor) == 1) {
-    predictor <- as.vector(unlist(predictor))
-  }
-  multiclass.roc <- multiclass.roc.default(response, predictor, ...)
-  multiclass.roc$call <- match.call()
-  return(multiclass.roc)
+	data.missing <- missing(data)
+	if (data.missing) {
+		predictors <- attr(terms(formula), "term.labels")
+	}
+	else {
+		predictors <- attr(terms(formula, data = data), "term.labels")
+	}
+	
+	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
+	Call <- match.call()
+	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
+	if (indx[1] == 0) {
+		stop("A formula argument is required")
+	}
+	# Keep the standard arguments and run them in model.frame
+	temp <- Call[c(1,indx)]  
+	temp[[1]] <- as.name('model.frame')
+	m <- eval(temp, parent.frame())
+	
+	if (!is.null(model.weights(m))) stop("weights are not supported")
+	
+	# Get response (easy)
+	response <- model.response(m)
+	
+	if (length(response) == 0) {
+		stop("Error in the formula: a response is required in a formula of type response~predictor.")
+	}
+	
+	predictor <- m[predictors]
+	if (ncol(predictor) == 1) {
+		predictor <- as.vector(unlist(predictor))
+	}
+	multiclass.roc <- multiclass.roc.default(response, predictor, ...)
+	multiclass.roc$call <- Call
+	if (! data.missing) {
+		multiclass.roc$data <- data
+	}
+	return(multiclass.roc)
 }
 
 multiclass.roc.univariate <- function(response, predictor,
