@@ -123,7 +123,7 @@ test_that("multivariate multiclass roc/auc works with percent=TRUE", {
 })
 
 
-test_that("univariate multiclass roc/auc works with partial.auc", {
+test_that("multivariate multiclass roc/auc works with partial.auc", {
 	pauc.spec <- c(1, .9)
 	n <- c(100, 80, 150)
 	responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
@@ -157,7 +157,7 @@ test_that("univariate multiclass roc/auc works with partial.auc", {
 })
 
 
-test_that("univariate multiclass roc/auc works with direction", {
+test_that("multivariate multiclass roc/auc works with direction", {
 	n <- c(100, 80, 150)
 	responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
 	# construct prediction matrix: one column per class
