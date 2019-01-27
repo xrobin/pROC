@@ -112,21 +112,6 @@ compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, di
     return(auc)
 }
 
-compute.new.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, ... ) {
-    # computes A(i|j), the probability that a randomly 
-    # chosen member of class j has a lower estimated probability (or score) 
-    # of belonging to class i than a randomly chosen member of class i
-
-    pred.i <- pred.matrix[which(ref.outcome == i), i] # p(G = i) assigned to class i observations
-    pred.j <- pred.matrix[which(ref.outcome == j), i] # p(G = i) assigned to class j observations
-    classes <- factor(c(rep(i, length(pred.i)), rep(j, length(pred.j))))
-    # override levels argument by new levels
-    levels <- unique(classes)
-    predictor <- c(pred.i, pred.j)
-    auc <- roc(classes, predictor, levels = levels, percent = percent, auc = FALSE, ci = FALSE, ...)
-    return(auc)
-}
-
 multiclass.roc.multivariate <- function(response, predictor, levels, percent, direction, ...) {
     # Reference: "A Simple Generalisation of the Area Under the ROC 
     # Curve for Multiple Class Classification Problems" (Hand and Till, 2001)
