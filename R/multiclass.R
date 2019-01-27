@@ -74,7 +74,7 @@ multiclass.roc.univariate <- function(response, predictor,
                          predictor = predictor,
                          percent = percent)
   class(multiclass.roc) <- "multiclass.roc"
-  if ("ordered" %in% class(response) && any(names(table(response))[table(response) == 0] %in% levels)) {
+  if (is.factor(response) && any(names(table(response))[table(response) == 0] %in% levels)) {
     missing.levels <- names(table(response))[table(response) == 0]
     missing.levels.requested <- missing.levels[missing.levels %in% levels]
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse=", ")))

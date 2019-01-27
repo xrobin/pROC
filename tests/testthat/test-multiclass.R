@@ -71,6 +71,10 @@ test_that("univariate multiclass roc/auc works with directions", {
 	expect_equal(as.numeric(uv.mr$auc), 0.6512526825)
 })
 
+test_that("univariate multiclass handles missing levels", {
+	expect_warning(multiclass.roc(aSAH$gos6, aSAH$s100b), "response level")
+})
+
 test_that("multivariate multiclass roc/auc works", {
 	n <- c(100, 80, 150)
 	responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
