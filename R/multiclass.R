@@ -139,6 +139,13 @@ multiclass.roc.multivariate <- function(response, predictor, levels, percent, di
 	if (direction == "auto") {
 		stop("'direction=\"auto\"' not available for multivariate multiclass.roc")
 	}
+	if (is.factor(response) && any(names(table(response))[table(response) == 0] %in% levels)) {
+		missing.levels <- names(table(response))[table(response) == 0]
+		missing.levels.requested <- missing.levels[missing.levels %in% levels]
+		warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse=", ")))
+		levels <- levels[!(levels %in% missing.levels.requested)]
+	}
+	
     # check whether the columns of the prediction matrix agree with the factors in 'response'
     m <- match(colnames(predictor), levels)
     missing.classes <- levels[setdiff(seq_along(levels), m)]

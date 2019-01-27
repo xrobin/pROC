@@ -225,6 +225,29 @@ test_that("multivariate multiclass roc/auc works with direction", {
 			expect_equal(mr.mv.2$rocs[[i]][[j]]$direction, ">")
 		}
 	}
-	
-	
 })
+
+test_that("multivariate behavior with missing levels/columns", {
+	n <- c(10, 10, 10)
+	responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
+	# construct prediction matrix: one column per class
+	set.seed(42)
+	
+	# Perfect separation
+	preds <- lapply(n, function(x) runif(x, 0.8, 1))
+	predictor <- as.matrix(data.frame("X1" = c(preds[[1]], runif(n[2] + n[3], 0, 0.3)),
+									  "X2" = c(runif(n[1], 0.1, 0.4), preds[[2]], runif(n[3], 0, 0.2)),
+									  "X3" = c(runif(n[1] + n[2], 0, 0.5), preds[[3]])))
+	# Wrong number of predictor rows
+	expect_error(multiclass.roc(responses[1:20], predictor), "agree")
+	
+	# Column in predictor not in response warns:
+	expect_warning(multiclass.roc(as.character(responses[1:20]), predictor[1:20,]), "X3")
+	
+	# Level with no obervation warns:
+	expect_warning(multiclass.roc(responses[1:20], predictor[1:20,1:2]), "X3")
+	
+	# Removed both level and column should be silent
+	expect_silent(multiclass.roc(as.character(responses[1:20]), predictor[1:20,1:2]))
+})
+
