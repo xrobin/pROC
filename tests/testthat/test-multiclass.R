@@ -249,5 +249,15 @@ test_that("multivariate behavior with missing levels/columns", {
 	
 	# Removed both level and column should be silent
 	expect_silent(multiclass.roc(as.character(responses[1:20]), predictor[1:20,1:2]))
+	
+	# Single column is an error
+	expect_error(multiclass.roc(responses, predictor[,1, drop=F]))
+	
+	# Wrong column names
+	pr2 <- predictor
+	colnames(pr2) <- c("Y1", "Y2", "Y3")
+	expect_error(multiclass.roc(responses, pr2))
+	colnames(pr2) <- c("Y1", "X2", "X3")
+	expect_warning(multiclass.roc(as.character(responses[11:30]), pr2[11:30,]), "Y1")
 })
 
