@@ -67,8 +67,29 @@ auc.multiclass.roc <- function(multiclass.roc, ...) {
     attr(auc, "partial.auc.focus") <- attr(aucs[[1]], "partial.auc.focus")
     attr(auc, "partial.auc.correct") <- attr(aucs[[1]], "partial.auc.correct") 
   }
-  class(auc) <- c("multiclass.auc", class(auc))
+  class(auc) <- c("multiclass.auc", "numeric")
   return(auc)
+}
+
+auc.mv.multiclass.roc <- function(mv.multiclass.roc, ...) {
+	aucs <- lapply(mv.multiclass.roc$rocs, function(x) list(auc(x[[1]], ...), auc(x[[2]], ...)))
+	A.ij.total <- sum(sapply(aucs, function(x) mean(unlist(x))))
+	c <- length(mv.multiclass.roc$levels)
+	auc <- 2 / (c * (c-1)) * A.ij.total
+	
+	# Prepare auc object
+	auc <- as.vector(auc) # remove potential pre-existing attributes
+	attr(auc, "percent") <- mv.multiclass.roc$percent
+	attr(auc, "roc") <- mv.multiclass.roc
+	
+	# Get partial auc details from first computed auc
+	attr(auc, "partial.auc") <- attr(aucs[[1]][[1]], "partial.auc")
+	if (!identical(attr(aucs[[1]], "partial.auc"), FALSE)) {
+		attr(auc, "partial.auc.focus") <- attr(aucs[[1]][[1]], "partial.auc.focus")
+		attr(auc, "partial.auc.correct") <- attr(aucs[[1]][[1]], "partial.auc.correct") 
+	}
+	class(auc) <- c("mv.multiclass.auc", "numeric")
+	return(auc)
 }
 
 auc.roc <- function(roc,

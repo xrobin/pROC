@@ -9,6 +9,7 @@ S3method("auc", "smooth.roc")
 S3method("auc", "formula")
 S3method("auc", "default")
 S3method("auc", "multiclass.roc")
+S3method("auc", "mv.multiclass.roc")
 
 
 export(ci)
@@ -83,6 +84,8 @@ S3method("print", "ci.sp")
 S3method("print", "ci.coords")
 S3method("print", "multiclass.roc")
 S3method("print", "multiclass.auc")
+S3method("print", "mv.multiclass.roc")
+S3method("print", "mv.multiclass.auc")
 
 export(roc)
 S3method("roc", "default")

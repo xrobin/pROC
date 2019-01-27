@@ -63,12 +63,12 @@ print.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call
   if ("predictor" %in% names(x$call))
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   else if (!is.null(x$call$formula)) 
-    predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+    predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
   # Get response
   if ("response" %in% names(x$call))
     response.name <- as.character(x$call[match("response", names(x$call))])
   else if (!is.null(x$call$formula)) {
-    formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+    formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
     response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
   }
   cat("Data: ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse=", "),  ".\n", sep="")
@@ -86,6 +86,39 @@ print.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call
   }
 
   invisible(x)
+}
+
+print.mv.multiclass.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...) {
+	# do we print the call?
+	if (call)
+		cat("\nCall:\n", deparse(x$call), "\n\n", sep="")
+	# get predictor name
+	if ("predictor" %in% names(x$call))
+		predictor.name <- as.character(x$call[match("predictor", names(x$call))])
+	else if (!is.null(x$call$formula)) 
+		predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
+	# Get response
+	if ("response" %in% names(x$call))
+		response.name <- as.character(x$call[match("response", names(x$call))])
+	else if (!is.null(x$call$formula)) {
+		formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
+		response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
+	}
+	cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse=", "),  ".\n", sep="")
+	
+	# AUC if exists
+	if (!is.null(x$auc)) {
+		print(x$auc, digits=digits, ...)
+	}
+	else
+		cat("Multi-class area under the curve not computed.\n")
+	
+	# CI if exists, print it
+	if(!is.null(x$ci)) {
+		print(x$ci, digits=digits, ...)
+	}
+	
+	invisible(x)
 }
 
 print.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...) {
@@ -125,12 +158,14 @@ print.multiclass.auc <- function(x, digits=max(3, getOption("digits") - 3), ...)
   if (identical(attr(x, "partial.auc"), FALSE))
     cat("Multi-class area under the curve: ", signif(x, digits=digits), ifelse(attr(x, "percent"), "%", ""), "\n", sep="")
   else {
-    cat(ifelse(identical(attr(x, "partial.auc.correct"), TRUE), "Corrected p", "P"), "artial area under the curve", sep="")
+    cat("Multi-class ", ifelse(identical(attr(x, "partial.auc.correct"), TRUE), "corrected ", ""), "partial area under the curve", sep="")
     cat(" (", attr(x, "partial.auc.focus"), " ", attr(x, "partial.auc")[1], ifelse(attr(x, "percent"), "%", ""), "-", attr(x, "partial.auc")[2], ifelse(attr(x, "percent"), "%", ""), ")", sep="")
     cat(": ", signif(x, digits=digits), ifelse(attr(x, "percent"), "%", ""), "\n", sep="")
   }
   invisible(x)
 }
+
+print.mv.multiclass.auc <- print.multiclass.auc
 
 print.ci.auc <- function(x, digits=max(3, getOption("digits") - 3), ...) {
   signif.ci <- signif(x, digits=digits)
@@ -195,14 +230,14 @@ print.dataline <- function(x) {
     if ("predictor" %in% names(x$call))
       predictor.name <- as.character(x$call[match("predictor", names(x$call))])
     else if (!is.null(x$call$formula)) 
-      predictor.name <- attr(terms(as.formula(x$call$formula)), "term.labels")
+      predictor.name <- attr(terms(as.formula(x$call$formula), data=x$data), "term.labels")
     else
       return()
     # Get response
     if ("response" %in% names(x$call))
       response.name <- as.character(x$call[match("response", names(x$call))])
     else if (!is.null(x$call$formula)) {
-      formula.attrs <- attributes(terms(as.formula(x$call$formula)))
+      formula.attrs <- attributes(terms(as.formula(x$call$formula), data=x$data))
       response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
     }
     else if ("x" %in% names(x$call))

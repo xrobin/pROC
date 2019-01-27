@@ -1,0 +1,8 @@
+Direct build/check dependencies:
+r-base-dev build-essential git texlive pandoc
+
+Dependencies of pROC's dependencies on Ubuntu for R>install.packages("pROC", dependencies=TRUE):
+libssl-doc curl libcurl4-openssl-dev libxml2-dev libcairo2-dev
+
+Dependencies of pROC's reverse dependencies on Ubuntu for devtools::revdep_check
+libglu1-mesa default-jdk libgsl-dev libgtk2.0-dev libmariadbclient-dev

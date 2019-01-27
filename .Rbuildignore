@@ -7,3 +7,4 @@ pROC-Ex.R
 codecov.yml
 ^\.github
 ^revdep
+^DEPENDENCIES*
