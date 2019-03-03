@@ -646,7 +646,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
 
   res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
   # Return a random column with "best"
-  if (x == "best" && ncol(res) != 1) {
+  if (is.character(x) && x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
   }
   else {
