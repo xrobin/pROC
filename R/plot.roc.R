@@ -127,7 +127,7 @@ plot.roc.roc <- function(x,
   if (print.auc & is.null(print.auc.pattern)) {
     print.auc.pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
     print.auc.pattern <- paste(print.auc.pattern, ifelse(percent, "%.1f%%", "%.3f"), sep="")
-    if (ci && class(x$ci) == "ci.auc")
+    if (ci && is(x$ci, "ci.auc"))
       print.auc.pattern <- paste(print.auc.pattern, " (", ifelse(percent, "%.1f%%", "%.3f"), "\u2013", ifelse(percent, "%.1f%%", "%.3f"), ")",sep="")
   }
     
