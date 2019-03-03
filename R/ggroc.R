@@ -5,7 +5,7 @@ get.coords.for.ggplot <- function(roc) {
 	return(df[rev(seq(nrow(df))),])
 }
 
-get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes) {
+get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
 	# Prepare the aesthetics
 	if(roc$percent) {
 		if (legacy.axes) {
