@@ -127,7 +127,7 @@ plot.roc.roc <- function(x,
   if (print.auc & is.null(print.auc.pattern)) {
     print.auc.pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
     print.auc.pattern <- paste(print.auc.pattern, ifelse(percent, "%.1f%%", "%.3f"), sep="")
-    if (ci && !is(x$ci, "ci.auc"))
+    if (ci && is(x$ci, "ci.auc"))
       print.auc.pattern <- paste(print.auc.pattern, " (", ifelse(percent, "%.1f%%", "%.3f"), "\u2013", ifelse(percent, "%.1f%%", "%.3f"), ")",sep="")
   }
     
@@ -251,7 +251,7 @@ plot.roc.roc <- function(x,
   # Actually plot the ROC curve
   suppressWarnings(lines(sp, se, type=type, lwd=lwd, col=col, lty=lty, ...))
   # Plot the ci bars
-  if (ci && is(x$ci, "ci.auc")) {
+  if (ci && !is(x$ci, "ci.auc")) {
     if (ci.type=="bars")
       plot(x$ci, type="bars", col=ci.col, ...)
   }
