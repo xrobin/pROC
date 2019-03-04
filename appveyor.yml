@@ -18,6 +18,7 @@ cache:
 environment:
   global:
     WARNINGS_ARE_ERRORS: 1
+    RUN_SLOW_TESTS: true
 
   matrix:
   - R_VERSION: release
