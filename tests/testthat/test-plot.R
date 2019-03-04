@@ -56,12 +56,12 @@ test_that("Advanced screenshot 2 works correctly", {
 						   main="Confidence intervals", percent=TRUE,
 						   ci=TRUE, # compute AUC (of AUC by default)
 						   print.auc=TRUE) # print the AUC (will contain the CI)
-		
-		ciobj <- ci.se(rocobj, progress = "none", # CI of sensitivity
-					   specificities=seq(0, 100, 5)) # over a select set of specificities
-		
-		plot(ciobj, type="shape", col="#1c61b6AA") # plot as a blue shape
-		plot(ci(rocobj, of="thresholds", thresholds="best", progress="none")) # add one threshold
+
+		#ciobj <- ci.se(rocobj, progress = "none", # CI of sensitivity
+		#			   specificities=seq(0, 100, 5)) # over a select set of specificities
+
+		#plot(ciobj, type="shape", col="#1c61b6AA") # plot as a blue shape
+		#plot(ci(rocobj, of="thresholds", thresholds="best", progress="none")) # add one threshold
 	}
 	vdiffr::expect_doppelganger("advanced.screenshot.2", test_advanced_screenshot_2)
 })
