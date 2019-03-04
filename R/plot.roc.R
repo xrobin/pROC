@@ -127,7 +127,7 @@ plot.roc.roc <- function(x,
   if (print.auc & is.null(print.auc.pattern)) {
     print.auc.pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
     print.auc.pattern <- paste(print.auc.pattern, ifelse(percent, "%.1f%%", "%.3f"), sep="")
-    if (ci && is(x$ci, "ci.auc"))
+    if (ci && !is(x$ci, "ci.auc"))
       print.auc.pattern <- paste(print.auc.pattern, " (", ifelse(percent, "%.1f%%", "%.3f"), "\u2013", ifelse(percent, "%.1f%%", "%.3f"), ")",sep="")
   }
     
@@ -190,7 +190,7 @@ plot.roc.roc <- function(x,
     suppressWarnings(polygon(map.x, map.y, col=max.auc.polygon.col, lty=max.auc.polygon.lty, border=max.auc.polygon.border, density=max.auc.polygon.density, angle=max.auc.polygon.angle, ...))
   }
   # Plot the ci shape
-  if (ci && is(x$ci, "ci.auc")) {
+  if (ci && ! is(x$ci, "ci.auc")) {
     ci.type <- match.arg(ci.type)
     if (ci.type=="shape")
       plot(x$ci, type="shape", col=ci.col, no.roc=TRUE, ...)
