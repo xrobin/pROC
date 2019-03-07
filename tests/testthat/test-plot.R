@@ -50,8 +50,11 @@ test_that("Advanced screenshot 1 works correctly", {
 
 test_that("Advanced screenshot 2 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
-	set.seed(42) # For reproducible CI
 	test_advanced_screenshot_2 <- function() {
+		if (R.version$minor >= "6.0") {
+			RNGkind(sample.kind="Rounding")
+		}
+		set.seed(42) # For reproducible CI
 		rocobj <- plot.roc(aSAH$outcome, aSAH$s100b,
 						   main="Confidence intervals", percent=TRUE,
 						   ci=TRUE, # compute AUC (of AUC by default)
@@ -90,8 +93,11 @@ test_that("Advanced screenshot 3 works correctly", {
 
 test_that("Advanced screenshot 4 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
-	set.seed(42) # For reproducible CI
 	test_advanced_screenshot_4 <- function() {
+		if (R.version$minor >= "6.0") {
+			RNGkind(sample.kind="Rounding")
+		}
+		set.seed(42) # For reproducible CI
 		rocobj <- plot.roc(aSAH$outcome, aSAH$s100b,
 						   main="Confidence intervals of specificity/sensitivity", percent=TRUE,
 						   ci=TRUE, of="se", # ci of sensitivity
@@ -109,8 +115,11 @@ test_that("Advanced screenshot 4 works correctly", {
 
 test_that("Advanced screenshot 5 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
-	set.seed(42) # For reproducible CI
 	test_advanced_screenshot_5 <- function() {
+		if (R.version$minor >= "6.0") {
+			RNGkind(sample.kind="Rounding")
+		}
+		set.seed(42) # For reproducible CI
 		plot.roc(aSAH$outcome, aSAH$s100b,
 				 main="Confidence interval of a threshold", percent=TRUE,
 				 ci=TRUE, of="thresholds", # compute AUC (of threshold)
