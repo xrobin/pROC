@@ -1,5 +1,6 @@
 1.13.9 (future)
-  * Turn several warnings into errors
+  * The 'multiclass.roc' function now accepts multivariate decision values
+  * 'ggroc' supports multiple aesthetics
 
 1.13.0 (2018-09-23)
   * 'roc' now returns 'NaN' when predictor contains infinite values (issue #30)
