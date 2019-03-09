@@ -137,10 +137,27 @@ R CMD build pROC
 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
 ```
 
+### vdiffr
+
+The [vdiffr](https://github.com/r-lib/vdiffr) package is used for visual tests of plots.
+
+To run all the test cases (incl. slow ones) from the command line:
+
+```R
+run_slow_tests <- TRUE
+vdiffr::manage_cases()
+```
+
+To run the checks upon R CMD check, set environment variable `NOT_CRAN=1`:
+
+```
+NOT_CRAN=1 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
+```
+
 ### Release steps
 
 1. Build & check package: `R CMD build pROC && R CMD check --as-cran pROC_1.12.0.tar.gz`
-1. Check with slow tests: `RUN_SLOW_TESTS=true R CMD check pROC_1.12.0.tar.gz`
+1. Check with slow tests: `NOT_CRAN=1  RUN_SLOW_TESTS=true R CMD check pROC_1.12.0.tar.gz`
 1. Check with R-devel: `rhub::check_with_rdevel()`
 1. Chec reverse dependencies: `devtools::revdep_check(libpath = rappdirs::user_cache_dir("revdep_lib"), srcpath = rappdirs::user_cache_dir("revdep_src"))`
 1. Update `Version` and `Date` in `DESCRIPTION`
