@@ -1,0 +1,6 @@
+
+Call:
+multiclass.roc.default(response = responses, predictor = predictor,     percent = TRUE)
+
+Data: multivariate predictor predictor with 3 levels of responses: X1, X2, X3.
+Multi-class area under the curve: 66.68%

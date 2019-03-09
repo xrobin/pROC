@@ -1,0 +1,6 @@
+
+Call:
+multiclass.roc.default(response = responses, predictor = predictor,     partial.auc = c(1, 0.9))
+
+Data: multivariate predictor predictor with 3 levels of responses: X1, X2, X3.
+Multi-class partial area under the curve (specificity 1-0.9): 0.05313

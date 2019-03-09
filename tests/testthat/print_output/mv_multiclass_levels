@@ -1,0 +1,6 @@
+
+Call:
+multiclass.roc.default(response = responses, predictor = predictor,     levels = c("X2", "X3"))
+
+Data: multivariate predictor predictor with 2 levels of responses: X2, X3.
+Multi-class area under the curve: 0.5003

@@ -1,0 +1,6 @@
+
+Call:
+roc.default(response = aSAH$outcome, predictor = aSAH$s100b,     quiet = TRUE, partial.auc = c(0.9, 0.99), partial.auc.focus = "se")
+
+Data: aSAH$s100b in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor).
+Partial area under the curve (sensitivity 0.99-0.9): 0.01376

@@ -1,0 +1,6 @@
+
+Call:
+roc.default(response = aSAH$outcome, predictor = aSAH$ndka, quiet = TRUE)
+
+Data: aSAH$ndka in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor).
+Area under the curve: 0.612

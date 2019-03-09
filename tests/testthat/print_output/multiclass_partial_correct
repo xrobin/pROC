@@ -1,0 +1,6 @@
+
+Call:
+multiclass.roc.default(response = aSAH$gos6, predictor = aSAH$wfns,     partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
+
+Data: aSAH$wfns with 4 levels of aSAH$gos6: 1, 3, 4, 5.
+Multi-class corrected partial area under the curve (specificity 1-0.9): 0.6013

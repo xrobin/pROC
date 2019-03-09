@@ -1,0 +1,6 @@
+
+Call:
+multiclass.roc.default(response = aSAH$gos6, predictor = aSAH$ndka,     percent = TRUE)
+
+Data: aSAH$ndka with 4 levels of aSAH$gos6: 1, 3, 4, 5.
+Multi-class area under the curve: 60.87%

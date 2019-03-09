@@ -1,0 +1,6 @@
+
+Call:
+roc.formula(formula = outcome ~ ndka, data = aSAH)
+
+Data: ndka in 72 controls (outcome Good) < 41 cases (outcome Poor).
+Area under the curve: 0.612
