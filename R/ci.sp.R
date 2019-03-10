@@ -54,7 +54,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
 
   # prepare the calls
-  smooth.roc.call <- as.call(c(getS3method("smooth", "roc"), smooth.roc$smoothing.args))
+  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
   if(class(progress) != "list")
     progress <- roc.utils.get.progress.bar(progress, title="SP confidence interval", label="Bootstrap in progress...", ...)

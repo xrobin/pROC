@@ -157,5 +157,6 @@ S3method("ci", "se")
 S3method("ci", "sp")
 S3method("ci", "thresholds")
 
-import(plyr, methods, utils, Rcpp, grDevices, graphics, stats)
+importFrom("methods", "is")
+import(plyr, Rcpp, grDevices, graphics, stats)
 useDynLib(pROC, .registration = TRUE)

@@ -53,13 +53,13 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   if (any(duplicated.auc1skeleton)) {
   	sessionInfo <- sessionInfo()
   	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), packageDescription("pROC")$BugReports))
+  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
   	
   }
   if (any(duplicated.auc2skeleton)) {
   	sessionInfo <- sessionInfo()
   	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), packageDescription("pROC")$BugReports))
+  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
   }
   if (boot.stratified) { # precompute sorted responses if stratified
     #response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
@@ -124,13 +124,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   if (any(duplicated.auc1skeleton)) {
   	sessionInfo <- sessionInfo()
   	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, progress, parallel, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), packageDescription("pROC")$BugReports))
+  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
   	
   }
   if (any(duplicated.auc2skeleton)) {
   	sessionInfo <- sessionInfo()
   	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, progress, parallel, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), packageDescription("pROC")$BugReports))
+  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
   }
 
   if (boot.stratified) { # precompute sorted responses if stratified

@@ -82,7 +82,7 @@ multiclass.roc.univariate <- function(response, predictor,
   }
   multiclass.roc$levels <- levels
   
-  rocs <- combn(levels, 2, function(X, response, predictor, percent, ...) {
+  rocs <- utils::combn(levels, 2, function(X, response, predictor, percent, ...) {
     roc(response, predictor, levels=X, percent=percent, auc=FALSE, ci=FALSE, ...)
   }, simplify=FALSE, response=response, predictor=predictor, percent=percent, direction=direction, ...)
 
@@ -170,7 +170,7 @@ multiclass.roc.multivariate <- function(response, predictor, levels, percent, di
         return(A)
     }, simplify = FALSE, predictor = predictor, response = response, 
         levels = levels, percent = percent, direction, ...)
-    pairs <- unlist(lapply(combn(levels, 2, simplify = FALSE), 
+    pairs <- unlist(lapply(utils::combn(levels, 2, simplify = FALSE), 
                            function(x) paste(x, collapse = "/")))
     names(rocs) <- pairs
     multiclass.roc$rocs <- rocs

@@ -126,10 +126,10 @@ var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
     smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
-    smooth.roc.call <- as.call(c(getS3method("smooth", "roc"), roc$smoothing.args))
+    smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), roc$smoothing.args))
     auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
     auc.args$allow.invalid.partial.auc.correct <- TRUE
-    auc.call <- as.call(c(getS3method("auc", "smooth.roc"), auc.args))
+    auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
     if (boot.stratified) {
       aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
