@@ -40,22 +40,7 @@ load.ggplot2 <- function() {
 	if (! isNamespaceLoaded("ggplot2")) {
 		message('You may need to call library(ggplot2) if you want to add layers, etc.')
 	}
-	if (requireNamespace("ggplot2", quietly = TRUE)) {
-		return(TRUE)
-	}
-	else if (interactive()) {
-		auto.install <- askYesNo("Package ggplot2 not available, do you want to install it now?")
-		if (isTRUE(auto.install)) {
-			install.packages("ggplot2")
-			if (requireNamespace("ggplot2", quietly = TRUE)) {
-				return(TRUE)
-			}
-			else {
-				stop("Installation of ggplot2 failed!")
-			}
-		}
-	}
-	stop("Package 'ggplot2' not available.")
+	load.suggested.package("ggplot2")
 }
 
 ggroc <- function(data, ...) {

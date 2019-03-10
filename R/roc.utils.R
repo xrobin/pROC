@@ -324,3 +324,26 @@ roc.utils.is.perfect.curve <- function(roc) {
 	best.point <- max(roc$sensitivities + roc$specificities) / ifelse(roc$percent, 100, 1)
 	return(abs(best.point - 2) < .Machine$double.eps ^ 0.5) # or best.point == 2, with numerical tolerance
 }
+
+# Load package namespace 'pkg'. 
+# Input: package name
+# Returns: TRUE upon success (or if the package was already loaded)
+# Stops if the package can't be loaded
+load.suggested.package <- function(pkg) {
+	if (requireNamespace(pkg)) {
+		return(TRUE)
+	}
+	else if (interactive()) {
+		auto.install <- askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
+		if (isTRUE(auto.install)) {
+			install.packages(pkg)
+			if (requireNamespace(pkg)) {
+				return(TRUE)
+			}
+			else {
+				stop(sprintf("Installation of %s failed!", pkg))
+			}
+		}
+	}
+	stop(sprintf("Package '%s' not available.", pkg))
+}

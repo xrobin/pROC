@@ -294,8 +294,7 @@ roc.default <- function(response, predictor,
   
   # Choose algorithm
   if (isTRUE(algorithm == 0)) {
-    if (!requireNamespace("microbenchmark"))
-      stop("Package microbenchmark not available, required with algorithm=0'. Please install it with 'install.packages(\"microbenchmark\")'.")
+  	load.suggested.package("microbenchmark")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases), direction)
     benchmark <- microbenchmark::microbenchmark(

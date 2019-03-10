@@ -180,8 +180,7 @@ smooth.roc.binormal <- function(roc, n) {
 }
 
 smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
-  if (!requireNamespace("MASS"))
-    stop("Package MASS not available, required with method='fitdistr'. Please install it with 'install.packages(\"MASS\")'.")
+  load.suggested.package("MASS")
 
   densfuns.list <- list(beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
                         gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
@@ -236,8 +235,7 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
 }
 
 smooth.roc.logcondens <- function(roc, n) {
-  if (!requireNamespace("logcondens"))
-    stop("Package logcondens not available, required with method='logcondens'. Please install it with 'install.packages(\"logcondens\")'.")
+  load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1/(n-1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
@@ -249,8 +247,7 @@ smooth.roc.logcondens <- function(roc, n) {
 }
 
 smooth.roc.logcondens.smooth <- function(roc, n) {
-  if (!requireNamespace("logcondens"))
-    stop("Package logcondens not available, required with method='logcondens.smooth'. Please install it with 'install.packages(\"logcondens\")'.")
+  load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1/(n-1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
