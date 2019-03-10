@@ -334,9 +334,15 @@ load.suggested.package <- function(pkg) {
 		return(TRUE)
 	}
 	else if (interactive()) {
-		auto.install <- askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
+		if (getRversion() < "3.5.0") { # utils::askYesNo not available
+			message(sprintf("Package %s not available, do you want to install it now?", pkg))
+			auto.install <- utils::menu(c("Yes", "No")) == 1
+		}
+		else {
+			auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
+		}
 		if (isTRUE(auto.install)) {
-			install.packages(pkg)
+			utils::install.packages(pkg)
 			if (requireNamespace(pkg)) {
 				return(TRUE)
 			}
