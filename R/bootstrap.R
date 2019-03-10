@@ -210,7 +210,7 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   roc2 <- try(do.call("roc.cc.nochecks", auc2skeleton), silent=TRUE)
 
   # resampled ROCs might not be smoothable: return NA
-  if (is(roc1, "try-error") || is(roc2, "try-error")) {
+  if (methods::is(roc1, "try-error") || methods::is(roc2, "try-error")) {
     return(c(NA, NA))
   }
   else {
@@ -250,7 +250,7 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   roc1 <- try(do.call("roc.rp.nochecks", auc1skeleton), silent=TRUE)
   roc2 <- try(do.call("roc.rp.nochecks", auc2skeleton), silent=TRUE)
   # resampled ROCs might not be smoothable: return NA
-  if (is(roc1, "try-error") || is(roc2, "try-error")) {
+  if (methods::is(roc1, "try-error") || methods::is(roc2, "try-error")) {
     return(c(NA, NA))
   }
   else {
@@ -343,7 +343,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(auc.call$smooth.roc, "try-error")) {
+  if (methods::is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
   return(eval(auc.call))
@@ -373,7 +373,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(auc.call$smooth.roc, "try-error")) {
+  if (methods::is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
   return(eval(auc.call))
@@ -486,7 +486,7 @@ stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
 }
@@ -514,7 +514,7 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
 }
@@ -572,7 +572,7 @@ stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
 }
@@ -600,7 +600,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
 }
@@ -707,7 +707,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
   # Return a random column with "best"
@@ -742,7 +742,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (is(smooth.roc, "try-error"))
+  if (methods::is(smooth.roc, "try-error"))
     return(NA)
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
   # Return a random column with "best"

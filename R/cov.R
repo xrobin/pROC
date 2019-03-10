@@ -47,7 +47,7 @@ cov.roc <- function(roc1, roc2,
                          parallel = FALSE,
                          ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
-  if (is(roc2, "auc")) {
+  if (methods::is(roc2, "auc")) {
     auc2 <- roc2
     attr(auc2, "roc") <- NULL
     roc2 <- attr(roc2, "roc")

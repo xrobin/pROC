@@ -115,7 +115,7 @@ compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, di
 multiclass.roc.multivariate <- function(response, predictor, levels, percent, direction, ...) {
     # Reference: "A Simple Generalisation of the Area Under the ROC 
     # Curve for Multiple Class Classification Problems" (Hand and Till, 2001)
-    if (!is(predictor, "matrix") && !is(predictor, "data.frame")) {
+    if (!methods::is(predictor, "matrix") && !methods::is(predictor, "data.frame")) {
         stop("Please provide a matrix or data frame via 'predictor'.")
     }
     if (nrow(predictor) != length(response)) {
@@ -186,7 +186,7 @@ multiclass.roc.default <- function(response, predictor,
                                    direction = c("auto", "<", ">"),
                                    ...) {
     # implements the approach from Hand & Till (2001)
-    if (is(predictor, "matrix") || is(predictor, "data.frame")) {
+    if (methods::is(predictor, "matrix") || methods::is(predictor, "data.frame")) {
         # for decision values for multiple classes (e.g. probabilities of individual classes)
     	if (missing("direction")) {
             # need to have uni-directional decision values for consistency

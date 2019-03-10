@@ -288,8 +288,8 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       }
     }
     # Deduce additional tn, tp, fn, fp, npv, ppv
-    ncases <- ifelse(is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
-    ncontrols <- ifelse(is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
+    ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
+    ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
     se <- res[3]
     sp <- res[2]
     if (roc$percent) {

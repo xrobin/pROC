@@ -16,9 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Ops.auc <- function(e1, e2) {
-  if (is(e1, "auc"))
+  if (methods::is(e1, "auc"))
     attributes(e1) <- NULL
-  if (is(e2, "auc"))
+  if (methods::is(e2, "auc"))
    attributes(e2) <- NULL
   NextMethod()
 }

@@ -127,7 +127,7 @@ plot.roc.roc <- function(x,
   if (print.auc & is.null(print.auc.pattern)) {
     print.auc.pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
     print.auc.pattern <- paste(print.auc.pattern, ifelse(percent, "%.1f%%", "%.3f"), sep="")
-    if (ci && is(x$ci, "ci.auc"))
+    if (ci && methods::is(x$ci, "ci.auc"))
       print.auc.pattern <- paste(print.auc.pattern, " (", ifelse(percent, "%.1f%%", "%.3f"), "\u2013", ifelse(percent, "%.1f%%", "%.3f"), ")",sep="")
   }
     
@@ -190,7 +190,7 @@ plot.roc.roc <- function(x,
     suppressWarnings(polygon(map.x, map.y, col=max.auc.polygon.col, lty=max.auc.polygon.lty, border=max.auc.polygon.border, density=max.auc.polygon.density, angle=max.auc.polygon.angle, ...))
   }
   # Plot the ci shape
-  if (ci && ! is(x$ci, "ci.auc")) {
+  if (ci && ! methods::is(x$ci, "ci.auc")) {
     ci.type <- match.arg(ci.type)
     if (ci.type=="shape")
       plot(x$ci, type="shape", col=ci.col, no.roc=TRUE, ...)
@@ -251,7 +251,7 @@ plot.roc.roc <- function(x,
   # Actually plot the ROC curve
   suppressWarnings(lines(sp, se, type=type, lwd=lwd, col=col, lty=lty, ...))
   # Plot the ci bars
-  if (ci && !is(x$ci, "ci.auc")) {
+  if (ci && !methods::is(x$ci, "ci.auc")) {
     if (ci.type=="bars")
       plot(x$ci, type="bars", col=ci.col, ...)
   }
@@ -260,14 +260,14 @@ plot.roc.roc <- function(x,
     print.thres <- "best"
   if (is.character(print.thres))
     print.thres <- match.arg(print.thres, c("no", "all", "local maximas", "best"))
-  if (is(x, "smooth.roc")) {
+  if (methods::is(x, "smooth.roc")) {
     if (is.numeric(print.thres))
       stop("Numeric 'print.thres' unsupported on a smoothed ROC plot.")
     else if (print.thres == "all" || print.thres == "local maximas")
       stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.") 
     else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights)
-      if (is(co, "matrix")) {
+      if (methods::is(co, "matrix")) {
         suppressWarnings(points(co[2,], co[1,], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
         suppressWarnings(text(co[2,], co[1,], sprintf(print.thres.pattern, NA, co[2,], co[1,]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
       }
@@ -281,7 +281,7 @@ plot.roc.roc <- function(x,
     if (is.character(print.thres) && print.thres == "no") {} # do nothing
     else {
       co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights)
-      if (is(co, "matrix")) {
+      if (methods::is(co, "matrix")) {
         suppressWarnings(points(co[2,], co[3,], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
         suppressWarnings(text(co[2,], co[3,], sprintf(print.thres.pattern, co[1,], co[2,], co[3,]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
       }
@@ -294,7 +294,7 @@ plot.roc.roc <- function(x,
 
   # Print the AUC on the plot
   if (print.auc) {
-    if (ci && is(x$ci, "ci.auc")) {
+    if (ci && methods::is(x$ci, "ci.auc")) {
       labels <- sprintf(print.auc.pattern, x$auc, x$ci[1], x$ci[3])
       suppressWarnings(text(print.auc.x, print.auc.y, labels, adj=print.auc.adj, cex=print.auc.cex, col=print.auc.col, ...))
     }

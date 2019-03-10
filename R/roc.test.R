@@ -130,7 +130,7 @@ roc.test.roc <- function(roc1, roc2,
 	alternative <- match.arg(alternative)
 	data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
 	# If roc2 is an auc, take the roc but keep the auc specifications
-	if (is(roc2, "auc")) {
+	if (methods::is(roc2, "auc")) {
 		auc2 <- roc2
 		attr(auc2, "roc") <- NULL
 		roc2 <- attr(roc2, "roc")
@@ -143,7 +143,7 @@ roc.test.roc <- function(roc1, roc2,
 	
 	# store which objects are smoothed, and how
 	smoothing.args <- list()
-	if (is(roc1, "smooth.roc")) {
+	if (methods::is(roc1, "smooth.roc")) {
 		smoothing.args$roc1 <- roc1$smoothing.args
 		smoothing.args$roc1$smooth <- TRUE
 		roc1 <- attr(roc1, "roc")
@@ -151,7 +151,7 @@ roc.test.roc <- function(roc1, roc2,
 	else {
 		smoothing.args$roc1 <- list(smooth=FALSE)
 	}
-	if (is(roc2, "smooth.roc")) {
+	if (methods::is(roc2, "smooth.roc")) {
 		smoothing.args$roc2 <- roc2$smoothing.args
 		smoothing.args$roc2$smooth <- TRUE
 		roc2 <- attr(roc2, "roc")

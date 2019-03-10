@@ -71,7 +71,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "gro
 	aes <- match.arg(aes, several.ok = TRUE)
 
 	# Make sure data is a list and every element is a roc object
-	if (! all(sapply(data, is, "roc"))) {
+	if (! all(sapply(data, methods::is, "roc"))) {
 		stop("All elements in 'data' must be 'roc' objects.")
 	}
 	
