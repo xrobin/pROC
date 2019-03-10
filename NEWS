@@ -1,6 +1,8 @@
 1.13.9 (future)
-  * The 'multiclass.roc' function now accepts multivariate decision values
+  * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)
   * 'ggroc' supports multiple aesthetics
+  * Make 'ggplot2' dependency optional
+  * Suggested packages can be installed interactively when required
 
 1.13.0 (2018-09-23)
   * 'roc' now returns 'NaN' when predictor contains infinite values (issue #30)
@@ -36,7 +38,7 @@
   * Support 'xlim' and 'ylim' gracefully in 'plot.roc'
   * Improved validation of input class 'levels' and 'direction'; messages when auto-detecting, use 'quiet' to turn on
   * Removed extraneous 'name' attribute on the 'p.value' (thanks Paweł Kleka for the report)
-  * Faster DeLong algorithm (code contributed Stefan Siegert)
+  * Faster DeLong algorithm (code contributed by Stefan Siegert)
 
 1.8 (2015-05-04)
   * NAMESPACE now properly exports the methods as S3 methods.
