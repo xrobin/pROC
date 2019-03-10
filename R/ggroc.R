@@ -36,11 +36,34 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
 	return(list(aes=aes, xlims=xlims))
 }
 
+load.ggplot2 <- function() {
+	if (! isNamespaceLoaded("ggplot2")) {
+		message('You may need to call library(ggplot2) if you want to add layers, etc.')
+	}
+	if (requireNamespace("ggplot2", quietly = TRUE)) {
+		return(TRUE)
+	}
+	else if (interactive()) {
+		auto.install <- askYesNo("Package ggplot2 not available, do you want to install it now?")
+		if (isTRUE(auto.install)) {
+			install.packages("ggplot2")
+			if (requireNamespace("ggplot2", quietly = TRUE)) {
+				return(TRUE)
+			}
+			else {
+				stop("Installation of ggplot2 failed!")
+			}
+		}
+	}
+	stop("Package 'ggplot2' not available.")
+}
+
 ggroc <- function(data, ...) {
 	UseMethod("ggroc")
 }
 
 ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
+	load.ggplot2()
 	# Get the roc data with coords
 	df <- get.coords.for.ggplot(data)
 
@@ -48,13 +71,14 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 	aes <- get.aes.for.ggplot(data, legacy.axes)
 
 	# Do the plotting
-	ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims
+	ggplot2::ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims
 		
 	# Or with ggvis:
 	# ggvis(df[rev(seq(nrow(df))),], ~1-specificity, ~sensitivity) %>% layer_lines()
 }
 
 ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...) {
+	load.ggplot2()
 	if (missing(aes)) {
 		aes <- "colour"
 	}
@@ -96,6 +120,6 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "gro
 	aes.ggplot <- get.aes.for.ggplot(data[[1]], legacy.axes, aes)
 
 	# Do the plotting
-	ggplot(coord.dfs, aes.ggplot$aes) + ggplot2::geom_line(...) + aes.ggplot$xlims
+	ggplot2::ggplot(coord.dfs, aes.ggplot$aes) + ggplot2::geom_line(...) + aes.ggplot$xlims
 
 }
