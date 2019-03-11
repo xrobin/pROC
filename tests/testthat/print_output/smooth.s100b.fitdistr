@@ -1,0 +1,7 @@
+
+Call:
+smooth.roc(roc = roc(outcome ~ s100b, aSAH), method = "fitdistr")
+
+Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).
+Smoothing: fitdistr 
+Area under the curve: 0.8311

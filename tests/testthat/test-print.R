@@ -80,3 +80,14 @@ test_that("print works with the CI", {
 	set.seed(42) # For reproducible CI
 	expect_known_output(print(roc(outcome ~ ndka, aSAH, ci=TRUE)), "print_output/r.ndka.formula.ci")
 })
+
+test_that("print.smooth.roc works", {
+	expect_known_output(print(smooth(roc(aSAH$outcome, aSAH$ndka))), "print_output/smooth.ndka")
+	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH))), "print_output/smooth.s100b.formula")
+	expect_known_output(print(smooth(roc(aSAH$outcome, aSAH$ndka))), "print_output/smooth.wfns")
+	expect_known_output(print(smooth(roc(aSAH$outcome, aSAH$ndka), method="binormal")), "print_output/smooth.s100b.binormal")
+	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="logcondens")), "print_output/smooth.s100b.logcondens")
+	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="logcondens.smooth")), "print_output/smooth.s100b.logcondens.smooth")
+	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="fitdistr")), "print_output/smooth.s100b.fitdistr")
+	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="density")), "print_output/smooth.s100b.density")
+})
