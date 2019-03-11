@@ -29,7 +29,6 @@ test_that("print.roc works", {
 	expect_known_output(print(roc(outcome ~ ndka, aSAH)), "print_output/ndka_formula")
 })
 
-
 test_that("print.multiclass.roc works", {
 	expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka)), "print_output/multiclass")
 	expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, levels=c(3, 4, 5))), "print_output/multiclass_levels")
@@ -44,7 +43,6 @@ test_that("print.multiclass.roc works", {
 	expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, partial.auc=c(1, .9), partial.auc.focus="se")), "print_output/multiclass_partial_se")
 	expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$wfns, partial.auc=c(1, .9), partial.auc.correct=TRUE)), "print_output/multiclass_partial_correct")
 })
-
 
 test_that("print.multiclass.roc multivariate works", {
 	n <- c(100, 80, 150)
@@ -64,4 +62,21 @@ test_that("print.multiclass.roc multivariate works", {
 	expect_known_output(print(multiclass.roc(responses, predictor, partial.auc=c(1, .9), partial.auc.focus="se")), "print_output/mv_multiclass_partial_se")
 	expect_known_output(print(multiclass.roc(responses, predictor, partial.auc=c(1, .9), partial.auc.correct=TRUE)), "print_output/mv_multiclass_partial_correct")
 })
-	
+
+test_that("print works with a formula", {
+	expect_known_output(print(roc(outcome ~ ndka, aSAH)), "print_output/r.ndka.formula")
+	expect_known_output(print(multiclass.roc(gos6 ~ ndka, aSAH)), "print_output/mv_multiclass.ndka.formula")
+})
+
+test_that("print works without the auc", {
+	expect_known_output(print(roc(outcome ~ ndka, aSAH, auc=FALSE)), "print_output/r.ndka.formula.no_auc")
+})
+
+test_that("print works with the CI", {
+	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expect_known_output(print(roc(outcome ~ ndka, aSAH, ci=TRUE)), "print_output/r.ndka.formula.ci")
+})
