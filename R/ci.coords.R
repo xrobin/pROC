@@ -187,3 +187,7 @@ enfore.best.policy <- function(res, best.policy) {
 		return(res[, sample(seq_len(ncol(res)), size = 1), drop = FALSE])
 	}
 }
+
+ci.coords.multiclass.roc <- function(...) {
+	stop("'ci.coords' not available for multiclass ROC curves.")
+}

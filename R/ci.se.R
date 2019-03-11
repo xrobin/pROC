@@ -124,3 +124,7 @@ ci.se.roc <- function(roc,
   attr(ci, "roc") <- roc
   return(ci)
 }
+
+ci.se.multiclass.roc <- function(...) {
+	stop("'ci.se' not available for multiclass ROC curves.")
+}

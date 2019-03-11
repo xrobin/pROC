@@ -113,3 +113,6 @@ ci.thresholds.roc <- function(roc,
   return(ci)
 }
 
+ci.thresholds.multiclass.roc <- function(...) {
+	stop("'ci.thresholds' not available for multiclass ROC curves.")
+}
