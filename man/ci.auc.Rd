@@ -6,6 +6,8 @@
 \alias{ci.auc.formula}
 \alias{ci.auc.roc}
 \alias{ci.auc.smooth.roc}
+\alias{ci.auc.multiclass.roc}
+\alias{ci.auc.multiclass.auc}
 
 \title{
   Compute the confidence interval of the AUC
@@ -26,6 +28,9 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
 boot.stratified=TRUE, reuse.auc=TRUE,
 progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 \S3method{ci.auc}{auc}(auc, ...)
+\S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
+\S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
+\S3method{ci.auc}{auc}(auc, ...)
 \S3method{ci.auc}{formula}(formula, data, ...)
 \S3method{ci.auc}{default}(response, predictor, ...)
 }
@@ -36,6 +41,7 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{auc}{an \dQuote{auc} object from the \code{\link{auc}} function.}
+  \item{multiclass.roc, multiclass.auc}{not implemented.}
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
@@ -101,6 +107,9 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   With \code{method="delong"}, the variance of the AUC is computed as
   defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014) 
   and the CI is deduced with \code{\link{qnorm}}.
+  
+  CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
+  methods returns an error.
 }
 
 \section{AUC specification}{

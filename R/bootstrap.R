@@ -379,59 +379,59 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   return(eval(auc.call))
 }
 
-##########  AUC of a multiclass ROC (ci.multiclass.auc)  ##########
-  
-ci.multiclass.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...) {
-  if(class(progress) != "list")
-    progress <- roc.utils.get.progress.bar(progress, title="Multi-class AUC confidence interval", label="Bootstrap in progress...", ...)
-
-  if (boot.stratified) {
-    aucs <- unlist(llply(1:boot.n, stratified.ci.multiclass.auc, roc=roc, .progress=progress, .parallel=parallel))
-  }
-  else {
-    aucs <- unlist(llply(1:boot.n, nonstratified.ci.multiclass.auc, roc=roc, .progress=progress, .parallel=parallel))
-  }
-
-  if (sum(is.na(aucs)) > 0) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    aucs <- aucs[!is.na(aucs)]
-  }
-  # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
-  # Prepare the return value
-  return(quantile(aucs, c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-
-}
-
-# Returns an auc in a stratified manner
-stratified.ci.multiclass.auc <- function(n, roc) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
-  thresholds <- roc.utils.thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
-  roc$sensitivities <- perfs$se
-  roc$specificities <- perfs$sp
-
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
-}
-
-
-# Returns an auc in a non stratified manner
-nonstratified.ci.multiclass.auc <- function(n, roc) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
-  predictor <- roc$predictor[tmp.idx]
-  response <- roc$response[tmp.idx]
-  splitted <- split(predictor, response)
-  controls <- splitted[[as.character(roc$levels[1])]]
-  cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc.utils.thresholds(c(controls, cases), roc$direction)
-
-  perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
-  roc$sensitivities <- perfs$se
-  roc$specificities <- perfs$sp
-  
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
-}
+# ##########  AUC of a multiclass ROC (ci.multiclass.auc)  ##########
+#   
+# ci.multiclass.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...) {
+#   if(class(progress) != "list")
+#     progress <- roc.utils.get.progress.bar(progress, title="Multi-class AUC confidence interval", label="Bootstrap in progress...", ...)
+# 
+#   if (boot.stratified) {
+#     aucs <- unlist(llply(1:boot.n, stratified.ci.multiclass.auc, roc=roc, .progress=progress, .parallel=parallel))
+#   }
+#   else {
+#     aucs <- unlist(llply(1:boot.n, nonstratified.ci.multiclass.auc, roc=roc, .progress=progress, .parallel=parallel))
+#   }
+# 
+#   if (sum(is.na(aucs)) > 0) {
+#     warning("NA value(s) produced during bootstrap were ignored.")
+#     aucs <- aucs[!is.na(aucs)]
+#   }
+#   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
+#   # Prepare the return value
+#   return(quantile(aucs, c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
+# 
+# }
+# 
+# # Returns an auc in a stratified manner
+# stratified.ci.multiclass.auc <- function(n, roc) {
+#   controls <- sample(roc$controls, replace=TRUE)
+#   cases <- sample(roc$cases, replace=TRUE)
+#   thresholds <- roc.utils.thresholds(c(cases, controls), roc$direction)
+#   
+#   perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+#   roc$sensitivities <- perfs$se
+#   roc$specificities <- perfs$sp
+# 
+#   auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
+# }
+# 
+# 
+# # Returns an auc in a non stratified manner
+# nonstratified.ci.multiclass.auc <- function(n, roc) {
+#   tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+#   predictor <- roc$predictor[tmp.idx]
+#   response <- roc$response[tmp.idx]
+#   splitted <- split(predictor, response)
+#   controls <- splitted[[as.character(roc$levels[1])]]
+#   cases <- splitted[[as.character(roc$levels[2])]]
+#   thresholds <- roc.utils.thresholds(c(controls, cases), roc$direction)
+# 
+#   perfs <- roc$fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+#   roc$sensitivities <- perfs$se
+#   roc$specificities <- perfs$sp
+#   
+#   auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"))
+# }
 
 ##########  SE of a ROC curve (ci.se)  ##########
 

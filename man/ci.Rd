@@ -5,6 +5,8 @@
 \alias{ci.formula}
 \alias{ci.roc}
 \alias{ci.smooth.roc}
+\alias{ci.multiclass.roc}
+\alias{ci.multiclass.auc}
 
 \title{
   Compute the confidence interval of a ROC curve
@@ -19,6 +21,8 @@
 ci(...)
 \S3method{ci}{roc}(roc, of = c("auc", "thresholds", "sp", "se", "coords"), ...)
 \S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
+\S3method{ci}{multiclass.roc}(multiclass.roc, of = "auc", ...)
+\S3method{ci}{multiclass.auc}(multiclass.auc, of = "auc", ...)
 \S3method{ci}{formula}(formula, data, ...)
 \S3method{ci}{default}(response, predictor, ...)
 }
@@ -28,6 +32,7 @@ ci(...)
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
 	\code{\link[=smooth.roc]{smooth}} function.
   }
+  \item{multiclass.roc, multiclass.auc}{not implemented.}
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
@@ -60,6 +65,9 @@ ci(...)
   (there is no interval). This is true for both \dQuote{delong} and \dQuote{bootstrap} methods that can
   not properly assess the variance in this case. This result is misleading, as the variance is of course not null.
   A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
+  
+  CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
+  methods returns an error.
 }
 
 \value{

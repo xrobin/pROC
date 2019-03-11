@@ -179,3 +179,11 @@ ci.auc.roc <- function(roc,
   class(ci) <- c("ci.auc", "ci", class(ci))
   return(ci)
 }
+
+ci.auc.multiclass.roc <- function(multiclass.roc, ...) {
+	stop("CI of a multiclass ROC curve not implemented")
+}
+
+ci.auc.multiclass.auc <- function(multiclass.auc, ...) {
+	stop("CI of a multiclass AUC not implemented")
+}

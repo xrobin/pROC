@@ -64,3 +64,12 @@ ci.roc <- function(roc, of = c("auc", "thresholds", "sp", "se", "coords"), ...) 
 
   return(ci)
 }
+
+ci.multiclass.roc <- function(multiclass.roc, of = "auc", ...) {
+	stop("CI of a multiclass ROC curve not implemented")
+}
+
+ci.multiclass.auc <- function(multiclass.auc, of = "auc", ...) {
+	stop("CI of a multiclass AUC not implemented")
+}
+
