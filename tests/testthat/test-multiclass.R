@@ -261,3 +261,16 @@ test_that("multivariate behavior with missing levels/columns", {
 	expect_warning(multiclass.roc(as.character(responses[11:30]), pr2[11:30,]), "Y1")
 })
 
+test_that("Invalid CI functions fail cleanly", {
+	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b)
+	expect_error(ci.se(uv.mr), "not available for multiclass ROC curves")
+	expect_error(ci.se(uv.mr$auc), "not available for multiclass ROC curves")
+	expect_error(ci.sp(uv.mr), "not available for multiclass ROC curves")
+	expect_error(ci.sp(uv.mr$auc), "not available for multiclass ROC curves")
+	expect_error(ci.coords(uv.mr), "not available for multiclass ROC curves")
+	expect_error(ci.coords(uv.mr$auc), "not available for multiclass ROC curves")
+	expect_error(ci.thresholds(uv.mr), "not available for multiclass ROC curves")
+	expect_error(ci.thresholds(uv.mr$auc), "not available for multiclass ROC curves")
+})
+
+
