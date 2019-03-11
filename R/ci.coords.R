@@ -26,6 +26,9 @@ ci.coords.formula <- function(formula, data, ...) {
 }
 
 ci.coords.default <- function(response, predictor, ...) {
+	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+		stop("'ci.coords' not available for multiclass ROC curves.")
+	}
   ci.coords(roc.default(response, predictor, ci=FALSE, ...), ...)
 }
 
@@ -188,6 +191,3 @@ enfore.best.policy <- function(res, best.policy) {
 	}
 }
 
-ci.coords.multiclass.roc <- function(...) {
-	stop("'ci.coords' not available for multiclass ROC curves.")
-}

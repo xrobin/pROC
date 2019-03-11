@@ -26,6 +26,9 @@ ci.sp.formula <- function(formula, data, ...) {
 }
 
 ci.sp.default <- function(response, predictor, ...) {
+	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+		stop("'ci.sp' not available for multiclass ROC curves.")
+	}
   ci.sp(roc.default(response, predictor, ci=FALSE, ...), ...)
 }
 
@@ -124,8 +127,4 @@ ci.sp.roc <- function(roc,
   attr(ci, "sensitivities") <- sensitivities
   attr(ci, "roc") <- roc
   return(ci)
-}
-
-ci.sp.multiclass.roc <- function(...) {
-	stop("'ci.sp' not available for multiclass ROC curves.")
 }

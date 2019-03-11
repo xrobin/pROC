@@ -26,6 +26,9 @@ ci.thresholds.formula <- function(formula, data, ...) {
 }
 
 ci.thresholds.default <- function(response, predictor, ...) {
+	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+		stop("'ci.thresholds' not available for multiclass ROC curves.")
+	}
   ci.thresholds(roc.default(response, predictor, ci=FALSE, ...), ...)
 }
 
@@ -111,8 +114,4 @@ ci.thresholds.roc <- function(roc,
   attr(ci, "thresholds") <- thresholds.num
   attr(ci, "roc") <- roc
   return(ci)
-}
-
-ci.thresholds.multiclass.roc <- function(...) {
-	stop("'ci.thresholds' not available for multiclass ROC curves.")
 }
