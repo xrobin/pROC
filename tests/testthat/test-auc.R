@@ -133,13 +133,13 @@ test_that("partial auc works with focus on SE and correction enabled", {
 	# NDKA
 	expect_warning(auc(r.ndka, partial.auc = c(1, .9), partial.auc.focus = "se", partial.auc.correct = TRUE))
 	expect_warning(auc(r.ndka.percent, partial.auc = c(100, 90), partial.auc.focus = "se", partial.auc.correct = TRUE))
-	expect_identical(as.numeric(auc(r.ndka, partial.auc = c(1, .9), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_)
-	expect_identical(as.numeric(auc(r.ndka.percent, partial.auc = c(100, 90), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_)
+	expect_warning(expect_identical(as.numeric(auc(r.ndka, partial.auc = c(1, .9), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_))
+	expect_warning(expect_identical(as.numeric(auc(r.ndka.percent, partial.auc = c(100, 90), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_))
 	# direction is unspecified
 	expect_warning(auc(r.ndka, partial.auc = c(.9, 1), partial.auc.focus = "se", partial.auc.correct = TRUE))
 	expect_warning(auc(r.ndka.percent, partial.auc = c(90, 100), partial.auc.focus = "se", partial.auc.correct = TRUE))
-	expect_identical(as.numeric(auc(r.ndka, partial.auc = c(.9, 1), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_)
-	expect_identical(as.numeric(auc(r.ndka.percent, partial.auc = c(90, 100), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_)
+	expect_warning(expect_identical(as.numeric(auc(r.ndka, partial.auc = c(.9, 1), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_))
+	expect_warning(expect_identical(as.numeric(auc(r.ndka.percent, partial.auc = c(90, 100), partial.auc.focus = "se", partial.auc.correct = TRUE)), NA_real_))
 	
 	# Arbitrary intervals
 	expect_equal(as.numeric(auc(r.ndka, partial.auc = c(.9, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)), 0.554439662043679)
