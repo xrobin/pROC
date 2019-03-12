@@ -8,7 +8,7 @@ test_that("roc can deal with 1E5 data points and many thresholds", {
   # ~ 0.6s
   r <- roc(response, predictor)
   ci(r)
-  auc(r, partial.auc = c(0.9, 1))
+  expect_is(auc(r, partial.auc = c(0.9, 1)), "auc")
 })
 
 test_that("roc can deal with 1E6 data points and few thresholds", {
@@ -17,7 +17,7 @@ test_that("roc can deal with 1E6 data points and few thresholds", {
   # ~ 0.3s
   r <- roc(response, predictor)
   ci(r)
-  auc(r, partial.auc = c(0.9, 1))
+  expect_is(auc(r, partial.auc = c(0.9, 1)), "auc")
 })
 
 test_that("roc can deal with 1E7 data points and few thresholds", {
@@ -27,5 +27,5 @@ test_that("roc can deal with 1E7 data points and few thresholds", {
   # ~ 3s
   r <- roc(response, predictor)
   ci(r)
-  auc(r, partial.auc = c(0.9, 1))
+  expect_is(auc(r, partial.auc = c(0.9, 1)), "auc")
 })
