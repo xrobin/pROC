@@ -141,3 +141,14 @@ test_that("Advanced screenshot 6 works correctly", {
 	}
 	vdiffr::expect_doppelganger("advanced.screenshot.6", test_advanced_screenshot_6)
 })
+
+
+test_that("plot and lines work with formula and subset", {
+	test_plot_formula <- function() {
+		plot.roc(outcome ~ ndka, data = aSAH, subset = gender == "Female", col="red")
+		lines.roc(outcome ~ ndka, data = aSAH)
+		lines.roc(outcome ~ ndka, data = aSAH, subset = gender == "Male", col="blue")
+	}
+	vdiffr::expect_doppelganger("plot_formula", test_plot_formula)
+})
+

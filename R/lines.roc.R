@@ -21,11 +21,27 @@ lines.roc <- function(x, ...) {
   UseMethod("lines.roc")
 }
 
-lines.roc.formula <- function(x, data, ...) {
-  roc <- roc(x, data, ...)
-  lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  invisible(roc)
+lines.roc.formula <- function(x, data, subset, na.action, ...) {
+	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
+	Call <- match.call()
+	indx <- match(c("x", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
+	if (indx[1] == 0) {
+		stop("A formula is required as 'x' argument")
+	}
+	# Keep the standard arguments and run them in model.frame
+	temp <- Call[c(1,indx)]
+	temp[[1]] <- as.name('model.frame')
+	names(temp)[2] <- "formula"
+	m <- eval(temp, parent.frame())
+	
+	if (!is.null(model.weights(m))) stop("weights are not supported")
+	
+	response <- model.response(m)
+	predictor <- m[[attr(terms(x), "term.labels")]]
+	roc <- roc(response, predictor, ...)
+	lines.roc.roc(roc, ...)
+	roc$call <- match.call()
+	invisible(roc)
 }
 
 lines.roc.default <- function(x, predictor, ...) {
