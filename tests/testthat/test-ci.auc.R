@@ -23,9 +23,9 @@ test_that("ci.auc works with an auc", {
 
 
 test_that("ci.auc works with a formula", {
-	skip("ci.auc.formula must be fixed!")
 	expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH)), expected.ci.auc)
-	expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH, subset = (gender == "Female"))), expected.ci.auc)
+	expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH, subset = (gender == "Female"))), 
+				 c(0.5261398281, 0.6671428571, 0.8081458862))
 })
 
 
