@@ -115,6 +115,11 @@ roc.default <- function(response, predictor,
   direction <- match.arg(direction)
   # Response / Predictor
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
+  	# Forbid case/controls
+  	if ((!missing(cases) && !is.null(cases)) || (!missing(controls) && !is.null(controls))) {
+  		stop("'cases/controls' argument incompatible with 'response/predictor'.")
+  	}
+  	
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
     

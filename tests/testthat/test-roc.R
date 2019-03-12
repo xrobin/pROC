@@ -132,7 +132,6 @@ test_that("roc.formula behaves", {
 })
 
 test_that("roc can't take both response/predictor and case/control", {
-	skip("This doesn't throw an error currently.")
 	expect_error(roc(aSAH$outcome, aSAH$ndka, controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"]))
 })
 
