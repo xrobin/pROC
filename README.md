@@ -156,11 +156,12 @@ NOT_CRAN=1 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
 
 ### Release steps
 
-1. Build & check package: `R CMD build pROC && R CMD check --as-cran pROC_1.12.0.tar.gz`
-1. Check with slow tests: `NOT_CRAN=1  RUN_SLOW_TESTS=true R CMD check pROC_1.12.0.tar.gz`
+1. Get new version to release: `VERSION=$(grep Version pROC/DESCRIPTION | sed "s/.\+ //") && echo $VERSION`
+1. Build & check package: `R CMD build pROC && R CMD check --as-cran pROC_$VERSION.tar.gz`
+1. Check with slow tests: `NOT_CRAN=1  RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz`
 1. Check with R-devel: `rhub::check_with_rdevel()`
 1. Chec reverse dependencies: `devtools::revdep_check(libpath = rappdirs::user_cache_dir("revdep_lib"), srcpath = rappdirs::user_cache_dir("revdep_src"))`
 1. Update `Version` and `Date` in `DESCRIPTION`
 1. Update version and date in `NEWS`
-1. Create a tag: `git tag v1.12.0`
+1. Create a tag: `git tag v$VERSION`
 1. [Submit to CRAN](https://cran.r-project.org/submit.html)
