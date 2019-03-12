@@ -1,4 +1,4 @@
-1.14.0 (future)
+1.14.0 (2019-03-12)
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)
   * 'ggroc' supports multiple aesthetics
   * Make 'ggplot2' dependency optional
