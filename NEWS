@@ -4,6 +4,7 @@
   * Make 'ggplot2' dependency optional
   * Suggested packages can be installed interactively when required
   * Passing both 'cases' and 'controls' or 'response' and 'predictor' arguments is now an error
+  * Many small bug fixes
 
 1.13.0 (2018-09-23)
   * 'roc' now returns 'NaN' when predictor contains infinite values (issue #30)
