@@ -8,6 +8,9 @@ test_that("roc.test works", {
 	t1 <<- roc.test(r.wfns, r.s100b)
 	t2 <<- roc.test(r.wfns, r.ndka)
 	t3 <<- roc.test(r.ndka, r.s100b)
+	expect_is(t1, "htest")
+	expect_is(t2, "htest")
+	expect_is(t3, "htest")
 })
 
 test_that("roc.test statistic and p are as expected with defaults", {
