@@ -17,7 +17,7 @@
 \S3method{lines}{roc}(x, ...)
 \S3method{lines}{smooth.roc}(x, ...)
 \S3method{lines.roc}{roc}(x, lwd=2, ...)
-\S3method{lines.roc}{formula}(x, data, ...)
+\S3method{lines.roc}{formula}(x, data, subset, na.action, ...)
 \S3method{lines.roc}{default}(x, predictor, ...)
 \S3method{lines.roc}{smooth.roc}(x, ...)
 
@@ -29,6 +29,7 @@
     plot.roc.default).
   }
   \item{predictor, data}{arguments for the \link{roc} function.}
+  \item{subset,na.action}{arguments for \code{\link{model.frame}}}
   \item{lwd}{line width (see \code{\link{par}}).}
   \item{\dots}{graphical parameters for \code{\link{lines}}, and
     especially \code{type} (see \code{\link{plot.default}}) and

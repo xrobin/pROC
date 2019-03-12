@@ -91,7 +91,7 @@ ci=!is.null(x$ci),
 ci.type=c("bars", "shape", "no"),
 ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 ...)
-\S3method{plot.roc}{formula}(x, data, ...)
+\S3method{plot.roc}{formula}(x, data, subset, na.action, ...)
 \S3method{plot.roc}{default}(x, predictor, ...)
 \S3method{plot.roc}{smooth.roc}(x, ...)
 
@@ -103,6 +103,7 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
     plot.roc.default).
   }
   \item{predictor, data}{arguments for the \link{roc} function.}
+  \item{subset,na.action}{arguments for \code{\link{model.frame}}}
   \item{add}{if TRUE, the ROC curve will be added to an existing
     plot. If FALSE (default), a new plot will be created.
   }
