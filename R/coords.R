@@ -193,10 +193,22 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
         return(NULL)
       lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
       co <- coords(roc, x=thres[lm.idx], input="threshold", ret=ret, as.list=as.list, drop=drop)
-      if (class(co) == "matrix")
-        colnames(co) <- rep(x, dim(co)[2])
-      else if (class(co) == "list" && class(co[[1]]) == "list")
-        names(co) <- rep(x, length(co))
+      if (class(co) == "matrix") {
+      	colnames(co) <- rep(x, dim(co)[2])
+      	if (drop) {
+      		co <- drop(co)
+      	}
+      }
+      else if (class(co) == "list" && class(co[[1]]) == "list") {
+      	names(co) <- rep(x, length(co))
+      	if (drop) {
+      		for (i in seq_along(co)) {
+      			if (length(co[[i]]) == 1) {
+      				co[[i]] <- co[[i]][[1]]
+      			}
+      		}
+      	}
+      }
       return(co)
     }
     else { # x == "best"
@@ -245,6 +257,13 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       if (as.list) {
         res <- lapply(x, function(x) coords.roc(roc, x, input, ret, as.list))
         names(res) <- x
+        if (drop) {
+        	for (i in seq_along(res)) {
+        		if (length(res[[i]]) == 1) {
+        			res[[i]] <- res[[i]][[1]]
+        		}
+        	}
+        }
       }
       else {
         res <- sapply(x, function(x) coords.roc(roc, x, input, ret, as.list))
@@ -253,6 +272,9 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
           rownames(res) <- ret
         }
         colnames(res) <- x
+      }
+      if (drop) {
+      	res <- drop(res)
       }
       return(res)
     }

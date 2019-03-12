@@ -1,3 +1,6 @@
+1.14.9 (future)
+  * 'drop' in 'coords' now drops the dimension of 'ret' too (#issue 43)
+
 1.14.0 (future)
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)
   * 'ggroc' supports multiple aesthetics
