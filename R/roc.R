@@ -93,7 +93,7 @@ roc.default <- function(response, predictor,
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
                         algorithm=5,
-						quiet = TRUE,
+						quiet = FALSE,
 
                         # what computation must be done
                         smooth=FALSE, # call smooth.roc on the current object

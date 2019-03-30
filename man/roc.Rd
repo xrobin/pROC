@@ -20,7 +20,7 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 5, quiet = TRUE, 
+direction=c("auto", "<", ">"), algorithm = 5, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 ci.method=NULL, density=NULL, ...)
 
@@ -94,9 +94,8 @@ ci.method=NULL, density=NULL, ...)
     \code{5}: quickly select 2 or 3 based on the number of thresholds.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
-  \item{quiet}{set to \code{FALSE} to turn on \code{\link{message}}s
+  \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
-	 This default will be changed to \code{TRUE} in the future.
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
     to be smoothed.
