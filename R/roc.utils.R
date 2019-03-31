@@ -57,7 +57,7 @@ roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
   sp <- (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
   dups.pred <- rev(duplicated(rev(predictor.sorted)))
-  dups.sesp <- duplicated(matrix(c(se, sp), ncol=2), MARGIN=1)
+  dups.sesp <- duplicated(se) & duplicated(sp)
   dups <- dups.pred | dups.sesp
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
