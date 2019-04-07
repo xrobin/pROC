@@ -52,12 +52,13 @@ best.weights=c(1, 0.5), ...)
     \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value),
     \dQuote{precision}, \dQuote{recall}.
     \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
-    as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (for instance \dQuote{100-ppv} is never accepted).
+    as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (ie. \dQuote{100-ppv} is never accepted).
     Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
     \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
     \code{coords.smooth.roc}.
     In addition, \dQuote{npe} is replaced by \dQuote{1-npv} and \dQuote{ppe} by \dQuote{1-ppv}
-    (but they cannot be shortened).
+    (but they cannot be shortened). See the Details section for a description of
+    the formulas used.
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
     (default), a named numeric vector is returned.}
@@ -71,7 +72,7 @@ best.weights=c(1, 0.5), ...)
   \item{best.weights}{if \code{x="best"}, the weights to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
-  \item{\dots}{further arguments passed to or from other methods. Ignored.}
+  \item{\dots}{further arguments passed from other methods. Ignored.}
 }
 
 \details{
@@ -106,9 +107,8 @@ best.weights=c(1, 0.5), ...)
   \pkg{colorspace} or \pkg{spatstat} if they are loaded after
   \pkg{pROC}. In this case, call the \code{coords.roc} or
   \code{coords.smooth.roc} functions directly.
-}
 
-\section{Best thresholds}{
+\subsection{Best thresholds}{
   If \code{x="best"}, the \code{best.method} argument controls how the
   optimal threshold is determined.
   \describe{
@@ -157,6 +157,34 @@ best.weights=c(1, 0.5), ...)
 
   Note that several thresholds might be equally optimal.
 }
+
+\subsection{Valid \code{ret} arguments}{
+
+The following arguments
+  \tabular{rlll}{
+    Value \tab Description \tab Formula \tab Synonym \cr
+    \code{threshold} \tab The threshold value \tab - \tab - \cr
+    \code{tn} \tab True negative count \tab - \tab - \cr
+    \code{tp} \tab True positive count \tab - \tab - \cr
+    \code{fn} \tab False negative count \tab - \tab - \cr
+    \code{fp} \tab False positive count \tab - \tab - \cr
+    \code{specificity} \tab Specificity  \tab tn / (tn + fp) \tab  \cr
+    \code{sensitivity} \tab Sensitivity \tab tp / (tp + fn)  \tab recall \cr
+    \code{accuracy} \tab Accuracy \tab  (tp + tn) / N \tab - \cr
+    \code{npv} \tab Negative Predictive Value \tab tn / (tn + fn) \tab - \cr
+    \code{ppv} \tab Positive Predictive Value \tab tp / (tp + fp) \tab precision \cr
+    \code{precision} \tab Precision \tab tp / (tp + fp) \tab ppv \cr
+    \code{recall} \tab Recall \tab tp / (tp + fn) \tab sensitivity \cr
+  }
+  
+  In addition, some values can be prefixed with \code{1-} to get their complement:
+  \code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}.
+
+  Finally the values \code{npe} and \code{ppe} are automatically replaced with
+  \code{1-npv} and \code{1-ppv}, respectively (and will therefore not appear
+  as is in the output, but as \code{1-npv} and \code{1-ppv} instead).
+}
+} % details
 
 \value{
   Depending on the length of \code{x} and \code{as.list} argument.
