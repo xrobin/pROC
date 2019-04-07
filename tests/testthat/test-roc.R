@@ -14,12 +14,15 @@ expected.algorithm <- list(
 	pROC:::rocUtilsPerfsAllC
 )
 
+smooth.methods <- c("binormal", "density")#, "fitdistr", "logcondens", "logcondens.smooth")
+
 for (marker in c("ndka", "wfns", "s100b")) {
 	for (levels.direction in names(level.values)) {
 		for (percent in c(FALSE, TRUE)) {
 			for (direction in c("auto", "<", ">")) {
 				for (algorithm in 1:5) {
 					context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s and algorithm = %s", percent, marker, levels.direction, direction, algorithm))
+					expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
 					r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE)
 					
 					test_that("roc.formula produces the same results as roc.default", {
@@ -46,8 +49,6 @@ for (marker in c("ndka", "wfns", "s100b")) {
 					})
 					
 					test_that("roc.default produces the expected results", {
-						expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
-					
 						expect_is(r, "roc")
 						expect_identical(r$percent, percent)
 						expect_identical(r$fun.sesp, expected.algorithm[[algorithm]])
@@ -58,12 +59,44 @@ for (marker in c("ndka", "wfns", "s100b")) {
 						expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
 						expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
 					})
+					
+					if (algorithm == 3) {
+						if (marker == "wfns") {
+							available.smooth.methods <- "binormal"
+						}
+						else {
+							available.smooth.methods <- smooth.methods
+						}
+						for (smooth.method in available.smooth.methods) {
+							context(sprintf("smooth(roc(...)) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
+							test_that("smoothing a ROC curve produces expected results", {
+								s <- smooth(r, method=smooth.method, 10)
+								expect_is(s, "smooth.roc")
+								expect_identical(s$percent, percent)
+								expect_identical(s$direction, expected.direction)
+								expect_equal(s$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
+								expect_equal(s$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
+							})
+							test_that("building curve with smooth=TRUE produces expected results", {
+								skip_if(smooth.method == "density", "smooth.method=density doesn't work (issue #49)")
+								context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
+								s2 <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE, 
+										  smooth = TRUE, smooth.n = 10, smooth.method=smooth.method)
+								expect_is(s2, "smooth.roc")
+								expect_identical(s2$percent, percent)
+								expect_identical(s2$direction, expected.direction)
+								expect_equal(s2$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
+								expect_equal(s2$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
+							})
+						}
+					}
 				}
 			}
 		}
 	}
 }
 
+#dump("expected.roc", file="helper-roc-expected.R")
 
 test_that("roc.default handles NAs", {
 	# Generate missing values
