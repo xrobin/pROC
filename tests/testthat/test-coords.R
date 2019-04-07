@@ -77,6 +77,35 @@ test_that("coords with specificity works with as.list", {
 	))
 })
 
+test_that("coords with specificity works with as.list and drop=FALSE", {
+	obtained <- coords(r.s100b.percent, "best", 
+					   ret = c("threshold", "specificity", "accuracy"), 
+					   as.list = TRUE, drop = FALSE)
+	expect_equal(obtained$best, list(
+		threshold = 0.205,
+		specificity = expected.coords["specificity", 18] * 100,
+		accuracy = expected.coords["accuracy", 18] * 100
+	))
+})
+
+
+test_that("coords with specificity works with as.list and several thresholds", {
+	obtained <- coords(r.s100b.percent, c(0.205, 0.51), 
+					   ret = c("threshold", "specificity", "accuracy"), 
+					   as.list = TRUE, drop = FALSE)
+	expect_equal(names(obtained), c("0.205", "0.51"))
+	expect_equal(obtained[[1]], list(
+		threshold = 0.205,
+		specificity = expected.coords["specificity", 18] * 100,
+		accuracy = expected.coords["accuracy", 18] * 100
+	))
+	expect_equal(obtained[[2]], list(
+		threshold = 0.51,
+		specificity = expected.coords["specificity", 40] * 100,
+		accuracy = expected.coords["accuracy", 40] * 100
+	))
+})
+
 
 test_that("drop works", {
 	skip("drop doesn't drop over x - doc unclear/inconsistent need to be fixed")
