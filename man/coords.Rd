@@ -321,7 +321,7 @@ plot(precision ~ recall, t(coords(rocobj, "all", ret = c("recall", "precision"))
 
 # Alternatively plot the curve with TPR and FPR instead of SE/SP 
 # (identical curve, only the axis change)
-plot(tpr ~ fpr, t(coords(r.s100b.percent, "all", ret = c("tpr", "fpr"))), type="l")
+plot(tpr ~ fpr, t(coords(rocobj, "all", ret = c("tpr", "fpr"))), type="l")
 }
 
 \keyword{univar}
