@@ -22,7 +22,7 @@ density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
 direction=c("auto", "<", ">"), algorithm = 5, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
-ci.method=NULL, density=NULL, ...)
+smooth.n=512, ci.method=NULL, density=NULL, ...)
 
 }
 
@@ -109,11 +109,11 @@ ci.method=NULL, density=NULL, ...)
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
     arguments can be passed to \code{\link{plot.roc}}.
   }
-  \item{smooth.method, ci.method}{in \code{roc.formula} and
-	\code{roc.default}, the \code{method} arguments to
+  \item{smooth.method, smooth.n, ci.method}{in \code{roc.formula} and
+	\code{roc.default}, the \code{method} and \code{n} arguments to
 	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and
 	\code{of="auc"}) must be passed as
-	\code{smooth.method} and \code{ci.method} to avoid confusions.
+	\code{smooth.method}, \code{smooth.n} and \code{ci.method} to avoid confusions.
   }
   \item{density}{\code{density} argument passed to \code{\link[=smooth.roc]{smooth}}.}
   \item{\dots}{further arguments passed to or from other methods, and

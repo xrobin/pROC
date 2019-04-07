@@ -101,8 +101,9 @@ roc.default <- function(response, predictor,
                         ci=FALSE, # call ci.roc on the current object
                         plot=FALSE, # call plot.roc on the current object
 
-                        # disambiguate method for ci and smooth
+                        # disambiguate method/n for ci and smooth
                         smooth.method="binormal",
+						smooth.n=512,
                         ci.method=NULL,
                         # capture density for smooth.roc here (do not pass to graphical functions)
                         density=NULL,
@@ -344,7 +345,7 @@ roc.default <- function(response, predictor,
              percent=percent,
              direction=direction,
              fun.sesp=fun.sesp,
-             smooth = smooth, density.cases = density.cases,  density.controls = density.controls, smooth.method = smooth.method, 
+             smooth = smooth, density.cases = density.cases,  density.controls = density.controls, smooth.method = smooth.method, smooth.n = smooth.n,
              auc, ...)
   
   roc$call <- match.call()
@@ -390,7 +391,7 @@ roc.rp.nochecks <- function(response, predictor, levels, ...) {
 }
 
 #' Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
-roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smooth, smooth.method, auc, ...) {
+roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smooth, smooth.method, smooth.n, auc, ...) {
   # create the roc object
   roc <- list()
   class(roc) <- "roc"
@@ -419,7 +420,7 @@ roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
   roc$fun.sesp <- fun.sesp
   
   if (smooth) {
-    roc <- smooth.roc(roc, method=smooth.method, ...)
+    roc <- smooth.roc(roc, method=smooth.method, n=smooth.n, ...)
   }
   # compute AUC
   if (auc)
