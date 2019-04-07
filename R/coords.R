@@ -69,33 +69,13 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
     # Deduce additional tn, tp, fn, fp, npv, ppv
     ncases <- length(attr(smooth.roc, "roc")$cases)
     ncontrols <- length(attr(smooth.roc, "roc")$controls)
-    if (smooth.roc$percent) {
-      tp <- se * ncases / 100
-      fn <- ncases - tp
-      tn <- sp * ncontrols / 100
-      fp <- ncontrols - tn
-      npv <- 100 * tn / (tn + fn)
-      ppv <- 100 * tp / (tp + fp)
-      accuracy <- 100 * (tp + tn) / (tp + tn + fp + fn)
-      precision <- 100 * (tp) / (tp + fp)
-      recall <- 100 * (tp) / (tp + fn)
-      substr.percent <- 100
-    }
-    else {
-      tp <- se * ncases
-      fn <- ncases - tp
-      tn <- sp * ncontrols
-      fp <- ncontrols - tn
-      npv <- tn / (tn + fn)
-      ppv <- tp / (tp + fp)
-      accuracy <- (tp + tn) / (tp + tn + fp + fn)
-      precision <- (tp) / (tp + fp)
-      recall <- (tp) / (tp + fn)
-      substr.percent <- 1
-    }
+    substr.percent <- ifelse(smooth.roc$percent, 100, 1)
+    co <- roc.utils.calc.coords(substr.percent,
+    							se, sp, ncases, ncontrols)
+    
     if (length(se) == 1) {
       if (as.list) {
-        list <- list(sensitivity=se, specificity=sp, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv, precision=precision, recall=recall)[ret]
+        list <- as.list(co)[ret]
         if (drop == FALSE) {
           list <- list(list)
           names(list) <- x
@@ -103,20 +83,22 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
         return(list)
       }
       else {
-        res <- c(sensitivity=se, specificity=sp, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv, precision=precision, recall=recall)[ret]
         if (drop == FALSE) {
+        	return(t(co))
         }
-        return(res)
+      	else {
+      		return(t(co)[1,])
+      	}
       }
     }
     else if (length(se) > 1) {
       if (as.list) {
-        co <- apply(rbind(sensitivity=se, specificity=sp, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv, precision=precision, recall=recall), 2, as.list)
+        co <- apply(t(co), 2, as.list)
         names(co) <- rep("best", length(co))
         return(co)
       }
       else {
-        co <- rbind(sensitivity=se, specificity=sp, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv, precision=precision, recall=recall)
+        co <- t(co)
         colnames(co) <- rep(x, dim(co)[2])
         return(co)
       }
@@ -292,32 +274,14 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
     se <- res[3]
     sp <- res[2]
-    if (roc$percent) {
-      tp <- se * ncases / 100
-      fn <- ncases - tp
-      tn <- sp * ncontrols / 100
-      fp <- ncontrols - tn
-      npv <- 100 * tn / (tn + fn)
-      ppv <- 100 * tp / (tp + fp)
-      accuracy <- 100 * (tp + tn) / (tp + tn + fp + fn)
-      precision <- 100 * (tp) / (tp + fp)
-      recall <- 100 * (tp) / (tp + fn)
-      substr.percent <- 100
-    }
-    else {
-      tp <- se * ncases
-      fn <- ncases - tp
-      tn <- sp * ncontrols
-      fp <- ncontrols - tn
-      npv <- tn / (tn + fn)
-      ppv <- tp / (tp + fp)
-      accuracy <- 1 * (tp + tn) / (tp + tn + fp + fn)
-      precision <- (tp) / (tp + fp)
-      recall <- (tp) / (tp + fn)
-      substr.percent <- 1
-    }
+    
+    substr.percent <- ifelse(roc$percent, 100, 1)
+    co <- roc.utils.calc.coords(substr.percent,
+    							se, sp, ncases, ncontrols)
+    co <- cbind(threshold = res[1], co)
+    
     if (as.list) {
-      list <- list(threshold=res[1], specificity=sp, sensitivity=se, accuracy=accuracy, tn=tn, tp=tp, fn=fn, fp=fp, npv=npv, ppv=ppv, "1-specificity"=substr.percent-sp, "1-sensitivity"=substr.percent-se, "1-accuracy"=substr.percent-accuracy, "1-npv"=substr.percent-npv, "1-ppv"=substr.percent-ppv, precision=precision, recall=recall)
+      list <- as.list(co)
       list <- list[ret]
       if (drop == FALSE) {
         list <- list(list)
@@ -326,9 +290,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       return(list)
     }
     else {
-      res <- as.matrix(res)
-      res <- rbind(res, accuracy, tn, tp, fn, fp, npv, ppv, substr.percent-sp, substr.percent-se, substr.percent-accuracy, substr.percent-npv, substr.percent-ppv, precision, recall)
-      rownames(res) <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "precision", "recall")
+      res <- t(co)
       colnames(res) <- x
       return(res[ret,, drop=drop])
     }

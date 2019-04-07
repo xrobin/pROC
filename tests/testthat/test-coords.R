@@ -90,6 +90,47 @@ test_that("drop works", {
 	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = TRUE), "numeric")
 	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = TRUE), "numeric")	
 	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = TRUE), "numeric")
+})
 
+
+test_that("coords returns the correct basic values ", {
+	obtained <- coords(r.s100b, 0.205, 
+					   ret = c("t", "tp", "fp", "tn", "fn",
+					   		   "sp", "se", "acc",
+					   		   "npv", "ppv", "precision", "recall",
+					   		   "tpr", "fpr", "tnr", "fnr", "fdr"))
 	
+	obtained.percent <- coords(r.s100b.percent, 0.205, 
+					   ret = c("t", "tp", "fp", "tn", "fn",
+					   		"sp", "se", "acc",
+					   		"npv", "ppv", "precision", "recall",
+					   		"tpr", "fpr", "tnr", "fnr", "fdr"))
+	
+	# We assume the following values:
+	# tp fp tn fn N
+	# 26 14 58 15 113
+	
+	expected <- c(
+		threshold = 0.205,
+		tp = 26,
+		fp = 14,
+		tn = 58,
+		fn = 15,
+		specificity = 58 / (58 + 14),
+		sensitivity = 26 / (26 + 15),
+		accuracy = (26 + 58) / 113,
+		npv = 58 / (58 + 15),
+		ppv = 26 / (26 + 14),
+		precision = 26 / (26 + 14),
+		recall = 26 / (26 + 15),
+		tpr = 26 / (26 + 15),
+		fpr = 1 - (58 / (58 + 14)),
+		tnr = 58 / (58 + 14),
+		fnr = 1 - (26 / (26 + 15)),
+		fdr = 14 / (26 + 14)
+	)
+	
+	expect_equal(obtained, expected)
+	expect_equal(obtained.percent[1:5], expected[1:5])
+	expect_equal(obtained.percent[6:17], expected[6:17]*100)
 })

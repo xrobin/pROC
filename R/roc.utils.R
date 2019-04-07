@@ -276,7 +276,12 @@ sort.smooth.roc <- function(roc) {
 # Arguments which can be returned by coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
 roc.utils.match.coords.ret.args <- function(x, threshold = TRUE) {
-  valid.ret.args <- c("specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "precision", "recall")
+  valid.ret.args <- c("specificity", "sensitivity", "accuracy",
+  					"tn", "tp", "fn", "fp",
+  					"npv", "ppv", "fdr",
+  					"fpr", "tpr", "tnr", "fnr", 
+  					"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+  					"precision", "recall")
   if (threshold) {
   	valid.ret.args <- c("threshold", valid.ret.args)
   }
@@ -352,4 +357,50 @@ load.suggested.package <- function(pkg) {
 		}
 	}
 	stop(sprintf("Package '%s' not available.", pkg))
+}
+
+
+# Calculate coordinates
+# @param substr.percent: 1 or 100
+# @param se, sp
+# @param ncases, ncontrols
+# @return data.frame
+roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
+	tp <- se * ncases / substr.percent
+	fn <- ncases - tp
+	tn <- sp * ncontrols / substr.percent
+	fp <- ncontrols - tn
+	npv <- substr.percent * tn / (tn + fn)
+	ppv <- substr.percent * tp / (tp + fp)
+	accuracy <- substr.percent * (tp + tn) / (ncases + ncontrols)
+	precision <- ppv
+	recall <- tpr <- se
+	fpr <- substr.percent - sp
+	tnr <- sp
+	fnr <- substr.percent * fn / (tp + fn)
+	fdr <- substr.percent * fp / (tp + fp)
+	
+	return(data.frame(
+		sensitivity=se, 
+		specificity=sp, 
+		accuracy=accuracy, 
+		tn=tn, 
+		tp=tp,
+		fn=fn,
+		fp=fp,
+		npv=npv,
+		ppv=ppv,
+		tpr=tpr,
+		tnr=tnr,
+		fpr=fpr,
+		fnr=fnr,
+		fdr=fdr,
+		"1-specificity"=substr.percent-sp,
+		"1-sensitivity"=substr.percent-se,
+		"1-accuracy"=substr.percent-accuracy,
+		"1-npv"=substr.percent-npv,
+		"1-ppv"=substr.percent-ppv,
+		precision=precision,
+		recall=recall,
+		check.names = FALSE))
 }

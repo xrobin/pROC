@@ -160,21 +160,27 @@ best.weights=c(1, 0.5), ...)
 
 \subsection{Valid \code{ret} arguments}{
 
-The following arguments
+The following table lists valid \code{ret} arguments.
+
   \tabular{rlll}{
-    Value \tab Description \tab Formula \tab Synonym \cr
+    Value \tab Description \tab Formula \tab Synonyms \cr
     \code{threshold} \tab The threshold value \tab - \tab - \cr
     \code{tn} \tab True negative count \tab - \tab - \cr
     \code{tp} \tab True positive count \tab - \tab - \cr
     \code{fn} \tab False negative count \tab - \tab - \cr
     \code{fp} \tab False positive count \tab - \tab - \cr
-    \code{specificity} \tab Specificity  \tab tn / (tn + fp) \tab  \cr
-    \code{sensitivity} \tab Sensitivity \tab tp / (tp + fn)  \tab recall \cr
+    \code{specificity} \tab Specificity  \tab tn / (tn + fp) \tab tnr \cr
+    \code{sensitivity} \tab Sensitivity \tab tp / (tp + fn)  \tab recall, tpr \cr
     \code{accuracy} \tab Accuracy \tab  (tp + tn) / N \tab - \cr
     \code{npv} \tab Negative Predictive Value \tab tn / (tn + fn) \tab - \cr
     \code{ppv} \tab Positive Predictive Value \tab tp / (tp + fp) \tab precision \cr
     \code{precision} \tab Precision \tab tp / (tp + fp) \tab ppv \cr
-    \code{recall} \tab Recall \tab tp / (tp + fn) \tab sensitivity \cr
+    \code{recall} \tab Recall \tab tp / (tp + fn) \tab sensitivity, tpr \cr
+    \code{tpr} \tab True Positive Rate \tab tp / (tp + fn) \tab sensitivity, recall \cr
+    \code{fpr} \tab False Positive Rate \tab fp / (tn + fp) \tab 1-specificity \cr
+    \code{tnr} \tab True Negative Rate \tab tn / (tn + fp) \tab specificity \cr
+    \code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \cr
+    \code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \cr
   }
   
   In addition, some values can be prefixed with \code{1-} to get their complement:
