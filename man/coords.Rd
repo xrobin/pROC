@@ -319,6 +319,9 @@ plot(specificity + sensitivity ~ threshold, t(coords(rocobj, seq(0, 1, 0.01))), 
 # Plot the Precision-Recall curve
 plot(precision ~ recall, t(coords(rocobj, "all", ret = c("recall", "precision"))), type="l")
 
+# Alternatively plot the curve with TPR and FPR instead of SE/SP 
+# (identical curve, only the axis change)
+plot(tpr ~ fpr, t(coords(r.s100b.percent, "all", ret = c("tpr", "fpr"))), type="l")
 }
 
 \keyword{univar}
