@@ -192,6 +192,15 @@ test_that("roc with multiple predictors returns expected ROC curves", {
 	expect_equal_roc_formula(roclist$s100b, r.s100b)
 })
 
+test_that("extra arguments passed to roc with multiple predictors", {
+	roclist <- roc(outcome ~ wfns + ndka + s100b, data = aSAH, quiet=TRUE,
+				   percent = TRUE, partial.auc = c(90, 99))
+	
+	expect_equal_roc_formula(roclist$wfns, r.wfns.percent.partial1)
+	expect_equal_roc_formula(roclist$ndka, r.ndka.percent.partial1)
+	expect_equal_roc_formula(roclist$s100b, r.s100b.percent.partial1)
+})
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
