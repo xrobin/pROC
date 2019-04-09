@@ -156,6 +156,9 @@ test_that("roc.formula behaves", {
 	expect_error(roc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
 	#weights should fail too
 	expect_error(roc(outcome ~ ndka, data = aSAH, weights = seq_len(nrow(aSAH)), quiet = TRUE), regexp = "weights are not supported")
+	# invalid formula should fail
+	expect_error(roc(~ndka, data=aSAH))
+	
 	
 	# Both na.action and subset
 	expect_identical(
