@@ -207,6 +207,13 @@ test_that("roc with multiple predictors returns expected ROC curves", {
 	expect_equal_roc_formula(roclist$wfns, r.wfns)
 	expect_equal_roc_formula(roclist$ndka, r.ndka)
 	expect_equal_roc_formula(roclist$s100b, r.s100b)
+	
+	attach(aSAH)
+	roclist <- roc(outcome ~ wfns + ndka + s100b, quiet=TRUE)
+	expect_equal_roc_formula(roclist$wfns, r.wfns)
+	expect_equal_roc_formula(roclist$ndka, r.ndka)
+	expect_equal_roc_formula(roclist$s100b, r.s100b)
+	detach(aSAH)
 })
 
 test_that("extra arguments passed to roc with multiple predictors", {
