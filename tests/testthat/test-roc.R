@@ -141,6 +141,11 @@ test_that("roc.formula behaves", {
 	)
 	
 	expect_identical(
+		roc(aSAH$outcome ~ aSAH$wfns)[roc.check.only.items],
+		roc(aSAH$outcome, aSAH$wfns)[roc.check.only.items]
+	)
+	
+	expect_identical(
 		roc(outcome ~ wfns, data = aSAH, subset = (gender == "Female"))[roc.check.only.items],
 		roc(aSAH$outcome[aSAH$gender == "Female"], aSAH$wfns[aSAH$gender == "Female"])[roc.check.only.items]
 	)
