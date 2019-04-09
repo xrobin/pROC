@@ -180,6 +180,18 @@ test_that("microbenchmark works", {
 	expect_output(r <- roc(round(runif(10000)), rnorm(10000), algorithm = 0), "Selecting algorithm 2")
 })
 
+test_that("roc with multiple predictors returns expected ROC curves", {
+	roclist <- roc(outcome ~ wfns + ndka + s100b, data = aSAH, quiet=TRUE)
+	expect_is(roclist, "list")
+	expect_type(roclist, "list")
+	expect_length(roclist, 3)
+	expect_identical(names(roclist), c("wfns", "ndka", "s100b"))
+	
+	expect_equal_roc_formula(roclist$wfns, r.wfns)
+	expect_equal_roc_formula(roclist$ndka, r.ndka)
+	expect_equal_roc_formula(roclist$s100b, r.s100b)
+})
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
@@ -191,6 +203,11 @@ test_that("microbenchmark works", {
 # 			if (!isTRUE(percent) && direction != "auto") {
 # 				expected.roc[[marker]][[levels.direction]][[direction]] <- r[c("sensitivities", "specificities", "thresholds")]
 # 				expected.roc[[marker]][[levels.direction]][[direction]][["auc"]] <- as.numeric(r$auc)
+# 			}
+# 			for (smooth.method in available.smooth.methods) {
+# 				s <- smooth(r, method=smooth.method, 10)
+# 				expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] <- s$sensitivities
+# 				expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] <- s$specificities
 # 			}
 # 		}
 # 	}
