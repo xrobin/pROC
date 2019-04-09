@@ -140,9 +140,18 @@ test_that("roc.formula behaves", {
 		roc(aSAH$outcome, aSAH$wfns)[roc.check.only.items]
 	)
 	
+	# formula without data
 	expect_identical(
 		roc(aSAH$outcome ~ aSAH$wfns)[roc.check.only.items],
 		roc(aSAH$outcome, aSAH$wfns)[roc.check.only.items]
+	)
+	
+	# formula with data from parent env
+	outcome <- aSAH$outcome
+	wfns <- aSAH$wfns
+	expect_identical(
+		roc(outcome ~ wfns)[roc.check.only.items],
+		roc(outcome, wfns)[roc.check.only.items]
 	)
 	
 	expect_identical(
