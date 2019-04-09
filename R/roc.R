@@ -54,9 +54,6 @@ roc.formula <- function (formula, data, ...) {
   if (length(predictors) == 1) {
     roc <- roc.default(response, m[[predictors]], ...)
     roc$call <- Call
-    if (! data.missing) {
-      roc$data <- data
-    }
     if (!is.null(roc$smooth))
       attr(roc, "roc")$call <- roc$call
     return(roc)
@@ -69,9 +66,6 @@ roc.formula <- function (formula, data, ...) {
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
       roc$call <- call
-      if (! data.missing) {
-      	roc$data <- data
-      }
       return(roc)
     }, formula = formula, m.data = m, call = match.call(), ...)
     # Set the list names
