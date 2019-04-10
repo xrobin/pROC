@@ -14,7 +14,7 @@ expected.algorithm <- list(
 	pROC:::rocUtilsPerfsAllC
 )
 
-smooth.methods <- c("binormal", "density")#, "fitdistr", "logcondens", "logcondens.smooth")
+smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")
 
 for (marker in c("ndka", "wfns", "s100b")) {
 	for (levels.direction in names(level.values)) {
