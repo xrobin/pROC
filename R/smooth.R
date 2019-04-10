@@ -122,11 +122,13 @@ smooth.roc.density <- function(roc, n, density.controls, density.cases, bw,
                                percent = roc$percent, direction = roc$direction,
                                ...) {
   if (!is.numeric(density.controls) || !is.numeric(density.cases)) {
-    if (is.character(bw))
-      bw <- match.fun(paste("bw", bw, sep="."))(roc$predictor)
+  	predictor <- c(roc$controls, roc$cases)
+    if (is.character(bw)) {
+    	bw <- match.fun(paste("bw", bw, sep="."))(predictor)
+    }
     bw <- bw * adjust
-    from <- min(roc$predictor) - (cut * bw)
-    to <- max(roc$predictor) + (cut * bw)
+    from <- min(predictor) - (cut * bw)
+    to <- max(predictor) + (cut * bw)
   }
   if (mode(density.controls) == "function") {
     density.controls <- density.controls(roc$controls, n=n, from=from, to=to, bw=bw, kernel=kernel, ...)

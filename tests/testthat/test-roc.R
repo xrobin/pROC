@@ -78,7 +78,6 @@ for (marker in c("ndka", "wfns", "s100b")) {
 								expect_equal(s$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
 							})
 							test_that("building curve with smooth=TRUE produces expected results", {
-								skip_if(smooth.method == "density", "smooth.method=density doesn't work (issue #49)")
 								context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
 								s2 <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE, 
 										  smooth = TRUE, smooth.n = 10, smooth.method=smooth.method)
