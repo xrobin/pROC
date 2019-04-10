@@ -91,7 +91,7 @@ are.paired.roc <- function(roc1, roc2,
       }
       # Re-use auc/ci/smooth for roc2
       if (exists("oroc2") && reuse.smooth) {
-        args <- roc2$smoothing.args
+        args <- oroc2$smoothing.args
         args$roc <- roc2.paired
         roc2.paired <- do.call("smooth.roc", args)
         roc2.paired$call$roc <- as.name("roc2.paired")
