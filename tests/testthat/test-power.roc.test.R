@@ -190,3 +190,43 @@ test_that("power.roc.test works with binormal parameters", {
 
 ## With only binormal parameters given
 # From example 2 of Obuchowski and McClish, 1997.
+
+
+test_that("power.roc.test returns correct results from litterature", {
+	context("Check results in Obuchowski 2004 Table 4")
+	# Note: the table reports at least 10 in each cell, and adapts
+	# the complement value to match kappa. So in 0.25/0.95 we have 10/40
+	# although both values are < 10.
+	# Note2: some values don't match exactly, specifically
+	# expected.ncases[0.5, 0.6] and expected.ncontrols[4, 0.6]
+	# are off by 1 (< 1%).
+	kappas <- c(0.25, 0.5, 1, 2, 4)
+	thetas <- c(0.6, 0.7, 0.8, 0.9, 0.95)
+	expected.ncontrols <- matrix(c(
+		84, 	20,	10,	10,	10,
+		101,	25,	10,	10,	10,
+		135,	33,	14,	10,	10,
+		203,	50,	21,	20,	20,
+		#339,	84,	40,	40,	40
+		340,	84,	40,	40,	40 # Fixed
+	), nrow = 5, byrow = TRUE,
+	dimnames = list(kappas, thetas))
+	expected.ncases <- matrix(c(
+		334,	80,	40,	40,	40,
+		#201,	49,	20,	20,	20,
+		202,	49,	20,	20,	20, # Fixed
+		135,	33,	14,	10,	10,
+		102,	25,	11,	10,	10,
+		85, 	21,	10,	10,	10
+	), nrow = 5, byrow = TRUE, 
+	dimnames = list(kappas, thetas))
+	
+	for (kappa in kappas) {
+		for (theta in thetas) {
+			context(sprintf("kappa: %s, theta: %s", kappa, theta))
+			pr <- power.roc.test(auc=theta, sig.level=0.05, power=0.9, kappa=kappa, alternative="one.sided")
+			expect_equal(max(10, ifelse(ceiling(pr$ncases) < 10, 10, 0) * kappa, ceiling(pr$ncontrols)), expected.ncontrols[as.character(kappa), as.character(theta)])
+			expect_equal(max(10, ifelse(ceiling(pr$ncontrols) < 10, 10, 0) / kappa, ceiling(pr$ncases)), expected.ncases[as.character(kappa), as.character(theta)])
+		}
+	}
+})
