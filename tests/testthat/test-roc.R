@@ -224,6 +224,43 @@ test_that("extra arguments passed to roc with multiple predictors", {
 	expect_equal_roc_formula(roclist$s100b, r.s100b.percent.partial1)
 })
 
+test_that("roc works with densitites", {
+	range.ndka <- range(aSAH$ndka)
+	bw <- bw.nrd0(aSAH$ndka)
+	from <- min(aSAH$ndka) - (3 * bw)
+	to <- max(aSAH$ndka) + (3 * bw)
+	density.controls <- density(aSAH$ndka[aSAH$outcome == "Good"], from = from, to = to, bw = bw)
+	density.cases <- density(aSAH$ndka[aSAH$outcome == "Poor"], from = from, to = to, bw = bw)
+	density.roc <- roc(density.cases = density.cases$y, density.controls = density.controls$y)
+	smoothed.roc <- smooth(r.ndka, method="density")
+	
+	expect_is(density.roc, "smooth.roc")
+	expect_equal(density.roc$sensitivities, smoothed.roc$sensitivities)
+	expect_equal(density.roc$specificities, smoothed.roc$specificities)
+	expect_equal(as.numeric(density.roc$auc), as.numeric(smoothed.roc$auc))
+})
+
+test_that("roc works with extra arguments", {
+	range.ndka <- range(aSAH$ndka)
+	bw <- bw.nrd0(aSAH$ndka)
+	from <- min(aSAH$ndka) - (3 * bw)
+	to <- max(aSAH$ndka) + (3 * bw)
+	density.controls <- density(aSAH$ndka[aSAH$outcome == "Good"], from = from, to = to, bw = bw)
+	density.cases <- density(aSAH$ndka[aSAH$outcome == "Poor"], from = from, to = to, bw = bw)
+	density.roc <- roc(density.cases = density.cases$y, density.controls = density.controls$y)
+
+	density.roc.partial <- roc(density.cases = density.cases$y, 
+							   density.controls = density.controls$y,
+							   partial.auc = c(1, .9), partial.auc.focus = "se", 
+							   partial.auc.correct = TRUE)
+	expect_equal(as.numeric(density.roc.partial$auc), 0.506203453)
+	
+	density.roc.percent <- roc(density.cases = density.cases$y, 
+							   density.controls = density.controls$y,
+							   percent = TRUE)
+	expect_equal(as.numeric(density.roc.percent$auc), 60.44617865)
+})
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
