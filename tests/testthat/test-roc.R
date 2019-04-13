@@ -240,14 +240,13 @@ test_that("roc works with densitites", {
 	expect_equal(as.numeric(density.roc$auc), as.numeric(smoothed.roc$auc))
 })
 
-test_that("roc works with extra arguments", {
+test_that("roc.density works with extra arguments", {
 	range.ndka <- range(aSAH$ndka)
 	bw <- bw.nrd0(aSAH$ndka)
 	from <- min(aSAH$ndka) - (3 * bw)
 	to <- max(aSAH$ndka) + (3 * bw)
 	density.controls <- density(aSAH$ndka[aSAH$outcome == "Good"], from = from, to = to, bw = bw)
 	density.cases <- density(aSAH$ndka[aSAH$outcome == "Poor"], from = from, to = to, bw = bw)
-	density.roc <- roc(density.cases = density.cases$y, density.controls = density.controls$y)
 
 	density.roc.partial <- roc(density.cases = density.cases$y, 
 							   density.controls = density.controls$y,
@@ -260,6 +259,17 @@ test_that("roc works with extra arguments", {
 							   percent = TRUE)
 	expect_equal(as.numeric(density.roc.percent$auc), 60.44617865)
 })
+
+test_that("roc doesn't accept density with other arguments", {
+	density.controls <- density(aSAH$ndka[aSAH$outcome == "Good"])
+	density.cases <- density(aSAH$ndka[aSAH$outcome == "Poor"])
+	expect_error(roc(aSAH$outcome, aSAH$ndka, density.cases = density.controls, density.controls = density.cases),
+				 "incompatible")
+	expect_error(roc(cases = aSAH$ndka, controls = aSAH$ndka, density.cases = density.controls, density.controls = density.cases),
+				 "incompatible")
+})
+
+
 
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()

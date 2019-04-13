@@ -114,6 +114,10 @@ roc.default <- function(response, predictor,
   	if ((!missing(cases) && !is.null(cases)) || (!missing(controls) && !is.null(controls))) {
   		stop("'cases/controls' argument incompatible with 'response/predictor'.")
   	}
+  	# Forbid density
+  	if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
+  		stop("'density.*' arguments incompatible with 'response/predictor'.")
+  	}
   	
     original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
     original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
@@ -182,6 +186,10 @@ roc.default <- function(response, predictor,
 
   # Cases / Controls
   else if (!missing(cases) && !is.null(cases) && !missing(controls) && !is.null(controls)) {
+  	# Forbid density
+  	if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
+  		stop("'density.*' arguments incompatible with 'response/predictor'.")
+  	}
   	# remove nas
   	if (na.rm) {
   		if (any(is.na(controls)))
