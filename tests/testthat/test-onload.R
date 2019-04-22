@@ -27,3 +27,13 @@ test_that("Progress bar is set by .onLoad", {
 	expect_is(progress.opt, "list")
 	expect_true("name" %in% names(progress.opt))
 })
+
+test_that(".onLoad doesn't override user setting", {
+	old.progress.opt <- getOption("pROCProgress")
+	options("pROCProgress"=list(dummy=TRUE))
+	expect_false("name" %in% names(getOption("pROCProgress")))
+	pROC:::.onLoad()
+	expect_false("name" %in% names(getOption("pROCProgress")))
+	# Restore
+	options("pROCProgress"=old.progress.opt)
+})
