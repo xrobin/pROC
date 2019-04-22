@@ -132,8 +132,7 @@
 #ifdef unix 
 	    \item In Windows, a \code{winProgressBar} bar.
 #endif
-	    \item In other systems with a graphical display, a \code{\link{tkProgressBar}}.
-	    \item In systems without a graphical display, a \code{\link{txtProgressBar}}.
+	    \item In other systems with or without a graphical display, a \code{\link{txtProgressBar}}.
 	  }
 
 	  The default can be changed with the option \dQuote{pROCProgress}. The option must be a list with
