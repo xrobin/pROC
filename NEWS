@@ -1,6 +1,7 @@
 1.14.9 (2019-*)
   * 'roc' now prints messages when autodetecting 'levels' and 'direction' by default. Turn off with 'quiet = TRUE'
   * Speedup with 'algorithm = 2' (issue #44)
+  * Use text instead of Tcl/Tk progress bar by default (issue #51)
   * Fix 'method = "density"' smoothing when called directly from 'roc'
   * Renamed 'roc' argument 'n' to 'smooth.n'
   * Fixed 'are.paired' ignoring smoothing arguments of 'roc2' with 'return.paired.rocs'
