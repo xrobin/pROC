@@ -42,6 +42,11 @@ test_that("coords with arbitrary thresholds at exact data point works", {
 	expect_equivalent(obtained, expected.coords[-1, c(3, 40)])
 })
 
+test_that("coords with arbitrary thresholds works with direction=>", {
+	obtained <- coords(r.100b.reversed, c(0.05, 0.055, 0.205, 0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equivalent(obtained, expected.coords.reverse)
+})
+
 
 test_that("coords with single arbitrary threshold works", {
 	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
@@ -56,6 +61,18 @@ test_that("coords with arbitrary thresholds at exact data point works", {
 	expect_equal(obtained, expected.coords[-1, 3])
 	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 	expect_equal(obtained, expected.coords[-1, 40])
+})
+
+
+test_that("coords with arbitrary thresholds works with direction=>", {
+	obtained <- coords(r.100b.reversed, c(0.05), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords.reverse[, 1])
+	obtained <- coords(r.100b.reversed, c(0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords.reverse[, 2])
+	obtained <- coords(r.100b.reversed, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords.reverse[, 3])
+	obtained <- coords(r.100b.reversed, c(0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords.reverse[, 4])
 })
 
 
