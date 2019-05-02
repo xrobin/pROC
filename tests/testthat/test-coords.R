@@ -35,10 +35,27 @@ test_that("coords with arbitrary thresholds works", {
 	expect_equivalent(obtained, expected.coords[, c(18, 4)])
 })
 
+test_that("coords with arbitrary thresholds at exact data point works", {
+	expect_equal(sum(aSAH$s100b == 0.05),  3)
+	expect_equal(sum(aSAH$s100b == 0.52),  1)
+	obtained <- coords(r.s100b, c(0.05, 0.52), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equivalent(obtained, expected.coords[-1, c(3, 40)])
+})
+
 
 test_that("coords with single arbitrary threshold works", {
 	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 	expect_equal(obtained, expected.coords[, c(18), drop=T])
+})
+
+
+test_that("coords with arbitrary thresholds at exact data point works", {
+	expect_equal(sum(aSAH$s100b == 0.05),  3)
+	expect_equal(sum(aSAH$s100b == 0.52),  1)
+	obtained <- coords(r.s100b, c(0.05), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords[-1, 3])
+	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords[-1, 40])
 })
 
 
