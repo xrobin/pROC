@@ -26,13 +26,19 @@ test_that("coords with local maximas thresholds works", {
 
 test_that("coords with best threshold works", {
 	obtained <- coords(r.s100b, "best", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equivalent(obtained, expected.coords[,expected.coords["threshold",] == 0.205])
+	expect_equal(obtained, expected.coords[,expected.coords["threshold",] == 0.205])
 })
 
 
-test_that("coords with arbitrary threshold works", {
+test_that("coords with arbitrary thresholds works", {
 	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 	expect_equivalent(obtained, expected.coords[, c(18, 4)])
+})
+
+
+test_that("coords with single arbitrary threshold works", {
+	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expected.coords[, c(18), drop=T])
 })
 
 
