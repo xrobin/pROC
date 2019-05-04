@@ -228,13 +228,30 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     	# selected threshold. However we need to be careful to assign 
     	# them to the right one around the exact data point values
     	cut_points <- sort(unique(roc$predictor))
+    	thr_idx <- rep(NA_integer_, length(x))
     	if (roc$direction == "<") {
     		cut_points <- c(cut_points, Inf)
-    		thr_idx <- sapply(x, function(t) min(which(cut_points >= t)))
+    		j <- 1
+    		o <- order(x)
+    		for (i in seq_along(x)) {
+    			t <- x[o[i]]
+    			while (cut_points[j] < t) {
+    				j <- j + 1
+    			}
+    			thr_idx[o[i]] <- j
+    		}
     	}
     	else {
     		cut_points <- c(rev(cut_points), Inf)
-    		thr_idx <- sapply(x, function(t) min(which(cut_points <= t)))
+    		j <- 1
+    		o <- order(x, decreasing = TRUE)
+    		for (i in seq_along(x)) {
+    			t <- x[o[i]]
+    			while (cut_points[j] > t) {
+    				j <- j + 1
+    			}
+    			thr_idx[o[i]] <- j
+    		}
     	}
     	res <- rbind(
     		threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
