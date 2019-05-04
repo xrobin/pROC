@@ -262,7 +262,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     	}
     }
     if (input == "sensitivity") {
-    	if (x < 0 || x > ifelse(roc$percent, 100, 1)) {
+    	if (any(x < 0) || any(x > ifelse(roc$percent, 100, 1))) {
     		stop("Input sensitivity not within the ROC space.")
     	}
     	res <- matrix(nrow=3, ncol=length(x))
