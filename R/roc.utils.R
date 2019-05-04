@@ -404,3 +404,41 @@ roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
 		recall=recall,
 		check.names = FALSE))
 }
+
+# Match arbitrary user-supplied thresholds to the threshold of the ROC curve.
+# We need to be careful to assign x to the right thresholds around exact data point
+# values. This means this function cannot look at the ROC thresholds themselves
+# but must instead use the predictor values to assess the thresholds exactly.
+# Returns the indices of the thresholds x.
+# @param roc: the roc curve
+# @param x: the threshold to determine indices
+# @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
+roc.utils.thr.idx <- function(roc, x) {
+	cut_points <- sort(unique(roc$predictor))
+	thr_idx <- rep(NA_integer_, length(x))
+	if (roc$direction == "<") {
+		cut_points <- c(cut_points, Inf)
+		j <- 1
+		o <- order(x)
+		for (i in seq_along(x)) {
+			t <- x[o[i]]
+			while (cut_points[j] < t) {
+				j <- j + 1
+			}
+			thr_idx[o[i]] <- j
+		}
+	}
+	else {
+		cut_points <- c(rev(cut_points), Inf)
+		j <- 1
+		o <- order(x, decreasing = TRUE)
+		for (i in seq_along(x)) {
+			t <- x[o[i]]
+			while (cut_points[j] > t) {
+				j <- j + 1
+			}
+			thr_idx[o[i]] <- j
+		}
+	}
+	return(thr_idx)
+}

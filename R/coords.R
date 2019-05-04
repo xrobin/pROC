@@ -224,35 +224,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
   }
   else if (is.numeric(x)) {
     if (input == "threshold") {
-    	# We must match every threshold given by the user to one of our
-    	# selected threshold. However we need to be careful to assign 
-    	# them to the right one around the exact data point values
-    	cut_points <- sort(unique(roc$predictor))
-    	thr_idx <- rep(NA_integer_, length(x))
-    	if (roc$direction == "<") {
-    		cut_points <- c(cut_points, Inf)
-    		j <- 1
-    		o <- order(x)
-    		for (i in seq_along(x)) {
-    			t <- x[o[i]]
-    			while (cut_points[j] < t) {
-    				j <- j + 1
-    			}
-    			thr_idx[o[i]] <- j
-    		}
-    	}
-    	else {
-    		cut_points <- c(rev(cut_points), Inf)
-    		j <- 1
-    		o <- order(x, decreasing = TRUE)
-    		for (i in seq_along(x)) {
-    			t <- x[o[i]]
-    			while (cut_points[j] > t) {
-    				j <- j + 1
-    			}
-    			thr_idx[o[i]] <- j
-    		}
-    	}
+    	thr_idx <- roc.utils.thr.idx(roc, x)
     	res <- rbind(
     		threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
     		specificity = roc$specificities[thr_idx],
