@@ -365,7 +365,7 @@ load.suggested.package <- function(pkg) {
 # @param se, sp
 # @param ncases, ncontrols
 # @return data.frame
-roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
+roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols) {
 	tp <- se * ncases / substr.percent
 	fn <- ncases - tp
 	tn <- sp * ncontrols / substr.percent
@@ -381,6 +381,7 @@ roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
 	fdr <- substr.percent * fp / (tp + fp)
 	
 	return(rbind(
+		threshold=thr,
 		sensitivity=se, 
 		specificity=sp, 
 		accuracy=accuracy, 

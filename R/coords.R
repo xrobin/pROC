@@ -294,10 +294,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
   	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
   	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   	substr.percent <- ifelse(roc$percent, 100, 1)
-  	res <- rbind(
-  		threshold = res[1, ],
-  		roc.utils.calc.coords(substr.percent, res[3,], res[2,], ncases, ncontrols)
-  	)
+  	res <- roc.utils.calc.coords(substr.percent, res[1, ], res[3,], res[2,], ncases, ncontrols)
   }
   colnames(res) <- cn
   
