@@ -66,42 +66,25 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
         sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
       }
     }
-    # Deduce additional tn, tp, fn, fp, npv, ppv
-    ncases <- length(attr(smooth.roc, "roc")$cases)
-    ncontrols <- length(attr(smooth.roc, "roc")$controls)
-    substr.percent <- ifelse(smooth.roc$percent, 100, 1)
-    co <- roc.utils.calc.coords(substr.percent,
-    							se, sp, ncases, ncontrols)
     
-    if (length(se) == 1) {
-      if (as.list) {
-        list <- as.list(co)[ret]
-        if (drop == FALSE) {
-          list <- list(list)
-          names(list) <- x
-        }
-        return(list)
-      }
-      else {
-        if (drop == FALSE) {
-        	return(t(co))
-        }
-      	else {
-      		return(t(co)[1,])
-      	}
-      }
+    if (any(! ret %in% c("specificity", "sensitivity"))) {
+    	# Deduce additional tn, tp, fn, fp, npv, ppv
+    	ncases <- length(attr(smooth.roc, "roc")$cases)
+    	ncontrols <- length(attr(smooth.roc, "roc")$controls)
+    	substr.percent <- ifelse(smooth.roc$percent, 100, 1)
+    	res <- roc.utils.calc.coords(substr.percent, NA, se, sp, ncases, ncontrols)
     }
-    else if (length(se) > 1) {
-      if (as.list) {
-        co <- apply(t(co), 2, as.list)
-        names(co) <- rep("best", length(co))
-        return(co)
-      }
-      else {
-        co <- t(co)
-        colnames(co) <- rep(x, dim(co)[2])
-        return(co)
-      }
+    colnames(res) <- rep("best", ncol(res))
+    
+    if (as.list) {
+    	list <- apply(res[ret, , drop=FALSE], 2, as.list)
+    	if (drop == TRUE && length(x) == 1) {
+    		return(list[[1]])
+    	}
+    	return(list)
+    }
+    else {
+    	return(res[ret,, drop=drop])
     }
   }
 
