@@ -203,3 +203,27 @@ test_that("coords returns the correct basic values ", {
 	expect_equal(obtained.percent[1:5], expected[1:5])
 	expect_equal(obtained.percent[6:17], expected[6:17]*100)
 })
+
+
+
+test_that("coords works with smooth.roc and x = 'best'", {
+	smooth.s100b <- smooth(r.s100b)
+	expect <- structure(c(0.750857175922901, 0.608610567514677, 0.699245574642041, 
+						  54.0617166664488, 24.9530332681018, 16.0469667318982, 17.9382833335512, 
+						  0.771112992655678, 0.581773544045047, 0.249142824077099, 0.391389432485323, 
+						  0.300754425357959, 0.228887007344322, 0.418226455954953), .Dim = c(14L, 
+						  1L), .Dimnames = list(c("specificity", "sensitivity", "accuracy", 
+						  "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", 
+						  "1-accuracy", "1-npv", "1-ppv"), "best"))
+	obtained <- coords(smooth.s100b, "best", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	expect_equal(obtained, expect[,1])
+	obtained <- coords(smooth.s100b, "best", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), drop = FALSE)
+	expect_equal(obtained, expect)
+	obtained <- coords(smooth.s100b, "best", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), as.list = TRUE)
+	expect_equivalent(obtained, as.list(expect))
+	expect_equal(names(obtained), rownames(expect))
+	obtained <- coords(smooth.s100b, "best", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), as.list = TRUE, drop = FALSE)
+	expect_equivalent(obtained[[1]], as.list(expect)) # names
+	expect_equal(names(obtained), "best")
+	expect_equal(names(obtained[[1]]), rownames(expect))
+})
