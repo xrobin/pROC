@@ -303,3 +303,38 @@ test_that("coords works with smooth.roc and x = numeric", {
 	expect_equal(names(obtained), "0.9")
 	expect_equal(obtained[[1]], as.list(expect[, 2]))
 })
+
+
+test_that("coords with x = 'best' takes partial AUC into account", {
+	# with sp
+	obtained <- coords(r.s100b.partial1, "b", ret="t")
+	expect_equal(obtained, 0.475)
+	
+	# with se
+	obtained <- coords(r.s100b.partial2, "b", ret="t")
+	expect_equal(obtained, 0.075)
+})
+
+
+test_that("coords with x = 'all' takes partial AUC into account", {
+	# with sp
+	obtained <- coords(r.s100b.partial1, "all", ret="t")
+	expect_equal(length(obtained), 7)
+	expect_equal(min(obtained), 0.435)
+	
+	# with se
+	obtained <- coords(r.s100b.partial2, "all", ret="t")
+	expect_equal(length(obtained), 5)
+	expect_equal(max(obtained), 0.075)
+})
+
+
+test_that("coords with x = 'local maximas' takes partial AUC into account", {
+	# with sp
+	obtained <- coords(r.s100b.partial1, "local maximas", ret="t")
+	expect_equal(unname(obtained), c(0.435, 0.475, 0.485))
+	
+	# with se
+	obtained <- coords(r.s100b.partial2, "local maximas", ret="t")
+	expect_equal(unname(obtained), c(0.065, 0.075))
+})
