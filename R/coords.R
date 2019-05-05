@@ -143,14 +143,16 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
           thres <- roc$thresholds[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]]
         }
       }
-      if (length(thres) == 0)
-        return(NULL)
-      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list, drop=drop)
-      if (class(co) == "matrix")
-        colnames(co) <- rep(x, dim(co)[2])
-      else if (class(co) == "list" && class(co[[1]]) == "list")
-        names(co) <- rep(x, length(co))
-      return(co)
+      if (length(thres) == 0) {
+      	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+      	return(NULL)
+      }
+      res <- rbind(
+      	threshold = thres,
+      	specificity = sp,
+      	sensitivity = se
+      )
+      cn <- rep(x, ncol(res))
     }
     else if (x == "local maximas") {
       # Pre-filter thresholds based on partial.auc
@@ -171,15 +173,17 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
           thres <- roc$thresholds[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]]
         }
       }
-      if (length(thres) == 0)
-        return(NULL)
+      if (length(thres) == 0) {
+      	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+      	return(NULL)
+      }
       lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
-      co <- coords(roc, x=thres[lm.idx], input="threshold", ret=ret, as.list=as.list, drop=drop)
-      if (class(co) == "matrix")
-        colnames(co) <- rep(x, dim(co)[2])
-      else if (class(co) == "list" && class(co[[1]]) == "list")
-        names(co) <- rep(x, length(co))
-      return(co)
+      res <- rbind(
+      	threshold = thres[lm.idx],
+      	specificity = sp[lm.idx],
+      	sensitivity = se[lm.idx]
+      )
+      cn <- rep(x, ncol(res))
     }
     else { # x == "best"
       # What kind of "best" do we want?
@@ -200,26 +204,34 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
 
       # Filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
+      	se <- roc$se[optim.crit==max(optim.crit)]
+      	sp <- roc$sp[optim.crit==max(optim.crit)]
         thres <- roc$thresholds[optim.crit==max(optim.crit)]
       }
       else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit <- (optim.crit)[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]]
+          se <- roc$se[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
+          sp <- roc$sp[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
           thres <- roc$thresholds[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
         }
         else {
           optim.crit <- (optim.crit)[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]]
+          se <- roc$se[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
+          sp <- roc$sp[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
           thres <- roc$thresholds[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
         }
       }
-      if (length(thres) == 0)
-        return(NULL)
-      co <- coords(roc, x=thres, input="threshold", ret=ret, as.list=as.list, drop=drop)
-      if (class(co) == "matrix")
-        colnames(co) <- rep(x, dim(co)[2])
-      else if (class(co) == "list" && class(co[[1]]) == "list")
-        names(co) <- rep(x, length(co))
-      return(co)
+      if (length(thres) == 0) {
+      	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+      	return(NULL)
+      }
+      res <- rbind(
+      	threshold = thres,
+      	specificity = sp,
+      	sensitivity = se
+      )
+      cn <- rep(x, ncol(res))
     }
   }
   else if (is.numeric(x)) {
@@ -236,6 +248,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     		stop("Input specificity not within the ROC space.")
     	}
     	res <- matrix(nrow=3, ncol=length(x))
+    	rownames(res) <- c("threshold", "specificity", "sensitivity")
     	for (i in seq_along(x)) {
     		sp <- x[i]
     		if (sp %in% roc$sp) {
@@ -255,6 +268,7 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     		stop("Input sensitivity not within the ROC space.")
     	}
     	res <- matrix(nrow=3, ncol=length(x))
+    	rownames(res) <- c("threshold", "specificity", "sensitivity")
     	for (i in seq_along(x)) {
     		se <- x[i]
     		if (se %in% roc$se) {
@@ -269,32 +283,32 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     		}
     	}
     }
-    # Deduce additional tn, tp, fn, fp, npv, ppv
-    ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
-    ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
-    se <- res[3, ]
-    sp <- res[2, ]
-    
-    substr.percent <- ifelse(roc$percent, 100, 1)
-    co <- roc.utils.calc.coords(substr.percent,
-    							se, sp, ncases, ncontrols)
-    co <- cbind(threshold = res[1, ], co)
-    rownames(co) <- x
-
-    if (as.list) {
-    	list <- apply(co[, ret, drop=FALSE], 1, as.list)
-    	if (drop == TRUE && length(x) == 1) {
-    		return(list[[1]])
-    	}
-    	return(list)
-    }
-    else {
-      res <- t(co)
-      colnames(res) <- x
-      return(res[ret,, drop=drop])
-    }
+  	cn <- x
   }
   else {
     stop("'x' must be a numeric or character vector.")
+  }
+  
+  if (any(! ret %in% c("threshold", "specificity", "sensitivity"))) {
+  	# Deduce additional tn, tp, fn, fp, npv, ppv
+  	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
+  	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
+  	substr.percent <- ifelse(roc$percent, 100, 1)
+  	res <- rbind(
+  		threshold = res[1, ],
+  		roc.utils.calc.coords(substr.percent, res[3,], res[2,], ncases, ncontrols)
+  	)
+  }
+  colnames(res) <- cn
+  
+  if (as.list) {
+  	list <- apply(res[ret, , drop=FALSE], 2, as.list)
+  	if (drop == TRUE && length(x) == 1) {
+  		return(list[[1]])
+  	}
+  	return(list)
+  }
+  else {
+  	return(res[ret,, drop=drop])
   }
 }

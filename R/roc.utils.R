@@ -380,7 +380,7 @@ roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
 	fnr <- substr.percent * fn / (tp + fn)
 	fdr <- substr.percent * fp / (tp + fp)
 	
-	return(data.frame(
+	return(rbind(
 		sensitivity=se, 
 		specificity=sp, 
 		accuracy=accuracy, 
@@ -401,8 +401,7 @@ roc.utils.calc.coords <- function(substr.percent, se, sp, ncases, ncontrols) {
 		"1-npv"=substr.percent-npv,
 		"1-ppv"=substr.percent-ppv,
 		precision=precision,
-		recall=recall,
-		check.names = FALSE))
+		recall=recall))
 }
 
 # Match arbitrary user-supplied thresholds to the threshold of the ROC curve.
