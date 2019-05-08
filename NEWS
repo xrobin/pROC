@@ -2,14 +2,14 @@
   * 'roc' now prints messages when autodetecting 'levels' and 'direction' by default. Turn off with 'quiet = TRUE'
   * Speedup with 'algorithm = 2' (issue #44) and in 'coords' (issue #52)
   * Use text instead of Tcl/Tk progress bar by default (issue #51)
-  * Fix 'method = "density"' smoothing when called directly from 'roc'
+  * Fix 'method = "density"' smoothing when called directly from 'roc' (issue #49)
   * Renamed 'roc' argument 'n' to 'smooth.n'
   * Fixed 'are.paired' ignoring smoothing arguments of 'roc2' with 'return.paired.rocs'
   * New 'ret' option "all" in 'coords' (issue #47)
 
 1.14.0 (2019-03-12)
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)
-  * 'ggroc' supports multiple aesthetics
+  * 'ggroc' supports multiple aesthetics (issue #42)
   * Make 'ggplot2' dependency optional
   * Suggested packages can be installed interactively when required
   * Passing both 'cases' and 'controls' or 'response' and 'predictor' arguments is now an error
