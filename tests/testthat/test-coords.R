@@ -9,6 +9,18 @@ test_that("coords with thresholds works", {
 })
 
 
+test_that("coords with ret='all' works", {
+	obtained <- coords(r.s100b, "all", ret = "all")
+	expect_equal(dim(obtained), c(22, 51))
+	expect_equal(obtained[rownames(expected.coords),], expected.coords)
+})
+
+
+test_that("coords with ret='all' doesn't accept additional options", {
+	expect_error(coords(r.s100b, "all", ret = c("all", "thresholds")))
+})
+
+
 test_that("coords with percent works", {
 	obtained.percent <- coords(r.s100b.percent, "all", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
 	# Adjust for percent

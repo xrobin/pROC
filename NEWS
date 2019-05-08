@@ -5,6 +5,7 @@
   * Fix 'method = "density"' smoothing when called directly from 'roc'
   * Renamed 'roc' argument 'n' to 'smooth.n'
   * Fixed 'are.paired' ignoring smoothing arguments of 'roc2' with 'return.paired.rocs'
+  * New 'ret' option "all" in 'coords' (issue #47)
 
 1.14.0 (2019-03-12)
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)

@@ -58,7 +58,8 @@ best.weights=c(1, 0.5), ...)
     \code{coords.smooth.roc}.
     In addition, \dQuote{npe} is replaced by \dQuote{1-npv} and \dQuote{ppe} by \dQuote{1-ppv}
     (but they cannot be shortened). See the Details section for a description of
-    the formulas used.
+    the formulas used. Alternatively, the single value \dQuote{all} can be used to return
+    every coordinate available.
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
     (default), a named numeric vector is returned.}
@@ -311,6 +312,9 @@ coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "ac
                            "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
                            "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
                            "precision", "recall"))
+
+# Return all values
+coords(rocobj, "best", ret = "all")
                            
 # You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
 

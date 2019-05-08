@@ -282,6 +282,15 @@ roc.utils.match.coords.ret.args <- function(x, threshold = TRUE) {
   					"fpr", "tpr", "tnr", "fnr", 
   					"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
   					"precision", "recall")
+  if ("all" %in% x) {
+  	if (length(x) > 1) {
+  		stop("ret='all' can't be used with other 'ret' options.")
+  	}
+  	x <- valid.ret.args
+  	if (threshold) {
+  		x <- c("threshold", x)
+  	}
+  }
   if (threshold) {
   	valid.ret.args <- c("threshold", valid.ret.args)
   }
