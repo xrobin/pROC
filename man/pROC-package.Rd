@@ -153,25 +153,43 @@
 
 \section{Handling large datasets}{
 	\subsection{Algorithms}{
-	Since version 1.12, pROC can automatically select the fastest algorithm for your dataset. The choice is based on the number of thresholds of the ROC curve: until about 1500 thresholds, algorithm 3 is used. Above that limit, pROC switches to algorithm 2.
+	Over the years, a significant amount of time has been invested in making pROC run faster and faster.
+	From the naive algorithm iterating over all thresholds implemented in the first version (\code{algorithm = 1}), we went to a
+	C++ implementation (with \pkg{Rcpp}, \code{algorithm = 3}), and a different algorithm using cummulative sum of responses sorted 
+	by the predictor, which scales only with the number of data points, independently on the number of thresholds (\code{algorithm = 2}).
+	The curves themselves are identical, but computation time has been decreased massively.
+	
+	Since version 1.12, pROC was able to automatically select the fastest algorithm for your dataset based on the number of thresholds of the ROC curve.
+	Initially this number was around 1500 thresholds, above which algorithm 3 was selected. But with pROC 1.15 additional code profiling
+	enabled us implement additional speedups that brought this number down to less than 100 thresholds. 
+	As the detection of the number of thresholds itself can have a large impact comparatively (up to 10\% now), a new \code{algorithm = 6}
+	was implemented, which assumes that \code{\link{ordered}} datasets should have relatively few levels, and hence thresholds. These predictors
+	are processed with \code{algorithm = 3}. Any numeric dataset is now assumed to have a sufficient number of thresholds 
+	to be processed with \code{algorithm = 2} efficiently. In the off-chance that you have a very large numeric dataset with very few thresholds,
+	\code{algorithm = 3} can be selected manually (in the call to \code{\link{roc}}). For instance with 5 thresholds you can
+	expect a speedup of around to 3 times. This effect disappears altogether as soon as the curve gets to 50-100 thresholds.
     
     This simple selection should work in most cases. However if you are unsure or want to test it for yourself, use \code{algorithm=0} to run a quick benchmark between 2 and 3. Make sure \pkg{microbenchmark} is installed. Beware, this is very slow as it will repeat the computation 10 times to obtain a decent estimate of each algorithm speed.
     
     \preformatted{
 if (!requireNamespace("microbenchmark")) install.packages("microbenchmark")
 
-# First a ROC curve with many thresholds
-response <- rbinom(5E4, 1, .5)
-predictor <- rnorm(5E4)
-rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
+# First a ROC curve with many thresholds. Algorithm 2 is much faster.
+response <- rbinom(5E3, 1, .5)
+predictor <- rnorm(5E3)
+rocobj <- roc(response, predictor, algorithm = 0)
 
 
 # Next a ROC curve with few thresholds but more data points
 response <- rbinom(1E6, 1, .5)
 predictor <- rpois(1E6, 1)
-rocobj <- roc(response, predictor, algorithm = 0) # Very slow!
+rocobj <- roc(response, predictor, algorithm = 0)
     }
   }
+	
+	Other functions have been optimized too, and bottlenecks removed. In particular, the \code{coords} function is orders of magnitude faster in pROC 1.15.
+	The DeLong algorithm has been improved in versions 1.6, 1.7 and 1.9.1, and currently uses a much more efficient algorithm, both
+	in computation time and memory footprint. We will keep working on improvements to make pROC more suited to large datasets in the future.
 
   \subsection{Boostrap}{
     Bootstrap is typically slow because it involves repeatedly computing the ROC curve (or a part of it).

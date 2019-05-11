@@ -20,7 +20,7 @@ roc(...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 5, quiet = FALSE, 
+direction=c("auto", "<", ">"), algorithm = 6, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, ...)
 
@@ -34,12 +34,13 @@ smooth.n=512, ci.method=NULL, density=NULL, ...)
     ambiguous, use \code{levels} to specify which values must be used as
     control and case value.
   }
-  \item{predictor}{a numeric vector of the same length than \code{response},
-    containing the predicted value of each
-    observation. An ordered factor is coerced to a numeric.
+  \item{predictor}{a \code{\link{numeric}} or \code{\link{ordered}} vector
+  of the same length than \code{response}, containing the predicted
+  value of each observation.
   }
   \item{controls, cases}{instead of \code{response}, \code{predictor},
-    the data can be supplied as two numeric or ordered vectors containing the predictor
+    the data can be supplied as two \code{\link{numeric}} or
+    \code{\link{ordered}} vectors containing the predictor
     values for control and case observations.
   }
   \item{density.controls, density.cases}{a smoothed ROC curve can be
@@ -79,19 +80,21 @@ smooth.n=512, ci.method=NULL, density=NULL, ...)
     curves will be biased towards higher AUC values.
   }
   \item{algorithm}{the method used to compute sensitivity and specificity, 
-    an integer of length 1 between \code{0} and \code{4}.
-    \code{1} (default): a safe, well-tested, pure-\R code that is efficient when the 
+    an integer of length 1 between \code{0} and \code{6}.
+    \code{1}: a safe, well-tested, pure-\R code that is efficient when the 
     number of thresholds is low. It goes with O(T*N).
     \code{2}: an alternative pure-\R algorithm that goes in
     O(N). Typically faster than \code{1} when the number of thresholds of
     the ROC curve is above 1000. Less tested than \code{1}.
     \code{3}: a C++ 
     implementation of \code{1}, about 3-5x faster. Typically the fastest with
-    ROC curves with less than 1500 thresholds, but has a very bad worst-case
+    ROC curves with less than 50-100 thresholds, but has a very bad worst-case
     when that number increases.
     \code{4} (debug only, slow):
-    runs all 3 algorithms and makes sure they return the same values.
-    \code{5}: quickly select 2 or 3 based on the number of thresholds.
+    runs algorithms 1 to 3 and makes sure they return the same values.
+    \code{5}: select \code{2} or \code{3} based on the number of thresholds.
+    \code{6} (default): quickly select the algorithm on the class of the data: \code{2}
+    for \code{\link{numeric}} and \code{3} for \code{\link{ordered}}.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s

@@ -86,7 +86,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
-                        algorithm=5,
+                        algorithm=6,
 						quiet = FALSE,
 
                         # what computation must be done
@@ -235,7 +235,7 @@ roc.default <- function(response, predictor,
     	}
     }
     else { 
-    	stop("Cases and controls must be numeric ordered.")
+    	stop("Cases and controls must be numeric or ordered.")
     }
   	
   	# Check infinities
@@ -301,7 +301,15 @@ roc.default <- function(response, predictor,
   }
   
   # Choose algorithm
-  if (isTRUE(algorithm == 0)) {
+  if (isTRUE(algorithm == 6)) {
+    if (is.numeric(predictor)) {
+      algorithm <- 2
+    }
+    else {
+      algorithm <- 3
+    }
+  }
+  else if (isTRUE(algorithm == 0)) {
   	load.suggested.package("microbenchmark")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
     thresholds <- roc.utils.thresholds(c(controls, cases), direction)
@@ -314,30 +322,31 @@ roc.default <- function(response, predictor,
     print(summary(benchmark))
     if (any(is.na(benchmark))) {
       warning("Microbenchmark returned NA. Using default algorithm 1.")
-      algorithm <- 1
+      algorithm <- 2
     }
     algorithm <- as.integer(names(which.min(tapply(benchmark$time, benchmark$expr, sum))))
     cat(sprintf("Selecting algorithm %s.\n", algorithm))
   }
-  if (isTRUE(algorithm ==  1)) {
-    fun.sesp <- roc.utils.perfs.all.safe
+  else if (isTRUE(algorithm == 5)) {
+    thresholds <- length(roc.utils.thresholds(c(controls, cases), direction))
+    if (thresholds > 55) { # critical number determined in inst/extra/algorithms.speed.test.R
+      algorithm <- 2
+    } else {
+      algorithm <- 3
+    }
   }
-  else if (isTRUE(algorithm == 2)) {
+  
+  if (isTRUE(algorithm == 2)) {
     fun.sesp <- roc.utils.perfs.all.fast
   }
   else if (isTRUE(algorithm  == 3)) {
     fun.sesp <- rocUtilsPerfsAllC
   }
+  else if (isTRUE(algorithm ==  1)) {
+    fun.sesp <- roc.utils.perfs.all.safe
+  }
   else if (isTRUE(algorithm == 4)) {
     fun.sesp <- roc.utils.perfs.all.test
-  }
-  else if (isTRUE(algorithm == 5)) {
-  	thresholds <- length(roc.utils.thresholds(c(controls, cases), direction))
-  	if (thresholds > 55) { # critical number determined in inst/extra/algorithms.speed.test.R
-  		fun.sesp <- roc.utils.perfs.all.fast
-  	} else {
-  		fun.sesp <- rocUtilsPerfsAllC
-  	}
   }
   else {
     stop("Unknown algorithm (must be 0, 1, 2, 3, 4 or 5).")
