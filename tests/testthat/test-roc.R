@@ -19,9 +19,15 @@ expected.algorithm[["ndka"]] <- list(
 	pROC:::roc.utils.perfs.all.fast,
 	pROC:::rocUtilsPerfsAllC,
 	pROC:::roc.utils.perfs.all.test,
+	pROC:::roc.utils.perfs.all.fast
+)
+expected.algorithm[["s100b"]] <-list(
+	pROC:::roc.utils.perfs.all.safe,
+	pROC:::roc.utils.perfs.all.fast,
+	pROC:::rocUtilsPerfsAllC,
+	pROC:::roc.utils.perfs.all.test,
 	pROC:::rocUtilsPerfsAllC
 )
-expected.algorithm[["s100b"]] <- expected.algorithm[["ndka"]] 
 
 smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")
 
