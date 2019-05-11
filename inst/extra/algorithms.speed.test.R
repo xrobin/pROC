@@ -5,14 +5,15 @@
 
 library(pROC)
 library(dplyr)
+#devtools::install_github("xrobin/xavamess")
 library(xavamess)
 library(ggplot2)
 library(parallel)
 
 # Number of observations to test
-ns <- as.vector(outer(c(1, 2, 5), c(3:7), function(i, j) i * 10^j))
+ns <- as.vector(outer(c(1), c(2:7), function(i, j) i * 10^j))
 # Controls how many thresholds we get
-norm.factors <- as.vector(outer(c(1, 2, 5), c(1:4), function(i, j) i * 10^j))
+norm.factors <- as.vector(outer(c(1, 2, 5), c(0:2), function(i, j) i * 10^j))
 # Number of cores to execute on
 # We want the number of physical cores, remove 1 to be sure
 parallel::detectCores() / 2 - 1
@@ -20,22 +21,25 @@ parallel::detectCores() / 2 - 1
 
 # Loop over all those conditions
 times.by.alg <- lapply(2:3, function(algorithm) {
-	times <- autoParLapply(rev(norm.factors), function(norm.factor) {
+	times <- lapply(rev(norm.factors), function(norm.factor) {
+	#times <- autoParLapply(rev(norm.factors), function(norm.factor) {
 		as.data.frame(t(sapply(ns, function(n) {
+			print(sprintf("a=%s, norm=%s, n=%s", algorithm, norm.factor, n))
 			# Get some data
 			lab <- rbinom(n, 1, 0.5)
 			d <- round(rnorm(n) * norm.factor)
 			# How many thresholds do we have?
 			nthr <- length(unique(d))
-			if (nthr > 20000 && algorithm == 3) {
+			if (nthr > 1000 && algorithm == 3) {
 				# Algorithm 3 is out here anyway, no need to waste time to test it
 				return(c(n=n, norm.factor=norm.factor, nthr=nthr, algorithm=algorithm, rep(NA, 3)))
 			}
 			# Repeat 5 times and take the median time
-			time <- apply(replicate(5,  system.time(auc(roc(lab, d, algorithm=algorithm)))), 1, median)
+			time <- apply(replicate(5,  system.time(roc(lab, d, algorithm=algorithm, levels = c(0, 1), direction = "<"))), 1, median)
 			return(c(n=n, norm.factor=norm.factor, nthr=nthr, algorithm=algorithm, time[1:3]))
 		})))
-	}, .maxCores = 5) # Physical cores, not logical !!!
+	}) # Physical cores, not logical !!!
+	#}, .maxCores = 3) # Physical cores, not logical !!!
 	times.df = bind_rows(times)
 })
 times.by.alg.df <- bind_rows(times.by.alg)
@@ -52,6 +56,7 @@ ggplot(times.by.alg.df) + geom_point(aes(nthr, n, color=user.self)) + facet_grid
 
 # Algorithm 3 is linear with nthr * n?
 ggplot(times.by.alg.df) + geom_point(aes(nthr * n, user.self)) + facet_grid(algorithm ~ .)
+plot(nthr * n ~ user.self, na.omit(times.by.alg.df %>% filter(algorithm==3)))
 
 
 # Test algorithm 2
@@ -99,9 +104,9 @@ ggplot(times.by.alg.df) + geom_point(aes(n, nthr, color=predicted.best))+ scale_
 
 
 ### Final formula:
-# Algorithm 2: user.self = 7.999e-06 * n
-# Algorithm 3: user.self = 5.563e-09 * n * nthr
+# Algorithm 2: user.self = 2.959e-07 * n
+# Algorithm 3: user.self = 5.378e-09 * n * nthr
 # Reduction:
-# 7.999e-06 * n = 5.563e-09 * n * nthr
-# 7.999e-06 / 5.563e-09 = nthr
-# 1438 = nthr
+# 2.959e-07 * n = 5.378e-09 * n * nthr
+# 2.959e-07 / 5.378e-09 = nthr
+# 55 = nthr
