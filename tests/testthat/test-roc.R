@@ -6,13 +6,22 @@ level.values <- list(
 	reversed = c("Poor", "Good")
 )
 
-expected.algorithm <- list(
+expected.algorithm <- list()
+expected.algorithm[["wfns"]] <- list(
 	pROC:::roc.utils.perfs.all.safe,
 	pROC:::roc.utils.perfs.all.fast,
 	pROC:::rocUtilsPerfsAllC,
 	pROC:::roc.utils.perfs.all.test,
 	pROC:::rocUtilsPerfsAllC
 )
+expected.algorithm[["ndka"]] <- list(
+	pROC:::roc.utils.perfs.all.safe,
+	pROC:::roc.utils.perfs.all.fast,
+	pROC:::rocUtilsPerfsAllC,
+	pROC:::roc.utils.perfs.all.test,
+	pROC:::rocUtilsPerfsAllC
+)
+expected.algorithm[["s100b"]] <- expected.algorithm[["ndka"]] 
 
 smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")
 
@@ -35,7 +44,7 @@ for (marker in c("ndka", "wfns", "s100b")) {
 						for (item in c("original.predictor", "original.response", "predictor", "response", "levels")) {
 							expect_identical(unname(rf[[item]]), unname(r[[item]]), label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
 						}
-						expect_identical(rf$fun.sesp, expected.algorithm[[algorithm]])
+						expect_identical(rf$fun.sesp, expected.algorithm[[marker]][[algorithm]])
 					})
 					
 					test_that("roc.default works with control/cases as well", {
@@ -45,13 +54,13 @@ for (marker in c("ndka", "wfns", "s100b")) {
 						for (item in c("percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp")) {
 							expect_identical(rcs[[item]], r[[item]])
 						}
-						expect_identical(rcs$fun.sesp, expected.algorithm[[algorithm]])
+						expect_identical(rcs$fun.sesp, expected.algorithm[[marker]][[algorithm]])
 					})
 					
 					test_that("roc.default produces the expected results", {
 						expect_is(r, "roc")
 						expect_identical(r$percent, percent)
-						expect_identical(r$fun.sesp, expected.algorithm[[algorithm]])
+						expect_identical(r$fun.sesp, expected.algorithm[[marker]][[algorithm]])
 						expect_identical(r$direction, expected.direction)
 						expect_identical(r$levels, level.values[[levels.direction]])
 						
