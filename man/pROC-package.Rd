@@ -104,6 +104,23 @@
   }
 }
 
+\section{Pipelines}{
+	Since version 1.15.0, the \code{\link{roc}} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}.
+	The \code{\link{roc.data.frame}} method supports both standard and non-standard evaluation (NSE), and the \code{\link{roc_}}
+	function supports standard evaluation only.
+	
+    \preformatted{
+library(dplyr)
+aSAH \%>\% 
+    filter(gender == "Female") \%>\%
+    roc(outcome, s100b) \%>\%
+    filter(sensitivity > 0.6, 
+           specificity > 0.6)
+	}
+	
+	By default it returns a \code{\link{data.frame}} of \link[=coords.roc]{coordinates} that can be used in further pipelines.
+	Alternatively it can return the \code{\link{roc}} object. More details and use cases are available in the \code{\link{roc}} help page.
+}
 
 \section{Bootstrap}{
 

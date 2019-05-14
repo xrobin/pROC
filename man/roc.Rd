@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{roc}
 \alias{roc}
+\alias{roc_}
 \alias{roc.formula}
 \alias{roc.data.frame}
 \alias{roc.default}
@@ -26,7 +27,7 @@ levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
 direction=c("auto", "<", ">"), algorithm = 6, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, ...)
-
+roc_(data, response, predictor, ret = c("coords", "all_coords", "roc"), ...)
 }
 
 \arguments{
@@ -36,10 +37,18 @@ smooth.n=512, ci.method=NULL, density=NULL, ...)
     contains more than two unique values, or if their order could be
     ambiguous, use \code{levels} to specify which values must be used as
     control and case value.
+    If the first argument was a \code{\link{data.frame}}, \code{response}
+    should be the name of the column in \code{data} containing the
+    response, quoted for \code{roc_}, and optionally quoted for 
+    \code{roc.data.frame} (non-standard evaluation or NSE).
   }
   \item{predictor}{a \code{\link{numeric}} or \code{\link{ordered}} vector
   of the same length than \code{response}, containing the predicted
   value of each observation.
+    If the first argument was a \code{\link{data.frame}}, \code{predictor}
+    should be the name of the column in \code{data} containing the
+    predictor, quoted for \code{roc_}, and optionally quoted for 
+    \code{roc.data.frame} (non-standard evaluation or NSE).
   }
   \item{controls, cases}{instead of \code{response}, \code{predictor},
     the data can be supplied as two \code{\link{numeric}} or
@@ -244,6 +253,57 @@ smooth.n=512, ci.method=NULL, density=NULL, ...)
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
   by \code{\link{smooth}}, with or without additional elements
   \code{auc} and \code{ci} (according to the call).
+}
+
+\section{Pipelines}{
+	Since version 1.15.0, the \code{roc} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}.
+	The \code{roc.data.frame} method supports both standard and non-standard evaluation (NSE):
+	
+    \preformatted{
+library(dplyr)
+# Standard evaluation:
+aSAH \%>\%
+    filter(gender == "Female") \%>\%
+    roc("outcome", "s100b")
+# Non-Standard Evaluation:
+aSAH \%>\%
+    filter(gender == "Female") \%>\%
+    roc(outcome, s100b)
+	}
+	
+	For tasks involving programming and variable column names, the \code{roc_} function provides
+	standard evaluation:
+	
+    \preformatted{
+library(dplyr)
+# Standard evaluation:
+aSAH \%>\%
+    filter(gender == "Female") \%>\%
+    roc_("outcome", "s100b")
+    }
+	
+	By default it returns a \code{data.frame} of \link[=coords.roc]{coordinates} that can be used in further pipelines.
+	Alternatively, it can return the full set of coordinates available in \code{\link{coords}}, or the \code{roc} object.
+	
+    \preformatted{
+library(dplyr)
+# Returns thresholds, sensitivities and specificities:
+aSAH  \%>\%
+    roc(outcome, s100b) \%>\%
+    filter(sensitivity > 0.6, 
+           specificity > 0.6)
+
+# Returns all existing coordinates, then select precision and recall:
+aSAH  \%>\%
+    roc(outcome, s100b, ret = "all_coords") \%>\%
+    select(precision, recall)
+
+# Returns the roc object:
+aSAH  \%>\%
+    roc(outcome, s100b, ret = "roc")
+	}
+	
+	
 }
 
 \section{Errors}{

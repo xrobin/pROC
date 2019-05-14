@@ -95,6 +95,8 @@ S3method("roc", "default")
 S3method("roc", "formula")
 S3method("roc", "data.frame")
 
+export(roc_)
+
 export(roc.test)
 S3method("roc.test", "roc")
 S3method("roc.test", "smooth.roc")
