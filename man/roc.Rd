@@ -2,6 +2,7 @@
 \name{roc}
 \alias{roc}
 \alias{roc.formula}
+\alias{roc.data.frame}
 \alias{roc.default}
 \title{
  Build a ROC curve
@@ -99,6 +100,10 @@ smooth.n=512, ci.method=NULL, density=NULL, ...)
     for \code{\link{numeric}} and \code{3} for \code{\link{ordered}}.
     \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
   }
+  \item{ret}{for \code{roc.data.frame} only, whether to return the
+	threshold sensitivity and specificity at all thresholds (\dQuote{coords}),
+	all the coordinates at all thresholds (\dQuote{all_coords}) or the
+	\code{roc} object (\dQuote{roc}).}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
   }
