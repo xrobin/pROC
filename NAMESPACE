@@ -93,6 +93,7 @@ S3method("print", "mv.multiclass.auc")
 export(roc)
 S3method("roc", "default")
 S3method("roc", "formula")
+S3method("roc", "data.frame")
 
 export(roc.test)
 S3method("roc.test", "roc")

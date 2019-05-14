@@ -17,6 +17,8 @@
 \usage{
 roc(...)
 \S3method{roc}{formula}(formula, data, ...)
+\S3method{roc}{data.frame}(data, response, predictor,
+ret = c("coords", "all_coords", "roc"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
@@ -295,6 +297,13 @@ with(aSAH, roc(outcome ~ s100b))
 
 # With a formula:
 roc(outcome ~ s100b, data=aSAH)
+
+\dontrun{
+library(dplyr)
+aSAH \%>\%
+    filter(gender == "Female") \%>\%
+    roc(outcome, s100b)
+}
 
 # Using subset (only with formula)
 roc(outcome ~ s100b, data=aSAH, subset=(gender == "Male"))

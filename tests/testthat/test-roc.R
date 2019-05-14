@@ -287,6 +287,15 @@ test_that("roc doesn't accept density with other arguments", {
 				 "incompatible")
 })
 
+test_that("roc.data.frame works", {
+	r <- roc(aSAH, outcome, s100b, ret="roc")
+	expect_is(r, "roc")
+	co <- roc(aSAH, outcome, s100b, ret="coords")
+	expect_equal(dim(co), c(51, 3))
+	co <- roc(aSAH, outcome, s100b, ret="all_coords")
+	expect_equal(nrow(co), 51)
+	expect_true(nrow(co) >= 22)
+})
 
 
 # The code below can be used to refresh the "expected.roc" data, just in case...

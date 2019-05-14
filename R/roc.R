@@ -77,6 +77,31 @@ roc.formula <- function (formula, data, ...) {
   }
 }
 
+roc.data.frame <- function(data, response, predictor, 
+                           ret = c("coords", "all_coords", "roc"),
+                           ...) {
+  ret <- match.arg(ret)
+  
+  predictor_name <- deparse(substitute(predictor))
+  response_name <- deparse(substitute(response))
+  
+  r <- roc(data[[response_name]], data[[predictor_name]], ...)
+  if (ret == "roc") {
+    r$call <- match.call()
+    return(r)
+  }
+  else if (ret == "coords") {
+    co <- as.data.frame(t(coords(r, x = "all")))
+    rownames(co) <- NULL
+    return(co)
+  }
+  else if (ret == "all_coords") {
+    co <- as.data.frame(t(coords(r, x = "all", ret="all")))
+    rownames(co) <- NULL
+    return(co)
+  }
+}
+
 roc.default <- function(response, predictor,
                         controls, cases,
                         density.controls, density.cases,
