@@ -462,3 +462,50 @@ test_that("coords with x = 'local maximas' takes partial AUC into account", {
 	expect_equal(unname(obtained), c(0.065, 0.075))
 })
 
+test_that("invalid best.weights", {
+	expect_error(coords(r.s100b, "best", best.weights = 1))
+	expect_error(coords(r.s100b, "best", best.weights = 0:1))
+	expect_error(coords(r.s100b, "best", best.weights = c(0.1, 0.9)), NA)
+	expect_error(coords(r.s100b, "best", best.weights = 1:3))
+	# with smooth
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 1))
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 0:1))
+	expect_error(coords(smooth(r.s100b), "best", best.weights = c(0.1, 0.9)), NA)
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 1:3))
+})
+
+test_that("invalid best.method", {
+	expect_error(coords(r.s100b, "best", best.method = 1))
+	expect_error(coords(r.s100b, "best", best.method = "1"))
+	# with smooth
+	expect_error(coords(smooth(r.s100b), "best", best.method = 1))
+	expect_error(coords(smooth(r.s100b), "best", best.method = "1"))
+})
+
+test_that("invalid se/sp", {
+	smooth.s100b <- smooth(r.s100b)
+	for (inp in c("sens", "spec")) {
+		for (r in list(r.s100b, smooth.s100b)) {
+			expect_error(coords(r, x=-2, input=inp))
+			expect_error(coords(r, x=0, input=inp), NA)
+			expect_error(coords(r, x=1, input=inp), NA)
+			expect_error(coords(r, x=10, input=inp))
+		}
+	}
+	smooth.s100b.percent <- smooth(r.s100b.percent)
+	for (inp in c("sens", "spec")) {
+		for (r in list(r.s100b.percent, smooth.s100b.percent)) {
+			expect_error(coords(r.s100b.percent, x=-2, input=inp))
+			expect_error(coords(r.s100b.percent, x=0, input=inp), NA)
+			expect_error(coords(r.s100b.percent, x=10, input=inp), NA)
+			expect_error(coords(r.s100b.percent, x=100, input=inp), NA)
+			expect_error(coords(r.s100b.percent, x=101, input=inp))
+		}
+	}
+})
+
+test_that("invalid x", {
+	expect_error(coords(r.s100b.percent, x=list(1)))
+	expect_error(coords(r.s100b, x=aSAH))
+	expect_error(coords(smooth(r.s100b), x=mean))
+})
