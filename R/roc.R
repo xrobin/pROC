@@ -90,9 +90,6 @@ roc.data.frame <- function(data, response, predictor,
   		stop("'response' argument should be the name of the column, optionally quoted.")
   	}
   	response_name <- deparse(substitute(response))
-  	if (! response_name %in% colnames(data)) {
-  		stop(sprintf("Column %s not present in data %s", response_name, deparse(substitute(data))))
-  	}
   }
   
   if (is.character(substitute(predictor))) {
@@ -103,9 +100,6 @@ roc.data.frame <- function(data, response, predictor,
   		stop("'predictor' argument should be the name of the column, optionally quoted.")
   	}
   	predictor_name <- deparse(substitute(predictor))
-  	if (! predictor_name %in% colnames(data)) {
-  		stop(sprintf("Column %s not present in data %s", predictor_name, deparse(substitute(data))))
-  	}
   }
   
   r <- roc_(data, response_name, predictor_name, ret = ret, ...)
@@ -120,6 +114,15 @@ roc_ <- function(data, response, predictor,
                  ret = c("roc", "coords", "all_coords"),
                  ...) {
   ret <- match.arg(ret)
+  
+  # Ensure the data contains the columns we need
+  if (! response %in% colnames(data)) {
+  	stop(sprintf("Column %s not present in data %s", response, deparse(substitute(data))))
+  }
+  
+  if (! predictor %in% colnames(data)) {
+  	stop(sprintf("Column '%s' not present in data %s", predictor, deparse(substitute(data))))
+  }
   
   r <- roc(data[[response]], data[[predictor]], ...)
   

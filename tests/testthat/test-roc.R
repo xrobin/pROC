@@ -318,6 +318,18 @@ test_that("roc_ works", {
 })
 
 
+test_that("roc.data.frame reject invalid columns", {
+	outcomes <- aSAH$outcome
+	expect_error(roc(aSAH, outcomes, s100b), "Column")
+	expect_error(roc(aSAH, "outcomes", "s100b"), "Column")
+	expect_error(roc_(aSAH, "outcomes", "s100b"), "Column")
+	s100c <- aSAH$s100b
+	expect_error(roc(aSAH, outcome, s100c), "Column")
+	expect_error(roc(aSAH, "outcome", "s100c"), "Column")
+	expect_error(roc_(aSAH, "outcome", "s100c"), "Column")
+})
+
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {
