@@ -422,6 +422,22 @@ test_that("coords with x = 'best' takes partial AUC into account", {
 	expect_equal(obtained, 0.075)
 })
 
+test_that("coords with x = 'best' takes partial AUC into account with smooth.roc", {
+	# with sp
+	obtained <- coords(smooth(r.s100b.partial1), "b", ret="sp")
+	expect_equal(obtained, 0.900608847772859)
+	
+	obtained <- coords(smooth(r.s100b.partial1), "b", ret=c("se", "se", "youden"))
+	expect_equal(as.vector(obtained), c(0.410958904109589, 0.410958904109589, 1.311567751882448))
+	
+	# with se
+	obtained <- coords(smooth(r.s100b.partial2), "b", ret="se")
+	expect_equal(obtained, 0.900195694716243)
+	
+	obtained <- coords(smooth(r.s100b.partial2), "b", ret=c("se", "se", "youden"))
+	expect_equal(as.vector(obtained), c(0.900195694716243, 0.900195694716243, 1.193053239288330))
+})
+
 
 test_that("coords with x = 'all' takes partial AUC into account", {
 	# with sp
