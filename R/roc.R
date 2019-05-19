@@ -78,7 +78,7 @@ roc.formula <- function (formula, data, ...) {
 }
 
 roc.data.frame <- function(data, response, predictor, 
-                           ret = c("coords", "all_coords", "roc"),
+                           ret = c("roc", "coords", "all_coords"),
                            ...) {
   ret <- match.arg(ret)
   
@@ -117,7 +117,7 @@ roc.data.frame <- function(data, response, predictor,
 }
 
 roc_ <- function(data, response, predictor,
-                 ret = c("coords", "all_coords", "roc"),
+                 ret = c("roc", "coords", "all_coords"),
                  ...) {
   ret <- match.arg(ret)
   

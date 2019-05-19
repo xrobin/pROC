@@ -20,14 +20,14 @@
 roc(...)
 \S3method{roc}{formula}(formula, data, ...)
 \S3method{roc}{data.frame}(data, response, predictor,
-ret = c("coords", "all_coords", "roc"), ...)
+ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
 direction=c("auto", "<", ">"), algorithm = 6, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, ...)
-roc_(data, response, predictor, ret = c("coords", "all_coords", "roc"), ...)
+roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 }
 
 \arguments{
