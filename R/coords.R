@@ -174,21 +174,12 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       cn <- rep(x, ncol(res))
     }
     else { # x == "best"
-      # What kind of "best" do we want?
-      # Compute weights
-      if (is.numeric(best.weights) && length(best.weights) == 2)
-        r <- (1 - best.weights[2]) / (best.weights[1] * best.weights[2]) # r should be 1 by default
-      else
-        stop("'best.weights' must be a numeric vector of length 2")
-      # Compute optimality criterion and store it in the optim.crit vector
-      best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft")) # cheat: allow the user to pass "topleft"
-      if (best.method == "youden") {
-        optim.crit <- roc$sensitivities + r * roc$specificities
+      # cheat: allow the user to pass "topleft"
+      best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
+      if (best.method == "topleft") {
+        best.method <- "closest.topleft"
       }
-      else if (best.method == "closest.topleft" || best.method == "topleft") {
-        fac.1 <- ifelse(roc$percent, 100, 1)
-        optim.crit <- - ((fac.1 - roc$sensitivities)^2 + r * (fac.1 - roc$specificities)^2)
-      }
+      optim.crit <- roc.utils.optim.crit(roc, best.weights, best.method)
 
       # Filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE)) {

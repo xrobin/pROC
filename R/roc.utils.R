@@ -451,3 +451,27 @@ roc.utils.thr.idx <- function(roc, x) {
 	}
 	return(thr_idx)
 }
+
+
+# Get optimal criteria Youden or Closest Topleft
+# @param roc: the roc curve
+# @param weights: see coords(best.weights=)
+# @param method: youden or closest.topleft coords(best.method=)
+# @return numeric vector along roc$thresholds/roc$se/roc$sp.
+roc.utils.optim.crit <- function(roc, weights, method) {
+	if (is.numeric(weights) && length(weights) == 2) {
+		r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
+	}
+	else {
+		stop("'best.weights' must be a numeric vector of length 2")
+	}
+	
+	if (method == "youden") {
+		optim.crit <- roc$sensitivities + r * roc$specificities
+	}
+	else if (method == "closest.topleft" || method == "topleft") {
+		fac.1 <- ifelse(roc$percent, 100, 1)
+		optim.crit <- - ((fac.1 - roc$sensitivities)^2 + r * (fac.1 - roc$specificities)^2)
+	}
+	return(optim.crit)
+}
