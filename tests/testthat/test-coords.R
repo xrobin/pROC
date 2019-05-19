@@ -508,4 +508,7 @@ test_that("invalid x", {
 	expect_error(coords(r.s100b.percent, x=list(1)))
 	expect_error(coords(r.s100b, x=aSAH))
 	expect_error(coords(smooth(r.s100b), x=mean))
+	# character but invalid
+	expect_error(coords(smooth(r.s100b), x="c"))
+	expect_error(coords(r.s100b, x="c"))
 })
