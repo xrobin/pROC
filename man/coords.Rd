@@ -45,20 +45,8 @@ best.weights=c(1, 0.5), ...)
 		\code{coords.smooth.roc}, and that the argument is ignored when
 		\code{x} is a character.
   }
-  \item{ret}{The coordinates to return. One or more of
-    \dQuote{threshold}, \dQuote{specificity}, \dQuote{sensitivity}, \dQuote{accuracy},
-    \dQuote{tn} (true negative count), \dQuote{tp} (true positive count),
-    \dQuote{fn} (false negative count), \dQuote{fp} (false positive count), 
-    \dQuote{npv} (negative predictive value), \dQuote{ppv} (positive predictive value),
-    \dQuote{precision}, \dQuote{recall}.
-    \dQuote{1-specificity}, \dQuote{1-sensitivity}, \dQuote{1-accuracy}, \dQuote{1-npv} and \dQuote{1-ppv} are recognized
-    as well, and must be used verbatim in ROC curves with \code{percent=TRUE} (ie. \dQuote{100-ppv} is never accepted).
-    Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
-    \dQuote{se}, \dQuote{sp} or \dQuote{1-np}). Note that \dQuote{threshold} is not allowed in
-    \code{coords.smooth.roc}.
-    In addition, \dQuote{npe} is replaced by \dQuote{1-npv} and \dQuote{ppe} by \dQuote{1-ppv}
-    (but they cannot be shortened). See the Details section for a description of
-    the formulas used. Alternatively, the single value \dQuote{all} can be used to return
+  \item{ret}{The coordinates to return. See "Valid \code{ret} arguments"
+  	section below. Alternatively, the single value \dQuote{all} can be used to return
     every coordinate available.
   }
   \item{as.list}{If the returned object must be a list. If \code{FALSE}
@@ -182,14 +170,34 @@ The following table lists valid \code{ret} arguments.
     \code{tnr} \tab True Negative Rate \tab tn / (tn + fp) \tab specificity \cr
     \code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \cr
     \code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \cr
+    \code{youden} \tab Youden Index \tab 
+    	\deqn{se + r \times sp}{se + r * sp}
+    	\tab - \cr
+    \code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
+    	\deqn{- ((1 - se)^2 + r \times (1- sp)^2)}{- ((1 - se)^2 + r * (1 - sp)^2)}
+    	\tab - \cr
   }
   
-  In addition, some values can be prefixed with \code{1-} to get their complement:
-  \code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}.
+	The value \dQuote{threshold} is not allowed in \code{coords.smooth.roc}.
+  
+	Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
+	\dQuote{se}, \dQuote{sp} or \dQuote{1-np}). In addition, some values can be prefixed with
+	\code{1-} to get their complement:
+	\code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}
+	(but they cannot be shortened).
+  
+	The values \code{npe} and \code{ppe} are automatically replaced with
+	\code{1-npv} and \code{1-ppv}, respectively (and will therefore not appear
+	as is in the output, but as \code{1-npv} and \code{1-ppv} instead).
+	These must be used verbatim in ROC curves with \code{percent=TRUE} 
+	(ie. \dQuote{100-ppv} is never accepted).
+	
+	The \dQuote{youden} and \dQuote{closest.topleft} are weighted with \code{r}, according
+	to the value of the \code{best.weights} argument. See the "Best thresholds"
+	section above for more details.
 
-  Finally the values \code{npe} and \code{ppe} are automatically replaced with
-  \code{1-npv} and \code{1-ppv}, respectively (and will therefore not appear
-  as is in the output, but as \code{1-npv} and \code{1-ppv} instead).
+    The single value \dQuote{all} can be used to return
+    every coordinate available.
 }
 } % details
 

@@ -4,8 +4,9 @@ data(aSAH)
 context("coords")
 
 test_that("coords with thresholds works", {
-	obtained <- coords(r.s100b, "all", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equal(obtained, expected.coords)
+	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
+	obtained <- coords(r.s100b, "all", ret = return.rows)
+	expect_equal(obtained, expected.coords[return.rows,])
 })
 
 test_that("coords returns all thresholds by default", {
@@ -17,7 +18,7 @@ test_that("coords returns all thresholds by default", {
 
 test_that("coords with ret='all' works", {
 	obtained <- coords(r.s100b, "all", ret = "all")
-	expect_equal(dim(obtained), c(22, 51))
+	expect_equal(dim(obtained), c(24, 51))
 	expect_equal(obtained[rownames(expected.coords),], expected.coords)
 })
 
@@ -28,36 +29,43 @@ test_that("coords with ret='all' doesn't accept additional options", {
 
 
 test_that("coords with percent works", {
-	obtained.percent <- coords(r.s100b.percent, "all", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	return.rows <- "all"
+	percent.rows <- c("specificity", "sensitivity", "accuracy", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft", "fdr", "fpr", "tpr", "tnr", "fnr", "precision", "recall")
+	obtained.percent <- coords(r.s100b.percent, "all", ret = return.rows)
 	# Adjust for percent
-	obtained.percent[c("specificity", "sensitivity", "accuracy", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"),] <- obtained.percent[c("specificity", "sensitivity", "accuracy", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"),] / 100
+	obtained.percent[percent.rows,] <- obtained.percent[percent.rows,] / 100
 	expect_equal(obtained.percent, expected.coords)
 })
 
 
 test_that("coords with local maximas thresholds works", {
-	obtained <- coords(r.s100b, "local maximas", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	return.rows <- "all"
+	obtained <- coords(r.s100b, "local maximas", ret = return.rows)
 	expected.thresholds <- c(-Inf, 0.065, 0.075, 0.085, 0.095, 0.105, 0.115, 0.135, 0.155, 0.205, 0.245, 0.29, 0.325, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+	expect_equal(as.vector(obtained["threshold",]), expected.thresholds)
 	expect_equivalent(obtained, expected.coords[,expected.coords["threshold",] %in% expected.thresholds])
 })
 
 
 test_that("coords with best threshold works", {
-	obtained <- coords(r.s100b, "best", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	return.rows <- "all"
+	obtained <- coords(r.s100b, "best", ret = return.rows)
 	expect_equal(obtained, expected.coords[,expected.coords["threshold",] == 0.205])
 })
 
 
 test_that("coords with arbitrary thresholds works", {
-	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equivalent(obtained, expected.coords[, c(18, 4)])
+	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
+	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = return.rows)
+	expect_equivalent(obtained, expected.coords[return.rows, c(18, 4)])
 })
 
 test_that("coords with arbitrary thresholds at exact data point works", {
+	return.rows <- "all"
 	expect_equal(sum(aSAH$s100b == 0.05),  3)
 	expect_equal(sum(aSAH$s100b == 0.52),  1)
-	obtained <- coords(r.s100b, c(0.05, 0.52), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equivalent(obtained, expected.coords[-1, c(3, 40)])
+	obtained <- coords(r.s100b, c(0.05, 0.52), input = "threshold", ret = return.rows)
+	expect_equivalent(obtained[-1,], expected.coords[-1, c(3, 40)])
 })
 
 test_that("coords with arbitrary thresholds works with direction=>", {
@@ -67,7 +75,8 @@ test_that("coords with arbitrary thresholds works with direction=>", {
 
 
 test_that("coords with single arbitrary threshold works", {
-	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	return.rows <- "all"
+	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = return.rows)
 	expect_equal(obtained, expected.coords[, c(18), drop=T])
 })
 
@@ -75,10 +84,10 @@ test_that("coords with single arbitrary threshold works", {
 test_that("coords with arbitrary thresholds at exact data point works", {
 	expect_equal(sum(aSAH$s100b == 0.05),  3)
 	expect_equal(sum(aSAH$s100b == 0.52),  1)
-	obtained <- coords(r.s100b, c(0.05), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equal(obtained, expected.coords[-1, 3])
-	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = c("specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
-	expect_equal(obtained, expected.coords[-1, 40])
+	obtained <- coords(r.s100b, c(0.05), input = "threshold", ret = "all")
+	expect_equal(obtained[-1], expected.coords[-1, 3])
+	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = "all")
+	expect_equal(obtained[-1], expected.coords[-1, 40])
 })
 
 
@@ -356,3 +365,4 @@ test_that("coords with x = 'local maximas' takes partial AUC into account", {
 	obtained <- coords(r.s100b.partial2, "local maximas", ret="t")
 	expect_equal(unname(obtained), c(0.065, 0.075))
 })
+

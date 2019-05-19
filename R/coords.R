@@ -32,47 +32,50 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
   if (is.character(x)) {
     x <- match.arg(x, c("best")) # no thresholds in smoothed roc: only best is possible
     partial.auc <- attr(smooth.roc$auc, "partial.auc")
-    # What kind of "best" do we want?
-    # Compute weights
-    if (! is.numeric(best.weights) || length(best.weights) != 2)
-      stop("'best.weights' must be a numeric vector of length 2.")
-    if (best.weights[2] <= 0 || best.weights[2] >= 1)
-      stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
-    r <- (1 - best.weights[2]) / (best.weights[1] * best.weights[2]) # r should be 1 by default
-      
-    # Compute optimality criterion and store it in the optim.crit vector
-    best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft")) # cheat: allow the user to pass "topleft"
-    if (best.method == "youden") {
-      optim.crit <- smooth.roc$sensitivities + r * smooth.roc$specificities
+
+    # cheat: allow the user to pass "topleft"
+    best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
+    if (best.method == "topleft") {
+    	best.method <- "closest.topleft"
     }
-    else if (best.method == "closest.topleft" || best.method == "topleft") {
-      fac.1 <- ifelse(smooth.roc$percent, 100, 1)
-      optim.crit <- - ((fac.1 - smooth.roc$sensitivities)^2 + r * (fac.1 - smooth.roc$specificities)^2)
-    }
+    optim.crit <- roc.utils.optim.crit(smooth.roc$sensitivities, smooth.roc$specificities,
+    								   ifelse(smooth.roc$percent, 100, 1),
+    								   best.weights, best.method)
     
     if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
       se <- smooth.roc$sensitivities[optim.crit==max(optim.crit)]
       sp <- smooth.roc$specificities[optim.crit==max(optim.crit)]
+      optim.crit <- optim.crit[optim.crit==max(optim.crit)]
     }
     else {
       if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
         optim.crit <- (optim.crit)[smooth.roc$se <= partial.auc[1] & smooth.roc$se >= partial.auc[2]]
         se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit==max(optim.crit)]
         sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit==max(optim.crit)]
+        optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit==max(optim.crit)]
       }
       else {
         optim.crit <- (optim.crit)[smooth.roc$sp <= partial.auc[1] & smooth.roc$sp >= partial.auc[2]]
         se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
         sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
+        optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit==max(optim.crit)]
       }
     }
     
-    if (any(! ret %in% c("specificity", "sensitivity"))) {
+    if (any(! ret %in% c("specificity", "sensitivity", best.method))) {
     	# Deduce additional tn, tp, fn, fp, npv, ppv
     	ncases <- length(attr(smooth.roc, "roc")$cases)
     	ncontrols <- length(attr(smooth.roc, "roc")$controls)
     	substr.percent <- ifelse(smooth.roc$percent, 100, 1)
-    	res <- roc.utils.calc.coords(substr.percent, NA, se, sp, ncases, ncontrols)
+    	res <- roc.utils.calc.coords(substr.percent, NA, se, sp, ncases, ncontrols, best.weights)
+    }
+    else {
+    	res <- rbind(
+    		specificity = sp,
+    		sensitivity = se,
+    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
+    	)
+    	rownames(res)[3] <- best.method
     }
     colnames(res) <- rep("best", ncol(res))
     
@@ -179,13 +182,16 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       if (best.method == "topleft") {
         best.method <- "closest.topleft"
       }
-      optim.crit <- roc.utils.optim.crit(roc, best.weights, best.method)
+      optim.crit <- roc.utils.optim.crit(roc$sensitivities, roc$specificities,
+      								   ifelse(roc$percent, 100, 1),
+      								   best.weights, best.method)
 
       # Filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
       	se <- roc$se[optim.crit==max(optim.crit)]
       	sp <- roc$sp[optim.crit==max(optim.crit)]
         thres <- roc$thresholds[optim.crit==max(optim.crit)]
+        optim.crit <- optim.crit[optim.crit==max(optim.crit)]
       }
       else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
@@ -193,12 +199,14 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
           se <- roc$se[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
           sp <- roc$sp[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
           thres <- roc$thresholds[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
+          optim.crit <- optim.crit[roc$se <= partial.auc[1] & roc$se >= partial.auc[2]][optim.crit==max(optim.crit)]
         }
         else {
           optim.crit <- (optim.crit)[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]]
           se <- roc$se[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
           sp <- roc$sp[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
           thres <- roc$thresholds[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
+          optim.crit <- optim.crit[roc$sp <= partial.auc[1] & roc$sp >= partial.auc[2]][optim.crit==max(optim.crit)]
         }
       }
       if (length(thres) == 0) {
@@ -208,8 +216,10 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
       res <- rbind(
       	threshold = thres,
       	specificity = sp,
-      	sensitivity = se
+      	sensitivity = se,
+      	best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
       )
+      rownames(res)[4] <- best.method
       cn <- rep(x, ncol(res))
     }
   }
@@ -268,12 +278,12 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
     stop("'x' must be a numeric or character vector.")
   }
   
-  if (any(! ret %in% c("threshold", "specificity", "sensitivity"))) {
+  if (any(! ret %in% rownames(res))) {
   	# Deduce additional tn, tp, fn, fp, npv, ppv
   	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
   	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   	substr.percent <- ifelse(roc$percent, 100, 1)
-  	res <- roc.utils.calc.coords(substr.percent, res[1, ], res[3,], res[2,], ncases, ncontrols)
+  	res <- roc.utils.calc.coords(substr.percent, res[1, ], res[3,], res[2,], ncases, ncontrols, best.weights)
   }
   colnames(res) <- cn
   
