@@ -171,10 +171,10 @@ The following table lists valid \code{ret} arguments.
     \code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \cr
     \code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \cr
     \code{youden} \tab Youden Index \tab 
-    	\deqn{se + r \times sp}{se + r * sp}
+    	se + r * sp
     	\tab - \cr
     \code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
-    	\deqn{- ((1 - se)^2 + r \times (1- sp)^2)}{- ((1 - se)^2 + r * (1 - sp)^2)}
+    	- ((1 - se)^2 + r * (1 - sp)^2)
     	\tab - \cr
   }
   
