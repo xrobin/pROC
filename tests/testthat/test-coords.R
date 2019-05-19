@@ -8,6 +8,12 @@ test_that("coords with thresholds works", {
 	expect_equal(obtained, expected.coords)
 })
 
+test_that("coords returns all thresholds by default", {
+	obtained <- coords(r.s100b)
+	expect_equal(obtained, expected.coords[c("threshold", "specificity", "sensitivity"),])
+	# but not if it's an empty numeric, as this might be indicative of user error
+	expect_error(coords(r.s100b, numeric(0)), "length")
+})
 
 test_that("coords with ret='all' works", {
 	obtained <- coords(r.s100b, "all", ret = "all")

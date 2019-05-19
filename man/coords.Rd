@@ -32,8 +32,8 @@ best.weights=c(1, 0.5), ...)
 		the coordinates to look for. Numeric (if so, their meaning is
 		defined by the \code{input} argument) or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
-		maximas of the ROC curve) or \dQuote{best} (the point with the best
-		sum of sensitivity and specificity).
+		maximas of the ROC curve) or \dQuote{best} (see \code{best.method}
+		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
   }
   \item{input}{
 		If \code{x} is numeric, the kind of input coordinate (x). One of

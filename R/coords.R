@@ -95,8 +95,13 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
 
 coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
   # make sure x was provided
-  if (missing(x) || length(x) == 0)
-    stop("'x' must be a numeric or character vector of positive length.")
+  if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
+    x <- "all"
+  }
+  else if (length(x) == 0 && is.numeric(x)) {
+    stop("Numeric 'x' has length 0")
+  }
+    
   # match input 
   input <- match.arg(input)
   # match return
