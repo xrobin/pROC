@@ -255,8 +255,8 @@ roc_(data, response, predictor, ret = c("coords", "all_coords", "roc"), ...)
   \code{auc} and \code{ci} (according to the call).
 }
 
-\section{Pipelines}{
-	Since version 1.15.0, the \code{roc} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}.
+\section{Experimental: pipelines}{
+	Since version 1.15.0, the \code{roc} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}. This is still a highly experimental feature and will change significantly in future versions  (see \href{https://github.com/xrobin/pROC/issues/54}{issue 54}).
 	The \code{roc.data.frame} method supports both standard and non-standard evaluation (NSE):
 	
     \preformatted{
@@ -302,8 +302,6 @@ aSAH  \%>\%
 aSAH  \%>\%
     roc(outcome, s100b, ret = "roc")
 	}
-	
-	
 }
 
 \section{Errors}{

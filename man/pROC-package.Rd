@@ -104,7 +104,7 @@
   }
 }
 
-\section{Pipelines}{
+\section{Experimental: pipelines}{
 	Since version 1.15.0, the \code{\link{roc}} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}.
 	The \code{\link{roc.data.frame}} method supports both standard and non-standard evaluation (NSE), and the \code{\link{roc_}}
 	function supports standard evaluation only.
@@ -118,7 +118,7 @@ aSAH \%>\%
            specificity > 0.6)
 	}
 	
-	By default it returns a \code{\link{data.frame}} of \link[=coords.roc]{coordinates} that can be used in further pipelines.
+	By default it returns a \code{\link{data.frame}} of \link[=coords.roc]{coordinates} that can be used in further pipelines. This is still a highly experimental feature and will change significantly in future versions  (see \href{https://github.com/xrobin/pROC/issues/54}{issue 54}).
 	Alternatively it can return the \code{\link{roc}} object. More details and use cases are available in the \code{\link{roc}} help page.
 }
 
