@@ -393,14 +393,6 @@ roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 # If we prefer counting in percent:
 roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 
-# Test the different algorithms:
-roc(aSAH$outcome, aSAH$s100b, algorithm = 1)
-roc(aSAH$outcome, aSAH$s100b, algorithm = 2)
-roc(aSAH$outcome, aSAH$s100b, algorithm = 3)
-if (require(microbenchmark)) {
-  roc(aSAH$outcome, aSAH$s100b, algorithm = 0)
-}
-
 # Plot and CI (see plot.roc and ci for more options):
 roc(aSAH$outcome, aSAH$s100b,
     percent=TRUE, plot=TRUE, ci=TRUE)
