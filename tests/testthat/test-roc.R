@@ -329,6 +329,34 @@ test_that("roc.data.frame reject invalid columns", {
 	expect_error(roc_(aSAH, "outcome", "s100c"), "Column")
 })
 
+test_that("roc reject and warns for invalid levels", {
+	expect_error(roc(aSAH$gos6, aSAH$s100b), "No case observation")
+	expect_error(roc(aSAH$gos6, aSAH$s100b, levels = levels(aSAH$gos6)), "levels")
+	expect_warning(roc(factor(aSAH$gos6), aSAH$s100b, quiet = TRUE), "levels")
+	
+	expect_error(roc(aSAH, gos6, s100b), "No case observation")
+	expect_error(roc(aSAH, gos6, s100b, levels = levels(aSAH$gos6)), "levels")
+	dat <- aSAH
+	dat$gos6 <- factor(aSAH$gos6)
+	expect_warning(roc(dat, gos6, s100b, quiet = TRUE), "levels")
+})
+
+test_that("roc reject and warns for invalid predictors", {
+	expect_error(roc(aSAH$outcome, as.character(aSAH$wfns)), "Predictor")
+	expect_warning(roc(aSAH$outcome, as.matrix(aSAH$ndka)), "Deprecated")
+	expect_warning(roc(as.matrix(aSAH$outcome), aSAH$ndka), "Deprecated")
+	
+	expect_error(roc(aSAH$outcome[1:100], aSAH$ndka), "length")
+	expect_error(roc(aSAH$outcome[1:100], aSAH$ndka[1:50]), "length")
+})
+	
+test_that("roc reject requires cases & controls", {
+	expect_error(roc(aSAH$outcome[aSAH$outcome == "Good"], aSAH$ndka[aSAH$outcome == "Good"]), "case")
+	expect_error(roc(aSAH$outcome[aSAH$outcome == "Poor"], aSAH$ndka[aSAH$outcome == "Poor"]), "control")
+	
+	expect_error(roc(aSAH[aSAH$outcome == "Good",], outcome, ndka), "case")
+	expect_error(roc(aSAH[aSAH$outcome == "Poor",], outcome, ndka), "control")
+})
 
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
