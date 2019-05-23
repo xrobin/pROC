@@ -168,13 +168,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   }
 
   if (test == "sp") {
-    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
-    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
+    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
+    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
     D <- (coord1 - coord2) / sd(diffs)
   }
   else if (test == "se") {
-    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
-    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
+    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
+    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
     D <- (coord1 - coord2) / sd(diffs)
   }
   else {
@@ -215,13 +215,13 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
       return(c(coord1, coord2))
     }
     else {
@@ -255,13 +255,13 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE)
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.list=FALSE, transpose=TRUE)
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE)
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.list=FALSE, transpose=TRUE)
       return(c(coord1, coord2))
     }
     else {
@@ -445,7 +445,7 @@ stratified.ci.se <- function(n, roc, sp) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
 
-  return(sapply(sp, function(x) coords.roc(roc, x, input="specificity", ret="sensitivity")))
+  return(sapply(sp, function(x) coords.roc(roc, x, input="specificity", ret="sensitivity", transpose=TRUE)))
 }
 
 nonstratified.ci.se <- function(n, roc, sp) {
@@ -462,7 +462,7 @@ nonstratified.ci.se <- function(n, roc, sp) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
 
-  return(sapply(sp, function(x) coords.roc(roc, x, input="specificity", ret="sensitivity")))
+  return(sapply(sp, function(x) coords.roc(roc, x, input="specificity", ret="sensitivity", transpose=TRUE)))
 }
 
 ##########  SE of a smooth ROC curve (ci.se)  ##########
@@ -488,7 +488,7 @@ stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
+  return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity", transpose=TRUE)))
 }
 
 nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
@@ -516,7 +516,7 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity")))
+  return(sapply(sp, function(x) coords.smooth.roc(smooth.roc, x, input="specificity", ret="sensitivity", transpose=TRUE)))
 }
 
 ##########  SP of a ROC curve (ci.sp)  ##########
@@ -531,7 +531,7 @@ stratified.ci.sp <- function(n, roc, se) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
 
-  return(sapply(se, function(x) coords.roc(roc, x, input="sensitivity", ret="specificity")))
+  return(sapply(se, function(x) coords.roc(roc, x, input="sensitivity", ret="specificity", transpose=TRUE)))
 }
 
 nonstratified.ci.sp <- function(n, roc, se) {
@@ -548,7 +548,7 @@ nonstratified.ci.sp <- function(n, roc, se) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
 
-  return(sapply(se, function(x) coords.roc(roc, x, input="sensitivity", ret="specificity")))
+  return(sapply(se, function(x) coords.roc(roc, x, input="sensitivity", ret="specificity", transpose=TRUE)))
 }
 
 ##########  SP of a smooth ROC curve (ci.sp)  ##########
@@ -574,7 +574,7 @@ stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
+  return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity", transpose=TRUE)))
 }
 
 nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
@@ -602,7 +602,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity")))
+  return(sapply(se, function(x) coords.smooth.roc(smooth.roc, x, input="sensitivity", ret="specificity", transpose=TRUE)))
 }
 
 ##########  Threshold of a ROC curve (ci.thresholds)  ##########
@@ -644,7 +644,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (is.character(x) && x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
@@ -675,7 +675,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
   
-  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
@@ -709,7 +709,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
@@ -744,7 +744,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE)
+  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))

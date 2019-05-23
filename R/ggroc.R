@@ -1,7 +1,7 @@
 
 #' Returns the coords as a data.frame in the right ordering for ggplot2 
 get.coords.for.ggplot <- function(roc) {
-	df <- as.data.frame(t(coords(roc, "all")), row.names = NA)
+	df <- as.data.frame(coords(roc, "all", transpose = TRUE), row.names = NA)
 	return(df[rev(seq(nrow(df))),])
 }
 
