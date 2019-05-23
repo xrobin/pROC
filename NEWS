@@ -3,6 +3,7 @@
   * Speedup with 'algorithm = 2' (issue #44) and in 'coords' (issue #52)
   * New 'algorithm = 6' (used by default) uses 'algorithm = 2' for numeric data, and 'algorithm = 3' for ordered vectors
   * New 'roc.data.frame' method and 'roc_' function for use in pipelines
+  * New 'transpose' argument for 'coords', TRUE by default (issue #54)
   * Use text instead of Tcl/Tk progress bar by default (issue #51)
   * Fix 'method = "density"' smoothing when called directly from 'roc' (issue #49)
   * Renamed 'roc' argument 'n' to 'smooth.n'
