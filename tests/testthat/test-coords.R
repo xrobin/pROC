@@ -16,6 +16,16 @@ test_that("coords returns all thresholds by default", {
 	expect_error(coords(r.s100b, numeric(0)), "length")
 })
 
+
+test_that("coords with transpose = FALSE works", {
+	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
+	obtained <- coords(r.s100b, "all", ret = return.rows, transpose = FALSE)
+	expect_equal(obtained, t(expected.coords[return.rows,]))
+	obtained <- coords(r.s100b, transpose = FALSE)
+	expect_equal(obtained, t(expected.coords[c("threshold", "specificity", "sensitivity"),]))
+})
+
+
 test_that("coords with ret='all' works", {
 	obtained <- coords(r.s100b, "all", ret = "all")
 	expect_equal(dim(obtained), c(24, 51))
@@ -281,6 +291,31 @@ test_that("coords works with smooth.roc and x = 'best'", {
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1])) # names
 	expect_equal(names(obtained), "best")
 	expect_equal(names(obtained[[1]]), reduced.cols)
+})
+
+
+test_that("coords works with smooth.roc and transpose = FALSE", {
+	smooth.s100b <- smooth(r.s100b)
+	expect <- structure(c(0.750857175922901, 0.608610567514677, 0.699245574642041, 
+						  54.0617166664488, 24.9530332681018, 16.0469667318982, 17.9382833335512, 
+						  0.771112992655678, 0.581773544045047, 0.418226455954953, 0.249142824077099, 
+						  0.608610567514677, 0.750857175922901, 0.391389432485323, 0.249142824077099, 
+						  0.391389432485323, 0.300754425357959, 0.228887007344322, 0.418226455954953, 
+						  0.581773544045047, 0.608610567514677, 1.35946774343758, 0.215257834650296
+	), .Dim = c(23L, 1L), .Dimnames = list(c("specificity", "sensitivity", 
+											 "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "fdr", "fpr", 
+											 "tpr", "tnr", "fnr", "1-specificity", "1-sensitivity", "1-accuracy", 
+											 "1-npv", "1-ppv", "precision", "recall", "youden", "closest.topleft"
+	), "best"))
+	
+	
+	reduced.cols <- c("specificity", "sensitivity", "youden")
+	
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = FALSE, transpose = FALSE)
+	expect_equal(obtained, t(expect[reduced.cols,, drop=FALSE]))
+	
+	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose = FALSE)
+	expect_equal(obtained, t(expect))
 })
 
 

@@ -154,6 +154,13 @@ export(ggroc)
 S3method("ggroc", "roc")
 S3method("ggroc", "list")
 
+#export(select)
+#export(select_)
+#importFrom("dplyr", "select")
+#importFrom("dplyr", "select_")
+#S3method("select", "roc")
+#S3method("select_", "roc")
+
 # Fix R CMD check warning false positives
 # "apparent S3 methods exported but not registered"
 # Note: these methods have an export() above

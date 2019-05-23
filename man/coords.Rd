@@ -16,11 +16,11 @@ coords(...)
 \S3method{coords}{roc}(roc, x, input=c("threshold", "specificity",
 "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
-best.weights=c(1, 0.5), ...)
+best.weights=c(1, 0.5), transpose = TRUE, ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
 "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE,
 drop=TRUE, best.method=c("youden", "closest.topleft"), 
-best.weights=c(1, 0.5), ...)
+best.weights=c(1, 0.5), transpose = TRUE, ...)
 }
 		   
 \arguments{
@@ -60,6 +60,12 @@ best.weights=c(1, 0.5), ...)
   }
   \item{best.weights}{if \code{x="best"}, the weights to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
+  }
+  \item{transpose}{when returning a matrix (\code{as.list=FALSE}), whether
+  	to return of thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
+  	The current default is \code{TRUE} and has been so since the initial
+  	version. However an upcoming version will change the default to \code{FALSE},
+  	and a warning is printed if the argument is not passed explicitly.
   }
   \item{\dots}{further arguments passed from other methods. Ignored.}
 }

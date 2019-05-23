@@ -20,10 +20,25 @@
 coords <- function(...)
   UseMethod("coords")
 
-coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
+coords.smooth.roc <- function(smooth.roc,
+                              x,
+                              input=c("specificity", "sensitivity"),
+                              ret=c("specificity", "sensitivity"),
+                              as.list=FALSE,
+                              drop=TRUE,
+                              best.method=c("youden", "closest.topleft"),
+                              best.weights=c(1, 0.5),
+                              transpose = TRUE,
+                              ...) {
   # make sure x was provided
   if (missing(x))
     stop("'x' must be a numeric or character vector.")
+  
+  # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
+  if (missing(transpose)) {
+    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning.")
+  }
+  
   # match input 
   input <- match.arg(input)
   # match return
@@ -86,8 +101,11 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
     	}
     	return(list)
     }
+    else if (transpose) {
+      return(res[ret,, drop=drop])
+    }
     else {
-    	return(res[ret,, drop=drop])
+      return(t(res)[, ret, drop=drop])
     }
   }
 
@@ -96,7 +114,16 @@ coords.smooth.roc <- function(smooth.roc, x, input=c("specificity", "sensitivity
   coords.roc(smooth.roc, x, input, ret, as.list, drop, ...)
 }
 
-coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), ...) {
+coords.roc <- function(roc,
+                       x,
+                       input=c("threshold", "specificity", "sensitivity"),
+                       ret=c("threshold", "specificity", "sensitivity"),
+                       as.list=FALSE,
+                       drop=TRUE,
+                       best.method=c("youden", "closest.topleft"),
+                       best.weights=c(1, 0.5), 
+                       transpose = TRUE,
+                       ...) {
   # make sure x was provided
   if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
     x <- "all"
@@ -104,7 +131,12 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
   else if (length(x) == 0 && is.numeric(x)) {
     stop("Numeric 'x' has length 0")
   }
-    
+  
+  # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
+  if (missing(transpose)) {
+    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning.")
+  }
+  
   # match input 
   input <- match.arg(input)
   # match return
@@ -294,7 +326,10 @@ coords.roc <- function(roc, x, input=c("threshold", "specificity", "sensitivity"
   	}
   	return(list)
   }
+  else if (transpose) {
+    return(res[ret,, drop=drop])
+  }
   else {
-  	return(res[ret,, drop=drop])
+  	return(t(res)[, ret, drop=drop])
   }
 }
