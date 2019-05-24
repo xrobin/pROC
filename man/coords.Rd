@@ -54,7 +54,7 @@ best.weights=c(1, 0.5), transpose = TRUE, ...)
   }
   \item{drop}{If \code{TRUE} the result is coerced to the lowest
     possible dimension, as per \link{Extract} (with \code{transpose=TRUE})
-    or \link{Extract.data.frame} (with \code{transpose=FALSE}).
+    or \link[=[.data.frame]{Extract.data.frame} (with \code{transpose=FALSE}).
   }
   \item{best.method}{if \code{x="best"}, the method to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
