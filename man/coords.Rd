@@ -49,8 +49,9 @@ best.weights=c(1, 0.5), transpose = TRUE, ...)
   	section below. Alternatively, the single value \dQuote{all} can be used to return
     every coordinate available.
   }
-  \item{as.list}{If the returned object must be a list. If \code{FALSE}
-    (default), a named numeric vector is returned.}
+  \item{as.list}{DEPRECATED. If the returned object must be a list. 
+   Will be removed in a future version.
+  }
   \item{drop}{If \code{TRUE} the result is coerced to the lowest
     possible dimension, as per \link{Extract}. With \code{FALSE} if \code{x} is
     of length 1, the object returned will have the same format than if

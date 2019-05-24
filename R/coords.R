@@ -95,6 +95,7 @@ coords.smooth.roc <- function(smooth.roc,
     colnames(res) <- rep("best", ncol(res))
     
     if (as.list) {
+      warning("'as.list' is deprecated and will be removed in a future version.")
     	list <- apply(res[ret, , drop=FALSE], 2, as.list)
     	if (drop == TRUE && length(x) == 1) {
     		return(list[[1]])
@@ -320,6 +321,7 @@ coords.roc <- function(roc,
   colnames(res) <- cn
   
   if (as.list) {
+    warning("'as.list' is deprecated and will be removed in a future version.")
   	list <- apply(res[ret, , drop=FALSE], 2, as.list)
   	if (drop == TRUE && length(x) == 1) {
   		return(list[[1]])
