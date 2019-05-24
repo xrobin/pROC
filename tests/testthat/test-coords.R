@@ -20,9 +20,9 @@ test_that("coords returns all thresholds by default", {
 test_that("coords with transpose = FALSE works", {
 	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
 	obtained <- coords(r.s100b, "all", ret = return.rows, transpose = FALSE)
-	expect_equal(obtained, t(expected.coords[return.rows,]))
+	expect_equal(obtained, as.data.frame(t(expected.coords[return.rows,])))
 	obtained <- coords(r.s100b, transpose = FALSE)
-	expect_equal(obtained, t(expected.coords[c("threshold", "specificity", "sensitivity"),]))
+	expect_equal(obtained, as.data.frame(t(expected.coords[c("threshold", "specificity", "sensitivity"),])))
 })
 
 
@@ -312,10 +312,10 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	reduced.cols <- c("specificity", "sensitivity", "youden")
 	
 	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = FALSE, transpose = FALSE)
-	expect_equal(obtained, t(expect[reduced.cols,, drop=FALSE]))
+	expect_equal(obtained, as.data.frame(t(expect[reduced.cols,, drop=FALSE])))
 	
 	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose = FALSE)
-	expect_equal(obtained, t(expect))
+	expect_equal(obtained, as.data.frame(t(expect)))
 })
 
 

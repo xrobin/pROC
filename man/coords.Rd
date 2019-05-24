@@ -53,9 +53,9 @@ best.weights=c(1, 0.5), transpose = TRUE, ...)
    Will be removed in a future version.
   }
   \item{drop}{If \code{TRUE} the result is coerced to the lowest
-    possible dimension, as per \link{Extract}. With \code{FALSE} if \code{x} is
-    of length 1, the object returned will have the same format than if
-    \code{x} was of length > 1.}
+    possible dimension, as per \link{Extract} (with \code{transpose=TRUE})
+    or \link{Extract.data.frame} (with \code{transpose=FALSE}).
+  }
   \item{best.method}{if \code{x="best"}, the method to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
@@ -67,6 +67,7 @@ best.weights=c(1, 0.5), transpose = TRUE, ...)
   	The current default is \code{TRUE} and has been so since the initial
   	version. However an upcoming version will change the default to \code{FALSE},
   	and a warning is printed if the argument is not passed explicitly.
+  	See \link{coords_transpose} for more details about upcoming changes.
   }
   \item{\dots}{further arguments passed from other methods. Ignored.}
 }

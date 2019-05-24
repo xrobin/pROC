@@ -36,7 +36,7 @@ coords.smooth.roc <- function(smooth.roc,
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose)) {
-    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning.")
+    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   
   # match input 
@@ -106,7 +106,12 @@ coords.smooth.roc <- function(smooth.roc,
       return(res[ret,, drop=drop])
     }
     else {
-      return(t(res)[, ret, drop=drop])
+      if (missing(drop)) {
+        return(as.data.frame(t(res))[, ret])
+      }
+      else {
+        return(as.data.frame(t(res))[, ret, drop=drop])
+      }
     }
   }
 
@@ -135,7 +140,7 @@ coords.roc <- function(roc,
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose)) {
-    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning.")
+    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   
   # match input 
@@ -332,6 +337,12 @@ coords.roc <- function(roc,
     return(res[ret,, drop=drop])
   }
   else {
-  	return(t(res)[, ret, drop=drop])
+    if (missing(drop)) {
+      return(as.data.frame(t(res))[, ret])
+    }
+    else {
+      return(as.data.frame(t(res))[, ret, drop=drop])
+    }
+  	
   }
 }
