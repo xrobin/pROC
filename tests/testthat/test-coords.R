@@ -23,6 +23,16 @@ test_that("coords with transpose = FALSE works", {
 	expect_equal(obtained, as.data.frame(t(expected.coords[return.rows,])))
 	obtained <- coords(r.s100b, transpose = FALSE)
 	expect_equal(obtained, as.data.frame(t(expected.coords[c("threshold", "specificity", "sensitivity"),])))
+	
+	# With drop=TRUE
+	obtained <- coords(r.s100b, "all", ret = "se", transpose = FALSE, drop=TRUE)
+	expect_is(obtained, "numeric")
+	#  Not why drop.data.frame returns a list, skipping
+	# obtained <- coords(r.s100b, "best", ret = "all", transpose = FALSE, drop=TRUE)
+	
+	# With drop=FALSE
+	obtained <- coords(r.s100b, "all", ret = "se", transpose = FALSE, drop=FALSE)
+	expect_is(obtained, "data.frame")
 })
 
 
@@ -316,6 +326,17 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	
 	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose = FALSE)
 	expect_equal(obtained, as.data.frame(t(expect)))
+	
+	# Without drop
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE)
+	expect_equivalent(obtained, as.data.frame(t(expect[reduced.cols,])))
+	
+	# drop = TRUE
+	# Not sure what's going on here, skipping
+	#obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE, transpose = FALSE)
+	#expect_equal(obtained, as.data.frame(t(expect)))
+	obtained <- coords(smooth.s100b, c(0.2, 0.5), ret="se")
+	expect_is(obtained, "numeric")
 })
 
 
