@@ -264,49 +264,40 @@ The following table lists valid \code{ret} arguments.
 data(aSAH)
 
 # Print a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
-coords(rocobj, 0.55)
-coords(rocobj, 0.9, "specificity", as.list=TRUE)
-coords(rocobj, 0.5, "se", ret="se")
-# fully qualified but identical:
-coords(roc=rocobj, x=0.5, input="sensitivity", ret="sensitivity")
+# Get the coordinates of S100B threshold 0.55
+coords(rocobj, 0.55, transpose = FALSE)
 
-# Compare with drop=FALSE
-coords(rocobj, 0.55, drop=FALSE)
-coords(rocobj, 0.9, "specificity", as.list=TRUE, drop=FALSE)
+# Get the coordinates at 50\% sensitivity
+coords(roc=rocobj, x=50, input="sensitivity", transpose = FALSE)
+# Can be abbreviated:
+coords(rocobj, 50, "se", transpose = FALSE)
 
-# Same in percent
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
-
-coords(rocobj, 0.55)
-coords(rocobj, 90, "specificity", as.list=TRUE)
-coords(rocobj, x=50, input="sensitivity", ret=c("sen", "spec"))
-
-# And with a smoothed ROC curve
-coords(smooth(rocobj), 90, "specificity")
-coords(smooth(rocobj), 90, "specificity", drop=FALSE)
-coords(smooth(rocobj), 90, "specificity", as.list=TRUE)
-coords(smooth(rocobj), 90, "specificity", as.list=TRUE, drop=FALSE)
+# Works with smoothed ROC curves
+coords(smooth(rocobj), 90, "specificity", transpose = FALSE)
 
 # Get the sensitivities for all thresholds
-sensitivities <- coords(rocobj, rocobj$thresholds, "thr", "se")
+sensitivities <- coords(rocobj, rocobj$thresholds, "thr", "se", transpose = FALSE)
+print(sensitivities)
+
 # This is equivalent to taking sensitivities from rocobj directly
 stopifnot(all.equal(as.vector(rocobj$sensitivities), as.vector(sensitivities)))
 # You could also write:
-sensitivities <- coords(rocobj, "all", ret="se")
+sensitivities <- coords(rocobj, "all", ret="se", transpose = FALSE)
 stopifnot(all.equal(as.vector(rocobj$sensitivities), as.vector(sensitivities)))
 
 # Get the best threshold
-coords(rocobj, "b", ret="t")
+coords(rocobj, "b", ret="t", transpose = FALSE)
 
 # Get the best threshold according to different methods
 rocobj <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
-coords(rocobj, "b", ret="t", best.method="youden") # default
-coords(rocobj, "b", ret="t", best.method="closest.topleft")
+coords(rocobj, "best", ret="threshold", best.method="youden", transpose = FALSE) # default
+coords(rocobj, "best", ret="threshold", best.method="closest.topleft", transpose = FALSE)
 # and with different weights
-coords(rocobj, "b", ret="t", best.method="youden", best.weights=c(50, 0.2))
-coords(rocobj, "b", ret="t", best.method="closest.topleft", best.weights=c(5, 0.2))
+coords(rocobj, "best", ret="threshold", best.method="youden", best.weights=c(50, 0.2), transpose = FALSE)
+coords(rocobj, "best", ret="threshold", best.method="closest.topleft", best.weights=c(5, 0.2), transpose = FALSE)
+
 # and plot them
 plot(rocobj, print.thres="best", print.thres.best.method="youden")
 plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft")
@@ -317,31 +308,28 @@ plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft",
 
 # Return more values:
 coords(rocobj, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
-                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-                           "precision", "recall"))
-coords(smooth(rocobj), "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
-                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-                           "precision", "recall"))
-coords(smooth(rocobj), 0.5, ret=c("threshold", "specificity", "sensitivity", "accuracy",
-                           "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity",
-                           "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-                           "precision", "recall"))
+                           "precision", "recall"), transpose = FALSE)
 
 # Return all values
-coords(rocobj, "best", ret = "all")
+coords(rocobj, "best", ret = "all", transpose = FALSE)
                            
 # You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
 
-plot(specificity + sensitivity ~ threshold, t(coords(rocobj, seq(0, 1, 0.01))), type = "l")
+plot(specificity + sensitivity ~ threshold, 
+     coords(rocobj, "all", transpose = FALSE), 
+     type = "l", log="x", 
+     subset = is.finite(threshold))
 
 # Plot the Precision-Recall curve
-plot(precision ~ recall, t(coords(rocobj, "all", ret = c("recall", "precision"))), type="l")
+plot(precision ~ recall, 
+     coords(rocobj, "all", ret = c("recall", "precision"), transpose = FALSE),
+     type="l", ylim = c(0, 100))
 
 # Alternatively plot the curve with TPR and FPR instead of SE/SP 
 # (identical curve, only the axis change)
-plot(tpr ~ fpr, t(coords(rocobj, "all", ret = c("tpr", "fpr"))), type="l")
+plot(tpr ~ fpr, 
+     coords(rocobj, "all", ret = c("tpr", "fpr"), transpose = FALSE),
+     type="l")
 }
 
 \keyword{univar}
