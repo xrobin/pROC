@@ -35,7 +35,8 @@ coords.smooth.roc <- function(smooth.roc,
     stop("'x' must be a numeric or character vector.")
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
-  if (missing(transpose)) {
+  if (missing(transpose) || is.null(transpose)) {
+    transpose <- TRUE
     warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   
@@ -106,7 +107,7 @@ coords.smooth.roc <- function(smooth.roc,
       return(res[ret,, drop=drop])
     }
     else {
-      if (missing(drop)) {
+      if (missing(drop) ) {
         return(as.data.frame(t(res))[, ret])
       }
       else {
@@ -117,7 +118,7 @@ coords.smooth.roc <- function(smooth.roc,
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  coords.roc(smooth.roc, x, input, ret, as.list, drop, ...)
+  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, transpose = transpose, ...))
 }
 
 coords.roc <- function(roc,
@@ -139,7 +140,8 @@ coords.roc <- function(roc,
   }
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
-  if (missing(transpose)) {
+  if (missing(transpose) || is.null(transpose)) {
+    transpose <- TRUE
     warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   

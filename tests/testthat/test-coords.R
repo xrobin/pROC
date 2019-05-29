@@ -337,6 +337,12 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	#expect_equal(obtained, as.data.frame(t(expect)))
 	obtained <- coords(smooth.s100b, c(0.2, 0.5), ret="se")
 	expect_is(obtained, "numeric")
+	
+	# With numeric x
+	obtained <- coords(smooth.s100b, c(0.2, 0.5, 0.6), transpose = FALSE)
+	expect_is(obtained, "data.frame")
+	expect_equal(dim(obtained), c(3, 2))
+	
 })
 
 
