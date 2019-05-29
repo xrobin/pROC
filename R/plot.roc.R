@@ -283,29 +283,18 @@ plot.roc.roc <- function(x,
     else if (print.thres == "all" || print.thres == "local maximas")
       stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.") 
     else if (print.thres == "best") {
-      co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights)
-      if (methods::is(co, "matrix")) {
-        suppressWarnings(points(co[2,], co[1,], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
-        suppressWarnings(text(co[2,], co[1,], sprintf(print.thres.pattern, NA, co[2,], co[1,]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
-      }
-      else {
-        suppressWarnings(points(co[1], co[2], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
-        suppressWarnings(text(co[1], co[2], sprintf(print.thres.pattern, NA, co[1], co[2]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
-      }
+      co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights, transpose=FALSE)
+        suppressWarnings(points(co$specificity, co$sensitivity, pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
+        suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
+     
     } # else print.thres == no > do nothing
   }
   else if (is.numeric(print.thres) || is.character(print.thres)) {
     if (is.character(print.thres) && print.thres == "no") {} # do nothing
     else {
-      co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights)
-      if (methods::is(co, "matrix")) {
-        suppressWarnings(points(co[2,], co[3,], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
-        suppressWarnings(text(co[2,], co[3,], sprintf(print.thres.pattern, co[1,], co[2,], co[3,]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
-      }
-      else {
-        suppressWarnings(points(co[2], co[3], pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
-        suppressWarnings(text(co[2], co[3], sprintf(print.thres.pattern, co[1], co[2], co[3]), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
-      }
+      co <- coords(x, print.thres, best.method=print.thres.best.method, best.weights=print.thres.best.weights, transpose=FALSE)
+      suppressWarnings(points(co$specificity, co$sensitivity, pch=print.thres.pch, cex=print.thres.cex, col=print.thres.col, ...))
+      suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, co$threshold, co$specificity, co$sensitivity), adj=print.thres.adj, cex=print.thres.pattern.cex, col=print.thres.col, ...))
     }
   }
 
