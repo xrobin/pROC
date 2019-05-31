@@ -28,7 +28,7 @@ coords.smooth.roc <- function(smooth.roc,
                               drop=TRUE,
                               best.method=c("youden", "closest.topleft"),
                               best.weights=c(1, 0.5),
-                              transpose = TRUE,
+                              transpose = FALSE,
                               ...) {
   # make sure x was provided
   if (missing(x))
@@ -36,7 +36,7 @@ coords.smooth.roc <- function(smooth.roc,
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
-    transpose <- TRUE
+    transpose <- FALSE
     warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   
@@ -129,7 +129,7 @@ coords.roc <- function(roc,
                        drop=TRUE,
                        best.method=c("youden", "closest.topleft"),
                        best.weights=c(1, 0.5), 
-                       transpose = TRUE,
+                       transpose = FALSE,
                        ...) {
   # make sure x was provided
   if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
@@ -141,7 +141,7 @@ coords.roc <- function(roc,
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
-    transpose <- TRUE
+    transpose <- FALSE
     warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
   }
   
