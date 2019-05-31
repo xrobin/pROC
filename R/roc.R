@@ -131,12 +131,12 @@ roc_ <- function(data, response, predictor,
     return(r)
   }
   else if (ret == "coords") {
-    co <- as.data.frame(t(coords(r, x = "all")))
+    co <- coords(r, x = "all", transpose = FALSE)
     rownames(co) <- NULL
     return(co)
   }
   else if (ret == "all_coords") {
-    co <- as.data.frame(t(coords(r, x = "all", ret="all")))
+    co <- coords(r, x = "all", ret="all", transpose = FALSE)
     rownames(co) <- NULL
     return(co)
   }
