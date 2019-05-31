@@ -10,6 +10,7 @@
   * Renamed 'roc' argument 'n' to 'smooth.n'
   * Fixed 'are.paired' ignoring smoothing arguments of 'roc2' with 'return.paired.rocs'
   * New 'ret' option "all" in 'coords' (issue #47)
+  * 'drop' in 'coords' now drops the dimension of 'ret' too (#issue 43)
 
 1.14.0 (2019-03-12)
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)

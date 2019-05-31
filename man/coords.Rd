@@ -53,9 +53,10 @@ best.weights=c(1, 0.5), transpose = TRUE, ...)
    Will be removed in a future version.
   }
   \item{drop}{If \code{TRUE} the result is coerced to the lowest
-    possible dimension, as per \link{Extract} (with \code{transpose=TRUE})
-    or \link[=[.data.frame]{Extract.data.frame} (with \code{transpose=FALSE}).
-  }
+    possible dimension, as per \link{Extract}. With \code{FALSE} if either
+    \code{ret} or \code{x} is
+    of length 1, the object returned will have the same format than if
+    \code{x} was of length > 1.}
   \item{best.method}{if \code{x="best"}, the method to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
@@ -215,8 +216,8 @@ The following table lists valid \code{ret} arguments.
   
   \tabular{lll}{
 	\tab
-	length(x) == 1 \tab
-	length(x) > 1 or drop == FALSE
+	length(x) == 1 or length(ret) == 1 \tab
+	length(x) > 1 or length(ret) > 1 or drop == FALSE
 	\cr
 	
     \code{as.list=TRUE} \tab
@@ -224,7 +225,8 @@ The following table lists valid \code{ret} arguments.
 	a list of the length of, and named after, \code{x}. Each element of this list is a list of the length of, in the order of, and named after, \code{ret}. \cr
 
     \code{as.list=FALSE}  \tab
-	a numeric vector of the length of, in the order of, and named after, \code{ret}.\tab
+	a numeric vector of the length of, in the order of, and named after, \code{ret} (if \code{length(x) == 1})
+	or a numeric vector of the length of, in the order of, and named after, \code{x} (if \code{length(ret) == 1}.\tab
 	a numeric matrix with one row for each \code{ret} and one column for each \code{x}\cr
   }
   

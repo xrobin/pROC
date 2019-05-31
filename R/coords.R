@@ -264,6 +264,7 @@ coords.roc <- function(roc,
     }
   }
   else if (is.numeric(x)) {
+
     if (input == "threshold") {
     	thr_idx <- roc.utils.thr.idx(roc, x)
     	res <- rbind(
