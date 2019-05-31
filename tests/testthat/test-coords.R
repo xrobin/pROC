@@ -5,12 +5,12 @@ context("coords")
 
 test_that("coords with thresholds works", {
 	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
-	obtained <- coords(r.s100b, "all", ret = return.rows)
+	obtained <- coords(r.s100b, "all", ret = return.rows, transpose=TRUE)
 	expect_equal(obtained, expected.coords[return.rows,])
 })
 
 test_that("coords returns all thresholds by default", {
-	obtained <- coords(r.s100b)
+	obtained <- coords(r.s100b, transpose=TRUE)
 	expect_equal(obtained, expected.coords[c("threshold", "specificity", "sensitivity"),])
 	# but not if it's an empty numeric, as this might be indicative of user error
 	expect_error(coords(r.s100b, numeric(0)), "length")
@@ -37,7 +37,7 @@ test_that("coords with transpose = FALSE works", {
 
 
 test_that("coords with ret='all' works", {
-	obtained <- coords(r.s100b, "all", ret = "all")
+	obtained <- coords(r.s100b, "all", ret = "all", transpose=TRUE)
 	expect_equal(dim(obtained), c(24, 51))
 	expect_equal(obtained[rownames(expected.coords),], expected.coords)
 })
@@ -51,7 +51,7 @@ test_that("coords with ret='all' doesn't accept additional options", {
 test_that("coords with percent works", {
 	return.rows <- "all"
 	percent.rows <- c("specificity", "sensitivity", "accuracy", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft", "fdr", "fpr", "tpr", "tnr", "fnr", "precision", "recall")
-	obtained.percent <- coords(r.s100b.percent, "all", ret = return.rows)
+	obtained.percent <- coords(r.s100b.percent, "all", ret = return.rows, transpose=TRUE)
 	# Adjust for percent
 	obtained.percent[percent.rows,] <- obtained.percent[percent.rows,] / 100
 	expect_equal(obtained.percent, expected.coords)
@@ -60,7 +60,7 @@ test_that("coords with percent works", {
 
 test_that("coords with local maximas thresholds works", {
 	return.rows <- "all"
-	obtained <- coords(r.s100b, "local maximas", ret = return.rows)
+	obtained <- coords(r.s100b, "local maximas", ret = return.rows, transpose=TRUE)
 	expected.thresholds <- c(-Inf, 0.065, 0.075, 0.085, 0.095, 0.105, 0.115, 0.135, 0.155, 0.205, 0.245, 0.29, 0.325, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
 	expect_equal(as.vector(obtained["threshold",]), expected.thresholds)
 	expect_equivalent(obtained, expected.coords[,expected.coords["threshold",] %in% expected.thresholds])
@@ -69,14 +69,14 @@ test_that("coords with local maximas thresholds works", {
 
 test_that("coords with best threshold works", {
 	return.rows <- "all"
-	obtained <- coords(r.s100b, "best", ret = return.rows)
+	obtained <- coords(r.s100b, "best", ret = return.rows, transpose=TRUE)
 	expect_equal(obtained, expected.coords[,expected.coords["threshold",] == 0.205])
 })
 
 
 test_that("coords with arbitrary thresholds works", {
 	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
-	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = return.rows)
+	obtained <- coords(r.s100b, c(0.205, 0.055), input = "threshold", ret = return.rows, transpose=TRUE)
 	expect_equivalent(obtained, expected.coords[return.rows, c(18, 4)])
 })
 
@@ -84,19 +84,19 @@ test_that("coords with arbitrary thresholds at exact data point works", {
 	return.rows <- "all"
 	expect_equal(sum(aSAH$s100b == 0.05),  3)
 	expect_equal(sum(aSAH$s100b == 0.52),  1)
-	obtained <- coords(r.s100b, c(0.05, 0.52), input = "threshold", ret = return.rows)
+	obtained <- coords(r.s100b, c(0.05, 0.52), input = "threshold", ret = return.rows, transpose=TRUE)
 	expect_equivalent(obtained[-1,], expected.coords[-1, c(3, 40)])
 })
 
 test_that("coords with arbitrary thresholds works with direction=>", {
-	obtained <- coords(r.100b.reversed, c(0.05, 0.055, 0.205, 0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	obtained <- coords(r.100b.reversed, c(0.05, 0.055, 0.205, 0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), transpose=TRUE)
 	expect_equivalent(obtained, expected.coords.reverse)
 })
 
 
 test_that("coords with single arbitrary threshold works", {
 	return.rows <- "all"
-	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = return.rows)
+	obtained <- coords(r.s100b, c(0.205), input = "threshold", ret = return.rows, transpose=TRUE)
 	expect_equal(obtained, expected.coords[, c(18), drop=T])
 })
 
@@ -104,27 +104,27 @@ test_that("coords with single arbitrary threshold works", {
 test_that("coords with arbitrary thresholds at exact data point works", {
 	expect_equal(sum(aSAH$s100b == 0.05),  3)
 	expect_equal(sum(aSAH$s100b == 0.52),  1)
-	obtained <- coords(r.s100b, c(0.05), input = "threshold", ret = "all")
+	obtained <- coords(r.s100b, c(0.05), input = "threshold", ret = "all", transpose=TRUE)
 	expect_equal(obtained[-1], expected.coords[-1, 3])
-	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = "all")
+	obtained <- coords(r.s100b, c(0.52), input = "threshold", ret = "all", transpose=TRUE)
 	expect_equal(obtained[-1], expected.coords[-1, 40])
 })
 
 
 test_that("coords with arbitrary thresholds works with direction=>", {
-	obtained <- coords(r.100b.reversed, c(0.05), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	obtained <- coords(r.100b.reversed, c(0.05), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), transpose=TRUE)
 	expect_equal(obtained, expected.coords.reverse[, 1])
-	obtained <- coords(r.100b.reversed, c(0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	obtained <- coords(r.100b.reversed, c(0.055), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), transpose=TRUE)
 	expect_equal(obtained, expected.coords.reverse[, 2])
-	obtained <- coords(r.100b.reversed, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	obtained <- coords(r.100b.reversed, c(0.205), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), transpose=TRUE)
 	expect_equal(obtained, expected.coords.reverse[, 3])
-	obtained <- coords(r.100b.reversed, c(0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"))
+	obtained <- coords(r.100b.reversed, c(0.52), input = "threshold", ret = c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv"), transpose=TRUE)
 	expect_equal(obtained, expected.coords.reverse[, 4])
 })
 
 
 test_that("coords with sensitivity works", {
-	obtained <- coords(r.s100b, seq(0, 1, .1), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"))
+	obtained <- coords(r.s100b, seq(0, 1, .1), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"), transpose=TRUE)
 	expect_equal(unname(obtained["threshold",]), c(Inf, rep(NA, 9), -Inf))
 	expect_equal(unname(obtained["sensitivity",]), seq(0, 1, .1))
 	expect_equal(unname(obtained["specificity",]), c(1, 1, 1, 0.972222222222222, 0.888888888888889, 0.833333333333333, 0.805555555555556, 0.56875, 0.447222222222222, 0.230555555555556, 0))
@@ -132,7 +132,7 @@ test_that("coords with sensitivity works", {
 
 
 test_that("coords with sensitivity works with percent", {
-	obtained <- coords(r.s100b.percent, seq(0, 100, 10), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"))
+	obtained <- coords(r.s100b.percent, seq(0, 100, 10), input = "sensitivity", ret = c("threshold", "specificity", "sensitivity"), transpose=TRUE)
 	expect_equal(unname(obtained["threshold",]), c(Inf, rep(NA, 9), -Inf))
 	expect_equal(unname(obtained["sensitivity",]), seq(0, 100, 10))
 	expect_equal(unname(obtained["specificity",]), c(1, 1, 1, 0.972222222222222, 0.888888888888889, 0.833333333333333, 0.805555555555556, 0.56875, 0.447222222222222, 0.230555555555556, 0) * 100)
@@ -140,7 +140,7 @@ test_that("coords with sensitivity works with percent", {
 
 
 test_that("coords with specificity works", {
-	obtained <- coords(r.s100b, seq(0, 1, .1), input = "specificity", ret = c("threshold", "specificity", "sensitivity"))
+	obtained <- coords(r.s100b, seq(0, 1, .1), input = "specificity", ret = c("threshold", "specificity", "sensitivity"), transpose=TRUE)
 	expect_equal(unname(obtained["threshold",]), c(-Inf, rep(NA, 9), 0.51))
 	expect_equal(unname(obtained["specificity",]), seq(0, 1, .1))
 	expect_equal(unname(obtained["sensitivity",]), c(1, 0.975609756097561, 0.921951219512195, 0.879674796747967, 0.823693379790941, 0.774390243902439, 0.675609756097561, 0.655284552845528, 0.634146341463415, 0.390243902439024, 0.292682926829268))
@@ -148,7 +148,7 @@ test_that("coords with specificity works", {
 
 
 test_that("coords with specificity works with percent", {
-	obtained <- coords(r.s100b.percent, seq(0, 100, 10), input = "specificity", ret = c("threshold", "specificity", "sensitivity"))
+	obtained <- coords(r.s100b.percent, seq(0, 100, 10), input = "specificity", ret = c("threshold", "specificity", "sensitivity"), transpose=TRUE)
 	expect_equal(unname(obtained["threshold",]), c(-Inf, rep(NA, 9), 0.51))
 	expect_equal(unname(obtained["specificity",]), seq(0, 100, 10))
 	expect_equal(unname(obtained["sensitivity",]), c(1, 0.975609756097561, 0.921951219512195, 0.879674796747967, 0.823693379790941, 0.774390243902439, 0.675609756097561, 0.655284552845528, 0.634146341463415, 0.390243902439024, 0.292682926829268) * 100)
@@ -197,15 +197,15 @@ test_that("coords with specificity works with as.list and several thresholds", {
 test_that("drop works", {
 	skip("drop doesn't drop over x - doc unclear/inconsistent need to be fixed")
 	# First make sure we get matrices with drop = FALSE
-	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = FALSE), "matrix")
-	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = FALSE), "matrix")
-	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = FALSE), "matrix")	
-	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = FALSE), "matrix")
+	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = FALSE, transpose=TRUE), "matrix")
+	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = FALSE, transpose=TRUE), "matrix")
+	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = FALSE, transpose=TRUE), "matrix")	
+	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = FALSE, transpose=TRUE), "matrix")
 	# Look for numeric
-	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = TRUE), "numeric")
-	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = TRUE), "numeric")
-	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = TRUE), "numeric")	
-	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = TRUE), "numeric")
+	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = c("sensitivity", "specificity"), drop = TRUE, transpose=TRUE), "numeric")
+	expect_is(coords(r.s100b, 0.51, input = "threshold", ret = "specificity", drop = TRUE, transpose=TRUE), "numeric")
+	expect_is(coords(r.s100b, "local maximas", input = "threshold", ret = "specificity", drop = TRUE, transpose=TRUE), "numeric")	
+	expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = TRUE, transpose=TRUE), "numeric")
 })
 
 
@@ -214,13 +214,15 @@ test_that("coords returns the correct basic values ", {
 					   ret = c("t", "tp", "fp", "tn", "fn",
 					   		   "sp", "se", "acc",
 					   		   "npv", "ppv", "precision", "recall",
-					   		   "tpr", "fpr", "tnr", "fnr", "fdr"))
+					   		   "tpr", "fpr", "tnr", "fnr", "fdr"),
+					   transpose=TRUE)
 	
 	obtained.percent <- coords(r.s100b.percent, 0.205, 
 					   ret = c("t", "tp", "fp", "tn", "fn",
 					   		"sp", "se", "acc",
 					   		"npv", "ppv", "precision", "recall",
-					   		"tpr", "fpr", "tnr", "fnr", "fdr"))
+					   		"tpr", "fpr", "tnr", "fnr", "fdr"), 
+					   transpose=TRUE)
 	
 	# We assume the following values:
 	# tp fp tn fn N
@@ -269,19 +271,19 @@ test_that("coords works with smooth.roc and x = 'best'", {
 	
 	reduced.cols <- c("specificity", "sensitivity", "youden")
 	
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols)
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols,])
 	
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = FALSE)
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols,, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE)
+	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect)
 	
-	obtained <- coords(smooth.s100b, "best", ret = "all")
+	obtained <- coords(smooth.s100b, "best", ret = "all", transpose=TRUE)
 	expect_equal(obtained, expect[, 1])
 	
-	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE)
+	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect)
 	
 	obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE)
@@ -366,22 +368,22 @@ test_that("coords works with smooth.roc and x = numeric", {
 	
 	reduced.cols <- c("specificity", "sensitivity", "youden")
 
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret="all")
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret="all", transpose=TRUE)
 	expect_equal(obtained, expect)
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret=reduced.cols)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret=reduced.cols, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols,])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2, drop=FALSE])
 	
 	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret="all", as.list = TRUE, drop = TRUE)
@@ -430,22 +432,22 @@ test_that("coords works with smooth.roc and x = numeric and input = 'se'", {
 	
 	reduced.cols <- c("specificity", "sensitivity", "youden")
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret="all")
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret="all", transpose=TRUE)
 	expect_equal(obtained, expect)
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret=reduced.cols)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret=reduced.cols, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols,])
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2, drop=FALSE])
 	
 	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret="all", as.list = TRUE, drop = TRUE)
@@ -476,39 +478,39 @@ test_that("coords works with smooth.roc and x = numeric and input = 'se'", {
 
 test_that("coords with x = 'best' takes partial AUC into account", {
 	# with sp
-	obtained <- coords(r.s100b.partial1, "b", ret="t")
+	obtained <- coords(r.s100b.partial1, "b", ret="t", transpose=TRUE)
 	expect_equal(obtained, 0.475)
 	
 	# with se
-	obtained <- coords(r.s100b.partial2, "b", ret="t")
+	obtained <- coords(r.s100b.partial2, "b", ret="t", transpose=TRUE)
 	expect_equal(obtained, 0.075)
 })
 
 test_that("coords with x = 'best' takes partial AUC into account with smooth.roc", {
 	# with sp
-	obtained <- coords(smooth(r.s100b.partial1), "b", ret="sp")
+	obtained <- coords(smooth(r.s100b.partial1), "b", ret="sp", transpose=TRUE)
 	expect_equal(obtained, 0.900608847772859)
 	
-	obtained <- coords(smooth(r.s100b.partial1), "b", ret=c("se", "se", "youden"))
+	obtained <- coords(smooth(r.s100b.partial1), "b", ret=c("se", "se", "youden"), transpose=TRUE)
 	expect_equal(as.vector(obtained), c(0.410958904109589, 0.410958904109589, 1.311567751882448))
 	
 	# with se
-	obtained <- coords(smooth(r.s100b.partial2), "b", ret="se")
+	obtained <- coords(smooth(r.s100b.partial2), "b", ret="se", transpose=TRUE)
 	expect_equal(obtained, 0.900195694716243)
 	
-	obtained <- coords(smooth(r.s100b.partial2), "b", ret=c("se", "se", "youden"))
+	obtained <- coords(smooth(r.s100b.partial2), "b", ret=c("se", "se", "youden"), transpose=TRUE)
 	expect_equal(as.vector(obtained), c(0.900195694716243, 0.900195694716243, 1.193053239288330))
 })
 
 
 test_that("coords with x = 'all' takes partial AUC into account", {
 	# with sp
-	obtained <- coords(r.s100b.partial1, "all", ret="t")
+	obtained <- coords(r.s100b.partial1, "all", ret="t", transpose=TRUE)
 	expect_equal(length(obtained), 7)
 	expect_equal(min(obtained), 0.435)
 	
 	# with se
-	obtained <- coords(r.s100b.partial2, "all", ret="t")
+	obtained <- coords(r.s100b.partial2, "all", ret="t", transpose=TRUE)
 	expect_equal(length(obtained), 5)
 	expect_equal(max(obtained), 0.075)
 })
@@ -516,61 +518,61 @@ test_that("coords with x = 'all' takes partial AUC into account", {
 
 test_that("coords with x = 'local maximas' takes partial AUC into account", {
 	# with sp
-	obtained <- coords(r.s100b.partial1, "local maximas", ret="t")
+	obtained <- coords(r.s100b.partial1, "local maximas", ret="t", transpose=TRUE)
 	expect_equal(unname(obtained), c(0.435, 0.475, 0.485))
 	
 	# with se
-	obtained <- coords(r.s100b.partial2, "local maximas", ret="t")
+	obtained <- coords(r.s100b.partial2, "local maximas", ret="t", transpose=TRUE)
 	expect_equal(unname(obtained), c(0.065, 0.075))
 })
 
 test_that("invalid best.weights", {
-	expect_error(coords(r.s100b, "best", best.weights = 1))
-	expect_error(coords(r.s100b, "best", best.weights = 0:1))
-	expect_error(coords(r.s100b, "best", best.weights = c(0.1, 0.9)), NA)
-	expect_error(coords(r.s100b, "best", best.weights = 1:3))
+	expect_error(coords(r.s100b, "best", best.weights = 1, transpose=FALSE))
+	expect_error(coords(r.s100b, "best", best.weights = 0:1, transpose=FALSE))
+	expect_error(coords(r.s100b, "best", best.weights = c(0.1, 0.9), transpose=FALSE), NA)
+	expect_error(coords(r.s100b, "best", best.weights = 1:3, transpose=FALSE))
 	# with smooth
-	expect_error(coords(smooth(r.s100b), "best", best.weights = 1))
-	expect_error(coords(smooth(r.s100b), "best", best.weights = 0:1))
-	expect_error(coords(smooth(r.s100b), "best", best.weights = c(0.1, 0.9)), NA)
-	expect_error(coords(smooth(r.s100b), "best", best.weights = 1:3))
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 1, transpose=FALSE))
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 0:1, transpose=FALSE))
+	expect_error(coords(smooth(r.s100b), "best", best.weights = c(0.1, 0.9), transpose=FALSE), NA)
+	expect_error(coords(smooth(r.s100b), "best", best.weights = 1:3, transpose=FALSE))
 })
 
 test_that("invalid best.method", {
-	expect_error(coords(r.s100b, "best", best.method = 1))
-	expect_error(coords(r.s100b, "best", best.method = "1"))
+	expect_error(coords(r.s100b, "best", best.method = 1, transpose=FALSE))
+	expect_error(coords(r.s100b, "best", best.method = "1", transpose=FALSE))
 	# with smooth
-	expect_error(coords(smooth(r.s100b), "best", best.method = 1))
-	expect_error(coords(smooth(r.s100b), "best", best.method = "1"))
+	expect_error(coords(smooth(r.s100b), "best", best.method = 1, transpose=FALSE))
+	expect_error(coords(smooth(r.s100b), "best", best.method = "1", transpose=FALSE))
 })
 
 test_that("invalid se/sp", {
 	smooth.s100b <- smooth(r.s100b)
 	for (inp in c("sens", "spec")) {
 		for (r in list(r.s100b, smooth.s100b)) {
-			expect_error(coords(r, x=-2, input=inp))
-			expect_error(coords(r, x=0, input=inp), NA)
-			expect_error(coords(r, x=1, input=inp), NA)
-			expect_error(coords(r, x=10, input=inp))
+			expect_error(coords(r, x=-2, input=inp, transpose=FALSE))
+			expect_error(coords(r, x=0, input=inp, transpose=FALSE), NA)
+			expect_error(coords(r, x=1, input=inp, transpose=FALSE), NA)
+			expect_error(coords(r, x=10, input=inp, transpose=FALSE))
 		}
 	}
 	smooth.s100b.percent <- smooth(r.s100b.percent)
 	for (inp in c("sens", "spec")) {
 		for (r in list(r.s100b.percent, smooth.s100b.percent)) {
-			expect_error(coords(r.s100b.percent, x=-2, input=inp))
-			expect_error(coords(r.s100b.percent, x=0, input=inp), NA)
-			expect_error(coords(r.s100b.percent, x=10, input=inp), NA)
-			expect_error(coords(r.s100b.percent, x=100, input=inp), NA)
-			expect_error(coords(r.s100b.percent, x=101, input=inp))
+			expect_error(coords(r.s100b.percent, x=-2, input=inp, transpose=FALSE))
+			expect_error(coords(r.s100b.percent, x=0, input=inp, transpose=FALSE), NA)
+			expect_error(coords(r.s100b.percent, x=10, input=inp, transpose=FALSE), NA)
+			expect_error(coords(r.s100b.percent, x=100, input=inp, transpose=FALSE), NA)
+			expect_error(coords(r.s100b.percent, x=101, input=inp, transpose=FALSE))
 		}
 	}
 })
 
 test_that("invalid x", {
-	expect_error(coords(r.s100b.percent, x=list(1)))
-	expect_error(coords(r.s100b, x=aSAH))
-	expect_error(coords(smooth(r.s100b), x=mean))
+	expect_error(coords(r.s100b.percent, x=list(1), transpose=FALSE))
+	expect_error(coords(r.s100b, x=aSAH, transpose=FALSE))
+	expect_error(coords(smooth(r.s100b), x=mean, transpose=FALSE))
 	# character but invalid
-	expect_error(coords(smooth(r.s100b), x="c"))
-	expect_error(coords(r.s100b, x="c"))
+	expect_error(coords(smooth(r.s100b), x="c", transpose=FALSE))
+	expect_error(coords(r.s100b, x="c", transpose=FALSE))
 })
