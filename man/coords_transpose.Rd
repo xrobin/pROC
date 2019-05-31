@@ -47,7 +47,7 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in colums
 
 \section{Changes in 1.15}{
 \enumerate{
-	\item{Addition of \code{transpose} argument.}
+	\item{Addition of the \code{transpose} argument.}
 	\item{Display a warning if \code{transpose} is missing. Pass \code{transpose} explicitly to silence the warning.}
 	\item{Deprecation of \code{as.list}.}
 }
@@ -66,9 +66,9 @@ It is recommended that new developments set \code{transpose = FALSE} explicitly.
 These changes are neutral to the API and do not affect functionality outside of a warning. 
 }
 
-\section{Upcoming changes in future versions}{
+\section{Upcoming backward incompatible changes in future versions}{
 The next version of pROC will change the default \code{transpose} to \code{FALSE}. 
-This will break any script that did not previously set \code{transpose} and will
+This is a backward incompatible change that will break any script that did not previously set \code{transpose} and will
 initially come with a warning to make debugging easier. The warning will eventually be removed. Scripts that set \code{transpose} explicitly will be unaffected.
 }
 

@@ -292,11 +292,16 @@ coords(rocobj, "b", ret="t", transpose = FALSE)
 
 # Get the best threshold according to different methods
 rocobj <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
-coords(rocobj, "best", ret="threshold", best.method="youden", transpose = FALSE) # default
-coords(rocobj, "best", ret="threshold", best.method="closest.topleft", transpose = FALSE)
+coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+       best.method="youden") # default
+coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+       best.method="closest.topleft")
+
 # and with different weights
-coords(rocobj, "best", ret="threshold", best.method="youden", best.weights=c(50, 0.2), transpose = FALSE)
-coords(rocobj, "best", ret="threshold", best.method="closest.topleft", best.weights=c(5, 0.2), transpose = FALSE)
+coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+       best.method="youden", best.weights=c(50, 0.2))
+coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+       best.method="closest.topleft", best.weights=c(5, 0.2))
 
 # and plot them
 plot(rocobj, print.thres="best", print.thres.best.method="youden")
