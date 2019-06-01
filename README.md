@@ -163,5 +163,5 @@ NOT_CRAN=1 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
 1. Chec reverse dependencies: `devtools::revdep_check(libpath = rappdirs::user_cache_dir("revdep_lib"), srcpath = rappdirs::user_cache_dir("revdep_src"))`
 1. Update `Version` and `Date` in `DESCRIPTION`
 1. Update version and date in `NEWS`
-1. Create a tag: `git tag v$VERSION`
+1. Create a tag: `git tag v$VERSION && git push --tags`
 1. [Submit to CRAN](https://cran.r-project.org/submit.html)

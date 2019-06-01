@@ -121,7 +121,6 @@ aSAH \%>\%
 	in further pipelines.
 	
 	\preformatted{
-library(dplyr)
 aSAH \%>\% 
     filter(gender == "Female") \%>\%
     roc(outcome, s100b) \%>\%
