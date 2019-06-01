@@ -116,15 +116,16 @@ aSAH \%>\%
     roc(outcome, s100b)
 	}
 	
-	By default it returns the \code{\link{roc}} object. Alternatively, a 
-	\code{\link{data.frame}} of \link[=coords.roc]{coordinates} that can be used in further pipelines
-	can be returned as well.
+	By default it returns the \code{\link{roc}} object, which can then be piped to
+	the \code{\link{coords}} function to extract coordinates that can be used
+	in further pipelines.
 	
 	\preformatted{
 library(dplyr)
 aSAH \%>\% 
     filter(gender == "Female") \%>\%
-    roc(outcome, s100b, ret="coords") \%>\%
+    roc(outcome, s100b) \%>\%
+    coords(transpose=FALSE) \%>\%
     filter(sensitivity > 0.6, 
            specificity > 0.6)
 	}

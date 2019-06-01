@@ -275,33 +275,30 @@ aSAH \%>\%
 	standard evaluation:
 	
     \preformatted{
-library(dplyr)
 # Standard evaluation:
 aSAH \%>\%
     filter(gender == "Female") \%>\%
     roc_("outcome", "s100b")
     }
 	
-	By default it returns a \code{data.frame} of \link[=coords.roc]{coordinates} that can be used in further pipelines.
-	Alternatively, it can return the full set of coordinates available in \code{\link{coords}}, or the \code{roc} object.
+	By default it returns the \code{\link{roc}} object, which can then be piped to
+	the \code{\link{coords}} function to extract coordinates that can be used
+	in further pipelines.
 	
     \preformatted{
-library(dplyr)
 # Returns thresholds, sensitivities and specificities:
 aSAH  \%>\%
     roc(outcome, s100b) \%>\%
+    coords(transpose = FALSE) \%>\%
     filter(sensitivity > 0.6, 
            specificity > 0.6)
 
 # Returns all existing coordinates, then select precision and recall:
 aSAH  \%>\%
-    roc(outcome, s100b, ret = "all_coords") \%>\%
+    roc(outcome, s100b) \%>\%
+    coords(ret = "all", transpose = FALSE) \%>\%
     select(precision, recall)
-
-# Returns the roc object:
-aSAH  \%>\%
-    roc(outcome, s100b, ret = "roc")
-	}
+    }
 }
 
 \section{Errors}{
