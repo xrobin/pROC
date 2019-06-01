@@ -1,4 +1,4 @@
-1.14.9 (2019-*)
+1.15.0 (2019-06-01)
   * 'roc' now prints messages when autodetecting 'levels' and 'direction' by default. Turn off with 'quiet = TRUE' or set these values explicitly
   * Speedup with 'algorithm = 2' (issue #44) and in 'coords' (issue #52)
   * New 'algorithm = 6' (used by default) uses 'algorithm = 2' for numeric data, and 'algorithm = 3' for ordered vectors
