@@ -148,8 +148,8 @@ ci.coords.roc <- function(roc,
     }
   }
   
-  if ("threshold" %in% ret && ! identical(x, "best")) {
-  	stop("'threshold' output is only supported for best ROC point ('x = \"best\"')")
+  if ("threshold" %in% ret && ! (identical(x, "best") || input == "threshold")) {
+  	stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
   if(class(progress) != "list")
