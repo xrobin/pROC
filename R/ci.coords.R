@@ -139,7 +139,15 @@ ci.coords.roc <- function(roc,
   }
  
   input <- match.arg(input)
-  ret <- roc.utils.match.coords.ret.args(ret)
+  
+  if (missing(ret) && input != "threshold") {
+  	# Don't show NA thresholds by default
+  	ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
+  }
+  else {
+  	ret <- roc.utils.match.coords.ret.args(ret)
+  }
+  
   best.policy <- match.arg(best.policy)
   if (is.character(x)) {
     x <- match.arg(x, c("all", "local maximas", "best"))
@@ -148,8 +156,8 @@ ci.coords.roc <- function(roc,
     }
   }
   
-  if ("threshold" %in% ret && ! identical(x, "best")) {
-  	stop("'threshold' output is only supported for best ROC point ('x = \"best\"')")
+  if ("threshold" %in% ret && ! (identical(x, "best") || input == "threshold")) {
+  	stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
   if(class(progress) != "list")
