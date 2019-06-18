@@ -1,3 +1,6 @@
+1.15.1 (*)
+  * Fix erroneous error in 'ci.coords' with 'ret="threshold"' (issue #57)
+
 1.15.0 (2019-06-01)
   * 'roc' now prints messages when autodetecting 'levels' and 'direction' by default. Turn off with 'quiet = TRUE' or set these values explicitly
   * Speedup with 'algorithm = 2' (issue #44) and in 'coords' (issue #52)
