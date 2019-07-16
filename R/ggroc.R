@@ -100,6 +100,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "gro
 	
 	# Make a big data.frame
 	coord.dfs <- do.call(rbind, coord.dfs)
+    coord.dfs$name <- factor(coord.dfs$name, as.vector(names(data)))
 	
 	# Prepare the aesthetics
 	aes.ggplot <- get.aes.for.ggplot(data[[1]], legacy.axes, aes)
