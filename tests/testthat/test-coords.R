@@ -575,3 +575,15 @@ test_that("invalid x", {
 	expect_error(coords(smooth(r.s100b), x="c", transpose=FALSE))
 	expect_error(coords(r.s100b, x="c", transpose=FALSE))
 })
+
+test_that("Infinite values work with both directions", {
+	# direction = >
+	Data <- structure(list(Outcome = c(1L, 1L, 0L, 0L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 0L, 1L, 1L, 1L, 1L, 0L, 1L, 1L, 1L, 1L, 0L, 1L, 1L, 0L, 1L, 0L, 1L, 1L, 1L, 1L), Value = c(72L, 65L, 271L, 73L, 87L, 114L, 111L, 47L, 88L, 44L, 121L, 207L, 33L, 138L, 284L, 62L, 120L, 116L, 202L, 172L, 117L, 69L, 102L, 150L, 131L, 77L, 124L, 46L, 579L, 117L, 96L, 83L, 102L)), class = "data.frame", row.names = c(NA, -33L))
+	ROC <- roc(Outcome~Value, data=Data, ci=TRUE, direction=">")
+	co <- coords(ROC, x=c(-Inf, Inf), transpose = FALSE)
+	expect_equivalent(co, data.frame(threshold = c(-Inf, Inf), specificity = c(1, 0), sensitivity = c(0, 1)))
+	
+	# direction = <
+	co <- coords(r.s100b, x=c(-Inf, Inf), transpose = FALSE)
+	expect_equivalent(co, data.frame(threshold = c(-Inf, Inf), specificity = c(0, 1), sensitivity = c(1, 0)))
+})
