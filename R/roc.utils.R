@@ -446,7 +446,7 @@ roc.utils.thr.idx <- function(roc, x) {
 		}
 	}
 	else {
-		cut_points <- c(rev(cut_points), Inf)
+		cut_points <- c(rev(cut_points), -Inf)
 		j <- 1
 		o <- order(x, decreasing = TRUE)
 		for (i in seq_along(x)) {
