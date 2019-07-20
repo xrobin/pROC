@@ -28,3 +28,5 @@ License: GPL (>= 3)
 URL: http://expasy.org/tools/pROC/
 BugReports: https://github.com/xrobin/pROC/issues
 LazyLoad: yes
+LazyData: true
+
