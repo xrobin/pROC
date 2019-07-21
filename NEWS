@@ -1,10 +1,17 @@
-<<<<<<< HEAD
 1.15.9000 (future)
   * BACKWARD INCOMPATIBLE CHANGE: 'coords'' 'transpose' argument switched to FALSE by default (issue #54)
   
-1.15.1 (*)
+1.15.3 (2019-07-21)
+  * Fix: previous version accidentally set transpose = FALSE, should only be for next major release
+
+1.15.2 (2019-07-20)
+  * Fix -Inf threshold in coords for curves with direction = ">" (issue #60)
+  * Restore lazy loading of the data and fix a 'R CMD check' warning 'Variables with usage in documentation object aSAH not in code'
+
+1.15.1 (2019-07-17)
   * Fix erroneous error in 'ci.coords' with 'ret="threshold"' (issue #57)
   * Fix vdiffr unit tests with ggplot2 3.2.0 (issue #53)
+  * Keep list order in 'ggroc' (issue #58)
 
 1.15.0 (2019-06-01)
   * 'roc' now prints messages when autodetecting 'levels' and 'direction' by default. Turn off with 'quiet = TRUE' or set these values explicitly
