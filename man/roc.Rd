@@ -142,8 +142,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
       \item \code{\link{ci}}: \code{of}, \code{conf.level}, \code{boot.n}, \code{boot.stratified}, \code{progress}
       \item \code{\link{ci.auc}}:, \code{reuse.auc}, \code{method}
       \item \code{\link{ci.thresholds}}: \code{thresholds}
-      \item \code{\link{ci.sp}}: \code{sensitivities}
-      \item \code{\link{ci.se}}: \code{specificities}
+      \item \code{\link{ci.se}}: \code{sensitivities}
+      \item \code{\link{ci.sp}}: \code{specificities}
       \item \code{\link{plot.roc}}: \code{add}, \code{col} and most
         other arguments to the \code{\link{plot.roc}} function. See
 	\code{\link{plot.roc}} directly for more details.
