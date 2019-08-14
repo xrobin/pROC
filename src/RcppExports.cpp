@@ -5,6 +5,16 @@
 
 using namespace Rcpp;
 
+// RcppVersion
+String RcppVersion();
+RcppExport SEXP _pROC_RcppVersion() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(RcppVersion());
+    return rcpp_result_gen;
+END_RCPP
+}
 // delongPlacementsCpp
 List delongPlacementsCpp(List roc);
 RcppExport SEXP _pROC_delongPlacementsCpp(SEXP rocSEXP) {
@@ -32,6 +42,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_pROC_RcppVersion", (DL_FUNC) &_pROC_RcppVersion, 0},
     {"_pROC_delongPlacementsCpp", (DL_FUNC) &_pROC_delongPlacementsCpp, 1},
     {"_pROC_rocUtilsPerfsAllC", (DL_FUNC) &_pROC_rocUtilsPerfsAllC, 4},
     {NULL, NULL, 0}

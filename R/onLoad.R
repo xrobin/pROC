@@ -32,6 +32,30 @@
       options("pROCProgress" = list(name = "none"))
     }
   }
+  .checkRcppVersion()
+
+}
+
+.parseRcppVersion <- function(rcpp.version) {
+  # Parses Rcpp version integer into a string.
+  # Eg "65538" -> "1.0.2"
+  rcpp.version <- as.integer(rcpp.version)
+  major <- rcpp.version %/% 65536
+  rcpp.version <- rcpp.version - major * 65536
+  minor <- rcpp.version %/% 256
+  rcpp.version <- rcpp.version - minor * 256
+  rev <- rcpp.version
+  return(sprintf("%s.%s.%s", major, minor, rev))
+}
+
+.checkRcppVersion <- function() {
+  # Check runtime version of Rcpp is the same than we had at compile time
+  runtime_version <- package_version(packageVersion("Rcpp"))
+  build_version <- package_version(.parseRcppVersion(pROC:::RcppVersion()))
+  if (runtime_version != build_version) {
+    warning(sprintf("It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems.",
+                    build_version,runtime_version))
+  }
 }
 
 .onAttach <- function(lib, pkg) {

@@ -37,3 +37,20 @@ test_that(".onLoad doesn't override user setting", {
 	# Restore
 	options("pROCProgress"=old.progress.opt)
 })
+
+test_that(".parseRcppVersion works", {
+	expect_equal(pROC:::.parseRcppVersion("65538"), "1.0.2")
+	expect_equal(pROC:::.parseRcppVersion("1"), "0.0.1")
+})
+
+test_that("We're running the right Rcpp version", {
+	expect_silent(pROC:::.checkRcppVersion())
+	# Replace the actual RcppVersion with a dummy function that returns 1
+	# (= 0.0.1) so we actually see a warning
+	saved.RcppVersion <- pROC:::RcppVersion
+	assignInNamespace("RcppVersion", function() {return("1")}, "pROC")
+	expect_warning(pROC:::.checkRcppVersion())
+	# Restore
+	assignInNamespace("RcppVersion", saved.RcppVersion, "pROC")
+	
+})
