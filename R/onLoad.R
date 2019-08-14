@@ -50,7 +50,7 @@
 
 .checkRcppVersion <- function() {
   # Check runtime version of Rcpp is the same than we had at compile time
-  runtime_version <- package_version(packageVersion("Rcpp"))
+  runtime_version <- package_version(utils::packageVersion("Rcpp"))
   build_version <- package_version(.parseRcppVersion(pROC:::RcppVersion()))
   if (runtime_version != build_version) {
     warning(sprintf("It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems.",
