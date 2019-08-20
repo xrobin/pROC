@@ -24,11 +24,6 @@ The latest stable version is best installed from the CRAN:
 
     install.packages("pROC")
 
-Help
--------
-
-Once the library is loaded with `library(pROC)`, you can get help on pROC by typing `?pROC`.
-
 Getting started
 -------
 
@@ -112,6 +107,20 @@ plot(ci.thresholds(roc2))
     power.roc.test(auc=0.8, ncases=41, ncontrols=72, sig.level=0.01)
     power.roc.test(ncases=41, ncontrols=72, power=0.9)
 ```
+
+
+Getting Help
+------------
+
+* Type `?pROC` on the R command line
+* Make sure you've [read the FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
+* Search for [questions tagged with pROC-R-package on Stack Overflow](https://stackoverflow.com/questions/tagged/proc-r-package?tab=Votes)
+
+If you still can't find an answer, you can:
+
+* [Ask a question on Stack Overflow with the pROC-r-package tag](https://stackoverflow.com/questions/ask?tags=pROC-r-package)
+* [Bug reports should be submitted to the GitHub issue tracker](https://github.com/xrobin/pROC/issues)
+
 
 
 Development
