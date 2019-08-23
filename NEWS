@@ -5,8 +5,8 @@
   * Fix: previous version accidentally set transpose = FALSE, should only be for next major release
 
 1.15.2 (2019-07-20)
-  * Fix -Inf threshold in coords for curves with direction = ">" (issue #60)
-  * Restore lazy loading of the data and fix a 'R CMD check' warning 'Variables with usage in documentation object aSAH not in code'
+  * Fix -Inf threshold in coords for curves with 'direction = ">"' (issue #60)
+  * Restore lazy loading of the data and fix an 'R CMD check' warning "Variables with usage in documentation object 'aSAH' not in code"
 
 1.15.1 (2019-07-17)
   * Fix erroneous error in 'ci.coords' with 'ret="threshold"' (issue #57)
