@@ -169,7 +169,7 @@ NOT_CRAN=1 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
 1. Build & check package: `R CMD build pROC && R CMD check --as-cran pROC_$VERSION.tar.gz`
 1. Check with slow tests: `NOT_CRAN=1  RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz`
 1. Check with R-devel: `rhub::check_with_rdevel()`
-1. Chec reverse dependencies: `devtools::revdep_check(libpath = rappdirs::user_cache_dir("revdep_lib"), srcpath = rappdirs::user_cache_dir("revdep_src"))`
+1. Check reverse dependencies: `revdepcheck::revdep_check(num_workers=8, timeout = as.difftime(60, units = "mins"))`
 1. Update `Version` and `Date` in `DESCRIPTION`
 1. Update version and date in `NEWS`
 1. Create a tag: `git tag v$VERSION && git push --tags`
