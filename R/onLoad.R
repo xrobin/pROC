@@ -32,8 +32,6 @@
       options("pROCProgress" = list(name = "none"))
     }
   }
-  .checkRcppVersion()
-
 }
 
 .parseRcppVersion <- function(rcpp.version) {
@@ -53,7 +51,7 @@
   runtime_version <- package_version(utils::packageVersion("Rcpp"))
   build_version <- package_version(.parseRcppVersion(pROC:::RcppVersion()))
   if (runtime_version != build_version) {
-    warning(sprintf("It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems.",
+    warning(sprintf("It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems: install.packages(\"pROC\").",
                     build_version,runtime_version))
   }
 }
