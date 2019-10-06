@@ -27,12 +27,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // rocUtilsPerfsAllC
-List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
+List rocUtilsPerfsAllC(SEXP thresholds, NumericVector controls, NumericVector cases, std::string direction);
 RcppExport SEXP _pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type thresholds(thresholdsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP);
     Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP);

@@ -19,8 +19,7 @@
 #include <Rcpp.h> 
 using namespace Rcpp;
 
-// [[Rcpp::export]]
-List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
+List rocUtilsPerfsAllC_numeric(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
   NumericVector se(thresholds.size());
   NumericVector sp(thresholds.size());
   long tp, tn;
@@ -70,4 +69,23 @@ List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, Numeric
   ret["se"] = se;
   ret["sp"] = sp;
   return(ret);
+}
+
+
+List rocUtilsPerfsAllC_ordered(CharacterVector thresholds, NumericVector controls, NumericVector cases, std::string direction) {
+	IntegerVector num_thr = seq_along(thresholds);
+	return rocUtilsPerfsAllC_numeric(as<NumericVector>(num_thr), controls, cases, direction);
+}
+
+// [[Rcpp::export]]
+List rocUtilsPerfsAllC(SEXP thresholds, NumericVector controls, NumericVector cases, std::string direction) {
+	switch (TYPEOF(thresholds)) {
+		case STRSXP: {
+			return rocUtilsPerfsAllC_ordered(thresholds, controls, cases, direction);
+		}
+		default: {
+			return rocUtilsPerfsAllC_numeric(thresholds, controls, cases, direction);
+		}
+	}
+	return -1; // not reached
 }

@@ -112,8 +112,36 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
   return(c(sp=tn/sum(dens.controls), se=tp/sum(dens.cases)))
 }
 
+
+# To enumerate levels from -Inf to +Inf correctly we need to carefully add an
+# extra level depending on the direction
+roc.utils.fix.ordered.levels <- function(ordered.vec, direction) {
+	if (direction == "<") {
+		return(ordered(as.integer(ordered.vec),
+					   levels = seq.int(nlevels(ordered.vec) + 1),
+					   labels = c(levels(ordered.vec), Inf)))
+	}
+	else {
+		return(ordered(as.integer(ordered.vec) + 1,
+					   levels = seq.int(nlevels(ordered.vec) + 1),
+					   labels = c(-Inf, levels(ordered.vec))))
+	}
+} 
+
+
+roc.utils.thresholds <- function(cases, controls, direction) {
+	UseMethod("roc.utils.thresholds")
+}
+
+# Calculate thresholds for ordered predictors. 
+# Mean values don't make sense here
+roc.utils.thresholds.ordered <- function(cases, controls, direction) {
+	return(levels(cases))
+}
+
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
-roc.utils.thresholds <- function(predictor, direction) {
+roc.utils.thresholds.numeric <- function(cases, controls, direction) {
+  predictor <- c(cases, controls)
   unique.candidates <- sort(unique(predictor))
   thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
   thresholds2 <- (c(-Inf, unique.candidates)/2 + c(unique.candidates, +Inf)/2)

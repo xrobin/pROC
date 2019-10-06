@@ -204,10 +204,9 @@ roc.default <- function(response, predictor,
 
     # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
-      if (is.ordered(predictor))
-        predictor <- as.numeric(predictor)
-      else
+      if (!is.ordered(predictor)) {
         stop("Predictor must be numeric or ordered.")
+      }
     }
     if (is.matrix(predictor)) {
     	warning("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
@@ -348,13 +347,20 @@ roc.default <- function(response, predictor,
     stop("No valid data provided.")
   }
 
-  if (direction == "auto" && median(controls) <= median(cases)) {
+  if (direction == "auto" && median(as.numeric(controls)) <= median(as.numeric(cases))) {
   	direction <- "<"
   	ifelse(quiet, invisible, message)("Setting direction: controls < cases")
   }
-  else if (direction == "auto" && median(controls) > median(cases)) {
+  else if (direction == "auto" && median(as.numeric(controls)) > median(as.numeric(cases))) {
   	direction <- ">"
   	ifelse(quiet, invisible, message)("Setting direction: controls > cases")
+  }
+  
+  # Fix levels
+  if (is.ordered(predictor)) {
+    predictor <- roc.utils.fix.ordered.levels(predictor, direction)
+    cases <- roc.utils.fix.ordered.levels(cases, direction)
+    controls <- roc.utils.fix.ordered.levels(controls, direction)
   }
   
   # smooth with densities, but only density was provided, not density.controls/cases
@@ -377,7 +383,7 @@ roc.default <- function(response, predictor,
   else if (isTRUE(algorithm == 0)) {
   	load.suggested.package("microbenchmark")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
-    thresholds <- roc.utils.thresholds(c(controls, cases), direction)
+    thresholds <- roc.utils.thresholds(cases, controls, direction)
     benchmark <- microbenchmark::microbenchmark(
 #      "1" = roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
@@ -393,7 +399,7 @@ roc.default <- function(response, predictor,
     cat(sprintf("Selecting algorithm %s.\n", algorithm))
   }
   else if (isTRUE(algorithm == 5)) {
-    thresholds <- length(roc.utils.thresholds(c(controls, cases), direction))
+    thresholds <- length(roc.utils.thresholds(cases, controls, direction))
     if (thresholds > 55) { # critical number determined in inst/extra/algorithms.speed.test.R
       algorithm <- 2
     } else {
@@ -472,9 +478,11 @@ roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
   roc <- list()
   class(roc) <- "roc"
   roc$percent <- percent
+  
+  # Build list of thresholds
+  thresholds <- roc.utils.thresholds(cases, controls, direction)
 
   # compute SE / SP
-  thresholds <- roc.utils.thresholds(c(controls, cases), direction)
   perfs <- fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 
   se <- perfs$se
