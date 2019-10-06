@@ -313,7 +313,7 @@ aSAH  \%>\%
 
   The message \dQuote{No valid data provided} is issued when the data
   wasn't properly passed. Remember you need both \code{response} and
-  \code{predictor} of the same (not null) length, or bot \code{controls}
+  \code{predictor} of the same (not null) length, or both \code{controls}
   and \code{cases}. Combinations such as \code{predictor} and
   \code{cases} are not valid and will trigger this error.
   
