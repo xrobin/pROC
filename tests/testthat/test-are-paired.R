@@ -50,34 +50,34 @@ test_that("are.paired return.paired.rocs doesn't return when unpaired", {
 })
 
 test_that("are.paired works with smooth.roc curves", {
-	expect_true(are.paired(smooth(r.wfns), smooth(r.ndka)))
+	expect_true(are.paired(smooth(r.wfns.num), smooth(r.ndka)))
 	
 	# Missing values shouldn't screw up
 	aSAH.missing <- aSAH
 	aSAH.missing$wfns[1:20] <- NA
-	expect_true(are.paired(smooth(roc(aSAH.missing$outcome, aSAH.missing$wfns)), smooth(roc(aSAH.missing$outcome, aSAH.missing$ndka))))
+	expect_true(are.paired(smooth(roc(aSAH.missing$outcome, as.numeric(aSAH.missing$wfns))), smooth(roc(aSAH.missing$outcome, aSAH.missing$ndka))))
 	# Also with different data.frames
-	expect_true(are.paired(smooth(roc(aSAH.missing$outcome, aSAH.missing$wfns)), smooth(r.ndka)))
+	expect_true(are.paired(smooth(roc(aSAH.missing$outcome, as.numeric(aSAH.missing$wfns))), smooth(r.ndka)))
 	
 	# The following should fail though
-	expect_false(are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), smooth(roc(aSAH$outcome, aSAH$ndka))))
+	expect_false(are.paired(smooth(roc(aSAH$outcome[21:113], as.numeric(aSAH$wfns[21:113]))), smooth(roc(aSAH$outcome, aSAH$ndka))))
 	
 	# Opposite levels should probably fail
-	expect_false(are.paired(smooth(roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"))), smooth(roc(aSAH$outcome, aSAH$ndka, levels = c("Poor", "Good")))))
+	expect_false(are.paired(smooth(roc(aSAH$outcome, as.numeric(aSAH$wfns), levels = c("Good", "Poor"))), smooth(roc(aSAH$outcome, aSAH$ndka, levels = c("Poor", "Good")))))
 })
 
 test_that("are.paired works with auc and mixed roc and smooth", {
 	expect_true(are.paired(auc(aSAH$outcome, aSAH$wfns), smooth(roc(aSAH$outcome, aSAH$ndka))))
-	expect_true(are.paired(smooth(roc(aSAH$outcome, aSAH$wfns)), auc(aSAH$outcome, aSAH$ndka)))
+	expect_true(are.paired(smooth(roc(aSAH$outcome, as.numeric(aSAH$wfns))), auc(aSAH$outcome, aSAH$ndka)))
 	expect_true(are.paired(roc(aSAH$outcome, aSAH$wfns), smooth(roc(aSAH$outcome, aSAH$ndka))))
-	expect_true(are.paired(smooth(roc(aSAH$outcome, aSAH$wfns)), roc(aSAH$outcome, aSAH$ndka)))
+	expect_true(are.paired(smooth(roc(aSAH$outcome, as.numeric(aSAH$wfns))), roc(aSAH$outcome, aSAH$ndka)))
 })
 
 test_that("are.paired return.paired.rocs returns smooth curves", {
 	aSAH.missing <- aSAH
 	aSAH.missing$ndka[1:20] <- NA
 	r1 <- roc(aSAH.missing$outcome, aSAH.missing$ndka, smooth=TRUE)
-	pair <- are.paired(r1, smooth(r.wfns), return.paired.rocs = TRUE)
+	pair <- are.paired(r1, smooth(r.wfns.num), return.paired.rocs = TRUE)
 	expect_true(pair)
 	expect_is(attr(pair, "roc1"), "smooth.roc")
 	expect_is(attr(pair, "roc2"), "smooth.roc")
@@ -98,10 +98,10 @@ test_that("are.paired return.paired.rocs smoothes curves with the right method",
 })
 
 test_that("are.paired return.paired.rocs doesn't return when unpaired and smooth", {
-	pair <- are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), r.ndka, return.paired.rocs = TRUE)
+	pair <- are.paired(smooth(roc(aSAH$outcome[21:113], as.numeric(aSAH$wfns[21:113]))), r.ndka, return.paired.rocs = TRUE)
 	expect_null(attributes(pair))
 	pair <- are.paired(roc(aSAH$outcome[21:113], aSAH$wfns[21:113]), smooth(r.ndka), return.paired.rocs = TRUE)
 	expect_null(attributes(pair))
-	pair <- are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), smooth(r.ndka), return.paired.rocs = TRUE)
+	pair <- are.paired(smooth(roc(aSAH$outcome[21:113], as.numeric(aSAH$wfns[21:113]))), smooth(r.ndka), return.paired.rocs = TRUE)
 	expect_null(attributes(pair))
 })	
