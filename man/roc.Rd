@@ -244,7 +244,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{sensitivities}{the sensitivities defining the ROC curve.}
   \item{specificities}{the specificities defining the ROC curve.}
   \item{thresholds}{the thresholds at which the sensitivities and
-    specificities were computed.
+    specificities were computed. See below for details.
   }
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
@@ -253,6 +253,28 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
   by \code{\link{smooth}}, with or without additional elements
   \code{auc} and \code{ci} (according to the call).
+}
+
+\section{Thresholds}{
+  
+  Thresholds are selected as the means between any two consecutive values 
+  observed in the data. This choice is aimed to facilitate their interpretation,
+  as any data point will be unambiguously positive or negative
+  regardless of whether the comparison operator includes equality
+  or not.
+  
+  In rare cases it might not be possible to represent the
+  mean between two consecutive values, or one might want to use a custom 
+  threshold. In those cases, the semantic of the comparison
+  is as follows: with \code{direction = '>'},
+  observations are positive when they are smaller than or equal 
+  (\code{<=}) to the threshold.
+  With \code{direction = '<'}, observations are positive when they
+  are greater than or equal (\code{>=}) to the threshold.
+  
+  As a corollary, thresholds do not correspond to actual values
+  in the data.
+  
 }
 
 \section{Experimental: pipelines}{
