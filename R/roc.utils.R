@@ -136,7 +136,7 @@ roc.utils.thresholds <- function(cases, controls, direction) {
 # Calculate thresholds for ordered predictors. 
 # Mean values don't make sense here
 roc.utils.thresholds.ordered <- function(cases, controls, direction) {
-	return(levels(cases))
+	return(ordered(levels(cases), levels = levels(cases)))
 }
 
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
@@ -423,7 +423,7 @@ roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols
 	youden <- roc.utils.optim.crit(se, sp, substr.percent, best.weights, "youden")
 	closest.topleft <- - roc.utils.optim.crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
 	
-	return(rbind(
+	return(data.frame(
 		threshold=thr,
 		sensitivity=se, 
 		specificity=sp, 
@@ -447,7 +447,8 @@ roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols
 		precision=precision,
 		recall=recall,
 		youden=youden,
-		closest.topleft=closest.topleft))
+		closest.topleft=closest.topleft,
+		check.names = FALSE))
 }
 
 # Match arbitrary user-supplied thresholds to the threshold of the ROC curve.
