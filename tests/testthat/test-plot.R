@@ -51,7 +51,7 @@ test_that("Advanced screenshot 1 works correctly", {
 test_that("Advanced screenshot 2 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	test_advanced_screenshot_2 <- function() {
-		if (R.version$minor >= "6.0") {
+		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")
 		}
 		set.seed(42) # For reproducible CI
@@ -94,7 +94,7 @@ test_that("Advanced screenshot 3 works correctly", {
 test_that("Advanced screenshot 4 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	test_advanced_screenshot_4 <- function() {
-		if (R.version$minor >= "6.0") {
+		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")
 		}
 		set.seed(42) # For reproducible CI
@@ -116,7 +116,7 @@ test_that("Advanced screenshot 4 works correctly", {
 test_that("Advanced screenshot 5 works correctly", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	test_advanced_screenshot_5 <- function() {
-		if (R.version$minor >= "6.0") {
+		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")
 		}
 		set.seed(42) # For reproducible CI
