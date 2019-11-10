@@ -44,6 +44,7 @@ test_that(".parseRcppVersion works", {
 })
 
 test_that("We're running the right Rcpp version", {
+	skip("RCPP_VERSION broken in 1.0.3")
 	expect_silent(pROC:::.checkRcppVersion())
 	# Replace the actual RcppVersion with a dummy function that returns 1
 	# (= 0.0.1) so we actually see a warning
