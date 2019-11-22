@@ -24,15 +24,26 @@ bool _cmp(std::pair<int, double> l, std::pair<int, double> r) {
 }
 
 // [[Rcpp::export]]
-List delongPlacementsCpp(List roc) {  
+List delongPlacementsCpp(List roc) {
 
   int i, j, k, m, n, mdupl, ndupl, L;
 
   std::vector<double> cases = roc["cases"];
   std::vector<double> controls = roc["controls"];
+  std::string direction = roc["direction"];
   m = cases.size();
   n = controls.size();
   L = m + n;
+  
+  // For direction ">" we must reverse the data
+  if (direction == ">") {
+    for (i = 0; i < m; i++) {
+      cases[i] = -cases[i];
+    }
+    for (i = 0; i < n; i++) {
+      controls[i] = -controls[i];
+    }
+  }
 
   // concatenate cases and controls into a vector of L pairs of the form
   // (index, value), also save class labels (1 for cases, 0 for controls)

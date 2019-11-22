@@ -120,10 +120,7 @@ delongPlacements <- function(roc) {
 	placements <- delongPlacementsCpp(roc)
 
 	# Ensure theta equals auc
-	auc <- roc$auc / ifelse(roc$percent, 100, 1) 
-	if (roc$direction == ">") {
-		auc <- 1 - auc
-	}
+	auc <- roc$auc / ifelse(roc$percent, 100, 1)
 	if (! isTRUE(all.equal(placements$theta, auc))) {
 		sessionInfo <- sessionInfo()
 		save(roc, placements, sessionInfo, file="pROC_bug.RData")

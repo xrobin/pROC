@@ -175,3 +175,19 @@ test_that("paired tests don't work on unpaired curves", {
 
 })
 
+test_that("one-sided roc.test work with direction='>' and produce expected results", {
+	r.mwfns <- roc(aSAH$outcome, -as.numeric(aSAH$wfns))
+	r.ms100b <- roc(aSAH$outcome, -aSAH$s100b)
+	## We already tested those before:
+	#t1gt <- roc.test(r.wfns, r.s100b, alternative = "greater")
+	#t1lt <- roc.test(r.wfns, r.s100b, alternative = "less")
+	# Test with inverted direction
+	m1gt <- roc.test(r.mwfns, r.ms100b, alternative = "greater")
+	m1lt <- roc.test(r.mwfns, r.ms100b, alternative = "less")
+	
+	expect_equal(m1gt$statistic, t1$statistic)
+	expect_equal(m1lt$statistic, t1$statistic)
+	
+	expect_equal(m1gt$p.value, 0.0135878911145941)
+	expect_equal(m1lt$p.value, 0.986412108885406)
+})
