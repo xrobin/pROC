@@ -38,9 +38,9 @@ test_that("delong theta is consistent with auc and direction = >", {
 	r1 <- roc(2-numacc.response, numacc.predictor, algorithm=1)
 	r2 <- roc(2-numacc.response, numacc.predictor, algorithm=2)
 	r3 <- roc(2-numacc.response, numacc.predictor, algorithm=3)
-	expect_equal(pROC:::delongPlacements(r1)$theta, 1-as.numeric(auc(r1)))
-	expect_equal(pROC:::delongPlacements(r2)$theta, 1-as.numeric(auc(r2)))
-	expect_equal(pROC:::delongPlacements(r3)$theta, 1-as.numeric(auc(r3)))
+	expect_equal(pROC:::delongPlacements(r1)$theta, as.numeric(auc(r1)))
+	expect_equal(pROC:::delongPlacements(r2)$theta, as.numeric(auc(r2)))
+	expect_equal(pROC:::delongPlacements(r3)$theta, as.numeric(auc(r3)))
 })
 
 # Test some crazy values
