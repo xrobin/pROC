@@ -86,9 +86,6 @@ roc.data.frame <- function(data, response, predictor,
   	response_name <- response
   }
   else {
-  	if (! "name" %in% class(substitute(response))) {
-  		stop("'response' argument should be the name of the column, optionally quoted.")
-  	}
   	response_name <- deparse(substitute(response))
   }
   
@@ -96,10 +93,12 @@ roc.data.frame <- function(data, response, predictor,
   	predictor_name <- predictor
   }
   else {
-  	if (! "name" %in% class(substitute(predictor))) {
-  		stop("'predictor' argument should be the name of the column, optionally quoted.")
-  	}
   	predictor_name <- deparse(substitute(predictor))
+  }
+  
+  if (any(! c(response_name, predictor_name) %in% colnames(data))) {
+  	# Some column is not in data. This could be a genuine error or the user not aware or NSE and wants to use roc_ instead
+  	warning("This method uses non-standard evaluation (NSE). Did you want to use the `roc_` function instead?")
   }
   
   r <- roc_(data, response_name, predictor_name, ret = ret, ...)
@@ -116,12 +115,19 @@ roc_ <- function(data, response, predictor,
   ret <- match.arg(ret)
   
   # Ensure the data contains the columns we need
-  if (! response %in% colnames(data)) {
-  	stop(sprintf("Column %s not present in data %s", response, deparse(substitute(data))))
+  # In case of an error we want to show the name of the data. If the function
+  # was called from roc.data.frame we want to deparse in that environment instead
+  if (sys.nframe() > 1 && deparse(sys.calls()[[sys.nframe()-1]][[1]]) == "roc.data.frame") {
+  	data_name <- deparse(substitute(data, parent.frame(n = 1)))
   }
-  
+  else {
+  	data_name <- deparse(substitute(data))
+  }
+  if (! response %in% colnames(data)) {
+  	stop(sprintf("Column %s not present in data %s", response, data_name))
+  }
   if (! predictor %in% colnames(data)) {
-  	stop(sprintf("Column '%s' not present in data %s", predictor, deparse(substitute(data))))
+  	stop(sprintf("Column '%s' not present in data %s", predictor, data_name))
   }
   
   r <- roc(data[[response]], data[[predictor]], ...)
