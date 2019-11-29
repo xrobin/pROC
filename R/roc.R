@@ -210,10 +210,20 @@ roc.default <- function(response, predictor,
 
     # ensure predictor is numeric or ordered
     if (!is.numeric(predictor)) {
-      if (is.ordered(predictor))
-        predictor <- as.numeric(predictor)
-      else
+      if (is.ordered(predictor)) {
+      	predictor <- tryCatch(
+      		{
+	      		as.numeric(as.character(predictor))
+	      	},
+	      	warning = function(warn) {
+	      		warning("Ordered predictor converted to numeric vector. Threshold values will not correspond to values in predictor.")
+	      		return(as.numeric(predictor))
+	      	}
+      	)
+      }
+      else {
         stop("Predictor must be numeric or ordered.")
+      }
     }
     if (is.matrix(predictor)) {
     	warning("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
