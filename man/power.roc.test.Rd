@@ -111,7 +111,7 @@ alternative = c("two.sided", "one.sided"), ...)
   will compute either the required sample size (if \code{power} is supplied),
   the significance level (if \code{sig.level=NULL} and \code{power} is
   supplied) or the power of a test of a difference between to AUCs
-  according to the formula by Obuchowski and McClish, 1997\emph{et al.}
+  according to the formula by Obuchowski and McClish, 1997
   (formulas 2 and 3, p. 1530--1531). The null hypothesis is that the AUC
   of \code{roc1} is the same than the AUC of \code{roc2}, with
   \code{roc1} taken as the reference ROC curve.
