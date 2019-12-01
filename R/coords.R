@@ -37,7 +37,7 @@ coords.smooth.roc <- function(smooth.roc,
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
     transpose <- FALSE
-    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
+    warning("The 'transpose' argument to FALSE by default since pROC 1.16. Set transpose = TRUE explicitly to revert to the previous behavior, or transpose = TRUE to silence this warning. Type help(coords_transpose) for additional information.")
   }
   
   # match input 
@@ -142,7 +142,7 @@ coords.roc <- function(roc,
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
     transpose <- FALSE
-    warning("An upcoming version of pROC will set the 'transpose' argument to FALSE by default. Set transpose = TRUE explicitly to keep the current behavior, or transpose = FALSE to adopt the new one and silence this warning. Type help(coords_transpose) for additional information.")
+    warning("The 'transpose' argument to FALSE by default since pROC 1.16. Set transpose = TRUE explicitly to revert to the previous behavior, or transpose = TRUE to silence this warning. Type help(coords_transpose) for additional information.")
   }
   
   # match input 

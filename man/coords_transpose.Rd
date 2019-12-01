@@ -9,7 +9,7 @@ return values of the \code{\link{coords}} function.}
 
 \section{Background information}{
 
-Since the initial release of pROC, the \code{coords} has been returning 
+Untile the release of pROC 1.16, the \code{coords} has was returning 
 a matrix with thresholds in columns, and the coordinate variables in rows.
 
 \preformatted{
@@ -23,7 +23,7 @@ coords(rocobj, c(0.05, 0.2, 0.5))
 
 }
 
-This format doesn't conform to the grammar of the 
+This format didn't conform to the grammar of the 
 \href{https://www.tidyverse.org/}{tidyverse} which has become prevalent in modern
 R language.
 
@@ -41,8 +41,16 @@ coords(rocobj, "best")
 Although it is possible to pass \code{drop = FALSE}, the fact that it is not the
 default makes the behaviour unintuitive.
 
-In an upcoming version of pROC, this will be changed and \code{coords} will return
+In pROC version 1.16, this was changed and \code{coords} now returns
 a \code{\link{data.frame}} with the thresholds in rows and measurement in colums by default.
+
+\preformatted{
+ coords(rocobj, c(0.05, 0.2, 0.5), transpose = FALSE)
+#      threshold specificity sensitivity
+# 0.05      0.05  0.06944444   0.9756098
+# 0.2       0.20  0.80555556   0.6341463
+# 0.5       0.50  0.97222222   0.2926829
+}
 }
 
 \section{Changes in 1.15}{
@@ -51,30 +59,23 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in colums
 	\item{Display a warning if \code{transpose} is missing. Pass \code{transpose} explicitly to silence the warning.}
 	\item{Deprecation of \code{as.list}.}
 }
-
-With \code{transpose = FALSE}, the output is a \code{\link{data.frame}} looking like this:
-\preformatted{
- coords(rocobj, c(0.05, 0.2, 0.5), transpose = FALSE)
-#      threshold specificity sensitivity
-# 0.05      0.05  0.06944444   0.9756098
-# 0.2       0.20  0.80555556   0.6341463
-# 0.5       0.50  0.97222222   0.2926829
 }
 
-It is recommended that new developments set \code{transpose = FALSE} explicitly.
-
-These changes are neutral to the API and do not affect functionality outside of a warning. 
+\section{Changes in 1.16}{
+\enumerate{
+	\item{Change of the default \code{transpose} to \code{TRUE}.}
+}
+THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
-\section{Upcoming backward incompatible changes in future versions}{
-The next version of pROC will change the default \code{transpose} to \code{FALSE}. 
-This is a backward incompatible change that will break any script that did not previously set \code{transpose} and will
-initially come with a warning to make debugging easier. The warning will eventually be removed. Scripts that set \code{transpose} explicitly will be unaffected.
+\section{Upcoming changes in future versions}{
+It is expected that the following major version (1.17) will remove the warning and drop support for the \code{as.list} argument altogether.
+
+The \code{transpose} and \code{drop} arguments will be deprecated in 1.17, but will remain available for a few additional major versions.
 }
 
 \section{Recommendations}{
-If you are writing a script calling the \code{coords} function, set \code{transpose = FALSE} to silence the warning and make sure your script keeps running smoothly once the 
-default \code{transpose} is changed to \code{FALSE}.
+If you are writing a new script calling the \code{coords} function, set \code{transpose = FALSE} to silence the warning and benefit from the latest improvements in pROC and obtain a tidy data.
 }
 
 \section{See also}{
