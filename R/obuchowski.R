@@ -83,8 +83,8 @@ g.partial <- function(A, B, FPR1, FPR2) {
 # Variance of a ROC curve given a 'roc' object
 var.roc.obuchowski <- function(roc) {
   binormal <- smooth(roc, method="binormal")$model
-  A <- coefficients(binormal)[1]
-  B <- coefficients(binormal)[2]
+  A <- unname(coefficients(binormal)[1])
+  B <- unname(coefficients(binormal)[2])
   kappa <- length(roc$controls) / length(roc$cases)
 
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
@@ -115,11 +115,11 @@ var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
 cov.roc.obuchowski <- function(roc1, roc2) {
   binormal1 <- smooth(roc1, method="binormal")$model
-  A1 <- coefficients(binormal1)[1]
-  B1 <- coefficients(binormal1)[2]
+  A1 <- unname(coefficients(binormal1)[1])
+  B1 <- unname(coefficients(binormal1)[2])
   binormal2 <- smooth(roc2, method="binormal")$model
-  A2 <- coefficients(binormal2)[1]
-  B2 <- coefficients(binormal2)[2]
+  A2 <-unname(coefficients(binormal2)[1])
+  B2 <- unname(coefficients(binormal2)[2])
   kappa <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(roc1$cases, roc2$cases)
   rn <- cor(roc1$controls, roc2$controls)
@@ -140,8 +140,8 @@ cov.roc.obuchowski <- function(roc1, roc2) {
 # roc1 is taken as null
 cov0.roc.obuchowski <- function(roc1, roc2) {
   binormal <- smooth(roc, method="binormal")$model
-  A <- coefficients(binormal)[1]
-  B <- coefficients(binormal)[2]
+  A <- unname(coefficients(binormal)[1])
+  B <- unname(coefficients(binormal)[2])
   R <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(roc1$cases, roc2$cases)
   rn <- cor(roc1$controls, roc2$controls)
