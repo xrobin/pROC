@@ -2,7 +2,8 @@
   * BACKWARD INCOMPATIBLE CHANGE: 'transpose' argument to 'coords' switched to FALSE by default (issue #54)
   * Fix one-sided DeLong test for curves with 'direction=">"' (issue #64)
   * Fix an error in 'ci.coords' due to expected 'NA' values in some coords (like "precision") (issue #65)
-  * Ordrered predictors are converted to numeric in a more robust way (#63)
+  * Ordrered predictors are converted to numeric in a more robust way (issue #63)
+  * Cleaned up 'power.roc.test' code (issue #50)
   
 1.15.3 (2019-07-21)
   * Fix: previous version accidentally set transpose = FALSE, should only be for next major release
