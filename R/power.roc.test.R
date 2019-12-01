@@ -76,20 +76,20 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
       if (is.null(power)) {
         if (is.null(sig.level))
           stop("'sig.level' or 'power' must be provided.")
-        zalpha <- qnorm(sig.level)
+        zalpha <- qnorm(1 - sig.level)
         zbeta <- zbeta.obuchowski(roc1, roc2, zalpha, method=method, ...)
-        power <- 1 - pnorm(zbeta)
+        power <- pnorm(zbeta)
       }
       # sig.level
       else if (is.null(sig.level)) {
-        zbeta <- qnorm(1 - power)
+        zbeta <- qnorm(power)
         zalpha <- zalpha.obuchowski(roc1, roc2, zbeta, method=method, ...)
-        sig.level <- pnorm(zalpha)
+        sig.level <- 1 - pnorm(zalpha)
       }
       # Sample size
       else {
-        zalpha <- qnorm(sig.level)
-        zbeta <- qnorm(1 - power)
+        zalpha <- qnorm(1 - sig.level)
+        zbeta <- qnorm(power)
         ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method=method, ...)
         ncontrols <- kappa * ncases
       }
@@ -347,10 +347,13 @@ var0.delta.covvar <- function(covvar) {
 ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
   delta <- roc1$auc - roc2$auc
   covvar <- covvar(roc1, roc2, method, ...)
-  na <- (zalpha * sqrt(var0.delta.covvar(covvar)) +
-       zbeta * sqrt(var.delta.covvar(covvar))) ^2 /
-       delta^2
-  return(as.vector(na))
+  v0 <- var0.delta.covvar(covvar)
+  va <- var.delta.covvar(covvar)
+  nd <- solve.nd(zalpha = zalpha,
+  			   zbeta = zbeta,
+  			   v0 = v0, va = va,
+  			   delta = delta)
+  return(nd)
 }
 
 # Compute the number of cases with Obuchowski formula from params
@@ -373,10 +376,11 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var.delta.covvar(covvar)
-  a <- v0
-  b <- 2 * zbeta * sqrt(v0) * sqrt(va)
-  c <- zbeta^2 * va - ncases * delta ^ 2
-  return(as.vector(solve.2deg.eqn(a, b, c)))
+  zalpha <- solve.zalpha(nd=ncases,
+  					   zbeta = zbeta,
+  					   v0 = v0, va = va,
+  					   delta = delta)
+  return(zalpha)
 }
 
 # Compute the z alpha with Obuchowski formula from params
@@ -401,10 +405,11 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var.delta.covvar(covvar)
-  a <- va
-  b <- 2 * zalpha * sqrt(va) * sqrt(v0)
-  c <- zalpha^2 * v0 - ncases * delta ^ 2
-  return(as.vector(solve.2deg.eqn(a, b, c)))
+  zbeta <- solve.zbeta(nd=ncases,
+  					 zalpha = zalpha,
+  					 v0 = v0, va = va,
+  					 delta = delta)
+  return(zbeta)
 }
 
 solve.zbeta <- function(nd, zalpha, v0, va, delta) {
