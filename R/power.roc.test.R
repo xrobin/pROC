@@ -174,9 +174,12 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
 
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
-    zalpha <- qnorm(1 - sig.level)
-    zbeta <- qnorm(power)
-    ncases <- (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (theta - 0.5)^2
+    
+    ncases <- solve.nd(zalpha = qnorm(1 - sig.level),
+    				   zbeta = qnorm(power),
+    				   v0 = 0.0792 * (1 + 1 / kappa),
+    				   va = Vtheta,
+    				   delta = theta - 0.5)
     ncontrols <- kappa * ncases
   }
   
@@ -188,15 +191,16 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
       stop("'auc' or 'power' must be provided.")
     else if (is.null(sig.level))
       stop("'sig.level' or 'power' must be provided.")
+  	
     kappa <- ncontrols / ncases
-
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
-    zalpha <- qnorm(1 - sig.level)
     
-    # rs.alpha: simplify the stuff under the root after zalpha
-    rs.alpha <- 0.0792 * (1 + 1 / kappa)
-    zbeta <- (sqrt(ncases * (theta - 0.5) ^ 2) - zalpha * sqrt(rs.alpha)) / sqrt(Vtheta)
+    zbeta <- solve.zbeta(nd = ncases,
+    					 zalpha = qnorm(1 - sig.level),
+    					 v0 = 0.0792 * (1 + 1 / kappa),
+    					 va = Vtheta,
+    					 delta = theta - 0.5)
     power <- pnorm(zbeta)
   }
 
@@ -208,15 +212,16 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
       stop("'auc' or 'sig.level' must be provided.")
     else if (is.null(power))
       stop("'power' or 'sig.level' must be provided.")
+  	
     kappa <- ncontrols / ncases
-
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
-    zbeta <- qnorm(power)
     
-    # rs.alpha: simplify the stuff under the root after zalpha
-    rs.alpha <- 0.0792 * (1 + 1 / kappa)
-    zalpha <- (sqrt(ncases * (theta - 0.5) ^ 2) - zbeta * sqrt(Vtheta)) / sqrt(rs.alpha)
+    zalpha <- solve.zalpha(nd = ncases,
+    					  zbeta = qnorm(power),
+    					  v0 = 0.0792 * (1 + 1 / kappa),
+    					  va = Vtheta,
+    					  delta = theta - 0.5)
     sig.level <- 1 - pnorm(zalpha)
   }
   else {
@@ -400,6 +405,51 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   b <- 2 * zalpha * sqrt(va) * sqrt(v0)
   c <- zalpha^2 * v0 - ncases * delta ^ 2
   return(as.vector(solve.2deg.eqn(a, b, c)))
+}
+
+solve.zbeta <- function(nd, zalpha, v0, va, delta) {
+	# Solve for z_\beta in Obuchowski formula:
+	# See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
+	# or formula 2 in Obuchowski et al 2004 (1 ROC curve)
+	# The formula is of the form:
+	# nd = (z_alpha * sqrt(v0) - z_beta * sqrt(va)) / delta ^ 2
+	# Re-organized:
+	# z_beta = (sqrt(nd * delta ^ 2) - z_alpha * sqrt(v0)) / sqrt(va)
+	# @param nd: number of diseased patients (or abornmal, N_A in Obuchowsk & McClish 1997)
+	# @param zalpha: upper \alpha (sig.level) percentile of the standard normal distribution
+	# @param v0 the null variance associated with z_alpha
+	# @param va: the alternative variance associated with z_beta
+	# @param delta: the difference in AUC
+	return((sqrt(nd * delta ^ 2) - zalpha * sqrt(v0)) / sqrt(va))
+}
+
+solve.nd <- function(zalpha, zbeta, v0, va, delta) {
+	# Solve for number of diseased (abnormal) patients in Obuchowski formula:
+	# See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
+	# or formula 2 in Obuchowski et al 2004 (1 ROC curve)
+	# nd = (z_alpha * sqrt(v0) - z_beta * sqrt(va)) / delta ^ 2
+	# @param zalpha: upper \alpha (sig.level) percentile of the standard normal distribution
+	# @param zbeta: upper \beta (power) percentile of the standard normal distribution
+	# @param v0 the null variance associated with z_alpha
+	# @param va: the alternative variance associated with z_beta
+	# @param delta: the difference in AUC
+	return((zalpha * sqrt(v0) + zbeta * sqrt(va)) ^ 2 / delta ^ 2)
+}
+
+solve.zalpha <- function(nd, zbeta, v0, va, delta) {
+	# Solve for z_\alpha in Obuchowski formula:
+	# See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
+	# or formula 2 in Obuchowski et al 2004 (1 ROC curve)
+	# The formula is of the form:
+	# nd = (z_alpha * sqrt(v0) - z_beta * sqrt(va)) / delta ^ 2
+	# Re-organized:
+	# z_alpha = (sqrt(nd * delta ^ 2) - z_beta * sqrt(va)) / sqrt(v0)
+	# @param nd: number of diseased patients (or abornmal, N_A in Obuchowsk & McClish 1997)
+	# @param zbeta: upper \beta (power) percentile of the standard normal distribution
+	# @param v0 the null variance associated with z_alpha
+	# @param va: the alternative variance associated with z_beta
+	# @param delta: the difference in AUC
+	return((sqrt(nd * delta ^ 2) - zbeta * sqrt(va)) / sqrt(v0))
 }
 
 # Compute the z beta with Obuchowski formula from params
