@@ -151,8 +151,8 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     else if (is.null(sig.level))
       stop("'sig.level' or 'auc' must be provided.")
     kappa <- ncontrols / ncases
-    zalpha <- qnorm(sig.level)
-    zbeta <- qnorm(1 - power)
+    zalpha <- qnorm(1 - sig.level)
+    zbeta <- qnorm(power)
 
     tryCatch(
              root <- uniroot(power.roc.test.optimize.auc.function, interval=c(0.5, 1-1e-16), ncontrols=ncontrols, ncases=ncases, zalpha=zalpha, zbeta=zbeta),
@@ -174,8 +174,8 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
 
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
-    zalpha <- qnorm(sig.level)
-    zbeta <- qnorm(1 - power)
+    zalpha <- qnorm(1 - sig.level)
+    zbeta <- qnorm(power)
     ncases <- (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (theta - 0.5)^2
     ncontrols <- kappa * ncases
   }
@@ -192,16 +192,12 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
 
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
-    zalpha <- qnorm(sig.level)
-
-    rs.beta <- Vtheta
+    zalpha <- qnorm(1 - sig.level)
+    
+    # rs.alpha: simplify the stuff under the root after zalpha
     rs.alpha <- 0.0792 * (1 + 1 / kappa)
-    zar <- zalpha * sqrt(rs.alpha)
-    a <- rs.beta
-    b <- 2 * zar * sqrt(rs.beta)
-    c <- (zar^2 - ncases * (theta^2 - theta + 0.25))
-    zbeta <- solve.2deg.eqn(a, b, c)
-    power <- 1 - pnorm(zbeta)
+    zbeta <- (sqrt(ncases * (theta - 0.5) ^ 2) - zalpha * sqrt(rs.alpha)) / sqrt(Vtheta)
+    power <- pnorm(zbeta)
   }
 
   # Determine sig.level
@@ -216,16 +212,12 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
 
     theta <- as.numeric(auc)
     Vtheta <- var.theta.obuchowski(theta, kappa)
+    zbeta <- qnorm(power)
     
-    zbeta <- qnorm(1 - power)
-
-    zbr <- qnorm(1 - power) * sqrt(Vtheta)
+    # rs.alpha: simplify the stuff under the root after zalpha
     rs.alpha <- 0.0792 * (1 + 1 / kappa)
-    a <- rs.alpha
-    b <- 2 * zbr * sqrt(rs.alpha)
-    c <- (zbr^2 - ncases * (theta^2 - theta + 0.25))
-    zalpha <- solve.2deg.eqn(a, b, c)
-    sig.level <- pnorm(zalpha)
+    zalpha <- (sqrt(ncases * (theta - 0.5) ^ 2) - zbeta * sqrt(Vtheta)) / sqrt(rs.alpha)
+    sig.level <- 1 - pnorm(zalpha)
   }
   else {
     stop("One of 'power', 'sig.level', 'auc', or both 'ncases' and 'ncontrols' must be NULL.")
