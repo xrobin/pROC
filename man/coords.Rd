@@ -49,26 +49,24 @@ best.weights=c(1, 0.5), transpose = FALSE, ...)
   	section below. Alternatively, the single value \dQuote{all} can be used to return
     every coordinate available.
   }
-  \item{as.list}{DEPRECATED. If the returned object must be a list. 
+  \item{as.list}{DEPRECATED. If the returned object must be a list.
    Will be removed in a future version.
   }
   \item{drop}{If \code{TRUE} the result is coerced to the lowest
-    possible dimension, as per \link{Extract}. With \code{FALSE} if either
-    \code{ret} or \code{x} is
-    of length 1, the object returned will have the same format than if
-    \code{x} was of length > 1.}
+    possible dimension, as per \link{Extract}. By default only drops
+    if \code{transpose = TRUE} and either \code{ret} or \code{x} is
+    of length 1.
+  }
   \item{best.method}{if \code{x="best"}, the method to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
   \item{best.weights}{if \code{x="best"}, the weights to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
-  \item{transpose}{when returning a matrix (\code{as.list=FALSE}), whether
-  	to return of thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
-  	The current default is \code{TRUE} and has been so since the initial
-  	version. However an upcoming version will change the default to \code{FALSE},
-  	and a warning is printed if the argument is not passed explicitly.
-  	See \link{coords_transpose} for more details about upcoming changes.
+  \item{transpose}{whether
+  	to return the thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
+  	Since pROC 1.16 the default value is \code{FALSE}.
+  	See \link{coords_transpose} for more details the change.
   }
   \item{\dots}{further arguments passed from other methods. Ignored.}
 }
@@ -103,8 +101,7 @@ best.weights=c(1, 0.5), transpose = FALSE, ...)
   The coords function in this package is a generic, but it might be
   superseded by functions in other packages such as
   \pkg{colorspace} or \pkg{spatstat} if they are loaded after
-  \pkg{pROC}. In this case, call the \code{coords.roc} or
-  \code{coords.smooth.roc} functions directly.
+  \pkg{pROC}. In this case, call the \code{pROC::coords} explicitly.
 
 \subsection{Best thresholds}{
   If \code{x="best"}, the \code{best.method} argument controls how the
@@ -280,14 +277,13 @@ coords(rocobj, 50, "se", transpose = FALSE)
 coords(smooth(rocobj), 90, "specificity", transpose = FALSE)
 
 # Get the sensitivities for all thresholds
-sensitivities <- coords(rocobj, rocobj$thresholds, "thr", "se", transpose = FALSE)
-print(sensitivities)
+cc <- coords(rocobj, rocobj$thresholds, "thr", "se", transpose = FALSE,)
+print(cc$sensitivity)
 
 # This is equivalent to taking sensitivities from rocobj directly
-stopifnot(all.equal(as.vector(rocobj$sensitivities), as.vector(sensitivities)))
+stopifnot(all.equal(rocobj$sensitivities, cc$sensitivity))
 # You could also write:
-sensitivities <- coords(rocobj, "all", ret="se", transpose = FALSE)
-stopifnot(all.equal(as.vector(rocobj$sensitivities), as.vector(sensitivities)))
+cc <- coords(rocobj, "all", ret="se", transpose = FALSE)
 
 # Get the best threshold
 coords(rocobj, "b", ret="t", transpose = FALSE)

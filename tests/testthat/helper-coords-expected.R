@@ -247,12 +247,7 @@ NaN, 0.63716814159292, 0.36283185840708, 1, 1, 1, 0.035, 0, 0.975609756097561,
     "tn", "tp", "fn", "fp", "npv", "ppv", "fdr", "fpr", "tpr", 
     "tnr", "fnr", "1-specificity", "1-sensitivity", "1-accuracy", 
     "1-npv", "1-ppv", "precision", "recall", "youden", "closest.topleft"
-    ), c("all", "all", "all", "all", "all", "all", "all", "all", 
-    "all", "all", "all", "all", "all", "all", "all", "all", "all", 
-    "all", "all", "all", "all", "all", "all", "all", "all", "all", 
-    "all", "all", "all", "all", "all", "all", "all", "all", "all", 
-    "all", "all", "all", "all", "all", "all", "all", "all", "all", 
-    "all", "all", "all", "all", "all", "all", "all")))
+    ), NULL))
 
 
 
@@ -272,5 +267,4 @@ expected.coords.reverse <-
 				0.734513274336283, 1, 0.705882352941176), .Dim = c(15L, 4L), .Dimnames = list(
 					c("threshold", "specificity", "sensitivity", "accuracy", 
 					  "tn", "tp", "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", 
-					  "1-accuracy", "1-npv", "1-ppv"), c("0.05", "0.055", "0.205", 
-					  								   "0.52")))
+					  "1-accuracy", "1-npv", "1-ppv"), NULL))
