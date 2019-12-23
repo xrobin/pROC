@@ -4,6 +4,7 @@
   * Fix an error in 'ci.coords' due to expected 'NA' values in some coords (like "precision") (issue #65)
   * Ordrered predictors are converted to numeric in a more robust way (issue #63)
   * Cleaned up 'power.roc.test' code (issue #50)
+  * Fix pairing with 'roc.formula' and warn if 'na.action' is not set to pass or fail (issue #68)
   
 1.15.3 (2019-07-21)
   * Fix: previous version accidentally set transpose = FALSE, should only be for next major release

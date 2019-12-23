@@ -61,7 +61,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
-    \code{data}, \code{subset} and \code{na.action} are supported, see 
+    \code{data} and \code{subset}, but not \code{na.action} are supported, see 
     \code{\link{model.frame}} for more details.
   }
   \item{levels}{the value of the response for controls and cases

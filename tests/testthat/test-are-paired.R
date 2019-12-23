@@ -21,6 +21,27 @@ test_that("are.paired works", {
 	expect_false(are.paired(roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor")), roc(aSAH$outcome, aSAH$ndka, levels = c("Poor", "Good"))))
 })
 
+test_that("are.paired works with formula", {
+	r.wfns.f <- roc(outcome ~ wfns, aSAH)
+	r.ndka.f <- roc(outcome ~ ndka, aSAH)
+	# most basic example
+	expect_true(are.paired(r.wfns.f, r.ndka.f))
+	
+	# Missing values shouldn't screw up
+	aSAH.missing <- aSAH
+	aSAH.missing$wfns[1:20] <- NA
+	expect_true(are.paired(roc(outcome ~ wfns, aSAH.missing), roc(outcome ~ ndka, aSAH.missing)))
+	# Also with different data.frames
+	expect_true(are.paired(roc(outcome ~ wfns, aSAH.missing), r.ndka.f))
+	
+	# The following should fail though
+	expect_false(are.paired(roc(outcome ~ wfns, aSAH.missing[21:113,]), r.ndka))
+	
+	# Opposite levels should probably fail
+	expect_false(are.paired(roc(outcome ~ wfns, aSAH, levels = c("Good", "Poor")), roc(outcome ~ ndka, aSAH, levels = c("Poor", "Good"))))
+})
+
+
 test_that("are.paired works with auc and mixed roc", {
 	expect_true(are.paired(auc(aSAH$outcome, aSAH$wfns), auc(aSAH$outcome, aSAH$ndka)))
 	expect_true(are.paired(roc(aSAH$outcome, aSAH$wfns), auc(aSAH$outcome, aSAH$ndka)))
