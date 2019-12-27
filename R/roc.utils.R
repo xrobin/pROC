@@ -273,33 +273,48 @@ sort.smooth.roc <- function(roc) {
   return(roc)
 }
 
+# The list of valid coordinate arguments, without 'thresholds'
+roc.utils.valid.coords <- c("specificity", "sensitivity", "accuracy",
+	"tn", "tp", "fn", "fp",
+	"npv", "ppv", "fdr",
+	"fpr", "tpr", "tnr", "fnr", 
+	"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+	"precision", "recall",
+	"youden", "closest.topleft")
+
 # Arguments which can be returned by coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
 roc.utils.match.coords.ret.args <- function(x, threshold = TRUE) {
-  valid.ret.args <- c("specificity", "sensitivity", "accuracy",
-  					"tn", "tp", "fn", "fp",
-  					"npv", "ppv", "fdr",
-  					"fpr", "tpr", "tnr", "fnr", 
-  					"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-  					"precision", "recall",
-  					"youden", "closest.topleft")
-  if ("all" %in% x) {
-  	if (length(x) > 1) {
-  		stop("ret='all' can't be used with other 'ret' options.")
-  	}
-  	x <- valid.ret.args
-  	if (threshold) {
-  		x <- c("threshold", x)
-  	}
-  }
-  if (threshold) {
-  	valid.ret.args <- c("threshold", valid.ret.args)
-  }
-  x <- replace(x, x=="topleft", "closest.topleft")
-  x <- replace(x, x=="t", "threshold")
-  x <- replace(x, x=="npe", "1-npv")
-  x <- replace(x, x=="ppe", "1-ppv")
-  match.arg(x, valid.ret.args, several.ok=TRUE)
+	valid.ret.args <- roc.utils.valid.coords
+	if (threshold) {
+		valid.ret.args <- c("threshold", valid.ret.args)
+	}
+
+	if ("all" %in% x) {
+		if (length(x) > 1) {
+			stop("ret='all' can't be used with other 'ret' options.")
+		}
+		x <- valid.ret.args
+	}
+	x <- replace(x, x=="topleft", "closest.topleft")
+	x <- replace(x, x=="t", "threshold")
+	x <- replace(x, x=="npe", "1-npv")
+	x <- replace(x, x=="ppe", "1-ppv")
+	return(match.arg(x, valid.ret.args, several.ok=TRUE))
+}
+
+# Arguments which can be used as input for coords
+# @param threshold: FALSE for smooth.roc where threshold isn't valid
+roc.utils.match.coords.input.args <- function(x, threshold = TRUE) {
+	valid.args <- roc.utils.valid.coords
+	if (threshold) {
+		valid.args <- c("threshold", valid.args)
+	}
+	x <- replace(x, x=="topleft", "closest.topleft")
+	x <- replace(x, x=="t", "threshold")
+	x <- replace(x, x=="npe", "1-npv")
+	x <- replace(x, x=="ppe", "1-ppv")
+	return(match.arg(x, valid.args, several.ok=FALSE))
 }
 
 # Compute the min/max for partial AUC
