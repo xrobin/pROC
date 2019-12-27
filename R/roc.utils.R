@@ -372,11 +372,15 @@ load.suggested.package <- function(pkg) {
 
 
 # Calculate coordinates
-# @param substr.percent: 1 or 100
-# @param se, sp
-# @param ncases, ncontrols
+# @param roc: the roc curve, used to guess if data is in percent and number of cases and controls.
+# @param thr, se, sp
+# @param best.weights: see coords 
 # @return data.frame
-roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols, best.weights) {
+roc.utils.calc.coords <- function(roc, thr, se, sp, best.weights) {
+	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
+	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
+	substr.percent <- ifelse(roc$percent, 100, 1)
+	
 	tp <- se * ncases / substr.percent
 	fn <- ncases - tp
 	tn <- sp * ncontrols / substr.percent

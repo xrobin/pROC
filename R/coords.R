@@ -80,10 +80,7 @@ coords.smooth.roc <- function(smooth.roc,
     
     if (any(! ret %in% c("specificity", "sensitivity", best.method))) {
     	# Deduce additional tn, tp, fn, fp, npv, ppv
-    	ncases <- length(attr(smooth.roc, "roc")$cases)
-    	ncontrols <- length(attr(smooth.roc, "roc")$controls)
-    	substr.percent <- ifelse(smooth.roc$percent, 100, 1)
-    	res <- roc.utils.calc.coords(substr.percent, NA, se, sp, ncases, ncontrols, best.weights)
+    	res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
     }
     else {
     	res <- data.frame(
@@ -323,11 +320,7 @@ coords.roc <- function(roc,
   
   if (any(! ret %in% colnames(res))) {
   	# Deduce additional tn, tp, fn, fp, npv, ppv
-  	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
-  	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
-  	substr.percent <- ifelse(roc$percent, 100, 1)
-  	res <- roc.utils.calc.coords(substr.percent, res[, "threshold"], res[, "sensitivity"], res[, "specificity"],
-  	                             ncases, ncontrols, best.weights)
+  	res <- roc.utils.calc.coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights)
   }
 
   if (as.list) {
