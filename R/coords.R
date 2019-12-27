@@ -118,7 +118,7 @@ coords.smooth.roc <- function(smooth.roc,
 
 coords.roc <- function(roc,
                        x,
-                       input=c("threshold", "specificity", "sensitivity"),
+                       input="threshold",
                        ret=c("threshold", "specificity", "sensitivity"),
                        as.list=FALSE,
                        drop=TRUE,
@@ -141,7 +141,7 @@ coords.roc <- function(roc,
   }
   
   # match input 
-  input <- match.arg(input)
+  input <- roc.utils.match.coords.input.args(input)
   # match return
   ret <- roc.utils.match.coords.ret.args(ret)
   # make sure the sort of roc is correct
@@ -259,7 +259,6 @@ coords.roc <- function(roc,
     }
   }
   else if (is.numeric(x)) {
-
     if (input == "threshold") {
     	thr_idx <- roc.utils.thr.idx(roc, x)
     	res <- data.frame(
@@ -269,49 +268,53 @@ coords.roc <- function(roc,
     		stringsAsFactors = FALSE
     	)
     }
-    if (input == "specificity") {
-    	if (any(x < 0) || any(x > ifelse(roc$percent, 100, 1))) {
-    		stop("Input specificity not within the ROC space.")
-    	}
-    	res <- data.frame(threshold = rep(NA, length(x)),
-    					  specificity = rep(NA, length(x)),
-    					  sensitivity = rep(NA, length(x)),
-    					  stringsAsFactors = FALSE)
-    	for (i in seq_along(x)) {
-    		sp <- x[i]
-    		if (sp %in% roc$sp) {
-    			idx <- match(sp, roc$sp)
-    			res[i,] <- c(roc$thresholds[idx], roc$sp[idx], roc$se[idx])
-    		}
-    		else { # need to interpolate
-    			idx.next <- match(TRUE, roc$sp > sp)
-    			proportion <-  (sp - roc$sp[idx.next - 1]) / (roc$sp[idx.next] - roc$sp[idx.next - 1])
-    			int.se <- roc$se[idx.next - 1] - proportion * (roc$se[idx.next - 1] - roc$se[idx.next])
-    			res[i,] <- c(NA, sp, int.se)
-    		}
-    	}
-    }
-    if (input == "sensitivity") {
-    	if (any(x < 0) || any(x > ifelse(roc$percent, 100, 1))) {
-    		stop("Input sensitivity not within the ROC space.")
-    	}
-    	res <- data.frame(threshold = rep(NA, length(x)),
-    					  specificity = rep(NA, length(x)),
-    					  sensitivity = rep(NA, length(x)),
-    					  stringsAsFactors = FALSE)
-    	for (i in seq_along(x)) {
-    		se <- x[i]
-    		if (se %in% roc$se) {
-    			idx <- length(roc$se) + 1 - match(TRUE, rev(roc$se) == se)
-    			res[i,] <- c(roc$thresholds[idx], roc$sp[idx], roc$se[idx])
-    		}
-    		else { # need to interpolate
-    			idx.next <- match(TRUE, roc$se < se)
-    			proportion <- (se - roc$se[idx.next]) / (roc$se[idx.next - 1] - roc$se[idx.next])
-    			int.sp <- roc$sp[idx.next] + proportion * (roc$sp[idx.next - 1] - roc$sp[idx.next])
-    			res[i,] <- c(NA, int.sp, se)
-    		}
-    	}
+    else {
+      # Arbitrary coord given in input.
+      # We could be tempted to use all_coords directly.
+      # However any non monotone coordinate in ret will be inaccurate
+      # when interpolated. Therefore it is safer to only interpolate
+      # se and sp and re-calculate the remaining coords later.
+      res <- data.frame(threshold = rep(NA, length(x)),
+                        sensitivity = rep(NA, length(x)),
+                        specificity = rep(NA, length(x)),
+                        stringsAsFactors = FALSE)
+      all_coords <- roc.utils.calc.coords(roc, roc$thresholds, roc$sensitivities, roc$specificities, best.weights)
+      input_values <- all_coords[[input]]
+      for (i in seq_along(x)) {
+        value <- x[i]
+        if (value < min(input_values) || value > max(input_values)) {
+          stop(sprintf("Input %s (%s) not in range (%s-%s)", input, value, 
+                       min(input_values), max(input_values)))
+        }
+        
+        idx <- which(input_values == value)
+        if (length(idx) == 1) {
+          # Exactly one to pick from
+          res[i, 1:3] <- all_coords[idx, 1:3]
+        }
+        else if (length(idx) > 1) {
+          # More than one to pick from. Need to take best
+          # according to sorting
+          if (coord.is.decreasing[input]) {
+            res[i, 1:3] <- all_coords[idx[1], 1:3]
+          }
+          else {
+            res[i, 1:3] <- all_coords[idx[1], 1:3]
+          }
+        }
+        else {
+          # Need to interpolate
+          if (coord.is.decreasing[input]) {
+            idx.next <- match(TRUE, input_values < value)
+          }
+          else {
+            idx.next <- match(TRUE, input_values > value)
+          }
+          proportion <- (value - input_values[idx.next]) / (input_values[idx.next - 1] - input_values[idx.next])
+          int.coords <- all_coords[idx.next,] + proportion * (all_coords[idx.next - 1,] - all_coords[idx.next,])
+          res[i, 2:3] <- int.coords[2:3]
+        }
+      }
     }
   }
   else {

@@ -13,8 +13,8 @@
 }
 \usage{
 coords(...)
-\S3method{coords}{roc}(roc, x, input=c("threshold", "specificity",
-"sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
+\S3method{coords}{roc}(roc, x, input="threshold", ret=c("threshold",
+"specificity", "sensitivity"),
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
 best.weights=c(1, 0.5), transpose = FALSE, ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
