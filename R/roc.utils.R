@@ -314,7 +314,12 @@ roc.utils.match.coords.input.args <- function(x, threshold = TRUE) {
 	x <- replace(x, x=="t", "threshold")
 	x <- replace(x, x=="npe", "1-npv")
 	x <- replace(x, x=="ppe", "1-ppv")
-	return(match.arg(x, valid.args, several.ok=FALSE))
+	matched <- match.arg(x, valid.args, several.ok=FALSE)
+	# We only handle monotone coords
+	if (! coord.is.monotone[matched]) {
+		stop(sprintf("Coordinate '%s' is not monotone and cannot be used as input.", matched))
+	}
+	return(matched)
 }
 
 # Compute the min/max for partial AUC
@@ -507,3 +512,57 @@ roc.utils.optim.crit <- function(se, sp, max, weights, method) {
 	}
 	return(optim.crit)
 }
+
+coord.is.monotone <- c(
+	"threshold"=TRUE,
+	"sensitivity"=TRUE,
+	"specificity"=TRUE,
+	"accuracy"=FALSE,
+	"tn"=TRUE, 
+	"tp"=TRUE,
+	"fn"=TRUE,
+	"fp"=TRUE,       
+	"npv"=FALSE,
+	"ppv"=FALSE,
+	"tpr"=TRUE,
+	"tnr"=TRUE,
+	"fpr"=TRUE,
+	"fnr"=TRUE,
+	"fdr"=FALSE,
+	"1-specificity"=TRUE,
+	"1-sensitivity"=TRUE,
+	"1-accuracy"=FALSE,
+	"1-npv"=FALSE,
+	"1-ppv"=FALSE,
+	"precision"=FALSE,
+	"recall"=TRUE,
+	"youden"=FALSE,
+	"closest.topleft"=FALSE
+)
+
+coord.is.decreasing <- c(
+	"threshold"=NA, # Depends on direction
+	"sensitivity"=TRUE,
+	"specificity"=FALSE,
+	"accuracy"=NA,
+	"tn"=FALSE, 
+	"tp"=TRUE,
+	"fn"=FALSE,
+	"fp"=TRUE,       
+	"npv"=NA,
+	"ppv"=NA,
+	"tpr"=TRUE,
+	"tnr"=FALSE,
+	"fpr"=TRUE,
+	"fnr"=FALSE,
+	"fdr"=NA,
+	"1-specificity"=TRUE,
+	"1-sensitivity"=FALSE,
+	"1-accuracy"=NA,
+	"1-npv"=NA,
+	"1-ppv"=NA,
+	"precision"=NA,
+	"recall"=TRUE,
+	"youden"=NA,
+	"closest.topleft"=NA
+)

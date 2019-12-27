@@ -28,8 +28,7 @@ test_that("roc.utils.match.coords.input.args works", {
 	expect_equal(pROC:::roc.utils.match.coords.input.args("threshold"), "threshold")
 	expect_equal(pROC:::roc.utils.match.coords.input.args("fp"), "fp")
 	expect_equal(pROC:::roc.utils.match.coords.input.args("1-se"), "1-sensitivity")
-	expect_equal(pROC:::roc.utils.match.coords.input.args("npe"), "1-npv")
-	for (coord in roc.utils.valid.coords) {
+	for (coord in names(which(pROC:::coord.is.monotone))) {
 		expect_equal(pROC:::roc.utils.match.coords.input.args(coord), coord)
 	}
 	
@@ -42,6 +41,9 @@ test_that("roc.utils.match.coords.input.args works", {
 	expect_error(pROC:::roc.utils.match.coords.input.args(c("specificity", "sensitivity")), "length 1")
 	# Invalid arg
 	expect_error(pROC:::roc.utils.match.coords.input.args("blah"))
+	# Not monotone
+	expect_error(pROC:::roc.utils.match.coords.input.args("npe"))
+	expect_error(pROC:::roc.utils.match.coords.input.args("accuracy"))
 })
 
 
@@ -51,7 +53,7 @@ test_that("roc.utils.match.coords.ret.args works", {
 	expect_equal(pROC:::roc.utils.match.coords.ret.args("fp"), "fp")
 	expect_equal(pROC:::roc.utils.match.coords.ret.args("1-se"), "1-sensitivity")
 	expect_equal(pROC:::roc.utils.match.coords.ret.args("npe"), "1-npv")
-	for (coord in roc.utils.valid.coords) {
+	for (coord in pROC:::roc.utils.valid.coords) {
 		expect_equal(pROC:::roc.utils.match.coords.ret.args(coord), coord)
 	}
 	expect_equal(pROC:::roc.utils.match.coords.ret.args(roc.utils.valid.coords), roc.utils.valid.coords)
