@@ -283,7 +283,7 @@ coords.roc <- function(roc,
                         sensitivity = rep(NA, length(x)),
                         specificity = rep(NA, length(x)),
                         stringsAsFactors = FALSE)
-      all_coords <- roc.utils.calc.coords(roc, roc$thresholds, roc$sensitivities, roc$specificities, best.weights)
+      all_coords <- roc.utils.calc.coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
       input_values <- all_coords[[input]]
       for (i in seq_along(x)) {
         value <- x[i]
