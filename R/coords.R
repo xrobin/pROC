@@ -113,6 +113,11 @@ coords.smooth.roc <- function(smooth.roc,
       return(as.data.frame(res)[, ret, drop=drop])
     }
   }
+  
+  # Adjust drop for downstream call
+  if (missing(drop) && ! transpose) {
+    drop = FALSE
+  }
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
