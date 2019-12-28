@@ -315,19 +315,19 @@ coords.roc <- function(roc,
         }
         
         idx <- which(input_values == value)
-        if (length(idx) == 1) {
-          # Exactly one to pick from
-          res[i,] <- c(thr[idx], se[idx], sp[idx])
-        }
-        else if (length(idx) > 1) {
+        if (length(idx) > 1) {
           # More than one to pick from. Need to take best
           # according to sorting
           if (coord.is.decreasing[input]) {
-            res[i,] <- c(thr[idx[1]], se[idx[1]], sp[idx[1]])
+            idx <- length(idx) # last
           }
           else {
-            res[i,] <- c(thr[idx[1]], se[idx[1]], sp[idx[1]])
+            idx <- 1 # first
           }
+        }
+        if (length(idx) == 1) {
+          # Exactly one to pick from
+          res[i,] <- c(thr[idx], se[idx], sp[idx])
         }
         else {
           # Need to interpolate
