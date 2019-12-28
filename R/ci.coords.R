@@ -96,9 +96,14 @@ ci.coords.smooth.roc <- function(smooth.roc,
     perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
   }
 
-  if (any(is.na(perfs))) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),, drop=FALSE]
+  if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
+  	if (all(which.ones)) {
+  		warning("All bootstrap iterations produced NA values only.")
+  	}
+  	else {
+  		how.many <- sum(which.ones)
+  		warning(sprintf("%s NA value(s) produced during bootstrap were ignored.", how.many))
+  	}
   }
 
   if (length(x) > 1) {
@@ -109,7 +114,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
     rownames.ret <- ret
   }
 
-  quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
+  quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
   ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
   
   colnames(ci) <- dimnames(quant.perfs)[[1]]
