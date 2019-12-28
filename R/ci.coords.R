@@ -109,9 +109,16 @@ ci.coords.smooth.roc <- function(smooth.roc,
     rownames.ret <- ret
   }
 
-  ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  rownames(ci) <- rownames.ret
+  if (length(x) > 1 && length(ret) > 1) {
+  	quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
+  	ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
+  	colnames(ci) <- dimnames(quant.perfs)[[1]]
+  }
+  else {
+  	ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
+  }
   
+  rownames(ci) <- rownames.ret
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
