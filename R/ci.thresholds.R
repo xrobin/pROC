@@ -44,7 +44,7 @@ ci.thresholds.default <- function(response, predictor, ...) {
 	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
 		stop("'ci.thresholds' not available for multiclass ROC curves.")
 	}
-  ci.thresholds(roc.default(response, predictor, ci=FALSE, ...), ...)
+	ci.thresholds(roc.default(response, predictor, ci=FALSE, ...), ...)
 }
 
 ci.thresholds.smooth.roc <- function(smooth.roc, ...)

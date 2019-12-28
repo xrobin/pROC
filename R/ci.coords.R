@@ -44,7 +44,13 @@ ci.coords.default <- function(response, predictor, ...) {
 	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
 		stop("'ci.coords' not available for multiclass ROC curves.")
 	}
-  ci.coords(roc.default(response, predictor, ci=FALSE, ...), ...)
+	roc <- roc.default(response, predictor, ci = FALSE, ...)
+	if (methods::is(roc, "smooth.roc")) {
+		return(ci.coords(smooth.roc = roc, ...))
+	}
+	else {
+		return(ci.coords(roc = roc, ...))
+	}
 }
 
 ci.coords.smooth.roc <- function(smooth.roc,

@@ -41,7 +41,13 @@ ci.auc.formula <- function(formula, data, ...) {
 }
 
 ci.auc.default <- function(response, predictor, ...) {
-  ci.auc.roc(roc.default(response, predictor, ci=FALSE, ...), ...)
+	roc <- roc.default(response, predictor, ci = FALSE, ...)
+	if (methods::is(roc, "smooth.roc")) {
+		return(ci.auc(smooth.roc = roc, ...))
+	}
+	else {
+		return(ci.auc(roc = roc, ...))
+	}
 }
 
 ci.auc.auc <- function(auc, ...) {

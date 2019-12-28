@@ -44,7 +44,13 @@ ci.se.default <- function(response, predictor, ...) {
 	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
 		stop("'ci.sp' not available for multiclass ROC curves.")
 	}
-  ci.se(roc.default(response, predictor, ci=FALSE, ...), ...)
+	roc <- roc.default(response, predictor, ci = FALSE, ...)
+	if (methods::is(roc, "smooth.roc")) {
+		return(ci.se(smooth.roc = roc, ...))
+	}
+	else {
+		return(ci.se(roc = roc, ...))
+	}
 }
 
 ci.se.smooth.roc <- function(smooth.roc,
