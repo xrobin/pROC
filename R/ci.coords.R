@@ -90,15 +90,15 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress)
+    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress)
+    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
   }
 
   if (any(is.na(perfs))) {
     warning("NA value(s) produced during bootstrap were ignored.")
-    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
+    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),, drop=FALSE]
   }
 
   if (length(x) > 1) {
@@ -109,15 +109,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
     rownames.ret <- ret
   }
 
-  if (length(x) > 1 && length(ret) > 1) {
-  	quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
-  	ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
-  	colnames(ci) <- dimnames(quant.perfs)[[1]]
-  }
-  else {
-  	ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  }
+  quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))
+  ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
   
+  colnames(ci) <- dimnames(quant.perfs)[[1]]
   rownames(ci) <- rownames.ret
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
