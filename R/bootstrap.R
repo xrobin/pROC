@@ -711,7 +711,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
     return(NA)
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
-  if (x == "best" && ncol(res) != 1) {
+  if (length(x) == 1 && x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
   }
   else {
@@ -746,7 +746,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
     return(NA)
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
-  if (x == "best" && ncol(res) != 1) {
+  if (length(x) == 1 && x == "best" && ncol(res) != 1) {
   	return(enfore.best.policy(res, best.policy))
   }
   else {
