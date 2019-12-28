@@ -177,12 +177,24 @@ ci.coords(rocobj, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
 ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
 ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
 ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
+rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
+          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
+ci.coords(rocobj, x="best", input = "threshold", ret=rets, boot.n=10)
+}
+\dontshow{
+ci.coords(aSAH$outcome, aSAH$s100b,  x=0.9, input = "sensitivity",
+          ret=c("specificity", "ppv", "tp"), boot.n=10, smooth=TRUE)
+ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
+rocobj.smooth <- roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
+ci.coords(rocobj.smooth, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
+ci.coords(rocobj.smooth, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
+ci.coords(rocobj.smooth, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
+ci.coords(rocobj.smooth, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
 ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"),
           boot.n=10)
 rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
           "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(rocobj, x="best", input = "threshold", ret=rets, boot.n=3)
+ci.coords(rocobj, x="best", ret=rets, boot.n=10)
 }
 }
 
