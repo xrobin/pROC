@@ -578,3 +578,16 @@ test_that("Infinite values work with both directions", {
 	expect_equivalent(co, data.frame(threshold = c(-Inf, Inf), specificity = c(0, 1), sensitivity = c(1, 0)))
 })
 
+test_that("Coords pick the right end of 'flat' bits of the curve, according to direction", {
+	# expect_equal(r.s100b$sensitivities[2], 0.975609756097561) # tested elsewhere
+	expect_equivalent(
+		coords(r.s100b, 0.975609756097561, "se", "sp", transpose = TRUE),
+		0.13888888888888889 # and not 0
+	)
+	expect_equivalent(
+		coords(r.s100b, 1, "sp", "se", transpose = TRUE),
+		0.2926829268292683 # and not 0
+	)
+})
+
+
