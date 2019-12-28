@@ -319,10 +319,10 @@ coords.roc <- function(roc,
           # More than one to pick from. Need to take best
           # according to sorting
           if (coord.is.decreasing[input]) {
-            idx <- length(idx) # last
+            idx <- idx[length(idx)] # last
           }
           else {
-            idx <- 1 # first
+            idx <- idx[1] # first
           }
         }
         if (length(idx) == 1) {
