@@ -283,8 +283,30 @@ coords.roc <- function(roc,
                         sensitivity = rep(NA, length(x)),
                         specificity = rep(NA, length(x)),
                         stringsAsFactors = FALSE)
-      all_coords <- roc.utils.calc.coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
-      input_values <- all_coords[[input]]
+      if (input %in% c("sensitivity", "specificity")) {
+        # Shortcut slow roc.utils.calc.coords
+        se <- roc$sensitivities
+        sp <- roc$specificities
+        if (methods::is(roc, "smooth.roc")) {
+          thr <- rep(NA, length(roc$sensitivities))
+        }
+        else {
+          thr <- roc$thresholds
+        }
+        if (input == "sensitivity") {
+          input_values <- se
+        }
+        else {
+          input_values <- sp
+        }
+      }
+      else {
+        all_coords <- roc.utils.calc.coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
+        input_values <- all_coords[[input]]
+        se <- all_coords[["sensitivity"]]
+        sp <- all_coords[["specificity"]]
+        thr <- all_coords[["threshold"]]
+      }
       for (i in seq_along(x)) {
         value <- x[i]
         if (value < min(input_values) || value > max(input_values)) {
@@ -295,16 +317,16 @@ coords.roc <- function(roc,
         idx <- which(input_values == value)
         if (length(idx) == 1) {
           # Exactly one to pick from
-          res[i, 1:3] <- all_coords[idx, 1:3]
+          res[i,] <- c(thr[idx], se[idx], sp[idx])
         }
         else if (length(idx) > 1) {
           # More than one to pick from. Need to take best
           # according to sorting
           if (coord.is.decreasing[input]) {
-            res[i, 1:3] <- all_coords[idx[1], 1:3]
+            res[i,] <- c(thr[idx[1]], se[idx[1]], sp[idx[1]])
           }
           else {
-            res[i, 1:3] <- all_coords[idx[1], 1:3]
+            res[i,] <- c(thr[idx[1]], se[idx[1]], sp[idx[1]])
           }
         }
         else {
@@ -316,8 +338,9 @@ coords.roc <- function(roc,
             idx.next <- match(TRUE, input_values > value)
           }
           proportion <- (value - input_values[idx.next]) / (input_values[idx.next - 1] - input_values[idx.next])
-          int.coords <- all_coords[idx.next,] + proportion * (all_coords[idx.next - 1,] - all_coords[idx.next,])
-          res[i, 2:3] <- int.coords[2:3]
+          int.se <- se[idx.next] + proportion * (se[idx.next - 1] - se[idx.next])
+          int.sp <- sp[idx.next] + proportion * (sp[idx.next - 1] - sp[idx.next])
+          res[i, 2:3] <- c(int.se, int.sp)
         }
       }
     }
