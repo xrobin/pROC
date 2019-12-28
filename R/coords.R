@@ -285,11 +285,17 @@ coords.roc <- function(roc,
     					  specificity = rep(NA, length(x)),
     					  sensitivity = rep(NA, length(x)),
     					  stringsAsFactors = FALSE)
+    	if (methods::is(roc, "smooth.roc")) {
+    	  thresholds <- rep(NA, length(roc$sensitivities))
+    	}
+    	else {
+    	  thresholds <- roc$thresholds
+    	}
     	for (i in seq_along(x)) {
     		sp <- x[i]
     		if (sp %in% roc$sp) {
     			idx <- match(sp, roc$sp)
-    			res[i,] <- c(roc$thresholds[idx], roc$sp[idx], roc$se[idx])
+    			res[i,] <- c(thresholds[idx], roc$sp[idx], roc$se[idx])
     		}
     		else { # need to interpolate
     			idx.next <- match(TRUE, roc$sp > sp)
@@ -307,11 +313,17 @@ coords.roc <- function(roc,
     					  specificity = rep(NA, length(x)),
     					  sensitivity = rep(NA, length(x)),
     					  stringsAsFactors = FALSE)
+    	if (methods::is(roc, "smooth.roc")) {
+    	  thresholds <- rep(NA, length(roc$sensitivities))
+    	}
+    	else {
+    	  thresholds <- roc$thresholds
+    	}
     	for (i in seq_along(x)) {
     		se <- x[i]
     		if (se %in% roc$se) {
     			idx <- length(roc$se) + 1 - match(TRUE, rev(roc$se) == se)
-    			res[i,] <- c(roc$thresholds[idx], roc$sp[idx], roc$se[idx])
+    			res[i,] <- c(thresholds[idx], roc$sp[idx], roc$se[idx])
     		}
     		else { # need to interpolate
     			idx.next <- match(TRUE, roc$se < se)
