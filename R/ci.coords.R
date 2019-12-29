@@ -22,21 +22,15 @@ ci.coords <- function(...) {
 }
 
 ci.coords.formula <- function(formula, data, ...) {
-	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
-	Call <- match.call()
-	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
-	if (indx[1] == 0) {
-		stop("A formula argument is required")
+	data.missing <- missing(data)
+	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+										  data.missing = data.missing,
+										  call = match.call())
+	if (length(roc.data$predictor.name) > 1) {
+		stop("Only one predictor supported in 'ci.coords'.")
 	}
-	# Keep the standard arguments and run them in model.frame
-	temp <- Call[c(1,indx)]  
-	temp[[1]] <- as.name('model.frame')
-	m <- eval(temp, parent.frame())
-	
-	if (!is.null(model.weights(m))) stop("weights are not supported")
-	
-	response <- model.response(m)
-	predictor <- m[[attr(terms(formula), "term.labels")]]
+	response <- roc.data$response
+	predictor <- roc.data$predictors[, 1]
   	ci.coords(roc(response, predictor, ci=FALSE, ...), ...)
 }
 
@@ -44,7 +38,13 @@ ci.coords.default <- function(response, predictor, ...) {
 	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
 		stop("'ci.coords' not available for multiclass ROC curves.")
 	}
-  ci.coords(roc.default(response, predictor, ci=FALSE, ...), ...)
+	roc <- roc.default(response, predictor, ci = FALSE, ...)
+	if (methods::is(roc, "smooth.roc")) {
+		return(ci.coords(smooth.roc = roc, ...))
+	}
+	else {
+		return(ci.coords(roc = roc, ...))
+	}
 }
 
 ci.coords.smooth.roc <- function(smooth.roc,
@@ -90,15 +90,20 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress)
+    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress)
+    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
   }
 
-  if (any(is.na(perfs))) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
+  if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
+  	if (all(which.ones)) {
+  		warning("All bootstrap iterations produced NA values only.")
+  	}
+  	else {
+  		how.many <- sum(which.ones)
+  		warning(sprintf("%s NA value(s) produced during bootstrap were ignored.", how.many))
+  	}
   }
 
   if (length(x) > 1) {
@@ -109,9 +114,11 @@ ci.coords.smooth.roc <- function(smooth.roc,
     rownames.ret <- ret
   }
 
-  ci <- t(apply(perfs, 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  rownames(ci) <- rownames.ret
+  quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
   
+  colnames(ci) <- dimnames(quant.perfs)[[1]]
+  rownames(ci) <- rownames.ret
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n

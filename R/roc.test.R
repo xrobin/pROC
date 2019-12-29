@@ -21,37 +21,27 @@ roc.test <- function(...) {
 	UseMethod("roc.test")
 }
 
-roc.test.formula <- function (formula, data, ...){
-	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
-	Call <- match.call()
-	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
-	if (indx[1] == 0) {
-		stop("A formula argument is required")
-	}
-	# Keep the standard arguments and run them in model.frame
-	temp <- Call[c(1,indx)]  
-	temp[[1]] <- as.name('model.frame')
-	m <- eval(temp, parent.frame())
-
-	if (!is.null(model.weights(m))) stop("weights are not supported")
-	
-	term.labels <- attr(attr(m, "terms"), "term.labels")
-	response <- model.extract(m, "response")
-	
-	if (length(term.labels) != 2) {
+roc.test.formula <- function (formula, data, ...) {
+	data.missing <- missing(data)
+	call <- match.call()
+	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+										  data.missing = data.missing,
+										  call = call)
+	if (length(roc.data$predictor.name) != 2) {
 		stop("Invalid formula: exactly 2 predictors are required in a formula of type response~predictor1+predictor2.")
 	}
-	if (length(response) == 0) {
-		stop("Error in the formula: a response is required in a formula of type response~predictor1+predictor2.")
-	}
+	response <- roc.data$response
+	predictors <- roc.data$predictors
 	
-	testres <- roc.test.default(response, m[[term.labels[1]]], m[[term.labels[2]]], ...)
-	testres$call <- Call
+	testres <- roc.test.default(response, predictors, ...)
+	testres$call <- call
 	# data.names for pretty print()ing
-	if (missing(data))
-		testres$data.names <- sprintf("%s and %s by %s (%s, %s)", term.labels[1], term.labels[2], names(m)[1], testres$roc1$levels[1], testres$roc1$levels[2])
-	else
-		testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", term.labels[1], term.labels[2], deparse(substitute(data)), names(m)[1], testres$roc1$levels[1], testres$roc1$levels[2])
+	if (data.missing) {
+		testres$data.names <- sprintf("%s and %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+	}
+	else {
+		testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+	}
 	
 	return(testres)
 }

@@ -16,11 +16,11 @@ coords(...)
 \S3method{coords}{roc}(roc, x, input="threshold", ret=c("threshold",
 "specificity", "sensitivity"),
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
-best.weights=c(1, 0.5), transpose = FALSE, ...)
+best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
 "sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE,
 drop=TRUE, best.method=c("youden", "closest.topleft"), 
-best.weights=c(1, 0.5), transpose = FALSE, ...)
+best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
 }
 		   
 \arguments{
@@ -67,6 +67,13 @@ best.weights=c(1, 0.5), transpose = FALSE, ...)
   	to return the thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
   	Since pROC 1.16 the default value is \code{FALSE}.
   	See \link{coords_transpose} for more details the change.
+  }
+  \item{as.matrix}{if \code{transpose} is \code{FALSE}, whether to return
+    a \code{\link{matrix}} (\code{TRUE}) or a \code{\link{data.frame}}
+    (\code{FALSE}, the default). A \code{data.frame} is more convenient
+    and flexible to use, but incurs a slight speed penalty. Consider
+    setting this argument to \code{TRUE} if you are calling the function
+    repeatedly.
   }
   \item{\dots}{further arguments passed from other methods. Ignored.}
 }

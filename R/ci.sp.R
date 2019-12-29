@@ -22,21 +22,15 @@ ci.sp <- function(...) {
 }
 
 ci.sp.formula <- function(formula, data, ...) {
-	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
-	Call <- match.call()
-	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
-	if (indx[1] == 0) {
-		stop("A formula argument is required")
+	data.missing <- missing(data)
+	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+										  data.missing = data.missing,
+										  call = match.call())
+	if (length(roc.data$predictor.name) > 1) {
+		stop("Only one predictor supported in 'ci.sp'.")
 	}
-	# Keep the standard arguments and run them in model.frame
-	temp <- Call[c(1,indx)]  
-	temp[[1]] <- as.name('model.frame')
-	m <- eval(temp, parent.frame())
-	
-	if (!is.null(model.weights(m))) stop("weights are not supported")
-	
-	response <- model.response(m)
-	predictor <- m[[attr(terms(formula), "term.labels")]]
+	response <- roc.data$response
+	predictor <- roc.data$predictors[, 1]
 	ci.sp(roc(response, predictor, ci=FALSE, ...), ...)
 }
 
@@ -44,7 +38,13 @@ ci.sp.default <- function(response, predictor, ...) {
 	if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
 		stop("'ci.sp' not available for multiclass ROC curves.")
 	}
-  ci.sp(roc.default(response, predictor, ci=FALSE, ...), ...)
+	roc <- roc.default(response, predictor, ci = FALSE, ...)
+	if (methods::is(roc, "smooth.roc")) {
+		return(ci.sp(smooth.roc = roc, ...))
+	}
+	else {
+		return(ci.sp(roc = roc, ...))
+	}
 }
 
 ci.sp.smooth.roc <- function(smooth.roc,

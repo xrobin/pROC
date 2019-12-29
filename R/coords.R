@@ -29,6 +29,7 @@ coords.smooth.roc <- function(smooth.roc,
                               best.method=c("youden", "closest.topleft"),
                               best.weights=c(1, 0.5),
                               transpose = FALSE,
+                              as.matrix = FALSE,
                               ...) {
   # make sure x was provided
   if (missing(x))
@@ -83,11 +84,10 @@ coords.smooth.roc <- function(smooth.roc,
     	res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
     }
     else {
-    	res <- data.frame(
+    	res <- cbind(
     		specificity = sp,
     		sensitivity = se,
-    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit,
-    		stringsAsFactors = FALSE
+    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
     	)
     	colnames(res)[3] <- best.method
     }
@@ -101,13 +101,17 @@ coords.smooth.roc <- function(smooth.roc,
     	return(list)
     }
     else if (transpose) {
+      rownames(res) <- NULL
       return(t(res)[ret,, drop=drop])
     }
     else {
       if (missing(drop) ) {
         drop = FALSE
       }
-      return(as.data.frame(res)[, ret, drop=drop])
+      if (! as.matrix) {
+        res <- as.data.frame(res)
+      }
+      return(res[, ret, drop=drop])
     }
   }
   
@@ -118,7 +122,8 @@ coords.smooth.roc <- function(smooth.roc,
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, transpose = transpose, ...))
+  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, 
+                    transpose = transpose, as.matrix = as.matrix, ...))
 }
 
 coords.roc <- function(roc,
@@ -130,6 +135,7 @@ coords.roc <- function(roc,
                        best.method=c("youden", "closest.topleft"),
                        best.weights=c(1, 0.5), 
                        transpose = FALSE,
+                       as.matrix = FALSE,
                        ...) {
   # make sure x was provided
   if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
@@ -178,11 +184,10 @@ coords.roc <- function(roc,
       	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
       	return(NULL)
       }
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres,
       	specificity = sp,
-      	sensitivity = se,
-      	stringsAsFactors = FALSE
+      	sensitivity = se
       )
     }
     else if (x == "local maximas") {
@@ -209,11 +214,10 @@ coords.roc <- function(roc,
       	return(NULL)
       }
       lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres[lm.idx],
       	specificity = sp[lm.idx],
-      	sensitivity = se[lm.idx],
-      	stringsAsFactors = FALSE
+      	sensitivity = se[lm.idx]
       )
     }
     else { # x == "best"
@@ -253,12 +257,11 @@ coords.roc <- function(roc,
       	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
       	return(NULL)
       }
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres,
       	specificity = sp,
       	sensitivity = se,
-      	best.method = ifelse(best.method == "youden", 1, -1) * optim.crit,
-      	stringsAsFactors = FALSE
+      	best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
       )
       colnames(res)[4] <- best.method
     }
@@ -266,11 +269,10 @@ coords.roc <- function(roc,
   else if (is.numeric(x)) {
     if (input == "threshold") {
     	thr_idx <- roc.utils.thr.idx(roc, x)
-    	res <- data.frame(
+    	res <- cbind(
     		threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
     		specificity = roc$specificities[thr_idx],
-    		sensitivity = roc$sensitivities[thr_idx],
-    		stringsAsFactors = FALSE
+    		sensitivity = roc$sensitivities[thr_idx]
     	)
     }
     else {
@@ -279,10 +281,10 @@ coords.roc <- function(roc,
       # However any non monotone coordinate in ret will be inaccurate
       # when interpolated. Therefore it is safer to only interpolate
       # se and sp and re-calculate the remaining coords later.
-      res <- data.frame(threshold = rep(NA, length(x)),
+      res <- cbind(threshold = rep(NA, length(x)),
                         sensitivity = rep(NA, length(x)),
-                        specificity = rep(NA, length(x)),
-                        stringsAsFactors = FALSE)
+                        specificity = rep(NA, length(x))
+                   )
       if (input %in% c("sensitivity", "specificity")) {
         # Shortcut slow roc.utils.calc.coords
         se <- roc$sensitivities
@@ -363,13 +365,17 @@ coords.roc <- function(roc,
   	return(list)
   }
   else if (transpose) {
+    rownames(res) <- NULL
     return(t(res)[ret,, drop=drop])
   }
   else {
     if (missing(drop)) {
       drop = FALSE
     }
-    return(as.data.frame(res)[, ret, drop=drop])
+    if (! as.matrix) {
+      res <- as.data.frame(res)
+    }
+    return(res[, ret, drop=drop])
   	
   }
 }

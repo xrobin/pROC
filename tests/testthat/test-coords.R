@@ -207,6 +207,18 @@ test_that("drop works", {
 })
 
 
+test_that("as.matrix works", {
+	obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", transpose = FALSE, as.matrix = TRUE)
+	expect_equal(obtained, t(expected.coords["sensitivity", c(40, 18), drop = FALSE]))
+})
+
+
+test_that("as.matrix works with drop=TRUE", {
+	obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", transpose = FALSE, as.matrix = TRUE, drop = TRUE)
+	expect_equal(obtained, expected.coords["sensitivity", c(40, 18), drop = TRUE])
+})
+
+
 test_that("coords returns the correct basic values ", {
 	obtained <- coords(r.s100b, 0.205, 
 					   ret = c("t", "tp", "fp", "tn", "fn",
@@ -332,6 +344,14 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	# drop = TRUE
 	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE, transpose = FALSE)
 	expect_equal(obtained, as.list(expect[reduced.cols,]))
+	
+	# With as.matrix
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE)
+	expect_equal(obtained, t(expect[reduced.cols,, drop=FALSE]))
+	
+	# With matrix and drop = TRUE
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE, drop = TRUE)
+	expect_equal(obtained, expect[reduced.cols,])
 	
 	# Default drop with numeric
 	obtained <- coords(smooth.s100b, c(0.2, 0.5), ret="se")
@@ -589,5 +609,3 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
 		0.2926829268292683 # and not 0
 	)
 })
-
-
