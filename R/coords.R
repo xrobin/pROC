@@ -86,11 +86,10 @@ coords.smooth.roc <- function(smooth.roc,
     	res <- roc.utils.calc.coords(substr.percent, NA, se, sp, ncases, ncontrols, best.weights)
     }
     else {
-    	res <- data.frame(
+    	res <- cbind(
     		specificity = sp,
     		sensitivity = se,
-    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit,
-    		stringsAsFactors = FALSE
+    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
     	)
     	colnames(res)[3] <- best.method
     }
@@ -181,11 +180,10 @@ coords.roc <- function(roc,
       	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
       	return(NULL)
       }
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres,
       	specificity = sp,
-      	sensitivity = se,
-      	stringsAsFactors = FALSE
+      	sensitivity = se
       )
     }
     else if (x == "local maximas") {
@@ -212,11 +210,10 @@ coords.roc <- function(roc,
       	return(NULL)
       }
       lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres[lm.idx],
       	specificity = sp[lm.idx],
-      	sensitivity = se[lm.idx],
-      	stringsAsFactors = FALSE
+      	sensitivity = se[lm.idx]
       )
     }
     else { # x == "best"
@@ -256,12 +253,11 @@ coords.roc <- function(roc,
       	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
       	return(NULL)
       }
-      res <- data.frame(
+      res <- cbind(
       	threshold = thres,
       	specificity = sp,
       	sensitivity = se,
-      	best.method = ifelse(best.method == "youden", 1, -1) * optim.crit,
-      	stringsAsFactors = FALSE
+      	best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
       )
       colnames(res)[4] <- best.method
     }
@@ -270,21 +266,19 @@ coords.roc <- function(roc,
 
     if (input == "threshold") {
     	thr_idx <- roc.utils.thr.idx(roc, x)
-    	res <- data.frame(
+    	res <- cbind(
     		threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
     		specificity = roc$specificities[thr_idx],
-    		sensitivity = roc$sensitivities[thr_idx],
-    		stringsAsFactors = FALSE
+    		sensitivity = roc$sensitivities[thr_idx]
     	)
     }
     if (input == "specificity") {
     	if (any(x < 0) || any(x > ifelse(roc$percent, 100, 1))) {
     		stop("Input specificity not within the ROC space.")
     	}
-    	res <- data.frame(threshold = rep(NA, length(x)),
+    	res <- cbind(threshold = rep(NA, length(x)),
     					  specificity = rep(NA, length(x)),
-    					  sensitivity = rep(NA, length(x)),
-    					  stringsAsFactors = FALSE)
+    					  sensitivity = rep(NA, length(x)))
     	if (methods::is(roc, "smooth.roc")) {
     	  thresholds <- rep(NA, length(roc$sensitivities))
     	}
@@ -309,10 +303,9 @@ coords.roc <- function(roc,
     	if (any(x < 0) || any(x > ifelse(roc$percent, 100, 1))) {
     		stop("Input sensitivity not within the ROC space.")
     	}
-    	res <- data.frame(threshold = rep(NA, length(x)),
+    	res <- cbind(threshold = rep(NA, length(x)),
     					  specificity = rep(NA, length(x)),
-    					  sensitivity = rep(NA, length(x)),
-    					  stringsAsFactors = FALSE)
+    					  sensitivity = rep(NA, length(x)))
     	if (methods::is(roc, "smooth.roc")) {
     	  thresholds <- rep(NA, length(roc$sensitivities))
     	}

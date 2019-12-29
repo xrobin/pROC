@@ -395,7 +395,7 @@ roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols
 	youden <- roc.utils.optim.crit(se, sp, substr.percent, best.weights, "youden")
 	closest.topleft <- - roc.utils.optim.crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
 	
-	return(data.frame(
+	return(cbind(
 		threshold=thr,
 		sensitivity=se, 
 		specificity=sp, 
@@ -419,9 +419,8 @@ roc.utils.calc.coords <- function(substr.percent, thr, se, sp, ncases, ncontrols
 		precision=precision,
 		recall=recall,
 		youden=youden,
-		closest.topleft=closest.topleft,
-		stringsAsFactors = FALSE,
-		check.names = FALSE))
+		closest.topleft=closest.topleft
+	))
 }
 
 # Match arbitrary user-supplied thresholds to the threshold of the ROC curve.
