@@ -22,72 +22,41 @@ roc <- function(...) {
 }
 
 roc.formula <- function (formula, data, ...) {
-  data.missing <- missing(data)
-  # Get predictors (easy)
-  if (data.missing) {
-  	predictors <- attr(terms(formula), "term.labels")
-  }
-  else {
-  	predictors <- attr(terms(formula, data = data), "term.labels")
-  }
-  
-  # Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
-  Call <- match.call()
-  indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
-  if (indx[1] == 0) {
-  	stop("A formula argument is required")
-  }
-  # Keep the standard arguments and run them in model.frame
-  temp <- Call[c(1,indx)]  
-  temp[[1]] <- as.name('model.frame')
-  # Only na.pass and na.fail should be used
-  if (indx[5] != 0) {
-  	na.action.value = as.character(Call[indx[5]])
-  	if (! as.character(Call[indx[5]]) %in% c("na.pass", "na.fail")) {
-  		warning(paste0(sprintf("Value %s of na.action is not supported ", na.action.value),
-  					   "and will break pairing in roc.test and are.paired. ",
-  					   "Please use 'na.rm = TRUE' instead."))
-  	}
-  }
-  else {
-  	temp$na.action = "na.pass"
-  }
-  # Run model.frame
-  m <- eval(temp, parent.frame())
-  
-  if (!is.null(model.weights(m))) stop("weights are not supported")
-  
-  # Get response (easy)
-  response <- model.response(m)
-
-  if (length(response) == 0) {
-    stop("Error in the formula: a response is required in a formula of type response~predictor.")
-  }
-
-  if (length(predictors) == 1) {
-    roc <- roc.default(response, m[[predictors]], ...)
-    roc$call <- Call
-    if (!is.null(roc$smooth))
-      attr(roc, "roc")$call <- roc$call
-    return(roc)
-  }
-  else if (length(predictors) > 1) {
-    roclist <- lapply(predictors, function(predictor, formula, m.data, call, ...) {
-      # Get one ROC
-      roc <- roc.default(response, m.data[[predictor]], ...)
-      # Update the call to reflect the parents
-      formula[3] <- call(predictor) # replace the predictor in formula
-      call$formula <- formula # Replace modified formula
-      roc$call <- call
-      return(roc)
-    }, formula = formula, m.data = m, call = match.call(), ...)
-    # Set the list names
-    names(roclist) <- predictors
-    return(roclist)
-  }
-  else {
-    stop("Invalid formula:at least 1 predictor is required in a formula of type response~predictor.")
-  }
+	data.missing <- missing(data)
+	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+										  data.missing = data.missing,
+										  call = match.call())
+	response <- roc.data$response
+	predictors <- roc.data$predictors
+	
+	if (length(response) == 0) {
+		stop("Error in the formula: a response is required in a formula of type response~predictor.")
+	}
+	
+	if (ncol(predictors) == 1) {
+		roc <- roc.default(response, predictors[, 1], ...)
+		roc$call <- match.call()
+		if (!is.null(roc$smooth))
+			attr(roc, "roc")$call <- roc$call
+		return(roc)
+	}
+	else if (ncol(predictors) > 1) {
+		roclist <- lapply(roc.data$predictor.names, function(predictor, formula, m.data, call, ...) {
+			# Get one ROC
+			roc <- roc.default(response, m.data[[predictor]], ...)
+			# Update the call to reflect the parents
+			formula[3] <- call(predictor) # replace the predictor in formula
+			call$formula <- formula # Replace modified formula
+			roc$call <- call
+			return(roc)
+		}, formula = formula, m.data = predictors, call = match.call(), ...)
+		# Set the list names
+		names(roclist) <- roc.data$predictor.names
+		return(roclist)
+	}
+	else {
+		stop("Invalid formula:at least 1 predictor is required in a formula of type response~predictor.")
+	}
 }
 
 roc.data.frame <- function(data, response, predictor, 
