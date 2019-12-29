@@ -56,7 +56,7 @@ test_that("roc.utils.match.coords.ret.args works", {
 	for (coord in pROC:::roc.utils.valid.coords) {
 		expect_equal(pROC:::roc.utils.match.coords.ret.args(coord), coord)
 	}
-	expect_equal(pROC:::roc.utils.match.coords.ret.args(roc.utils.valid.coords), roc.utils.valid.coords)
+	expect_equal(pROC:::roc.utils.match.coords.ret.args(pROC:::roc.utils.valid.coords), pROC:::roc.utils.valid.coords)
 	
 	# Errors
 	# t with threshold=False
