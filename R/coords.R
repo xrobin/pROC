@@ -104,6 +104,7 @@ coords.smooth.roc <- function(smooth.roc,
     	return(list)
     }
     else if (transpose) {
+      rownames(res) <- NULL
       return(t(res)[ret,, drop=drop])
     }
     else {
@@ -355,6 +356,7 @@ coords.roc <- function(roc,
   	return(list)
   }
   else if (transpose) {
+    rownames(res) <- NULL
     return(t(res)[ret,, drop=drop])
   }
   else {
