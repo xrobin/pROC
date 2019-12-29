@@ -29,6 +29,7 @@ coords.smooth.roc <- function(smooth.roc,
                               best.method=c("youden", "closest.topleft"),
                               best.weights=c(1, 0.5),
                               transpose = FALSE,
+                              as.matrix = FALSE,
                               ...) {
   # make sure x was provided
   if (missing(x))
@@ -109,7 +110,10 @@ coords.smooth.roc <- function(smooth.roc,
       if (missing(drop) ) {
         drop = FALSE
       }
-      return(as.data.frame(res)[, ret, drop=drop])
+      if (! as.matrix) {
+        res <- as.data.frame(res)
+      }
+      return(res[, ret, drop=drop])
     }
   }
   
@@ -120,7 +124,8 @@ coords.smooth.roc <- function(smooth.roc,
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, transpose = transpose, ...))
+  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, 
+                    transpose = transpose, as.matrix = as.matrix, ...))
 }
 
 coords.roc <- function(roc,
@@ -132,6 +137,7 @@ coords.roc <- function(roc,
                        best.method=c("youden", "closest.topleft"),
                        best.weights=c(1, 0.5), 
                        transpose = FALSE,
+                       as.matrix = FALSE,
                        ...) {
   # make sure x was provided
   if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
@@ -355,7 +361,10 @@ coords.roc <- function(roc,
     if (missing(drop)) {
       drop = FALSE
     }
-    return(as.data.frame(res)[, ret, drop=drop])
+    if (! as.matrix) {
+      res <- as.data.frame(res)
+    }
+    return(res[, ret, drop=drop])
   	
   }
 }
