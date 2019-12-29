@@ -538,7 +538,8 @@ roc.utils.extract.formula <- function(formula, data, data.missing, call, ...) {
 	
 	if (!is.null(model.weights(m))) stop("weights are not supported")
 	
-	return(list(response = model.response(m),
+	return(list(response.name = names(m)[1],
+				response = model.response(m),
 				predictor.names = predictors,
 				predictors = m[predictors]))
 }

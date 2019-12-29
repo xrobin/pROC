@@ -22,22 +22,17 @@ plot.roc <- function(x, ...) {
 }
 
 plot.roc.formula <- function(x, data, subset, na.action, ...) {
-	# Get the data. Use standard code from survival::coxph as suggested by Terry Therneau
-	Call <- match.call()
-	indx <- match(c("x", "data", "weights", "subset", "na.action"), names(Call), nomatch=0)
-	if (indx[1] == 0) {
-		stop("A formula is required as 'x' argument")
+	data.missing <- missing(data)
+	call <- match.call()
+	names(call)[2] <- "formula" # forced to be x by definition of plot
+	roc.data <- roc.utils.extract.formula(formula=x, data, subset, na.action, ..., 
+										  data.missing = data.missing,
+										  call = call)
+	if (length(roc.data$predictor.name) > 1) {
+		stop("Only one predictor supported in 'plot.roc'.")
 	}
-	# Keep the standard arguments and run them in model.frame
-	temp <- Call[c(1,indx)]  
-	temp[[1]] <- as.name('model.frame')
-	names(temp)[2] <- "formula"
-	m <- eval(temp, parent.frame())
-	
-	if (!is.null(model.weights(m))) stop("weights are not supported")
-	
-	response <- model.response(m)
-	predictor <- m[[attr(terms(x), "term.labels")]]
+	response <- roc.data$response
+	predictor <- roc.data$predictors[, 1]
 	
 	roc <- roc(response, predictor, plot=TRUE, ...)
 	roc$call <- match.call()
