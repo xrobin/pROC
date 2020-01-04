@@ -208,15 +208,8 @@ test_that("drop works", {
 
 
 test_that("as.matrix works", {
-	obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", transpose = FALSE, as.matrix = TRUE, drop = FALSE)
-	expect_equal(obtained, t(expected.coords["sensitivity", c(40, 18), drop = FALSE]))
-
-	obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", transpose = FALSE, as.matrix = TRUE, drop = TRUE)
-	expect_equal(obtained, expected.coords["sensitivity", c(40, 18), drop = TRUE])
-	
-	# Drop by default
 	obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", transpose = FALSE, as.matrix = TRUE)
-	expect_equal(obtained, expected.coords["sensitivity", c(40, 18), drop = TRUE])
+	expect_equal(obtained, t(expected.coords["sensitivity", c(40, 18), drop = FALSE]))
 })
 
 
@@ -353,20 +346,16 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	expect_equal(obtained, as.list(expect[reduced.cols,]))
 	
 	# With as.matrix
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE, drop = FALSE)
+	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE)
 	expect_equal(obtained, t(expect[reduced.cols,, drop=FALSE]))
 	
 	# With matrix and drop = TRUE
 	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE, drop = TRUE)
 	expect_equal(obtained, expect[reduced.cols,])
 	
-	# With matrix, drop by default
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, transpose = FALSE, as.matrix = TRUE)
-	expect_equal(obtained, expect[reduced.cols,])
-	
-	# Default drop to numeric
+	# Default drop with numeric
 	obtained <- coords(smooth.s100b, c(0.2, 0.5), ret="se")
-	expect_is(obtained, "numeric")
+	expect_is(obtained, "data.frame")
 	
 	# With numeric x
 	obtained <- coords(smooth.s100b, c(0.2, 0.5, 0.6), transpose = FALSE)

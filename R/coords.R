@@ -108,30 +108,25 @@ coords.smooth.roc <- function(smooth.roc,
       return(t(res)[ret,, drop=drop])
     }
     else {
-      if (as.matrix) {
-        return(res[, ret, drop=drop])
+      if (missing(drop) ) {
+        drop = FALSE
       }
-      else { # as data.frame
-        if (missing(drop)) {
-          return(as.data.frame(res)[, ret])
-        }
-        else {
-          return(as.data.frame(res)[, ret, drop=drop])
-        }
+      if (! as.matrix) {
+        res <- as.data.frame(res)
       }
+      return(res[, ret, drop=drop])
     }
+  }
+  
+  # Adjust drop for downstream call
+  if (missing(drop) && ! transpose) {
+    drop = FALSE
   }
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  if (missing(drop)) {
-    return(coords.roc(smooth.roc, x, input, ret, as.list, 
-                      transpose = transpose, as.matrix = as.matrix, ...))
-  }
-  else {
-    return(coords.roc(smooth.roc, x, input, ret, as.list, drop, 
-                      transpose = transpose, as.matrix = as.matrix, ...))
-  }
+  return(coords.roc(smooth.roc, x, input, ret, as.list, drop, 
+                    transpose = transpose, as.matrix = as.matrix, ...))
 }
 
 coords.roc <- function(roc,
@@ -365,16 +360,13 @@ coords.roc <- function(roc,
     return(t(res)[ret,, drop=drop])
   }
   else {
-    if (as.matrix) {
-      return(res[, ret, drop=drop])
+    if (missing(drop)) {
+      drop = FALSE
     }
-    else { # as data.frame
-      if (missing(drop)) {
-        return(as.data.frame(res)[, ret])
-      }
-      else {
-        return(as.data.frame(res)[, ret, drop=drop])
-      }
+    if (! as.matrix) {
+      res <- as.data.frame(res)
     }
+    return(res[, ret, drop=drop])
+  	
   }
 }

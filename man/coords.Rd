@@ -284,7 +284,13 @@ coords(rocobj, 50, "se", transpose = FALSE)
 coords(smooth(rocobj), 90, "specificity", transpose = FALSE)
 
 # Get the sensitivities for all thresholds
-se <- coords(rocobj, "all", ret="se", transpose = FALSE)
+cc <- coords(rocobj, rocobj$thresholds, "thr", "se", transpose = FALSE,)
+print(cc$sensitivity)
+
+# This is equivalent to taking sensitivities from rocobj directly
+stopifnot(all.equal(rocobj$sensitivities, cc$sensitivity))
+# You could also write:
+cc <- coords(rocobj, "all", ret="se", transpose = FALSE)
 
 # Get the best threshold
 coords(rocobj, "b", ret="t", transpose = FALSE)
