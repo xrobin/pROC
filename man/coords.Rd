@@ -267,78 +267,68 @@ The following table lists valid \code{ret} arguments.
 \code{\link{roc}}, \code{\link{ci.coords}}
 }
 \examples{
-data(aSAH)
 
-# Print a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+# Create a ROC curve:
+data(aSAH)
+roc.s100b <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
 # Get the coordinates of S100B threshold 0.55
-coords(rocobj, 0.55, transpose = FALSE)
+coords(roc.s100b, 0.55, transpose = FALSE)
 
 # Get the coordinates at 50\% sensitivity
-coords(roc=rocobj, x=50, input="sensitivity", transpose = FALSE)
+coords(roc=roc.s100b, x=50, input="sensitivity", transpose = FALSE)
 # Can be abbreviated:
-coords(rocobj, 50, "se", transpose = FALSE)
+coords(roc.s100b, 50, "se", transpose = FALSE)
 
 # Works with smoothed ROC curves
-coords(smooth(rocobj), 90, "specificity", transpose = FALSE)
+coords(smooth(roc.s100b), 90, "specificity", transpose = FALSE)
 
 # Get the sensitivities for all thresholds
-cc <- coords(rocobj, rocobj$thresholds, "thr", "se", transpose = FALSE,)
+cc <- coords(roc.s100b, "all", ret="sensitivity", transpose = FALSE)
 print(cc$sensitivity)
 
-# This is equivalent to taking sensitivities from rocobj directly
-stopifnot(all.equal(rocobj$sensitivities, cc$sensitivity))
-# You could also write:
-cc <- coords(rocobj, "all", ret="se", transpose = FALSE)
-
 # Get the best threshold
-coords(rocobj, "b", ret="t", transpose = FALSE)
+coords(roc.s100b, "best", ret="threshold", transpose = FALSE)
 
 # Get the best threshold according to different methods
-rocobj <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
-coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+roc.ndka <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
+coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
        best.method="youden") # default
-coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
        best.method="closest.topleft")
 
 # and with different weights
-coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
        best.method="youden", best.weights=c(50, 0.2))
-coords(rocobj, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
        best.method="closest.topleft", best.weights=c(5, 0.2))
-
-# and plot them
-plot(rocobj, print.thres="best", print.thres.best.method="youden")
-plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft")
-plot(rocobj, print.thres="best", print.thres.best.method="youden",
+       
+# This is available with the plot.roc function too:
+plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
                                  print.thres.best.weights=c(50, 0.2)) 
-plot(rocobj, print.thres="best", print.thres.best.method="closest.topleft",
-                                 print.thres.best.weights=c(5, 0.2)) 
 
 # Return more values:
-coords(rocobj, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
+coords(roc.s100b, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
                            "precision", "recall"), transpose = FALSE)
 
 # Return all values
-coords(rocobj, "best", ret = "all", transpose = FALSE)
+coords(roc.s100b, "best", ret = "all", transpose = FALSE)
                            
 # You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
-
 plot(specificity + sensitivity ~ threshold, 
-     coords(rocobj, "all", transpose = FALSE), 
+     coords(roc.ndka, "all", transpose = FALSE), 
      type = "l", log="x", 
      subset = is.finite(threshold))
 
 # Plot the Precision-Recall curve
 plot(precision ~ recall, 
-     coords(rocobj, "all", ret = c("recall", "precision"), transpose = FALSE),
+     coords(roc.ndka, "all", ret = c("recall", "precision"), transpose = FALSE),
      type="l", ylim = c(0, 100))
 
 # Alternatively plot the curve with TPR and FPR instead of SE/SP 
 # (identical curve, only the axis change)
 plot(tpr ~ fpr, 
-     coords(rocobj, "all", ret = c("tpr", "fpr"), transpose = FALSE),
+     coords(roc.ndka, "all", ret = c("tpr", "fpr"), transpose = FALSE),
      type="l")
 }
 

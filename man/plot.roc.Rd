@@ -297,39 +297,45 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 \code{\link{roc}}, \code{\link{auc}}, \code{\link{ci}}
 }
 \examples{
+
+# Create a few ROC curves:
 data(aSAH)
+roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
+roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
+roc.ndka <- roc(aSAH$outcome, aSAH$wfns)
 
-# Syntax (response, predictor):
-plot.roc(aSAH$outcome, aSAH$s100b)
-
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-# identical:
-plot(rocobj)
-plot.roc(rocobj)
+# Simple example:
+plot(roc.s100b)
 
 # Add a smoothed ROC:
-plot.roc(smooth(rocobj), add=TRUE, col="blue")
+plot(smooth(roc.s100b), add=TRUE, col="blue")
 legend("bottomright", legend=c("Empirical", "Smoothed"),
        col=c(par("fg"), "blue"), lwd=2)
 
 # With more options:
-plot(rocobj, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
+plot(roc.s100b, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
      grid.col=c("green", "red"), max.auc.polygon=TRUE,
-     auc.polygon.col="blue", print.thres=TRUE)
+     auc.polygon.col="lightblue", print.thres=TRUE)
 
 # To plot a different partial AUC, we need to ignore the existing value
 # with reuse.auc=FALSE:
-plot(rocobj, print.auc=TRUE, auc.polygon=TRUE, partial.auc=c(1, 0.8),
+plot(roc.s100b, print.auc=TRUE, auc.polygon=TRUE, partial.auc=c(1, 0.8),
      partial.auc.focus="se", grid=c(0.1, 0.2), grid.col=c("green", "red"),
-     max.auc.polygon=TRUE, auc.polygon.col="blue", print.thres=TRUE,
+     max.auc.polygon=TRUE, auc.polygon.col="lightblue", 
+     print.thres=TRUE, print.thres.adj = c(1, -1),
      reuse.auc=FALSE)
 
-# Add a line to the previous plot:
-plot.roc(aSAH$outcome, aSAH$wfns, add=TRUE)
+# Add a second ROC curve to the previous plot:
+plot(roc.wfns, add=TRUE)
 
-# Alternatively, you can get the plot directly from roc():
-roc(aSAH$outcome, aSAH$s100b, plot=TRUE)
+# Plot some thresholds, add them to the same plot
+plot(roc.ndka, print.thres="best", print.thres.best.method="youden")
+plot(roc.ndka, print.thres="best", print.thres.best.method="closest.topleft",
+                                   add = TRUE)
+plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
+                                   print.thres.best.weights=c(50, 0.2),
+                                   print.thres.adj = c(1.1, 1.25),
+                                   add = TRUE)
 }
 
 \keyword{univar}
