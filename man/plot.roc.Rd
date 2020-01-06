@@ -1,5 +1,6 @@
 \encoding{UTF-8}
 \name{plot.roc}
+\alias{plot}
 \alias{plot.roc}
 \alias{plot.roc.roc}
 \alias{plot.smooth.roc}
