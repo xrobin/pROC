@@ -89,32 +89,38 @@ The return value of the specific \code{ci} functions
 }
 
 \examples{
+
+# Create a ROC curve:
 data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-# Syntax (response, predictor):
-ci(aSAH$outcome, aSAH$s100b)
 
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
+## AUC ## 
+ci(roc1)
+# this is equivalent to:
+ci(roc1, of = "auc")
+# or:
+ci.auc(roc1)
 
-# Of an AUC 
-ci(rocobj)
-ci(rocobj, of="auc")
-# this is strictly equivalent to:
-ci.auc(rocobj)
 
-# Of thresholds, sp, se...
+## Coordinates ##
 \dontrun{
-ci(rocobj, of="thresholds")
-ci(rocobj, of="thresholds", thresholds=0.51)
-ci(rocobj, of="thresholds", thresholds="all")
-ci(rocobj, of="sp", sensitivities=c(.95, .9, .85))
-ci(rocobj, of="se")
-}
+# Thresholds
+ci(roc1, of = "thresholds")
+ci(roc1, of = "thresholds", thresholds = "all")
+ci(roc1, of = "thresholds", thresholds = 0.51)
+# equivalent to:
+ci.thresholds(roc1, thresholds = 0.51)
 
-# Alternatively, you can get the CI directly from roc():
-rocobj <- roc(aSAH$outcome, aSAH$s100b, ci=TRUE, of="auc")
-rocobj$ci
+# SE/SP
+ci(roc1, of = "sp", sensitivities = c(.95, .9, .85))
+ci.sp(roc1)
+ci(roc1, of = "se")
+ci.se(roc1)
+
+# Arbitrary coordinates
+ci(roc1, of = "coords", "best")
+ci.coords(roc1, 0.51, "threshold")}
 
 }
 

@@ -145,40 +145,36 @@ parallel=FALSE, ...)
   \code{\link{ci}},
   \code{\link{ci.sp}},
   \code{\link{plot.ci}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{
+# Create a ROC curve:
 data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
+
+## Basic example ##
 \dontrun{
-# Syntax (response, predictor):
-ci.se(aSAH$outcome, aSAH$s100b)
+ci.se(roc1)}\dontshow{ci.se(roc1, boot.n = 10)}
 
-# With a roc object and less bootstrap:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.se(rocobj, boot.n=100)
 
-# Customized bootstrap and specific specificities:
-ci.se(rocobj, c(.95, .9, .85), boot.n=500, conf.level=0.9, stratified=FALSE)
-}
-
-# Alternatively, you can get the CI directly from roc():
-rocobj <- roc(aSAH$outcome,
-              aSAH$s100b, ci=TRUE, of="se", boot.n=100)
-rocobj$ci
-
-# Plotting the CI
-plot(rocobj)
-plot(rocobj$ci)
-
+## More options ##
+# Customized bootstrap and specificities:
 \dontrun{
-# On a smoothed ROC, the CI is re-computed automatically
-smooth(rocobj)
-# Or you can compute a new one:
-ci.se(smooth(rocobj, method="density", reuse.ci=FALSE), boot.n=100)
-}
+ci.se(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, stratified=FALSE)}\dontshow{
+ci.se(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, stratified=FALSE)}
+
+
+## Plotting the CI ##
+ci1 <- ci.se(roc1, boot.n = 10)
+plot(roc1)
+plot(ci1)
+
+
+## On smoothed ROC curves with bootstrap ##
+\dontrun{
+ci.se(smooth(roc1, method="density"))}\dontshow{
+ci.se(smooth(roc1, method="density"), boot.n = 10)}
 }
 
 \keyword{univar}

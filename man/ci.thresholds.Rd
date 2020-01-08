@@ -138,35 +138,39 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 \seealso{
   \code{\link{roc}},
   \code{\link{ci}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{
 data(aSAH)
 
+# Create a ROC curve:
+data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+
+
+## Basic example ##
+# Compute CI of all local maxima thresholds
 \dontrun{
-# Syntax (response, predictor):
-ci.thresholds(aSAH$outcome, aSAH$s100b)
+ci.thresholds(roc1)}\dontshow{ci.thresholds(roc1, boot.n = 10)}
 
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.thresholds(rocobj)
 
-# Customized bootstrap and specific thresholds:
-ci.thresholds(aSAH$outcome, aSAH$s100b,
-              boot.n=500, conf.level=0.9, stratified=FALSE,
-              thresholds=c(0.5, 1, 2))
-}
+## More options ##
+# Customized bootstrap and thresholds:
+\dontrun{
+ci.thresholds(roc1,
+			  thresholds=c(0.5, 1, 2),
+              boot.n=10000, conf.level=0.9, stratified=FALSE)}\dontshow{
+ci.thresholds(roc1,
+			  thresholds=c(0.5, 1, 2),
+              boot.n=10, conf.level=0.9, stratified=FALSE)}
 
-# Alternatively, you can get the CI directly from roc():
-rocobj <- roc(aSAH$outcome,
-              aSAH$s100b, ci=TRUE, of="thresholds")
-rocobj$ci
 
-# Plotting the CI
-plot(rocobj)
-plot(rocobj$ci)
+## Plotting the CI ##
+\dontrun{
+ci1 <- ci.thresholds(roc1)}\dontshow{
+ci1 <- ci.thresholds(roc1, boot.n = 10)}
+plot(roc1)
+plot(ci1)
 }
 
 \keyword{univar}

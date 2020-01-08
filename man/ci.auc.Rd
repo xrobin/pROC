@@ -204,51 +204,52 @@ consistency reasons.
 
 \seealso{
   \code{\link{roc}}, \code{\link{auc}}, \code{\link{ci}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{
+# Create a ROC curve:
 data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-# Syntax (response, predictor):
-ci.auc(aSAH$outcome, aSAH$s100b)
 
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-# default values
-ci.auc(rocobj)
-ci(rocobj)
-ci(auc(rocobj))
-ci(rocobj$auc)
-ci(rocobj$auc, method="delong")
+## Basic example ##
+ci.auc(roc1)
 
+# You can also write:
+ci(roc1)
+ci(auc(roc1))
+
+
+## More options ##
 # Partial AUC and customized bootstrap:
-ci.auc(aSAH$outcome, aSAH$s100b,
-       boot.n=100, conf.level=0.9, stratified=FALSE, partial.auc=c(1, .8),
-       partial.auc.focus="se", partial.auc.correct=TRUE)
+\dontrun{
+ci.auc(roc1,
+       conf.level=0.9,
+	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
+       boot.n=10000, stratified=FALSE)}\dontshow{
+ci.auc(roc1,
+       conf.level=0.9,
+	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
+       boot.n=10, stratified=FALSE)}
 
 # Note that the following will NOT give a CI of the partial AUC:
-ci.auc(rocobj, boot.n=500, conf.level=0.9, stratified=FALSE,
-       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
+\dontrun{
+ci.auc(roc1,
+       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE)}
 # This is because rocobj$auc is not a partial AUC.
 \dontrun{
-# You can overcome this problem with reuse.auc:
-ci.auc(rocobj, boot.n=500, conf.level=0.9, stratified=FALSE,
-       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE,
-       reuse.auc=FALSE)
-}
+# You can overcome this problem with reuse.auc = FALSE:
+ci.auc(roc1,
+       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE,
+       reuse.auc=FALSE)}\dontshow{ci.auc(roc1,
+       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE,
+       reuse.auc=FALSE, boot.n = 10)}
 
-# Alternatively, you can get the CI directly from roc():
-rocobj <- roc(aSAH$outcome, aSAH$s100b, ci=TRUE, of="auc")
-rocobj$ci
 
+## On smoothed ROC curves with bootstrap ##
 \dontrun{
-# On a smoothed ROC, the CI is re-computed automatically
-smooth(rocobj)
-# Or you can compute a new one:
-ci.auc(smooth(rocobj, method="density", reuse.ci=FALSE), boot.n=100)
-}
+ci.auc(smooth(roc1, method="density"))}\dontshow{
+ci.auc(smooth(roc1, method="density"), boot.n = 10)}
 }
 
 \keyword{univar}
