@@ -647,7 +647,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (is.character(x) && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -678,7 +678,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -712,7 +712,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -747,7 +747,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)

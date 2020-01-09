@@ -211,9 +211,9 @@ ci.coords.roc <- function(roc,
 # Will follow the action defined by best.policy
 # For instance:
 #   if (x == "best" && ncol(res) != 1) {
-# return(enfore.best.policy(res, best.policy))
+# return(enforce.best.policy(res, best.policy))
 # }
-enfore.best.policy <- function(res, best.policy) {
+enforce.best.policy <- function(res, best.policy) {
 	if (best.policy == "stop") {
 		stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
 	}
