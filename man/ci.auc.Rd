@@ -236,14 +236,12 @@ ci.auc(roc1,
 \dontrun{
 ci.auc(roc1,
        partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE)}
-# This is because rocobj$auc is not a partial AUC.
+# This is because rocobj$auc is not a partial AUC and reuse.auc = TRUE by default.
+# You can overcome this problem by passing an AUC instead:
+auc1 <- auc(roc1, partial.auc=c(1, .8), partial.auc.focus="se", 
+            partial.auc.correct=FALSE)
 \dontrun{
-# You can overcome this problem with reuse.auc = FALSE:
-ci.auc(roc1,
-       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE,
-       reuse.auc=FALSE)}\dontshow{ci.auc(roc1,
-       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE,
-       reuse.auc=FALSE, boot.n = 10)}
+ci.auc(auc1)}\dontshow{ci.auc(auc1, boot.n = 10)}
 
 
 ## On smoothed ROC curves with bootstrap ##

@@ -42,3 +42,15 @@ test_that("ci.auc works with a direction = >", {
 test_that("ci.auc works with a direction = > and percent", {
 	expect_equal(as.numeric(ci.auc(aSAH$outcome, -aSAH$ndka, percent = TRUE)), expected.ci.auc * 100)
 })
+
+
+test_that("ci.auc.auc works with a partial AUC from a roc with full AUC", {
+	ci.s100b <- ci.auc(r.s100b)
+	expect_equal(attr(ci.s100b, "method"), "delong")
+	pauc.s100b <- auc(r.s100b, partial.auc = c(1, .9), partial.auc.focus = "se", partial.auc.correct = TRUE)
+	ci.pauc.s100b <- ci.auc(pauc.s100b, boot.n = 10, progress = "none")
+	expect_equal(attr(ci.pauc.s100b, "method"), "bootstrap")
+	expect_equal(attr(attr(ci.pauc.s100b, "auc"), "partial.auc"), c(1, .9))
+	expect_equal(attr(attr(ci.pauc.s100b, "auc"), "partial.auc.focus"), "sensitivity")
+	expect_equal(attr(attr(ci.pauc.s100b, "auc"), "partial.auc.correct"), TRUE)
+})
