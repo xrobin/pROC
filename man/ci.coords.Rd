@@ -109,6 +109,8 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
+  \bold{Note:} changed in version 1.16.
+  
   A list of the same length as \code{ret} and named as \code{ret}, and of 
   class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order).
   
