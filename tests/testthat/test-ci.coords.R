@@ -22,7 +22,7 @@ test_that("ci.coords accepts threshold output with x=best or if input was thresh
 for (test.roc in list(r.s100b, smooth(r.s100b))) {
 
 	test_that("ci.coords accepts one x and one ret", {
-		obtained <- ci.coords(r.s100b, x=0.8, input = "sensitivity", ret="sp", 
+		obtained <- ci.coords(test.roc, x=0.8, input = "sensitivity", ret="sp", 
 							  boot.n=3, conf.level = .91)
 		expect_equal(attr(obtained, "ret"), "specificity")
 		expect_equal(names(obtained), attr(obtained, "ret"))
@@ -33,7 +33,7 @@ for (test.roc in list(r.s100b, smooth(r.s100b))) {
 	})
 	
 	test_that("ci.coords accepts one x and multiple ret", {
-		obtained <- ci.coords(r.s100b, x=0.8, input = "sensitivity", ret=c("sp", "ppv", "tp", "1-sensitivity"), 
+		obtained <- ci.coords(test.roc, x=0.8, input = "sensitivity", ret=c("sp", "ppv", "tp", "1-sensitivity"), 
 							  boot.n=3, conf.level = .91)
 		expect_equal(attr(obtained, "ret"), c("specificity", "ppv", "tp", "1-sensitivity"))
 		expect_equal(names(obtained), attr(obtained, "ret"))
@@ -44,7 +44,7 @@ for (test.roc in list(r.s100b, smooth(r.s100b))) {
 	})
 	
 	test_that("ci.coords accepts multiple x and one ret", {
-		obtained <- ci.coords(r.s100b, x=c(0.8, 0.9), input = "sensitivity", ret="sp", 
+		obtained <- ci.coords(test.roc, x=c(0.8, 0.9), input = "sensitivity", ret="sp", 
 							  boot.n=3, conf.level = .91)
 		expect_equal(attr(obtained, "ret"), "specificity")
 		expect_equal(names(obtained), attr(obtained, "ret"))
@@ -55,7 +55,7 @@ for (test.roc in list(r.s100b, smooth(r.s100b))) {
 	})
 	
 	test_that("ci.coords accepts multiple x and ret", {
-		obtained <- ci.coords(r.s100b, x=c(0.9, 0.8), input = "sensitivity", ret=c("sp", "ppv", "tp", "1-se"), 
+		obtained <- ci.coords(test.roc, x=c(0.9, 0.8), input = "sensitivity", ret=c("sp", "ppv", "tp", "1-se"), 
 							  boot.n=3, conf.level = .91)
 		expect_equal(attr(obtained, "ret"), c("specificity", "ppv", "tp", "1-sensitivity"))
 		expect_equal(names(obtained), attr(obtained, "ret"))
