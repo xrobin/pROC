@@ -648,7 +648,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
                     best.method = best.method, best.weights = best.weights,
                     drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (is.character(x) && x == "best" && nrow(res) != 1) {
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
   	return(enforce.best.policy(res, best.policy))
   }
   else {
@@ -681,7 +681,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
                     best.method = best.method, best.weights = best.weights,
                     drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (x == "best" && nrow(res) != 1) {
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
   	return(enforce.best.policy(res, best.policy))
   }
   else {
