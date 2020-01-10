@@ -106,20 +106,13 @@ ci.coords.smooth.roc <- function(smooth.roc,
   	}
   }
 
-  if (length(x) > 1) {
-    inputs <- paste(input, x)
-    rownames.ret <- paste(rep(inputs, each=length(ret)), ret, sep=": ")
-  }
-  else {
-    rownames.ret <- ret
-  }
-
-  quant.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
-  ci <- matrix(quant.perfs, ncol=3, byrow=TRUE)
+  summarized.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  ci <- sapply(ret, function(x) t(summarized.perfs[,,x]), simplify = FALSE)
   
-  colnames(ci) <- dimnames(quant.perfs)[[1]]
-  rownames(ci) <- rownames.ret
   class(ci) <- c("ci.coords", "ci", class(ci))
+  attr(ci, "input") <- input
+  attr(ci, "x") <- x
+  attr(ci, "ret") <- ret
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -171,13 +164,13 @@ ci.coords.roc <- function(roc,
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- rlply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress)
+    perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress)
+    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
   }
 
-  if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")
   	}
@@ -186,20 +179,14 @@ ci.coords.roc <- function(roc,
   		warning(sprintf("%s NA value(s) produced during bootstrap were ignored.", how.many))
   	}
   }
-
-  if (length(x) > 1 || length(ret) > 1) {
-    ci <- t(apply(sapply(perfs, c), 1, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE))
-  }
-  else { # 1 x and 1 ret
-    # If x == "best" coords may return multiple best thresholds
-    # Be very conservative and take the most extreme ones
-    ci.max <- quantile(sapply(perfs, max), probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
-    ci.min <- quantile(sapply(perfs, min), probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
-    ci <- t(ci.max * c(0, 0.5, 1) + ci.min * c(1, 0.5, 0))
-  }
-  rownames(ci) <- paste(rep(paste(input, x), each=length(ret)), ret, sep=": ")
+  
+  summarized.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  ci <- sapply(ret, function(x) t(summarized.perfs[,,x]), simplify = FALSE)
 
   class(ci) <- c("ci.coords", "ci", class(ci))
+  attr(ci, "input") <- input
+  attr(ci, "x") <- x
+  attr(ci, "ret") <- ret
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -210,7 +197,7 @@ ci.coords.roc <- function(roc,
 # Function to be called when "best" threshold returned more than 1 column
 # Will follow the action defined by best.policy
 # For instance:
-#   if (x == "best" && ncol(res) != 1) {
+#   if (x == "best" && nrow(res) != 1) {
 # return(enforce.best.policy(res, best.policy))
 # }
 enforce.best.policy <- function(res, best.policy) {
@@ -218,11 +205,11 @@ enforce.best.policy <- function(res, best.policy) {
 		stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
 	}
 	else if (best.policy == "omit") {
-		res[, 1] <- NA
-		return(res[, 1, drop = FALSE])
+		res[1, ] <- NA
+		return(res[1, drop = FALSE])
 	}
 	else {
-		return(res[, sample(seq_len(ncol(res)), size = 1), drop = FALSE])
+		return(res[sample(seq_len(nrow(res)), size = 1), , drop = FALSE])
 	}
 }
 

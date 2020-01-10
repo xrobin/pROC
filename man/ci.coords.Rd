@@ -109,15 +109,22 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
-  A matrix of class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{matrix} (in this order), with the confidence
-  intervals of the CI. The matrix has 3 columns (lower bound, median and upper bound) and
-  as many rows as \code{x} * \code{ret} were requested. Rows are sorted by \code{x} and then by \code{ret}
-  and named as \dQuote{input x: return}.
+  A list of the same length as \code{ret} and named as \code{ret}, and of 
+  class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order).
+  
+  Each element of the list is a matrix of the confidence intervals with
+  rows given by \code{x} and with 3 columns, the lower bound of the CI, 
+  the median, and the upper bound of the CI.
   
   Additionally, the list has the following attributes: 
+  
   \item{conf.level}{the width of the CI, in fraction.}
   \item{boot.n}{the number of bootstrap replicates.}
   \item{boot.stratified}{whether or not the bootstrapping was stratified.}
+  \item{input}{the input coordinate, as given in argument.}
+  \item{x}{the coordinates used to calculate the CI, as given in argument.}
+  \item{ret}{the return values, as given in argument or substituted by
+  	\code{link{coords}}.}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }

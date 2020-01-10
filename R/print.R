@@ -207,16 +207,16 @@ print.ci.coords <- function(x, digits=max(3, getOption("digits") - 3), ...) {
   cat(attr(x, "conf.level")*100, "% CI", sep="")
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep="")
 
-  # Back to the standard object we'll print
-  unattr.coords <- x
-  class(unattr.coords) <- "matrix"
-  attr(unattr.coords, "conf.level") <- NULL
-  attr(unattr.coords, "boot.n") <- NULL
-  attr(unattr.coords, "boot.stratified") <- NULL
-  attr(unattr.coords, "roc") <- NULL
-
-  class(unattr.coords) <- "matrix"
-  print(unattr.coords, digits=digits)
+  table <- do.call(cbind, x)
+  table <- signif(table, digits = digits)
+  table <- cbind(x = attr(x, "x"), as.data.frame(table))
+  
+  colnames.grid <- expand.grid(c("low", "median", "high"), attr(x, "ret"))
+  colnames.vec <- paste(colnames.grid$Var2, colnames.grid$Var1, sep=".")
+  colnames(table) <- c(attr(x, "input"), colnames.vec)
+  rownames(table) <- attr(x, "x")
+  
+  print(table, row.names=length(attr(x, "ret")) > 1)
   invisible(x)
 }
 
