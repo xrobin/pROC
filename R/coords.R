@@ -304,10 +304,10 @@ coords.roc <- function(roc,
       }
       else {
         all_coords <- roc.utils.calc.coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
-        input_values <- all_coords[[input]]
-        se <- all_coords[["sensitivity"]]
-        sp <- all_coords[["specificity"]]
-        thr <- all_coords[["threshold"]]
+        input_values <- all_coords[, input]
+        se <- all_coords[, "sensitivity"]
+        sp <- all_coords[, "specificity"]
+        thr <- all_coords[, "threshold"]
       }
       for (i in seq_along(x)) {
         value <- x[i]
