@@ -354,11 +354,11 @@ test_that("coords works with smooth.roc and transpose = FALSE", {
 	expect_equal(obtained, expect[reduced.cols,])
 	
 	# Default drop with numeric
-	obtained <- coords(smooth.s100b, c(0.2, 0.5), ret="se")
+	obtained <- coords(smooth.s100b, c(0.2, 0.5), input = "specificity", ret="se")
 	expect_is(obtained, "data.frame")
 	
 	# With numeric x
-	obtained <- coords(smooth.s100b, c(0.2, 0.5, 0.6), transpose = FALSE)
+	obtained <- coords(smooth.s100b, c(0.2, 0.5, 0.6), input = "specificity", transpose = FALSE)
 	expect_is(obtained, "data.frame")
 	expect_equal(dim(obtained), c(3, 2))
 	
@@ -385,42 +385,42 @@ test_that("coords works with smooth.roc and x = numeric", {
 	
 	reduced.cols <- c("specificity", "sensitivity", "youden")
 
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret="all", transpose=TRUE)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "sp", ret="all", transpose=TRUE)
 	expect_equal(obtained, expect)
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret=reduced.cols, transpose=TRUE)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "spe", ret=reduced.cols, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols,])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = TRUE, transpose=TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = TRUE, transpose=TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, drop = TRUE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", drop = FALSE, transpose=TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, drop = FALSE, transpose=TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret="all", as.list = TRUE, drop = TRUE)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret="all", as.list = TRUE, drop = TRUE)
 	expect_equal(obtained[[1]], as.list(expect[, 1]))
 	expect_equal(obtained[[2]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE)
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1]))
 	expect_equal(obtained[[2]], as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", as.list = TRUE, drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = TRUE)
 	expect_equal(obtained, as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE)
 	expect_equal(obtained, as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, ret="all", as.list = TRUE, drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = FALSE)
 	expect_equal(obtained[[1]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, ret=reduced.cols, as.list = TRUE, drop = FALSE)
+	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = FALSE)
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 2]))
 })
 

@@ -22,7 +22,7 @@ coords <- function(...)
 
 coords.smooth.roc <- function(smooth.roc,
                               x,
-                              input=c("specificity", "sensitivity"),
+                              input,
                               ret=c("specificity", "sensitivity"),
                               as.list=FALSE,
                               drop=TRUE,
@@ -41,8 +41,6 @@ coords.smooth.roc <- function(smooth.roc,
     warning("The 'transpose' argument is set to FALSE by default since pROC 1.16. Set transpose = FALSE explicitly silence this warning or transpose = TRUE to revert to the previous behavior. Type help(coords_transpose) for additional information.")
   }
   
-  # match input 
-  input <- roc.utils.match.coords.input.args(input, threshold = FALSE)
   # match return
   ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
 
@@ -119,7 +117,10 @@ coords.smooth.roc <- function(smooth.roc,
   if (missing(drop) && ! transpose) {
     drop = FALSE
   }
-
+  
+  # match input 
+  input <- roc.utils.match.coords.input.args(input, threshold = FALSE)
+  
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
   return(coords.roc(smooth.roc, x, input, ret, as.list, drop, 

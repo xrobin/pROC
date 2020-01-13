@@ -17,10 +17,10 @@ coords(...)
 "specificity", "sensitivity"),
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
 best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
-\S3method{coords}{smooth.roc}(smooth.roc, x, input=c("specificity",
-"sensitivity"), ret=c("specificity", "sensitivity"), as.list=FALSE,
-drop=TRUE, best.method=c("youden", "closest.topleft"), 
-best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
+\S3method{coords}{smooth.roc}(smooth.roc, x, input, ret=c("specificity",
+"sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden",
+"closest.topleft"), best.weights=c(1, 0.5), transpose = FALSE,
+as.matrix=FALSE, ...)
 }
 		   
 \arguments{
