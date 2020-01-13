@@ -2,6 +2,9 @@
   * Accept more values in 'input' of coords (issue #67)
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
 
+1.16.1 (2020-01-13)
+  * Skip timing-dependent test failing occasionally on CRAN
+
 1.16.0 (2020-01-12)
   * BACKWARD INCOMPATIBLE CHANGE: 'transpose' argument to 'coords' switched to FALSE by default (issue #54)
   * BACKWARD INCOMPATIBLE CHANGE: 'ci.coords' return value is now of list type and easier to use

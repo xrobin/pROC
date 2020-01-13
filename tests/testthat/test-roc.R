@@ -205,6 +205,7 @@ test_that("roc can't take both response/predictor and case/control", {
 
 test_that("microbenchmark works", {
 	skip_if_not_installed("microbenchmark")
+	skip_on_cran()
 	# Algorithm 3 (C) should be selected with small low number of thresholds like aSAH$wfns
 	expect_output(r <- roc(aSAH$outcome, aSAH$wfns, algorithm = 0), "Selecting algorithm 3")
 	
