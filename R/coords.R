@@ -42,7 +42,7 @@ coords.smooth.roc <- function(smooth.roc,
   }
   
   # match input 
-  input <- match.arg(input)
+  input <- roc.utils.match.coords.input.args(input, threshold = FALSE)
   # match return
   ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
 
