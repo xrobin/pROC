@@ -38,7 +38,7 @@ coords.smooth.roc <- function(smooth.roc,
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
     transpose <- FALSE
-    warning("The 'transpose' argument to FALSE by default since pROC 1.16. Set transpose = TRUE explicitly to revert to the previous behavior, or transpose = TRUE to silence this warning. Type help(coords_transpose) for additional information.")
+    warning("The 'transpose' argument is set to FALSE by default since pROC 1.16. Set transpose = FALSE explicitly silence this warning or transpose = TRUE to revert to the previous behavior. Type help(coords_transpose) for additional information.")
   }
   
   # match input 
@@ -369,8 +369,24 @@ coords.roc <- function(roc,
     return(t(res)[ret,, drop=drop])
   }
   else {
+  	# HACK:
+  	# We need an exception for r4lineups that will keep the old drop = TRUE 
+  	# behavior, until r4lineups gets updated. This is an ugly hack but allows
+  	# us to switch to a better drop = FALSE for everyone else
     if (missing(drop)) {
-      drop = FALSE
+    	if (sys.nframe() > 2 && 
+    	    length(deparse(sys.call(-2))) == 1 && 
+    	    deparse(sys.call(-2)) == 'make_rocdata(df_confacc)' && 
+    	    length(deparse(sys.call(-1))) == 1 && (
+    	      deparse(sys.call(-1)) == 'coords(rocobj, "all", ret = c("tp"))' ||
+    	      deparse(sys.call(-1)) == 'coords(rocobj, "all", ret = "fp")'
+    	    )) {
+    		# We're in r4lineups
+    		drop = TRUE
+    	}
+    	else {
+    		drop = FALSE
+    	}
     }
     if (! as.matrix) {
       res <- as.data.frame(res)

@@ -47,10 +47,21 @@ This function returns a list of class \dQuote{roc} invisibly. See \code{\link{ro
 \code{\link{roc}}, \code{\link{plot.roc}}
 }
 \examples{
-data(aSAH)
 
-rocobj <- plot.roc(aSAH$outcome, aSAH$s100b, type="n")
-lines(rocobj, type="b", pch=21, col="blue", bg="grey")
+# Create a few ROC curves:
+data(aSAH)
+roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
+roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
+
+# We need a plot to be ready
+plot(roc.s100b, type = "n") # but don't actually plot the curve
+
+# Add the line
+lines(roc.s100b, type="b", pch=21, col="blue", bg="grey")
+
+# Add the line of an other ROC curve
+lines(roc.wfns, type="o", pch=19, col="red")
+
 
 # Without using 'lines':
 rocobj <- plot.roc(aSAH$outcome, aSAH$s100b, type="b", pch=21, col="blue", bg="grey")

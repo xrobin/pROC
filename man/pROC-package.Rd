@@ -78,6 +78,7 @@
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
+    \code{\link{power.roc.test}} \tab Sample size and power computation \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
     \code{\link{roc.test}} \tab Compare the AUC of two ROC curves \cr
     \code{\link[=smooth.roc]{smooth}} \tab Smooth a ROC curve \cr
@@ -303,15 +304,41 @@ CRAN packages \pkg{plyr}, \pkg{MASS} and \pkg{logcondens} employed in this packa
 \examples{
 data(aSAH)
 
-# Build a ROC object and compute the AUC
-roc(aSAH$outcome, aSAH$s100b)
+## Build a ROC object and compute the AUC ##
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+print(roc1)
+
+# With a formula
 roc(outcome ~ s100b, aSAH)
+# With pipes, dplyr-style:
+\dontrun{
+library(dplyr)
+aSAH \%>\% roc(outcome, s100b)}
 
-# Smooth ROC curve
-roc(outcome ~ s100b, aSAH, smooth=TRUE)
+# Create a few more curves for the next examples
+roc2 <- roc(aSAH$outcome, aSAH$wfns)
+roc3 <- roc(aSAH$outcome, aSAH$ndka)
 
-# more options, CI and plotting
-roc1 <- roc(aSAH$outcome,
+
+## AUC ##
+auc(roc1, partial.auc = c(1, .9))
+
+
+## Smooth ROC curve ##
+smooth(roc1)
+
+
+## Summary statistics
+var(roc1)
+cov(roc1, roc3)
+
+
+## Plot the curve ##
+plot(roc1)
+
+#  More plotting options, CI and plotting
+# with all-in-one syntax:
+roc4 <- roc(aSAH$outcome,
             aSAH$s100b, percent=TRUE,
             # arguments for auc
             partial.auc=c(100, 90), partial.auc.correct=TRUE,
@@ -323,12 +350,21 @@ roc1 <- roc(aSAH$outcome,
             print.auc=TRUE, show.thres=TRUE)
 
 # Add to an existing plot. Beware of 'percent' specification!
-roc2 <- roc(aSAH$outcome, aSAH$wfns,
-            plot=TRUE, add=TRUE, percent=roc1$percent)
+roc5 <- roc(aSAH$outcome, aSAH$wfns,
+            plot=TRUE, add=TRUE, percent=roc4$percent)
+
+
+## With ggplot2 ##
+library(ggplot2)
+# Create multiple curves to plot
+rocs <- roc(outcome ~ wfns + s100b + ndka, data = aSAH)
+ggroc(rocs)
+
 
 ## Coordinates of the curve ##
 coords(roc1, "best", ret=c("threshold", "specificity", "1-npv"))
 coords(roc2, "local maximas", ret=c("threshold", "sens", "spec", "ppv", "npv"))
+
 
 ## Confidence intervals ##
 
@@ -339,16 +375,14 @@ ci(roc2)
 # CI of the curve
 sens.ci <- ci.se(roc1, specificities=seq(0, 100, 5))
 plot(sens.ci, type="shape", col="lightblue")
-plot(sens.ci, type="bars")
-}
+plot(sens.ci, type="bars")}
 
 # need to re-add roc2 over the shape
 plot(roc2, add=TRUE)
 
 \dontrun{
 # CI of thresholds
-plot(ci.thresholds(roc2))
-}
+plot(ci.thresholds(roc2))}
 
 # In parallel
 if (require(doParallel)) {
@@ -357,6 +391,7 @@ if (require(doParallel)) {
     \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
     stopCluster(cl)
 }
+
 
 ## Comparisons ##
 
@@ -370,10 +405,27 @@ roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
 
 # With modified bootstrap parameters
 roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
-         partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)
-}
-}
+         partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)}
 
+
+## Power & sample size ##
+
+# Power
+# 1 curve
+power.roc.test(roc1)
+# 2 curves
+power.roc.test(roc3, roc2)
+
+# Sample size 
+# 1 curve
+power.roc.test(roc3, power = 0.9)
+# 2 curves
+power.roc.test(roc1, roc2, power = 0.9)
+
+# Also without ROC objects.
+# For instance what AUC would be significantly different from 0.5?
+power.roc.test(ncases=41, ncontrols=72, sig.level=0.05, power=0.95)
+}
 
 \keyword{package}
 \keyword{univar}

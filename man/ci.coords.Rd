@@ -109,15 +109,24 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \value{
-  A matrix of class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{matrix} (in this order), with the confidence
-  intervals of the CI. The matrix has 3 columns (lower bound, median and upper bound) and
-  as many rows as \code{x} * \code{ret} were requested. Rows are sorted by \code{x} and then by \code{ret}
-  and named as \dQuote{input x: return}.
+  \bold{Note:} changed in version 1.16.
+  
+  A list of the same length as \code{ret} and named as \code{ret}, and of 
+  class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order).
+  
+  Each element of the list is a matrix of the confidence intervals with
+  rows given by \code{x} and with 3 columns, the lower bound of the CI, 
+  the median, and the upper bound of the CI.
   
   Additionally, the list has the following attributes: 
+  
   \item{conf.level}{the width of the CI, in fraction.}
   \item{boot.n}{the number of bootstrap replicates.}
   \item{boot.stratified}{whether or not the bootstrapping was stratified.}
+  \item{input}{the input coordinate, as given in argument.}
+  \item{x}{the coordinates used to calculate the CI, as given in argument.}
+  \item{ret}{the return values, as given in argument or substituted by
+  	\code{link{coords}}.}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
@@ -146,56 +155,40 @@ progress=getOption("pROCProgress")$name, ...)
 }
 
 \examples{
+# Create a ROC curve:
 data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
+
+## Basic example ##
 \dontrun{
-# Syntax (response, predictor):
-ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold", 
+ci.coords(roc1, x="best", input = "threshold", 
           ret=c("specificity", "ppv", "tp"))
 
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.coords(rocobj, x=0.9, input = "sensitivity", ret="specificity")
-ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
-ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity")
-ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"))
 
-# With a smoothed roc:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
+## More options ##
+ci.coords(roc1, x=0.9, input = "sensitivity", ret="specificity")
+ci.coords(roc1, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
+ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity")
+ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"))
 
 # Return everything we can:
 rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
           "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(rocobj, x="best", input = "threshold", ret=rets)
-}
-\dontshow{
-ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
-          ret=c("specificity", "ppv", "tp"), boot.n=10)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci.coords(rocobj, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(rocobj, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(rocobj, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
+ci.coords(roc1, x="best", input = "threshold", ret=rets)}\dontshow{
+ci.coords(roc1, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
+ci.coords(roc1, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
+ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
+ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
 rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
           "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(rocobj, x="best", input = "threshold", ret=rets, boot.n=10)
-}
-\dontshow{
-ci.coords(aSAH$outcome, aSAH$s100b,  x=0.9, input = "sensitivity",
-          ret=c("specificity", "ppv", "tp"), boot.n=10, smooth=TRUE)
-ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
-rocobj.smooth <- roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-ci.coords(rocobj.smooth, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(rocobj.smooth, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-ci.coords(rocobj.smooth, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(rocobj.smooth, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-ci.coords(smooth(rocobj), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"),
-          boot.n=10)
-rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
-          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(rocobj, x="best", ret=rets, boot.n=10)
-}
+ci.coords(roc1, x="best", input = "threshold", ret=rets, boot.n=10)}
+
+
+## On smoothed ROC curves with bootstrap ##
+\dontrun{
+ci.coords(smooth(roc1), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))}\dontshow{
+ci.coords(smooth(roc1), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n = 10)}
 }
 
 \keyword{univar}

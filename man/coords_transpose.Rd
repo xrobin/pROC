@@ -74,6 +74,10 @@ It is expected that the following major version (1.17) will remove the warning a
 The \code{transpose} and \code{drop} arguments will be deprecated in 1.17, but will remain available for a few additional major versions.
 }
 
+\section{Related changes in ci.coords}{
+In version 1.16, the format of the \code{\link{ci.coords}} return value was changed from a matrix-like object with mixed \code{x} and \code{ret} in rows and 3 columns, into a list-like object which should be easier to use programatically.
+}
+
 \section{Recommendations}{
 If you are writing a new script calling the \code{coords} function, set \code{transpose = FALSE} to silence the warning and benefit from the latest improvements in pROC and obtain a tidy data.
 }

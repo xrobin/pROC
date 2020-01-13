@@ -165,23 +165,17 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   \code{\link{roc}}, \code{\link{ci.auc}}
 }
 \examples{
+
+# Create a ROC curve:
 data(aSAH)
+roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
 
-# Syntax (response, predictor):
-auc(aSAH$outcome, aSAH$s100b)
+# Get the full AUC
+auc(roc.s100b)
 
-# With a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-# Full AUC:
-auc(rocobj)
-# Partial AUC:
-auc(rocobj, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
+# Get the partial AUC:
+auc(roc.s100b, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
 
-# Alternatively, you can get the AUC directly from roc():
-roc(aSAH$outcome, aSAH$s100b)$auc
-roc(aSAH$outcome, aSAH$s100b,
-    partial.auc=c(1, .8), partial.auc.focus="se",
-    partial.auc.correct=TRUE)$auc
 }
 
 \keyword{univar}

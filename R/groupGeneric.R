@@ -28,14 +28,14 @@ Math.auc <- function(x, ...) {
   NextMethod()
 }
 
-Ops.ci.se <- Ops.ci.sp <- Ops.ci.coords <- Ops.ci.auc <- Ops.ci <- function(e1, e2) {
+Ops.ci.se <- Ops.ci.sp <- Ops.ci.auc <- function(e1, e2) {
   e1 <- remove.ci.attributes(e1)
   e2 <- remove.ci.attributes(e2)
   NextMethod()
 }
 
 
-Math.ci.se <- Math.ci.sp <- Math.ci.coords <- Math.ci.auc <- Math.ci <- function(x, ...) {
+Math.ci.se <- Math.ci.sp <- Math.ci.auc <- function(x, ...) {
   x <- remove.ci.attributes(x)
   NextMethod()
 }

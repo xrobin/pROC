@@ -644,10 +644,12 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
+  res <- coords.roc(roc, x = x, input = input, ret = ret, 
+                    best.method = best.method, best.weights = best.weights,
+                    drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (is.character(x) && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -675,10 +677,12 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
   
-  res <- coords.roc(roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
+  res <- coords.roc(roc, x = x, input = input, ret = ret,
+                    best.method = best.method, best.weights = best.weights,
+                    drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -709,10 +713,12 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
+  res <- coords.roc(smooth.roc, x = x, input = input, ret = ret,
+                    best.method = best.method, best.weights = best.weights,
+                    drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (length(x) == 1 && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)
@@ -744,10 +750,12 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
   if (methods::is(smooth.roc, "try-error"))
     return(NA)
-  res <- coords.roc(smooth.roc, x=x, input=input, ret=ret, best.method=best.method, best.weights=best.weights, drop=FALSE, transpose=TRUE)
+  res <- coords.roc(smooth.roc, x = x, input = input, ret = ret,
+                    best.method = best.method, best.weights = best.weights,
+                    drop = FALSE, transpose = FALSE, as.matrix = TRUE)
   # Return a random column with "best"
-  if (length(x) == 1 && x == "best" && ncol(res) != 1) {
-  	return(enfore.best.policy(res, best.policy))
+  if (length(x) == 1 && x == "best" && nrow(res) != 1) {
+  	return(enforce.best.policy(res, best.policy))
   }
   else {
   	return(res)

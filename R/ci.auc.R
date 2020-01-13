@@ -45,7 +45,9 @@ ci.auc.default <- function(response, predictor, ...) {
 }
 
 ci.auc.auc <- function(auc, ...) {
-  ci.auc(attr(auc, "roc"), ...)
+	roc <- attr(auc, "roc")
+	roc$auc <- auc
+	ci.auc(roc, reuse.auc = TRUE, ...)
 }
 
 ci.auc.smooth.roc <- function(smooth.roc,
