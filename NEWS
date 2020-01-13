@@ -1,4 +1,5 @@
 1.16.9000 (future)
+  * Accept more values in 'input' of coords (issue #67)
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
 
 1.16.0 (2020-01-12)

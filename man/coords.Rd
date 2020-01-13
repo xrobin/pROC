@@ -36,16 +36,15 @@ as.matrix=FALSE, ...)
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
   }
   \item{input}{
-		If \code{x} is numeric, the kind of input coordinate (x). One of
-		\dQuote{threshold}, \dQuote{specificity} or
-    \dQuote{sensitivity}. Can be shortenend (for example to
-    \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
-    \dQuote{t}, \dQuote{se} and \dQuote{sp}). Note that
-		\dQuote{threshold} is not allowed in
-		\code{coords.smooth.roc}, and that the argument is ignored when
-		\code{x} is a character.
+  	If \code{x} is numeric, the kind of input coordinate (x).
+  	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
+  	\dQuote{sensitivity}, but can be any of the monotone coordinate available,
+  	see the \dQuote{Valid input} column under \dQuote{Available coordinates}.
+  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold}. Note
+  	that \dQuote{threshold} is not allowed in \code{coords.smooth.roc} and that
+  	the argument is ignored when \code{x} is a character.
   }
-  \item{ret}{The coordinates to return. See "Valid \code{ret} arguments"
+  \item{ret}{The coordinates to return. See \dQuote{Available coordinates}
   	section below. Alternatively, the single value \dQuote{all} can be used to return
     every coordinate available.
   }
@@ -160,57 +159,57 @@ as.matrix=FALSE, ...)
   Note that several thresholds might be equally optimal.
 }
 
-\subsection{Valid \code{ret} arguments}{
+\subsection{Available coordinates}{
 
-The following table lists valid \code{ret} arguments.
+	The following table lists the coordinates that are available in the \code{ret}
+	and \code{input} arguments.
 
-  \tabular{rlll}{
-    Value \tab Description \tab Formula \tab Synonyms \cr
-    \code{threshold} \tab The threshold value \tab - \tab - \cr
-    \code{tn} \tab True negative count \tab - \tab - \cr
-    \code{tp} \tab True positive count \tab - \tab - \cr
-    \code{fn} \tab False negative count \tab - \tab - \cr
-    \code{fp} \tab False positive count \tab - \tab - \cr
-    \code{specificity} \tab Specificity  \tab tn / (tn + fp) \tab tnr \cr
-    \code{sensitivity} \tab Sensitivity \tab tp / (tp + fn)  \tab recall, tpr \cr
-    \code{accuracy} \tab Accuracy \tab  (tp + tn) / N \tab - \cr
-    \code{npv} \tab Negative Predictive Value \tab tn / (tn + fn) \tab - \cr
-    \code{ppv} \tab Positive Predictive Value \tab tp / (tp + fp) \tab precision \cr
-    \code{precision} \tab Precision \tab tp / (tp + fp) \tab ppv \cr
-    \code{recall} \tab Recall \tab tp / (tp + fn) \tab sensitivity, tpr \cr
-    \code{tpr} \tab True Positive Rate \tab tp / (tp + fn) \tab sensitivity, recall \cr
-    \code{fpr} \tab False Positive Rate \tab fp / (tn + fp) \tab 1-specificity \cr
-    \code{tnr} \tab True Negative Rate \tab tn / (tn + fp) \tab specificity \cr
-    \code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \cr
-    \code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \cr
-    \code{youden} \tab Youden Index \tab 
-    	se + r * sp
-    	\tab - \cr
-    \code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
-    	- ((1 - se)^2 + r * (1 - sp)^2)
-    	\tab - \cr
-  }
-  
+	\tabular{rllll}{
+		Value \tab Description \tab Formula \tab Synonyms \tab Valid input \cr
+		\code{threshold} \tab The threshold value \tab - \tab - \tab Yes \cr
+		\code{tn} \tab True negative count \tab - \tab - \tab Yes \cr
+		\code{tp} \tab True positive count \tab - \tab - \tab Yes \cr
+		\code{fn} \tab False negative count \tab - \tab - \tab Yes \cr
+		\code{fp} \tab False positive count \tab - \tab - \tab Yes \cr
+		\code{specificity} \tab Specificity  \tab tn / (tn + fp) \tab tnr \tab Yes \cr
+		\code{sensitivity} \tab Sensitivity \tab tp / (tp + fn)  \tab recall, tpr \tab Yes \cr
+		\code{accuracy} \tab Accuracy \tab  (tp + tn) / N \tab - \tab No \cr
+		\code{npv} \tab Negative Predictive Value \tab tn / (tn + fn) \tab - \tab No \cr
+		\code{ppv} \tab Positive Predictive Value \tab tp / (tp + fp) \tab precision \tab No \cr
+		\code{precision} \tab Precision \tab tp / (tp + fp) \tab ppv \tab No \cr
+		\code{recall} \tab Recall \tab tp / (tp + fn) \tab sensitivity, tpr \tab Yes \cr
+		\code{tpr} \tab True Positive Rate \tab tp / (tp + fn) \tab sensitivity, recall \tab Yes \cr
+		\code{fpr} \tab False Positive Rate \tab fp / (tn + fp) \tab 1-specificity \tab Yes \cr
+		\code{tnr} \tab True Negative Rate \tab tn / (tn + fp) \tab specificity \tab Yes \cr
+		\code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \tab Yes \cr
+		\code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \tab No \cr
+		\code{youden} \tab Youden Index \tab 
+			se + r * sp
+			\tab - \tab No \cr
+		\code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
+			- ((1 - se)^2 + r * (1 - sp)^2)
+			\tab - \tab No \cr
+	}
+	
 	The value \dQuote{threshold} is not allowed in \code{coords.smooth.roc}.
-  
+	
 	Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
 	\dQuote{se}, \dQuote{sp} or \dQuote{1-np}). In addition, some values can be prefixed with
 	\code{1-} to get their complement:
-	\code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}
-	(but they cannot be shortened).
-  
+	\code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}.
+	
 	The values \code{npe} and \code{ppe} are automatically replaced with
 	\code{1-npv} and \code{1-ppv}, respectively (and will therefore not appear
 	as is in the output, but as \code{1-npv} and \code{1-ppv} instead).
 	These must be used verbatim in ROC curves with \code{percent=TRUE} 
 	(ie. \dQuote{100-ppv} is never accepted).
 	
-	The \dQuote{youden} and \dQuote{closest.topleft} are weighted with \code{r}, according
-	to the value of the \code{best.weights} argument. See the "Best thresholds"
-	section above for more details.
-
-    The single value \dQuote{all} can be used to return
-    every coordinate available.
+	The \dQuote{youden} and \dQuote{closest.topleft} are weighted with \code{r}, 
+	according to the value of the \code{best.weights} argument. See the 
+	\dQuote{Best thresholds} section above for more details.
+	
+	For \code{ret}, the single value \dQuote{all} can be used to return
+	every coordinate available.
 }
 } % details
 
