@@ -1,29 +1,6 @@
 library(pROC)
 data(aSAH)
 
-# Make sure the value looks like a p value.
-expect_p_value <- function(p.value) {
-	expect_is(p.value, "numeric")
-	expect_lte(p.value, 1)
-	expect_gte(p.value, 0)
-}
-
-# Make sure we got a htest
-expect_htest <- function(ht) {
-	expect_is(ht, "htest")
-	expect_p_value(ht$p.value)
-}
-
-expect_venkatraman_htest <- function(ht) {
-	expect_htest(ht)
-	expect_equal(unname(ht$null.value), 0)
-	expect_named(ht$null.value, "difference in AUC")
-	expect_is(ht$statistic, c("numeric", "integer")) # Can be either?
-	expect_named(ht$statistic, "E")
-	expect_is(ht$parameter, "numeric")
-	expect_named(ht$parameter, "boot.n")
-}
-
 test_that("paired venkatraman works as expected", {
 	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
 	ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12)
