@@ -105,6 +105,7 @@ test_that("are.paired return.paired.rocs returns smooth curves", {
 })
 
 test_that("are.paired return.paired.rocs smoothes curves with the right method", {
+	skip_slow()
 	aSAH.missing <- aSAH
 	aSAH.missing$ndka[1:20] <- NA
 	smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")
@@ -125,4 +126,4 @@ test_that("are.paired return.paired.rocs doesn't return when unpaired and smooth
 	expect_null(attributes(pair))
 	pair <- are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), smooth(r.ndka), return.paired.rocs = TRUE)
 	expect_null(attributes(pair))
-})	
+})
