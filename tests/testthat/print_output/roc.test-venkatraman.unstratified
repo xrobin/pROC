@@ -1,0 +1,7 @@
+
+	Venkatraman's test for two paired ROC curves
+
+data:  r.s100b and r.wfns
+E = 43, boot.n = 12, p-value = 0.05
+alternative hypothesis: true difference in AUC is not equal to 0
+
