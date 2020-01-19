@@ -143,7 +143,7 @@ test_that("power.roc.test sig.level can take 2 ROC curves with Obuchowski varian
 })
 
 test_that("power.roc.test works with partial AUC", {
-  skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+  skip_slow()
   skip("Bootstrap cannot be tested yet")
   r.wfns.partial <<- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
   r.ndka.partial <<- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))

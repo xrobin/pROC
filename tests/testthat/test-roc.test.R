@@ -193,7 +193,7 @@ test_that("one-sided roc.test work with direction='>' and produce expected resul
 })
 
 test_that("paired roc.test works with bootstrap", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	ht <- roc.test(r.wfns, r.s100b, method = "bootstrap", boot.n = 12, paired = TRUE)
 	expect_bootstrap_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -202,7 +202,7 @@ test_that("paired roc.test works with bootstrap", {
 })
 
 test_that("unpaired roc.test works with bootstrap", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE), "paired")
 	expect_bootstrap_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -211,7 +211,7 @@ test_that("unpaired roc.test works with bootstrap", {
 })
 
 test_that("paired, non stratified roc.test works with bootstrap", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = TRUE, boot.stratified = FALSE)
 	expect_bootstrap_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -220,7 +220,7 @@ test_that("paired, non stratified roc.test works with bootstrap", {
 })
 
 test_that("unpaired, non stratified roc.test works with bootstrap", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE, boot.stratified = FALSE), "paired")
 	expect_bootstrap_htest(ht)
 	expect_equal(ht$alternative, "two.sided")

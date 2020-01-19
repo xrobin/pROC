@@ -69,7 +69,7 @@ test_that("cov with delong, percent, direction = > and mixed roc/auc", {
 
 
 test_that("cov with bootstrap works", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 		RNGkind(sample.kind="Rounding")
 	}

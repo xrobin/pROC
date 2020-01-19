@@ -68,7 +68,7 @@ test_that("Hard predictor has same results as easy one", {
 })
 
 test_that("Hard predictor has same results as easy one, random sampling", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	numacc.predictor.hard <- c(-0x1.fffffffffffffp+1023, -0x1.ffffffffffffep+1023, -0x1.ffffffffffffdp+1023, # Close to -Inf
 							   -0x1.249ad2594c37fp+332, -0x1.249ad2594c37ep+332, -0x1.249ad2594c37dp+332, -0x1.249ad2594c37cp+332, -0x1.249ad2594c37bp+332, -0x1.249ad2594c37ap+332, # Close to -1e100
 							   -0x0.0000000000003p-1022, -0x0.0000000000002p-1022, -0x0.0000000000001p-1022, -0x0p+0, # Close to -0

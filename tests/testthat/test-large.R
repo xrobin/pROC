@@ -21,7 +21,7 @@ test_that("roc can deal with 1E6 data points and few thresholds", {
 })
 
 test_that("roc can deal with 1E7 data points and few thresholds", {
-  skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+  skip_slow()
   response <- rbinom(1E7, 1, .5)
   predictor <- rpois(1E7, 1)
   # ~ 3s

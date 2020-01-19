@@ -49,7 +49,7 @@ test_that("Advanced screenshot 1 works correctly", {
 
 
 test_that("Advanced screenshot 2 works correctly", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	test_advanced_screenshot_2 <- function() {
 		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")
@@ -92,7 +92,7 @@ test_that("Advanced screenshot 3 works correctly", {
 
 
 test_that("Advanced screenshot 4 works correctly", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	test_advanced_screenshot_4 <- function() {
 		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")
@@ -114,7 +114,7 @@ test_that("Advanced screenshot 4 works correctly", {
 
 
 test_that("Advanced screenshot 5 works correctly", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	test_advanced_screenshot_5 <- function() {
 		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
 			RNGkind(sample.kind="Rounding")

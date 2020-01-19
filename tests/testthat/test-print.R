@@ -73,7 +73,7 @@ test_that("print works without the auc", {
 })
 
 test_that("print works with the CI", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	if (R.version$minor >= "6.0") {
 		RNGkind(sample.kind="Rounding")
 	}

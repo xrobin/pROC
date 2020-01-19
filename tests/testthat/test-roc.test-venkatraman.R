@@ -2,7 +2,7 @@ library(pROC)
 data(aSAH)
 
 test_that("paired venkatraman works as expected", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12)
 	expect_venkatraman_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -15,7 +15,7 @@ test_that("paired venkatraman works as expected", {
 })
 
 test_that("unpaired venkatraman works as expected", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, paired = FALSE), "paired")
 	expect_venkatraman_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -28,7 +28,7 @@ test_that("unpaired venkatraman works as expected", {
 })
 
 test_that("non stratified venkatraman works as expected", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE)
 	expect_venkatraman_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
@@ -41,7 +41,7 @@ test_that("non stratified venkatraman works as expected", {
 })
 
 test_that("non stratified, unpaired venkatraman works as expected", {
-	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Slow test skipped")
+	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE, paired = FALSE), "paired")
 	expect_venkatraman_htest(ht)
 	expect_equal(ht$alternative, "two.sided")
