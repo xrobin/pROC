@@ -3,7 +3,7 @@ data(aSAH)
 
 context("ci.thresholds")
 
-# Only test whether ci.coords runs and returns without error.
+# Only test whether ci.thresholds runs and returns without error.
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
 
