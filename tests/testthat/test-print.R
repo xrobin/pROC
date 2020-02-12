@@ -110,7 +110,6 @@ test_that("print works with ci.coords", {
 	expect_known_output(print(ci.coords(r.ndka, x = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.coords")
 })
 
-
 test_that("print works with ci.thresholds", {
 	skip_slow()
 	if (R.version$minor >= "6.0") {
@@ -118,5 +117,23 @@ test_that("print works with ci.thresholds", {
 	}
 	set.seed(42) # For reproducible CI
 	expect_known_output(print(ci.thresholds(r.ndka, thresholds = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.thresholds")
+})
+
+test_that("print works with ci.se", {
+	skip_slow()
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expect_known_output(print(ci.se(r.ndka, boot.n = 3, progress = "none")), "print_output/r.ndka.ci.se")
+})
+
+test_that("print works with ci.sp", {
+	skip_slow()
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expect_known_output(print(ci.sp(r.ndka, boot.n = 3, progress = "none")), "print_output/r.ndka.ci.sp")
 })
 
