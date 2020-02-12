@@ -100,3 +100,13 @@ test_that("print works with ci.auc", {
 	set.seed(42) # For reproducible CI
 	expect_known_output(print(ci.auc(r.ndka, method = "bootstrap", boot.n = 3, progress = "none")), "print_output/r.ndka.ci.auc")
 })
+
+test_that("print works with ci.coords", {
+	skip_slow()
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expect_known_output(print(ci.coords(r.ndka, x = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.coords")
+})
+

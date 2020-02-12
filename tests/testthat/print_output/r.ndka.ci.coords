@@ -1,0 +1,10 @@
+95% CI (3 stratified bootstrap replicates):
+    threshold threshold.low threshold.median threshold.high specificity.low
+0.5       0.5           0.5              0.5            0.5               0
+0.2       0.2           0.2              0.2            0.2               0
+    specificity.median specificity.high sensitivity.low sensitivity.median
+0.5                  0                0               1                  1
+0.2                  0                0               1                  1
+    sensitivity.high
+0.5                1
+0.2                1
