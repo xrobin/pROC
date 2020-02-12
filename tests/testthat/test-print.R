@@ -117,6 +117,6 @@ test_that("print works with ci.thresholds", {
 		RNGkind(sample.kind="Rounding")
 	}
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.thresholds(r.ndka, thresholds = c(0.5, 0.2), boot.n = 3, progress = "none")), "tests/testthat/print_output/r.ndka.ci.thresholds")
+	expect_known_output(print(ci.thresholds(r.ndka, thresholds = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.thresholds")
 })
 
