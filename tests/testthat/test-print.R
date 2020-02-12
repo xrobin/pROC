@@ -91,3 +91,12 @@ test_that("print.smooth.roc works", {
 	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="fitdistr")), "print_output/smooth.s100b.fitdistr")
 	expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method="density")), "print_output/smooth.s100b.density")
 })
+
+test_that("print works with ci.auc", {
+	skip_slow()
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expect_known_output(print(ci.auc(r.ndka, method = "bootstrap", boot.n = 3, progress = "none")), "tests/testthat/print_output/r.ndka.ci.auc")
+})
