@@ -54,3 +54,22 @@ test_that("ci.auc.auc works with a partial AUC from a roc with full AUC", {
 	expect_equal(attr(attr(ci.pauc.s100b, "auc"), "partial.auc.focus"), "sensitivity")
 	expect_equal(attr(attr(ci.pauc.s100b, "auc"), "partial.auc.correct"), TRUE)
 })
+
+
+# Only test whether ci.auc runs and returns without error.
+# Uses a very small number of iterations for speed
+# Doesn't test whether the results are correct.
+for (stratified in c(TRUE, FALSE)) {
+	for (test.roc in list(r.s100b, smooth(r.s100b), auc(r.s100b))) {
+		test_that("ci.auc with bootstrap works", {
+			n <- round(runif(1, 3, 9)) # keep boot.n small
+			test.ci <- ci.auc(test.roc, method = "bootstrap", boot.n = n, conf.level = .91, boot.stratified = stratified)
+			expect_is(test.ci, "ci.auc")
+			expect_equal(attr(test.ci, "conf.level"), .91)
+			expect_equal(attr(test.ci, "boot.n"), n)
+			expect_equal(attr(test.ci, "names"), c("4.5%", "50%", "95.5%"))
+			expect_equal(attr(test.ci, "boot.stratified"), stratified)
+			expect_equal(attr(test.ci, "method"), "bootstrap")
+		})
+	}
+}
