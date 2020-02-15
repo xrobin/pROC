@@ -34,6 +34,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   auc1skeleton$fun.sesp <- roc1$fun.sesp
   auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
+  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <-  "smooth.n"
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
@@ -41,6 +42,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   auc2skeleton$fun.sesp <- roc2$fun.sesp
   auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
+  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <-  "smooth.n"
 
   auc1skeleton$auc <- auc2skeleton$auc <- TRUE
 
@@ -105,6 +107,7 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   auc1skeleton$fun.sesp <- roc1$fun.sesp
   auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
+  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <-  "smooth.n"
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
@@ -112,7 +115,8 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   auc2skeleton$fun.sesp <- roc2$fun.sesp
   auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  
+  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <-  "smooth.n"
+
   auc1skeleton$auc <- auc2skeleton$auc <- test == "boot"
 
   # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
