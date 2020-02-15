@@ -79,3 +79,20 @@ test_that("cov with bootstrap works", {
 	expect_equal(cov(r.s100b.partial1, r.wfns.partial1, method = "bootstrap", boot.n = 100), 2.899627e-05)
 	expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100, boot.stratified = FALSE), -0.000419791)
 })
+
+test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
+	skip_slow()
+	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b))) {
+		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns))) {
+			n <- round(runif(1, 3, 9)) # keep boot.n small
+			stratified <- sample(c(TRUE, FALSE), 1)
+			obtained <- cov(roc1, roc2, method = "bootstrap", 
+						   boot.n = n, boot.stratified = stratified)
+			expect_is(obtained, "numeric")
+			expect_false(is.na(obtained))
+		}
+	}
+	
+})
+
+
