@@ -92,7 +92,25 @@ test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
 			expect_false(is.na(obtained))
 		}
 	}
-	
 })
 
-
+test_that("bootstrap cov works with smooth and !reuse.auc", {
+	skip_slow()
+	# First calculate cov by giving full curves
+	roc1 <- smooth(roc(aSAH$outcome, aSAH$wfns, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
+	roc2 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
+	
+	if (R.version$minor >= "6.0") {
+		RNGkind(sample.kind="Rounding")
+	}
+	set.seed(42) # For reproducible CI
+	expected_cov <- cov(roc1, roc2, boot.n = 100)
+	expect_equal(expected_cov, 2.485882e-05)
+	
+	# Now with reuse.auc
+	set.seed(42) # For reproducible CI
+	obtained_cov <- cov(smooth(r.wfns), smooth(r.s100b), reuse.auc = FALSE,
+						partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity",
+						boot.n = 100)
+	expect_equal(expected_cov, obtained_cov)
+})
