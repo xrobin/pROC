@@ -34,3 +34,20 @@ test_that("var with delong and percent works", {
 	expect_equal(var(roc(aSAH$outcome, -aSAH$ndka, percent=TRUE)), 31.908105493913)
 	expect_equal(var(roc(aSAH$outcome, -aSAH$s100b, percent=TRUE)), 26.6868245717244)
 })
+
+# Only test whether var runs and returns without error.
+# Uses a very small number of iterations for speed
+# Doesn't test whether the results are correct.
+test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
+	skip_slow()
+	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b))) {
+		n <- round(runif(1, 3, 9)) # keep boot.n small
+		stratified <- sample(c(TRUE, FALSE), 1)
+		obtained <- var(roc1, method = "bootstrap", 
+						boot.n = n, boot.stratified = stratified)
+		expect_is(obtained, "numeric")
+		expect_false(is.na(obtained))
+	}
+	
+})
+
