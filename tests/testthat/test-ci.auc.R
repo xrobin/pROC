@@ -60,10 +60,11 @@ test_that("ci.auc.auc works with a partial AUC from a roc with full AUC", {
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
 for (stratified in c(TRUE, FALSE)) {
-	for (test.roc in list(r.s100b, smooth(r.s100b), auc(r.s100b))) {
+	for (test.roc in list(r.s100b, smooth(r.s100b), auc(r.s100b), r.s100b.partial1, r.s100b.partial2$auc)) {
 		test_that("ci.auc with bootstrap works", {
 			n <- round(runif(1, 3, 9)) # keep boot.n small
 			test.ci <- ci.auc(test.roc, method = "bootstrap", boot.n = n, conf.level = .91, boot.stratified = stratified)
+			browser()
 			expect_is(test.ci, "ci.auc")
 			expect_equal(attr(test.ci, "conf.level"), .91)
 			expect_equal(attr(test.ci, "boot.n"), n)

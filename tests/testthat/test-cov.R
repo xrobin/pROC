@@ -82,8 +82,8 @@ test_that("cov with bootstrap works", {
 
 test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
 	skip_slow()
-	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b))) {
-		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns))) {
+	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial2, r.s100b.partial2$auc)) {
+		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns), r.wfns.partial1, r.wfns.partial1$auc)) {
 			n <- round(runif(1, 3, 9)) # keep boot.n small
 			stratified <- sample(c(TRUE, FALSE), 1)
 			obtained <- cov(roc1, roc2, method = "bootstrap", 

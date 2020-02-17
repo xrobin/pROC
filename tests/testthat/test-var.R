@@ -40,7 +40,7 @@ test_that("var with delong and percent works", {
 # Doesn't test whether the results are correct.
 test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
 	skip_slow()
-	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b))) {
+	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial1, r.s100b.partial1$auc)) {
 		n <- round(runif(1, 3, 9)) # keep boot.n small
 		stratified <- sample(c(TRUE, FALSE), 1)
 		obtained <- var(roc1, method = "bootstrap", 
