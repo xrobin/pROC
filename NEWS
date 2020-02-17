@@ -1,6 +1,7 @@
 1.16.9000 (future)
   * Accept more values in 'input' of coords (issue #67)
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
+  * Fix bootstrap roc.test and cov with 'smooth.roc' curves
 
 1.16.1 (2020-01-13)
   * Skip timing-dependent test failing occasionally on CRAN
