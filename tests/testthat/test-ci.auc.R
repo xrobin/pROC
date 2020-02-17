@@ -64,7 +64,6 @@ for (stratified in c(TRUE, FALSE)) {
 		test_that("ci.auc with bootstrap works", {
 			n <- round(runif(1, 3, 9)) # keep boot.n small
 			test.ci <- ci.auc(test.roc, method = "bootstrap", boot.n = n, conf.level = .91, boot.stratified = stratified)
-			browser()
 			expect_is(test.ci, "ci.auc")
 			expect_equal(attr(test.ci, "conf.level"), .91)
 			expect_equal(attr(test.ci, "boot.n"), n)
