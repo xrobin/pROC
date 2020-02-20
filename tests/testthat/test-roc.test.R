@@ -250,6 +250,32 @@ test_that("bootstrap roc.test works with mixed roc, auc and smooth.roc objects",
 			expect_equal(unname(ht$parameter), c(n, as.integer(stratified)))
 		}
 	}
-	
 })
-	
+
+test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
+	skip_slow()
+	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial2, r.s100b.partial2$auc)) {
+		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns), r.wfns.partial1, r.wfns.partial1$auc)) {
+			for (method in c("sensitivity", "specificity")) {
+				n <- round(runif(1, 3, 9)) # keep boot.n small
+				stratified <- sample(c(TRUE, FALSE), 1)
+				paired <- sample(c(TRUE, FALSE), 1)
+				alternative = sample(c("two.sided", "less", "greater"), 1)
+				ht <- roc.test(roc1, roc2, method = method, 
+							   sensitivity = 0.8,
+							   specificity = 0.8,
+							   boot.n = n, paired = paired, boot.stratified = stratified,
+							   alternative = alternative)
+				expect_bootstrap_htest(ht)
+				expect_equal(ht$alternative, alternative)
+				if (paired) {
+					expect_equal(ht$method, sprintf("%s test for two correlated ROC curves", tools::toTitleCase(method)))
+				}
+				else {
+					expect_equal(ht$method, sprintf("%s test for two ROC curves", tools::toTitleCase(method)))
+				}
+				expect_equal(unname(ht$parameter), c(n, as.integer(stratified)))
+			}
+		}
+	}
+})
