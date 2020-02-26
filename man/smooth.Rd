@@ -30,8 +30,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{method}{\dQuote{binormal}, \dQuote{density}, \dQuote{fitdistr},
-    \dQuote{logcondens}, \dQuote{"logcondens.smooth"},
-    or a function returning a list of smoothed sensitivities and specificities.
+    \dQuote{logcondens}, \dQuote{"logcondens.smooth"}.
   }
   \item{n}{
     the number of equally spaced points where the smoothed curve will be
@@ -75,8 +74,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{\dots}{further arguments passed to or from other methods, and
     especially to \code{\link{density}} (only \code{cut}, \code{adjust},
     and \code{kernel}, plus \code{window} for compatibility with S+) and
-    \code{\link[MASS]{fitdistr}}. Also passed to to \code{method} if it
-    is a function. 
+    \code{\link[MASS]{fitdistr}}.
   }
 }
 
@@ -143,13 +141,6 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     (respectively) log-concave density estimate of of the control and case
     observation with the \link[logcondens]{logConROC} function.
 
-  Finally, \code{method} can also be a function. It must
-  return a list with exactly 2 elements named \dQuote{sensitivities} and
-  \dQuote{specificities}, which must be numeric vectors between 0 and 1
-  or 100 (depending on the \code{percent} argument to
-  \code{\link{roc}}). It is passed all the arguments to the
-  \code{smooth} function.
-
   \code{smooth.default} forces the usage of the
   \code{\link[stats]{smooth}} function in the \pkg{stats} package, so
   that other code relying on \code{smooth} should continue to function
@@ -202,12 +193,6 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 } 
 
 \section{Errors}{
-  If \code{method} is a function, the return values will be checked
-  thoroughly for validity (list with two numeric elements of the same
-  length named \dQuote{sensitivities} and \dQuote{specificities} with
-  values in the range of possible values for sensitivities and
-  specificities).
-
   The message \dQuote{The 'density' function must return a numeric
     vector or a list with a 'y' item.} will be displayed if the
   \code{density} function did not return a valid output. The message

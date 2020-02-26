@@ -41,28 +41,24 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   if (is.ordered(roc$original.predictor) && (method == "density" || method =="fitidstr"))
     stop("ROC curves of ordered predictors can be smoothed only with binormal smoothing.")
 
-  if (mode(method) == "function") {
-    sesp <- method(roc=roc, n=n, bw=bw, density=density, density.controls=density.controls, density.cases=density.cases, start.controls=start.controls, start.cases=start.cases, ...)
-    if (mode(sesp) != "list" || ! identical(sort(names(sesp)), c("sensitivities", "specificities")))
-      stop("'method' function did not return a list with two elements named 'sensitivities' and 'specificities'.")
-    if (length(sesp$sensitivities) != length(sesp$specificities))
-      stop("'method' function did return a list with two elements of different length.")
-    if (! is.numeric(sesp$specificities) || ! is.numeric(sesp$sensitivities))
-      stop("'method' function did not return a list of numeric vectors.")
-    if (any(c(sesp$specificities, sesp$sensitivities) < 0) || any(c(sesp$specificities, sesp$sensitivities) > ifelse (roc$percent, 100, 1)))
-      stop("'method' function returned vector with invalid values (< 0 or > 1 or 100).")
+  if (method == "binormal") {
+    sesp <- smooth.roc.binormal(roc, n)
+  }
+  else if (method == "fitdistr") {
+    sesp <- smooth.roc.fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
+  }
+  else if (method == "density") {
+    sesp <- smooth.roc.density(roc, n, density.controls, density.cases, bw, ...)
+  }
+  else if (method == "logcondens") {
+    sesp <- smooth.roc.logcondens(roc, n)
+  }
+  else if (method == "logcondens.smooth") {
+    sesp <- smooth.roc.logcondens.smooth(roc, n)
   }
   else {
-    if (method == "binormal")
-      sesp <- smooth.roc.binormal(roc, n)
-    if (method == "fitdistr")
-      sesp <- smooth.roc.fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
-    if (method == "density")
-      sesp <- smooth.roc.density(roc, n, density.controls, density.cases, bw, ...)
-    if (method == "logcondens")
-      sesp <- smooth.roc.logcondens(roc, n)
-    if (method == "logcondens.smooth")
-      sesp <- smooth.roc.logcondens.smooth(roc, n)
+    stop(sprintf("Impossible smooth method value '%s'. Please report this bug to <%s>.",
+                 method, utils::packageDescription("pROC")$BugReports))
   }
 
   class(sesp) <- "smooth.roc"
