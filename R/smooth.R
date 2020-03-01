@@ -204,7 +204,7 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   if (mode(densfun.cases) != "function")
     fit.cases$densfun <- densfun.cases
 
-  x <- seq(min(c(roc$controls, roc$cases)), max(c(roc$controls, roc$cases)), length.out=512)
+  x <- seq(min(c(roc$controls, roc$cases)), max(c(roc$controls, roc$cases)), length.out=n)
 
   # get the actual function name for do.call
   if (is.character(densfun.controls))
@@ -225,7 +225,7 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   density.controls <- do.call(densfun.controls, c(list(x=x), fit.controls$estimate, dots.controls))
   density.cases <- do.call(densfun.cases, c(list(x=x), fit.cases$estimate, dots.cases))
 
-  perfs <- sapply(roc.utils.thresholds(x, roc$direction), roc.utils.perfs.dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
+  perfs <- sapply(x, roc.utils.perfs.dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
 
   return(list(sensitivities = perfs[2,] * ifelse(roc$percent, 100, 1),
               specificities = perfs[1,] * ifelse(roc$percent, 100, 1),
