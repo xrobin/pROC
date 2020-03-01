@@ -19,13 +19,19 @@
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
-  \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2]{geom_line}} to map to the different ROC curves supplied. Use \dQuote{group} if
-  you want the curves to appear with the same aestetic, for instance if you are faceting instead.}
+  \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2]{geom_line}} 
+    to map to the different ROC curves supplied. Use \dQuote{group} if
+    you want the curves to appear with the same aestetic, for instance if you are 
+    faceting instead.
+  }
   \item{legacy.axes}{a logical indicating if the specificity axis (x
     axis) must be plotted as as decreasing \dQuote{specificity}
     (\code{FALSE}, the default) or increasing \dQuote{1 - specificity}
-    (\code{TRUE}) as in most legacy software.}
-  \item{...}{additional aesthetics for \code{\link[ggplot2]{geom_line}} to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.}
+    (\code{TRUE}) as in most legacy software.
+  }
+  \item{...}{additional aesthetics for \code{\link[ggplot2]{geom_line}}
+    to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.
+  }
 }
 
 \details{
@@ -66,6 +72,10 @@ g2
 roc.list <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
 g.list <- ggroc(roc.list)
 g.list
+
+# You can change the aesthetics as you normally would with ggplot2:
+g.list + scale_colour_brewer(palette="RdGy")
+g.list + scale_colour_manual(values = c("red", "blue", "black"))
 
 # with additional aesthetics:
 g3 <- ggroc(roc.list, linetype=2)
