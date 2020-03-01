@@ -38,3 +38,11 @@ test_that("Ggroc list with group facet screenshot looks normal", {
 	}
 	vdiffr::expect_doppelganger("ggroc.list.group.facet.screenshot", test_ggplot_list_group_facet_screenshot)
 })
+
+test_that("Ggroc aesthetics can be modified with scale_colour_manual", {
+	test_ggplot_list_screenshot <- function() {
+		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka), aes=c("c", "linetype")) +
+			  	scale_colour_manual(values = c("purple", "yellow", "purple")))
+	}
+	vdiffr::expect_doppelganger("ggroc.list.scale.colour.manual", test_ggplot_list_screenshot)
+})
