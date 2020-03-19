@@ -3,6 +3,9 @@
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
   * Fix bootstrap roc.test and cov with 'smooth.roc' curves
 
+1.16.2 (2020-03-19)
+  * Skip test depending on Rcpp version
+
 1.16.1 (2020-01-13)
   * Skip timing-dependent test failing occasionally on CRAN
 
