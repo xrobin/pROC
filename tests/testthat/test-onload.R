@@ -44,6 +44,7 @@ test_that(".parseRcppVersion works", {
 })
 
 test_that("We're running the right Rcpp version", {
+	skip_if_not(exists("run_slow_tests") && run_slow_tests, message = "Skipping error-prone Rcpp version check")
 	skip_if(Rcpp:::getRcppVersion() == '1.0.3', "RCPP_VERSION broken in 1.0.3")
 	expect_silent(pROC:::.checkRcppVersion())
 	# Replace the actual RcppVersion with a dummy function that returns 1

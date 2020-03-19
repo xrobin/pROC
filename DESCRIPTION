@@ -1,8 +1,8 @@
 Package: pROC
 Type: Package
 Title: Display and Analyze ROC Curves
-Version: 1.16.1
-Date: 2020-01-13
+Version: 1.16.2
+Date: 2020-03-19
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: methods, plyr, Rcpp (>= 0.11.1)
