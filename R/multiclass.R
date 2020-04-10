@@ -163,6 +163,11 @@ multiclass.roc.default <- function(response, predictor,
                                    percent = FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80)),
                                    direction = c("auto", "<", ">"),
                                    ...) {
+	# We need at least two levels in response
+	if (length(unique(response)) < 2) {
+		stop("'response' must have at least two levels")
+	}
+	
     # implements the approach from Hand & Till (2001)
     if (methods::is(predictor, "matrix") || methods::is(predictor, "data.frame")) {
         # for decision values for multiple classes (e.g. probabilities of individual classes)
