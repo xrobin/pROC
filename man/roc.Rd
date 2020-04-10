@@ -32,7 +32,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 
 \arguments{
   \item{response}{a factor, numeric or character vector of
-    responses, typically encoded with 0 (controls) and 1 (cases).
+    responses (true class), typically encoded with 0 (controls) and 1 (cases).
     Only two classes can be used in a ROC curve. If the vector
     contains more than two unique values, or if their order could be
     ambiguous, use \code{levels} to specify which values must be used as

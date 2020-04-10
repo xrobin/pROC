@@ -21,7 +21,7 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
 
 \arguments{
   \item{response}{a factor, numeric or character vector of
-    responses, typically encoded with 0 (controls) and 1 (cases), as in
+    responses (true class), typically encoded with 0 (controls) and 1 (cases), as in
     \code{\link{roc}}.
   }
   \item{predictor}{either a numeric vector, containing the value of each
