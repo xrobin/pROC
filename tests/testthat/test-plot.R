@@ -7,6 +7,7 @@ context("plot")
 # > manage_cases()
 
 test_that("plot draws correctly", {
+	skip_if(getRversion() < 4.1)
 	test_basic_plot <- function() plot(r)
 	# S100b
 	r <- r.s100b
@@ -20,12 +21,14 @@ test_that("plot draws correctly", {
 })
 
 test_that("legacy.axis works correctly", {
+	skip_if(getRversion() < 4.1)
 	r <- r.s100b
 	test_legacy.axis_plot <- function() plot(r, legacy.axes=TRUE)
 	vdiffr::expect_doppelganger("legacy.axes", test_legacy.axis_plot)
 })
 
 test_that("Advanced screenshot 1 works correctly", {
+	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_1 <- function() {
 		plot(r.s100b.percent,
 			 reuse.auc = FALSE, partial.auc=c(100, 90), partial.auc.correct=TRUE, # define a partial AUC (pAUC)
@@ -71,6 +74,7 @@ test_that("Advanced screenshot 2 works correctly", {
 
 
 test_that("Advanced screenshot 3 works correctly", {
+	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_3 <- function() {
 		plot(r.s100b.percent, main="Smoothing")
 		
@@ -132,6 +136,7 @@ test_that("Advanced screenshot 5 works correctly", {
 
 
 test_that("Advanced screenshot 6 works correctly", {
+	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_6 <- function() {
 		plot(r.s100b.percent, main="Statistical comparison", col="#1c61b6")
 		lines(r.ndka.percent, col="#008600")
@@ -144,6 +149,7 @@ test_that("Advanced screenshot 6 works correctly", {
 
 
 test_that("plot and lines work with formula and subset", {
+	skip_if(getRversion() < 4.1)
 	test_plot_formula <- function() {
 		plot.roc(outcome ~ ndka, data = aSAH, subset = gender == "Female", col="red")
 		lines.roc(outcome ~ ndka, data = aSAH)
