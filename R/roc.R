@@ -245,6 +245,12 @@ roc.default <- function(response, predictor,
       response <- response[patients.in.levels]
       predictor <- predictor[patients.in.levels]
     }
+    
+    # Check infinities
+    if (any(which <- is.infinite(predictor))) {
+    	warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
+    	return(NaN)
+    }
   }
 
   # Cases / Controls
