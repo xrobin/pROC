@@ -19,7 +19,7 @@
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
-  \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2]{geom_line}} 
+  \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2:geom_path]{geom_line}} 
     to map to the different ROC curves supplied. Use \dQuote{group} if
     you want the curves to appear with the same aestetic, for instance if you are 
     faceting instead.
@@ -29,7 +29,7 @@
     (\code{FALSE}, the default) or increasing \dQuote{1 - specificity}
     (\code{TRUE}) as in most legacy software.
   }
-  \item{...}{additional aesthetics for \code{\link[ggplot2]{geom_line}}
+  \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
     to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.
   }
 }
@@ -40,7 +40,7 @@
 
 
 \seealso{
-\code{\link{roc}}, \code{\link{plot.roc}}, \pkg{\link[ggplot2]{ggplot2}}
+\code{\link{roc}}, \code{\link{plot.roc}}, \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{
 # Create a basic roc object

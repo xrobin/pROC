@@ -82,7 +82,7 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
   be performed and an error is issued.
 
   \code{var.default} forces the usage of the
-  \code{\link[stats]{var}} function in the \pkg{stats} package, so
+  \code{\link[stats:cor]{var}} function in the \pkg{stats} package, so
   that other code relying on \code{var} should continue to function
   normally.
 }

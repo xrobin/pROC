@@ -90,7 +90,7 @@ cov(...)
   be performed and an error is issued.
 
   \code{cov.default} forces the usage of the
-  \code{\link[stats]{cov}} function in the \pkg{stats} package, so
+  \code{\link[stats:cor]{cov}} function in the \pkg{stats} package, so
   that other code relying on \code{cov} should continue to function
   normally.
 }
