@@ -89,6 +89,12 @@ progress=getOption("pROCProgress")$name, ...)
   curve, and evaluates the coordinates specified by the \code{x}, \code{input},
   \code{ret}, \code{best.method} and \code{best.weights} arguments. Then it computes the
   confidence interval as the percentiles given by \code{conf.level}.
+  
+  When \code{x="best"}, the best threshold is determined at each bootstrap 
+  iteration, effectively assessing the confidence interval of choice of the "best"
+  threshold itself.  This differs from the behavior of \code{\link{ci.thresholds}},
+  where the "best" threshold is assessed on the given ROC curve before
+  resampling.
 
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
