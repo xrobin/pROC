@@ -230,3 +230,30 @@ test_that("power.roc.test returns correct results from litterature", {
 		}
 	}
 })
+
+
+test_that("kappa works with a single ROC curve", {
+	# kappa from data
+	res <- power.roc.test(r.s100b, sig.level = 0.05, power = 0.9)
+	expect_equal(res$ncases, 23.5598674)
+	expect_equal(res$ncontrols, 41.3734257)
+	expect_equal(res$ncases/res$ncontrols, length(r.s100b$cases)/length(r.s100b$controls))
+	# set kappa
+	res <- power.roc.test(r.s100b, sig.level = 0.05, power = 0.9, kappa = 1)
+	expect_equal(res$ncases, 29.5697422)
+	expect_equal(res$ncontrols, 29.5697422)
+})
+
+
+test_that("kappa works with two ROC curves", {
+	# kappa from data
+	res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9)
+	expect_equal(res$ncases, 213.117677)
+	expect_equal(res$ncontrols, 374.255432)
+	expect_equal(res$ncases/res$ncontrols, length(r.s100b$cases)/length(r.s100b$controls))
+	# set kappa
+	res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9, kappa = 1)
+	expect_equal(res$ncases, 213.117677)
+	expect_equal(res$ncases, 213.117677)
+	# ...
+})

@@ -15,7 +15,7 @@
 power.roc.test(...)
 # One or Two ROC curves test with roc objects:
 \S3method{power.roc.test}{roc}(roc1, roc2, sig.level = 0.05, 
-power = NULL, alternative = c("two.sided", "one.sided"), 
+power = NULL, kappa = NULL, alternative = c("two.sided", "one.sided"),
 reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"), ...)
 # One ROC curve with a given AUC:
 \S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
