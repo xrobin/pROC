@@ -355,10 +355,11 @@ roc5 <- roc(aSAH$outcome, aSAH$wfns,
 
 
 ## With ggplot2 ##
-library(ggplot2)
+if (require(ggplot2)) {
 # Create multiple curves to plot
 rocs <- roc(outcome ~ wfns + s100b + ndka, data = aSAH)
 ggroc(rocs)
+}
 
 
 ## Coordinates of the curve ##

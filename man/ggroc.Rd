@@ -48,7 +48,7 @@ data(aSAH)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
 rocobj2 <- roc(aSAH$outcome, aSAH$wfns)
 
-library(ggplot2)
+if (require(ggplot2)) {
 g <- ggroc(rocobj)
 g
 # with additional aesthetics:
@@ -92,5 +92,5 @@ g.list + facet_grid(.~name) + theme(legend.position="none")
 g.group <- ggroc(roc.list, aes="group")
 g.group
 g.group + facet_grid(.~name)
-
+}
 }

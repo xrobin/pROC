@@ -274,10 +274,12 @@ rs2 <- smooth(rocobj, method="density")
 plot(rs2, add=TRUE, col="blue")
 rs3 <- smooth(rocobj, method="fitdistr", density="lognormal")
 plot(rs3, add=TRUE, col="magenta")
+if (requireNamespace("logcondens")) {
 rs4 <- smooth(rocobj, method="logcondens")
 plot(rs4, add=TRUE, col="brown")
 rs5 <- smooth(rocobj, method="logcondens.smooth")
 plot(rs5, add=TRUE, col="orange")
+}
 legend("bottomright", legend=c("Empirical", "Binormal", "Density", "Log-normal",
                                "Log-concave density", "Smoothed log-concave density"),
        col=c("black", "green", "blue", "magenta", "brown", "orange"), lwd=2)
@@ -313,8 +315,10 @@ roc.norm <- roc(controls=rnorm(1000), cases=rnorm(1000)+1, plot=TRUE)
 plot(smooth(roc.norm), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="fitdistr"), col="blue", lwd=1, add=TRUE)
+if (requireNamespace("logcondens")) {
 plot(smooth(roc.norm, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
+}
 legend("bottomright", legend=c("empirical", "binormal", "density", "fitdistr",
                                "logcondens", "logcondens.smooth"), 
        col=c(par("fg"), "green", "red", "blue", "brown", "orange"), lwd=c(2, 1, 1, 1))
@@ -328,8 +332,10 @@ plot(smooth(roc.norm.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
 # Correct fitdistr
 plot(smooth(roc.norm.exp, method="fitdistr", density.controls="normal",
             density.cases="exponential"), col="purple", lwd=1, add=TRUE)
+if (requireNamespace("logcondens")) {
 plot(smooth(roc.norm.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.norm.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
+}
 legend("bottomright", legend=c("empirical", "binormal", "density",
                                "wrong fitdistr", "correct fitdistr",
                                "logcondens", "logcondens.smooth"),
@@ -342,8 +348,10 @@ plot(smooth(roc.unif.exp, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density", bw="ucv"), col="magenta", lwd=1, add=TRUE)
 # Wrong fitdistr: normality assumed by default (uniform distributions not handled)
 plot(smooth(roc.unif.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
+if (requireNamespace("logcondens")) {
 plot(smooth(roc.unif.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
+}
 legend("bottomright", legend=c("empirical", "binormal", "density",
                                "density ucv", "wrong fitdistr",
                                "logcondens", "logcondens.smooth"),
