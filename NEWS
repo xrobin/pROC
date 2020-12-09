@@ -3,6 +3,7 @@
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
   * Fix bootstrap roc.test and cov with 'smooth.roc' curves
   * Remove warnings with 'warnPartialMatchDollar' option (issue #87)
+  * Make tests depending on vdiffr conditional (issue #88)
 
 1.16.2 (2020-03-19)
   * Skip test depending on Rcpp version
