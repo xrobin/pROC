@@ -144,13 +144,13 @@ plot.roc.roc <- function(x,
   }
     
   # get and sort the sensitivities and specificities
-  se <- sort(x$se, decreasing=TRUE)
-  sp <- sort(x$sp, decreasing=FALSE) 
+  se <- sort(x$sensitivities, decreasing=TRUE)
+  sp <- sort(x$specificities, decreasing=FALSE) 
   if (!add) {
     opar <- par(mar=mar, mgp=mgp)
     on.exit(par(opar))
     # type="n" to plot background lines and polygon shapes first. We will add the line later. axes=FALSE, we'll add them later according to legacy.axis
-    suppressWarnings(plot(x$sp, x$se, xlab=xlab, ylab=ylab, type="n", axes=FALSE, xlim=xlim, ylim=ylim, lwd=lwd, asp=asp, ...))
+    suppressWarnings(plot(x$specificities, x$sensitivities, xlab=xlab, ylab=ylab, type="n", axes=FALSE, xlim=xlim, ylim=ylim, lwd=lwd, asp=asp, ...))
 
     # As we had axes=FALSE we need to add them again unless axes=FALSE
     if (axes) {

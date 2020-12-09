@@ -108,8 +108,8 @@ auc.roc <- function(roc,
   partial.auc <- sort(partial.auc, decreasing=TRUE)
   # Get and sort the sensitivities and specificities
   roc <- sort(roc)
-  se <- roc$se
-  sp <- roc$sp
+  se <- roc$sensitivities
+  sp <- roc$specificities
 
   # Full area if partial.auc is FALSE
   if (identical(partial.auc, FALSE)) {

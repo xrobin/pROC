@@ -51,6 +51,6 @@ lines.roc.smooth.roc <- lines.smooth.roc <- function(x, ...) {
 }
 
 lines.roc.roc <- function(x, lwd=2, ...) {
-  suppressWarnings(lines(x$sp, x$se, lwd=lwd, ...))
+  suppressWarnings(lines(x$specificities, x$sensitivities, lwd=lwd, ...))
   invisible(x)
 }
