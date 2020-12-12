@@ -13,3 +13,4 @@ after_success:
 
 env:
   - RUN_SLOW_TESTS=true
+  - _R_CHECK_DEPENDS_ONLY=true
