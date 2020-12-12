@@ -15,7 +15,7 @@
 power.roc.test(...)
 # One or Two ROC curves test with roc objects:
 \S3method{power.roc.test}{roc}(roc1, roc2, sig.level = 0.05, 
-power = NULL, alternative = c("two.sided", "one.sided"), 
+power = NULL, kappa = NULL, alternative = c("two.sided", "one.sided"),
 reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"), ...)
 # One ROC curve with a given AUC:
 \S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
@@ -97,7 +97,8 @@ alternative = c("two.sided", "one.sided"), ...)
   2 and 3, p. 1123).
 
   For the sample size, \code{ncases} is computed directly from formulas
-  2 and 3 and ncontrols is deduced with \code{kappa}.
+  2 and 3 and ncontrols is deduced with \code{kappa} (defaults to the
+  ratio of controls to cases).
   AUC is optimized by \code{\link{uniroot}} while \code{sig.level}
   and \code{power} are solved as quadratic equations.
 
@@ -117,7 +118,8 @@ alternative = c("two.sided", "one.sided"), ...)
   \code{roc1} taken as the reference ROC curve.
 
   For the sample size, \code{ncases} is computed directly from formula 2
-  and ncontrols is deduced from the ratio observed in \code{roc1} and \code{roc2}.
+  and ncontrols is deduced with \code{kappa} (defaults to the
+  ratio of controls to cases in \code{roc1}).
   \code{sig.level} and \code{power} are solved as quadratic equations.
 
   The variance and covariance of the ROC curve are computed with the

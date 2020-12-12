@@ -20,7 +20,10 @@
 power.roc.test <- function(...)
   UseMethod("power.roc.test")
 
-power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alternative = c("two.sided", "one.sided"), reuse.auc=TRUE, method=c("delong", "bootstrap", "obuchowski"), ...) {
+power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa = NULL,
+							   alternative = c("two.sided", "one.sided"), 
+							   reuse.auc=TRUE, method=c("delong", "bootstrap", "obuchowski"),
+							   ...) {
   # Basic sanity checks
   if (!is.null(power) && (power < 0 || power > 1))
     stop("'power' must range from 0 to 1")
@@ -70,7 +73,9 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
  
       ncontrols <- length(roc1$controls)
       ncases <- length(roc1$cases)
-      kappa <- ncontrols / ncases
+      if (is.null(kappa)) {
+        kappa <- ncontrols / ncases
+      }
 
       # Power test
       if (is.null(power)) {
@@ -105,16 +110,17 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, alter
     }
   }
   else {
-    if (is.null(sig.level) || is.null(power)) {
-      ncontrols <- length(roc1$controls)
-      ncases <- length(roc1$cases)
-    }
-    else {
+  	ncontrols <- length(roc1$controls)
+  	ncases <- length(roc1$cases)
+    if (! is.null(sig.level) && ! is.null(power)) {
+      if (is.null(kappa)) {
+        kappa <- ncontrols / ncases
+      }
       ncontrols <- ncases <- NULL
     }
     auc <- auc(roc1)
     # TODO: implement this with var() and cov() for the given ROC curve
-    return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, ...))
+    return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, kappa = kappa, ...))
   }
 }
 
