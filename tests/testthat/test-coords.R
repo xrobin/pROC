@@ -25,6 +25,12 @@ test_that("coords returns all thresholds by default with smooth.roc", {
 })
 
 
+test_that("coords returns all columns with ret = 'all' with smooth.roc", {
+	obtained <- coords(smooth(r.s100b), ret = "all")
+	expect_equal(obtained, expected.coords.smooth)
+})
+
+
 test_that("coords with transpose = FALSE works", {
 	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
 	obtained <- coords(r.s100b, "all", ret = return.rows, transpose = FALSE)
