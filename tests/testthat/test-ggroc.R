@@ -46,3 +46,18 @@ test_that("Ggroc aesthetics can be modified with scale_colour_manual", {
 	}
 	expect_doppelganger("ggroc.list.scale.colour.manual", test_ggplot_list_screenshot)
 })
+
+
+test_that("Ggroc screenshot looks normal with a single smooth.roc", {
+	test_ggplot_screenshot <- function() {
+		print(ggroc(smooth(r.s100b), , alpha = 0.5, colour = "red", linetype = 2, size = 2))
+	}
+	expect_doppelganger("ggroc.smooth.screenshot", test_ggplot_screenshot)
+})
+
+test_that("Ggroc screenshot looks normal with a list of smooth.roc", {
+	test_ggplot_screenshot <- function() {
+		print(ggroc(list(s100b=smooth(r.s100b), wfns=smooth(r.wfns), ndka=smooth(r.ndka))))
+	}
+	expect_doppelganger("ggroc.smooth.list.screenshot", test_ggplot_screenshot)
+})

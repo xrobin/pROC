@@ -59,6 +59,8 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 	ggplot2::ggplot(df) + ggplot2::geom_line(aes$aes, ...) + aes$xlims
 }
 
+ggroc.smooth.roc <- ggroc.roc
+
 ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...) {
 	load.ggplot2()
 	if (missing(aes)) {
@@ -68,7 +70,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "gro
 	aes <- match.arg(aes, several.ok = TRUE)
 
 	# Make sure data is a list and every element is a roc object
-	if (! all(sapply(data, methods::is, "roc"))) {
+	if (! all(sapply(data, methods::is, "roc") | sapply(data, methods::is, "smooth.roc"))) {
 		stop("All elements in 'data' must be 'roc' objects.")
 	}
 	

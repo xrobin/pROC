@@ -148,6 +148,7 @@ S3method("plot.roc", "default")
 
 export(ggroc)
 S3method("ggroc", "roc")
+S3method("ggroc", "smooth.roc")
 S3method("ggroc", "list")
 
 #export(select)
