@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{ggroc.roc}
 \alias{ggroc.roc}
+\alias{ggroc.smooth.roc}
 \alias{ggroc.list}
 \alias{ggroc}
 
