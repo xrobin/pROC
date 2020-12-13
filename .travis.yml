@@ -1,6 +1,10 @@
 language: r
 cache: packages
 
+apt_packages:
+  # git2.h required by gert (probably dependency: testthat -> usethis)
+  - libgit2-dev
+
 r:
   - release
   - devel
