@@ -32,8 +32,12 @@ coords.smooth.roc <- function(smooth.roc,
                               as.matrix = FALSE,
                               ...) {
   # make sure x was provided
-  if (missing(x))
-    stop("'x' must be a numeric or character vector.")
+  if (missing(x) || is.null(x) || (length(x) == 0 && !is.numeric(x))) {
+    x <- "all"
+  }
+  else if (length(x) == 0 && is.numeric(x)) {
+    stop("Numeric 'x' has length 0")
+  }
   
   # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
   if (missing(transpose) || is.null(transpose)) {
@@ -45,49 +49,83 @@ coords.smooth.roc <- function(smooth.roc,
   ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
 
   if (is.character(x)) {
-    x <- match.arg(x, c("best")) # no thresholds in smoothed roc: only best is possible
+    x <- match.arg(x, c("all", "best")) # no thresholds in smoothed roc: only best or all are possible
     partial.auc <- attr(smooth.roc$auc, "partial.auc")
-
-    # cheat: allow the user to pass "topleft"
-    best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
-    if (best.method == "topleft") {
-    	best.method <- "closest.topleft"
-    }
-    optim.crit <- roc.utils.optim.crit(smooth.roc$sensitivities, smooth.roc$specificities,
-    								   ifelse(smooth.roc$percent, 100, 1),
-    								   best.weights, best.method)
     
-    if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
-      se <- smooth.roc$sensitivities[optim.crit==max(optim.crit)]
-      sp <- smooth.roc$specificities[optim.crit==max(optim.crit)]
-      optim.crit <- optim.crit[optim.crit==max(optim.crit)]
-    }
-    else {
-      if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-        optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-        se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
-        sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
-        optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+    if (x == "all") {
+      # Pre-filter thresholds based on partial.auc
+      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
+        se <- smooth.roc$sensitivities
+        sp <- smooth.roc$specificities
       }
       else {
-        optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-        se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
-        sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
-        optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+        if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
+          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+        }
+        else {
+          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+        }
+      }
+      if (length(se) == 0) {
+        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        return(NULL)
+      }
+      
+      if (any(! ret %in% c("specificity", "sensitivity"))) {
+        # Deduce additional tn, tp, fn, fp, npv, ppv
+        res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
+      }
+      else {
+        res <- cbind(
+          specificity = sp,
+          sensitivity = se
+        )
       }
     }
-    
-    if (any(! ret %in% c("specificity", "sensitivity", best.method))) {
-    	# Deduce additional tn, tp, fn, fp, npv, ppv
-    	res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
-    }
     else {
-    	res <- cbind(
-    		specificity = sp,
-    		sensitivity = se,
-    		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
-    	)
-    	colnames(res)[3] <- best.method
+      # cheat: allow the user to pass "topleft"
+      best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
+      if (best.method == "topleft") {
+        best.method <- "closest.topleft"
+      }
+      optim.crit <- roc.utils.optim.crit(smooth.roc$sensitivities, smooth.roc$specificities,
+                                         ifelse(smooth.roc$percent, 100, 1),
+                                         best.weights, best.method)
+      
+      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
+        se <- smooth.roc$sensitivities[optim.crit==max(optim.crit)]
+        sp <- smooth.roc$specificities[optim.crit==max(optim.crit)]
+        optim.crit <- optim.crit[optim.crit==max(optim.crit)]
+      }
+      else {
+        if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
+          optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+        }
+        else {
+          optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial==max(optim.crit.partial)]
+        }
+      }
+      
+      if (any(! ret %in% c("specificity", "sensitivity", best.method))) {
+      	# Deduce additional tn, tp, fn, fp, npv, ppv
+      	res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
+      }
+      else {
+      	res <- cbind(
+      		specificity = sp,
+      		sensitivity = se,
+      		best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
+      	)
+      	colnames(res)[3] <- best.method
+      }
     }
 
     if (as.list) {

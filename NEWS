@@ -2,6 +2,7 @@
   * Accept more values in 'input' of coords (issue #67)
   * Accept 'kappa' for the 'power.roc.test' of two ROC curves (issue #82)
   * The 'input' argument to 'coords' for 'smooth.roc' curves no longer has a default
+  * The 'x' argument to 'coords' for 'smooth.roc' can now be set to 'all' (also the default)
   * Fix bootstrap roc.test and cov with 'smooth.roc' curves
   * Remove warnings with 'warnPartialMatchDollar' option (issue #87)
   * Make tests depending on vdiffr conditional (issue #88)

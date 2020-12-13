@@ -17,6 +17,14 @@ test_that("coords returns all thresholds by default", {
 })
 
 
+test_that("coords returns all thresholds by default with smooth.roc", {
+	obtained <- coords(smooth(r.s100b))
+	expect_equal(obtained, expected.coords.smooth[,c("specificity", "sensitivity")])
+	# but not if it's an empty numeric, as this might be indicative of user error
+	expect_error(coords(r.s100b, numeric(0)), "length")
+})
+
+
 test_that("coords with transpose = FALSE works", {
 	return.rows <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp",  "fn", "fp", "npv", "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv", "youden", "closest.topleft")
 	obtained <- coords(r.s100b, "all", ret = return.rows, transpose = FALSE)
@@ -522,6 +530,20 @@ test_that("coords with x = 'all' takes partial AUC into account", {
 	obtained <- coords(r.s100b.partial2, "all", ret="t", transpose=TRUE)
 	expect_equal(length(obtained), 5)
 	expect_equal(max(obtained), 0.075)
+})
+
+
+
+test_that("coords with x = 'all' takes partial AUC into account with smooth.roc", {
+	# with sp
+	obtained <- coords(smooth(r.s100b.partial1), "all", ret="sp", transpose=TRUE)
+	expect_equal(length(obtained), 139)
+	expect_equal(min(obtained), 0.90060885)
+	
+	# with se
+	obtained <- coords(smooth(r.s100b.partial2), "all", ret="se", transpose=TRUE)
+	expect_equal(length(obtained), 46)
+	expect_equal(min(obtained), 0.90019569)
 })
 
 
