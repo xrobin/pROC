@@ -39,12 +39,6 @@ coords.smooth.roc <- function(smooth.roc,
     stop("Numeric 'x' has length 0")
   }
   
-  # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
-  if (missing(transpose) || is.null(transpose)) {
-    transpose <- FALSE
-    warning("The 'transpose' argument is set to FALSE by default since pROC 1.16. Set transpose = FALSE explicitly silence this warning or transpose = TRUE to revert to the previous behavior. Type help(coords_transpose) for additional information.")
-  }
-  
   # match return
   ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
 
@@ -182,12 +176,6 @@ coords.roc <- function(roc,
   }
   else if (length(x) == 0 && is.numeric(x)) {
     stop("Numeric 'x' has length 0")
-  }
-  
-  # Warn about future change in transpose <https://github.com/xrobin/pROC/issues/54>
-  if (missing(transpose) || is.null(transpose)) {
-    transpose <- FALSE
-    warning("The 'transpose' argument to FALSE by default since pROC 1.16. Set transpose = TRUE explicitly to revert to the previous behavior, or transpose = TRUE to silence this warning. Type help(coords_transpose) for additional information.")
   }
   
   # match input 

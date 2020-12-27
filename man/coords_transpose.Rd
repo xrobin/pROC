@@ -9,7 +9,7 @@ return values of the \code{\link{coords}} function.}
 
 \section{Background information}{
 
-Untile the release of pROC 1.16, the \code{coords} has was returning 
+Until the release of pROC 1.16, the \code{coords} function was returning 
 a matrix with thresholds in columns, and the coordinate variables in rows.
 
 \preformatted{
@@ -68,10 +68,20 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in colums
 THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
-\section{Upcoming changes in future versions}{
-It is expected that the following major version (1.17) will remove the warning and drop support for the \code{as.list} argument altogether.
+\section{Changes in 1.17}{
+\enumerate{
+	\item{Dropped the warning if \code{transpose} is missing.}
+}
+}
 
-The \code{transpose} and \code{drop} arguments will be deprecated in 1.17, but will remain available for a few additional major versions.
+\section{Changes in future versions}{
+\enumerate{
+	\item{Support for  the \code{as.list} argument might be dropped in the future.
+	This is still under consideration.}
+	\item{
+	The \code{transpose} and \code{drop} arguments might be deprecated in the future, but will remain available for a few additional major versions.
+	}
+}
 }
 
 \section{Related changes in ci.coords}{
