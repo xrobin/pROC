@@ -358,7 +358,7 @@ na.rm=TRUE, method=NULL, ...)
   1134--1138. DOI: \href{http://dx.doi.org/10.1111/j.0006-341X.2000.01134.x}{10.1111/j.0006-341X.2000.01134.x}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
+  URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{

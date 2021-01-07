@@ -229,7 +229,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   Lutz Duembgen, Kaspar Rufibach (2011) ``logcondens: Computations Related
   to Univariate Log-Concave Density Estimation''. \emph{Journal of Statistical
-  Software}, \bold{39}, 1--28. URL: \href{http://www.jstatsoft.org/v39/i06/}{jstatsoft.org/v39/i06}.
+  Software}, \bold{39}, 1--28. URL: \href{https://www.jstatsoft.org/v39/i06/}{jstatsoft.org/v39/i06}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
@@ -239,7 +239,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
   \emph{The International Journal of Biostatistics}, \bold{8}, accepted. DOI: 
   \href{http://dx.doi.org/10.1515/1557-4679.1378}{10.1515/1557-4679.1378}. arXiv:
-  \href{http://arxiv.org/abs/1103.1787}{1103.1787}.
+  \href{https://arxiv.org/abs/1103.1787}{1103.1787}.
 
   William N. Venables, Brian D. Ripley (2002). ``Modern Applied Statistics with S''. New York, Springer.
   \href{http://books.google.ch/books?id=974c4vKurNkC}{Google books}.
