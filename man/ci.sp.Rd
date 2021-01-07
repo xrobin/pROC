@@ -124,16 +124,16 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, .
   James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
-  DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19\%3A9\%3C1141\%3A\%3AAID-SIM479\%3E3.0.CO\%3B2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
+  DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
 
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
-  \href{http://dx.doi.org/10.1016/j.patrec.2005.10.010}{10.1016/j.patrec.2005.10.010}.
+  \doi{10.1016/j.patrec.2005.10.010}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.

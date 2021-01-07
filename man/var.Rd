@@ -200,17 +200,17 @@ progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
   variability of nonparametric estimates of the areas under receiver
   operating characteristic curves: An update''. \emph{Academic
   Radiology} \bold{4}, 49--58. DOI:
-  \href{http://dx.doi.org/10.1016/S1076-6332(97)80161-4}{10.1016/S1076-6332(97)80161-4}.
+  \doi{10.1016/S1076-6332(97)80161-4}.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
   determination for diagnostic accurary studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
-  1529--1542. DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19970715)16\%3A13\%3C1529\%3A\%3AAID-SIM565\%3E3.0.CO\%3B2-H}{(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
+  1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
-  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
+  DOI: \doi{10.1109/LSP.2014.2337313}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.

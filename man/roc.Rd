@@ -349,12 +349,12 @@ aSAH  \%>\%
 \references{
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
-  \href{http://dx.doi.org/10.1016/j.patrec.2005.10.010}{10.1016/j.patrec.2005.10.010}.
+  \doi{10.1016/j.patrec.2005.10.010}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
 \seealso{

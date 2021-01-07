@@ -341,21 +341,21 @@ na.rm=TRUE, method=NULL, ...)
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
-  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
+  DOI: \doi{10.1109/LSP.2014.2337313}.
 
   E. S. Venkatraman and Colin B. Begg (1996) ``A distribution-free
   procedure for comparing receiver operating characteristic curves from
   a paired experiment''. \emph{Biometrika} \bold{83}, 835--848.
-  DOI: \href{http://dx.doi.org/10.1093/biomet/83.4.835}{10.1093/biomet/83.4.835}.
+  DOI: \doi{10.1093/biomet/83.4.835}.
 
   E. S. Venkatraman (2000) ``A Permutation Test to Compare Receiver
   Operating Characteristic Curves''. \emph{Biometrics} \bold{56},
-  1134--1138. DOI: \href{http://dx.doi.org/10.1111/j.0006-341X.2000.01134.x}{10.1111/j.0006-341X.2000.01134.x}.
+  1134--1138. DOI: \doi{10.1111/j.0006-341X.2000.01134.x}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
   URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.

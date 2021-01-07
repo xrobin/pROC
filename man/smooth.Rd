@@ -234,11 +234,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
 
   Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
   \emph{The International Journal of Biostatistics}, \bold{8}, accepted. DOI: 
-  \href{http://dx.doi.org/10.1515/1557-4679.1378}{10.1515/1557-4679.1378}. arXiv:
+  \doi{10.1515/1557-4679.1378}. arXiv:
   \href{https://arxiv.org/abs/1103.1787}{1103.1787}.
 
   William N. Venables, Brian D. Ripley (2002). ``Modern Applied Statistics with S''. New York, Springer.
@@ -248,7 +248,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   non-parametric receiver operating characteristic (ROC) curves for
   continuous diagnostic tests''. \emph{Statistics in Medicine}
   \bold{18}, 2143--2156. DOI: 
-  \href{http://dx.doi.org/10.1002/(SICI)1097-0258(19971015)16\%3A19\%3C2143\%3A\%3AAID-SIM655\%3E3.0.CO\%3B2-3}{10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}.
+  \doi{10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}.
 }
 
 \seealso{
