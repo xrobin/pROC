@@ -18,4 +18,4 @@ after_success:
 env:
   - RUN_SLOW_TESTS=true
   - _R_CHECK_DEPENDS_ONLY=true
-  - _R_CHECK_CRAN_INCOMING_=true NOT_CRAN=false
+  # - _R_CHECK_CRAN_INCOMING_=true NOT_CRAN=false
