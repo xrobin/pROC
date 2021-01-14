@@ -20,7 +20,7 @@
   Jean-Charles Sanchez (2010) ``A multiparameter panel method for outcome
   prediction following aneurysmal subarachnoid hemorrhage''.
   \emph{Intensive Care Medicine} \bold{36}(1), 107--115. DOI:
-  \href{http://dx.doi.org/10.1007/s00134-009-1641-y}{10.1007/s00134-009-1641-y}.
+  \doi{10.1007/s00134-009-1641-y}.
 }
 
 \seealso{
@@ -38,7 +38,7 @@
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}
+  DOI: \doi{10.1186/1471-2105-12-77}
 }
 
 \examples{

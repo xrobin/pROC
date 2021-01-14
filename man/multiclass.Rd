@@ -109,7 +109,7 @@ is more subject to bugs. Please report them if you find one.
   David J. Hand and Robert J. Till (2001). A Simple Generalisation of
   the Area Under the ROC Curve for Multiple Class Classification
   Problems. \emph{Machine Learning} \bold{45}(2), p. 171--186. DOI:
-  \href{http://dx.doi.org/10.1023/A:1010920819831}{10.1023/A:1010920819831}.
+  \doi{10.1023/A:1010920819831}.
 }
 
 \seealso{

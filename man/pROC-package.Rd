@@ -38,7 +38,7 @@
   Frédérique Lisacek, Jean-Charles Sanchez and Markus Müller (2011).
   ``pROC: an open-source package for R and S+ to analyze and compare ROC
   curves''. \emph{BMC Bioinformatics}, \bold{12}, p. 77. DOI: 
-  \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}
+  \doi{10.1186/1471-2105-12-77}
 
   Type \code{citation("pROC")} for a BibTeX entry.
 
@@ -270,7 +270,7 @@ Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
   James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
-  DOI: \href{http://dx.doi.org/10.1002/(SICI)1097-0258(20000515)19\%3A9\%3C1141\%3A\%3AAID-SIM479\%3E3.0.CO\%3B2-F}{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
+  DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
 
   Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
   (1988) ``Comparing the areas under two or more correlated receiver
@@ -279,20 +279,20 @@ Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
 
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
-  \href{http://dx.doi.org/10.1016/j.patrec.2005.10.010}{10.1016/j.patrec.2005.10.010}.
+  \doi{10.1016/j.patrec.2005.10.010}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
-  DOI: \href{http://dx.doi.org/10.1109/LSP.2014.2337313}{10.1109/LSP.2014.2337313}.
+  DOI: \doi{10.1109/LSP.2014.2337313}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \href{http://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
+  URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
 }
 
 \seealso{

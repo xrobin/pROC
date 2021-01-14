@@ -144,21 +144,21 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 \references{
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
-  \href{http://dx.doi.org/10.1016/j.patrec.2005.10.010}{10.1016/j.patrec.2005.10.010}.
+  \doi{10.1016/j.patrec.2005.10.010}.
 
   David J. Hand and Robert J. Till (2001). A Simple Generalisation of
   the Area Under the ROC Curve for Multiple Class Classification
   Problems. \emph{Machine Learning} \bold{45}(2), p. 171--186. DOI:
-  \href{http://dx.doi.org/10.1023/A:1010920819831}{10.1023/A:1010920819831}.
+  \doi{10.1023/A:1010920819831}.
 
   Donna Katzman McClish (1989) ``Analyzing a Portion of the ROC
   Curve''. \emph{Medical Decision Making} \bold{9}(3), 190--195. DOI:
-  \href{http://dx.doi.org/10.1177/0272989X8900900307}{10.1177/0272989X8900900307}.
+  \doi{10.1177/0272989X8900900307}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
-  DOI: \href{http://dx.doi.org/10.1186/1471-2105-12-77}{10.1186/1471-2105-12-77}.
+  DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
 \seealso{
