@@ -11,7 +11,7 @@
 \description{
   This is the main function of the pROC package. It builds a ROC
   curve and returns a \dQuote{roc} object, a list of class
-  \dQuote{roc}. This object can be \code{prin}ted, \code{plot}ted, or
+  \dQuote{roc}. This object can be \code{print}ed, \code{plot}ted, or
   passed to the functions \code{\link{auc}}, \code{\link{ci}},
   \code{\link{smooth.roc}} and \code{\link{coords}}. Additionally, two
   \code{roc} objects can be compared with \code{\link{roc.test}}. 
