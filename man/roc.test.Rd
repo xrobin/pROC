@@ -8,14 +8,18 @@
 \alias{roc.test.smooth.roc}
 
 \title{
-  Compare the AUC of two ROC curves
+  Compare two ROC curves
 }
 \description{
-  This function compares the AUC or partial AUC of two correlated (or
-  paired) or uncorrelated (unpaired) ROC curves. Several syntaxes are
-  available: two object of class roc (which can be AUC or smoothed ROC),
-  or either three vectors (response, predictor1, predictor2) or a
-  response vector and a matrix or data.frame with two columns
+  This function compares two correlated (or paired) or uncorrelated (unpaired)
+  ROC curves. Delong and bootstrap methods test for a difference in the
+  (partial) AUC of the ROC curves. The Venkatraman method tests if the two
+  curves are perfectly superposed. The sensitivity and specificity methods
+  test if the sensitivity (respectively specificity) of the ROC curves are
+  different at the given level of specificity (respectively sensitivity).
+  Several syntaxes are available: two object of class roc (which can be AUC
+  or smoothed ROC), or either three vectors (response, predictor1, predictor2)
+  or a response vector and a matrix or data.frame with two columns
   (predictors).
 }
 \usage{
