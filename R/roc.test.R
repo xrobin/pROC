@@ -353,7 +353,7 @@ roc.test.roc <- function(roc1, roc2,
 		htest$parameter <- parameter
 		pval <- sum(stats[[2]]>=stats[[1]])/boot.n
 		htest$p.value <- pval
-		names(null.value) <- "difference in ROC operating points"
+		names(htest$null.value) <- "difference in ROC operating points"
 		htest$estimate <- NULL # AUC not relevant in venkatraman
 	}
 	else { # method == "bootstrap" or "sensitivity" or "specificity"
