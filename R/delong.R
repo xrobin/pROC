@@ -112,17 +112,17 @@ ci.auc.delong <- function(roc, conf.level) {
 }
 
 # function to calculate the CI
-ci.delong.paired <- function(roc1, roc2, ci.level = NULL) {
+ci.delong.paired <- function(roc1, roc2, conf.level = NULL) {
 	
 	# check whether CI level was specified correctly or not.
-	if (is.null(ci.level)) {
-		ci.level <- 0.95
+	if (is.null(conf.level)) {
+		conf.level <- 0.95
 		message("ci.level not specified, defaults to 0.95.")
-	} else if (0 > ci.level | 1 < ci.level) {
-		ci.level <- 0.95
+	} else if (0 > conf.level | 1 < conf.level) {
+		conf.level <- 0.95
 		message("ci.level must be between 0 and 1. defaulting to 0.95.")
-	} else if (!is.numeric(ci.level)) {
-		ci.level <- 0.95
+	} else if (!is.numeric(conf.level)) {
+		conf.level <- 0.95
 		message("ci.level must be numeric between 0 and 1. defaulting to 0.95.")
 	}
 	
@@ -154,12 +154,12 @@ ci.delong.paired <- function(roc1, roc2, ci.level = NULL) {
 	}
 	
 	# Now use those values to calculate the CI as described in 1988 DeLong paper
-	crit_z <- qnorm(1 - ((1 - ci.level)/2))
+	crit_z <- qnorm(1 - ((1 - conf.level)/2))
 	out <- list()
 	d <- VR$theta-VS$theta #difference estimate = (1, -1) %*% theta'
 	out$upper <- d + crit_z * sig[1]
 	out$lower <- d - crit_z * sig[1]
-	out$level <- ci.level
+	out$level <- conf.level
 	return(out)
 }
 

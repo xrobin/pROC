@@ -116,6 +116,7 @@ roc.test.roc <- function(roc1, roc2,
 						 ties.method="first",
 						 progress=getOption("pROCProgress")$name,
 						 parallel=FALSE,
+						 conf.level,
 						 ...) {
 	alternative <- match.arg(alternative)
 	data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
@@ -305,7 +306,7 @@ roc.test.roc <- function(roc1, roc2,
 	if (method == "delong") {
 		if (paired) {
 			stat <- delong.paired.test(roc1, roc2)
-			stat.ci <- ci.delong.paired(roc1, roc2)
+			stat.ci <- ci.delong.paired(roc1, roc2, conf.level)
 			names(stat) <- "Z"
 			htest$statistic <- stat
 			htest$method <- "DeLong's test for two correlated ROC curves"
