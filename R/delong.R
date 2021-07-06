@@ -156,8 +156,9 @@ ci.delong.paired <- function(roc1, roc2, ci.level = NULL) {
 	# Now use those values to calculate the CI as described in 1988 DeLong paper
 	crit_z <- qnorm(1 - ((1 - ci.level)/2))
 	out <- list()
-	out$upper <- qnorm(crit_z) * sig
-	out$lower <- -qnorm(crit_z) * sig
+	d <- VR$theta-VS$theta #difference estimate = (1, -1) %*% theta'
+	out$upper <- d + crit_z * sig
+	out$lower <- d - crit_z * sig
 }
 
 # Calls delongPlacementsCpp safely
