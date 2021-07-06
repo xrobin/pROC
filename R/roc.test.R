@@ -305,9 +305,12 @@ roc.test.roc <- function(roc1, roc2,
 	if (method == "delong") {
 		if (paired) {
 			stat <- delong.paired.test(roc1, roc2)
+			stat.ci <- ci.delong.paired(roc1, roc2)
 			names(stat) <- "Z"
 			htest$statistic <- stat
 			htest$method <- "DeLong's test for two correlated ROC curves"
+			htest$ci.upper <- stat.ci$upper
+			htest$ci.lower <- stat.ci$lower
 			
 			if (alternative == "two.sided")
 				pval <- 2*pnorm(-abs(stat))
