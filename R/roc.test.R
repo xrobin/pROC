@@ -309,8 +309,7 @@ roc.test.roc <- function(roc1, roc2,
 			names(stat) <- "Z"
 			htest$statistic <- stat
 			htest$method <- "DeLong's test for two correlated ROC curves"
-			htest$ci.upper <- stat.ci$upper
-			htest$ci.lower <- stat.ci$lower
+			htest$conf.int <- c(stat.ci$lower, stat.ci$upper)
 			
 			if (alternative == "two.sided")
 				pval <- 2*pnorm(-abs(stat))
