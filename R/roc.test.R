@@ -116,7 +116,7 @@ roc.test.roc <- function(roc1, roc2,
 						 ties.method="first",
 						 progress=getOption("pROCProgress")$name,
 						 parallel=FALSE,
-						 conf.level,
+						 conf.level=NULL,
 						 ...) {
 	alternative <- match.arg(alternative)
 	data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
