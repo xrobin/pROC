@@ -157,8 +157,8 @@ ci.delong.paired <- function(roc1, roc2, ci.level = NULL) {
 	crit_z <- qnorm(1 - ((1 - ci.level)/2))
 	out <- list()
 	d <- VR$theta-VS$theta #difference estimate = (1, -1) %*% theta'
-	out$upper <- d + crit_z * sig
-	out$lower <- d - crit_z * sig
+	out$upper <- d + crit_z * sig[1]
+	out$lower <- d - crit_z * sig[1]
 	out$level <- ci.level
 	return(out)
 }
