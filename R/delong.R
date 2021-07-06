@@ -111,6 +111,55 @@ ci.auc.delong <- function(roc, conf.level) {
   return(ci)
 }
 
+# function to calculate the CI
+ci.delong.paired <- function(roc1, roc2, ci.level = NULL) {
+	
+	# check whether CI level was specified correctly or not.
+	if (is.null(ci.level)) {
+		ci.level <- 0.95
+		message("ci.level not specified, defaults to 0.95.")
+	} else if (0 > ci.level | 1 < ci.level) {
+		ci.level <- 0.95
+		message("ci.level must be between 0 and 1. defaulting to 0.95.")
+	} else if (!is.numeric(ci.level)) {
+		ci.level <- 0.95
+		message("ci.level must be numeric between 0 and 1. defaulting to 0.95.")
+	}
+	
+	# Code from delong test for intermediate calculations
+	n <- length(roc1$controls)
+	m <- length(roc1$cases)
+	
+	VR <- delongPlacements(roc1)
+	VS <- delongPlacements(roc2)
+	
+	SX <- matrix(NA, ncol=2, nrow=2)
+	SX[1,1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta))/(m-1)
+	SX[1,2] <- sum((VR$X - VR$theta) * (VS$X - VS$theta))/(m-1)
+	SX[2,1] <- sum((VS$X - VS$theta) * (VR$X - VR$theta))/(m-1)
+	SX[2,2] <- sum((VS$X - VS$theta) * (VS$X - VS$theta))/(m-1)
+	
+	SY <- matrix(NA, ncol=2, nrow=2)
+	SY[1,1] <- sum((VR$Y - VR$theta) * (VR$Y - VR$theta))/(n-1)
+	SY[1,2] <- sum((VR$Y - VR$theta) * (VS$Y - VS$theta))/(n-1)
+	SY[2,1] <- sum((VS$Y - VS$theta) * (VR$Y - VR$theta))/(n-1)
+	SY[2,2] <- sum((VS$Y - VS$theta) * (VS$Y - VS$theta))/(n-1)
+	
+	S <- SX/m + SY/n
+	L <- c(1,-1)
+	sig <- sqrt(L%*%S%*%L)
+	zscore <- (VR$theta-VS$theta)/sig[1]
+	if (is.nan(zscore) && VR$theta == VR$theta && sig[1] == 0) {
+		zscore <- 0 # special case: no difference between theta's produces a NaN
+	}
+	
+	# Now use those values to calculate the CI as described in 1988 DeLong paper
+	crit_z <- qnorm(1 - ((1 - ci.level)/2))
+	out <- list()
+	out$upper <- qnorm(crit_z) * sig
+	out$lower <- -qnorm(crit_z) * sig
+}
+
 # Calls delongPlacementsCpp safely
 # Ensures that the theta value calculated is correct
 delongPlacements <- function(roc) {
