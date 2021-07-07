@@ -116,7 +116,7 @@ roc.test.roc <- function(roc1, roc2,
 						 ties.method="first",
 						 progress=getOption("pROCProgress")$name,
 						 parallel=FALSE,
-						 conf.level=NULL,
+						 conf.level=0.95,
 						 ...) {
 	alternative <- match.arg(alternative)
 	data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
@@ -250,6 +250,15 @@ roc.test.roc <- function(roc1, roc2,
 			}
 			if (roc1$direction != roc2$direction)
 				warning("DeLong's test should not be applied to ROC curves with a different direction.")
+			
+			# Check if conf.level is specified correctly. This is currently
+			# only used for the delong paired method, which is why it lives 
+			# here for now.
+			if (!is.numeric(conf.level)) {
+				stop("conf.level must be numeric between 0 and 1.")
+			} else if (0 > conf.level | 1 < conf.level) {
+				stop("conf.level must be between 0 and 1.")
+			}
 		}
 		else if (method == "venkatraman") {
 			if (has.partial.auc(roc1))
