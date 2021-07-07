@@ -314,7 +314,7 @@ roc.test.roc <- function(roc1, roc2,
 	
 	if (method == "delong") {
 		if (paired) {
-			delong.calcs <- delong.paired.calculations(roc1, roce)
+			delong.calcs <- delong.paired.calculations(roc1, roc2)
 			stat <- delong.paired.test(delong.calcs)
 			stat.ci <- ci.delong.paired(delong.calcs, conf.level)
 			names(stat) <- "Z"
