@@ -25,7 +25,7 @@
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="first", progress=getOption("pROCProgress")$name,
-parallel=FALSE, ...)
+parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ...)
@@ -97,6 +97,8 @@ na.rm=TRUE, method=NULL, ...)
   \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
     parallel backend provided by plyr (foreach).
   }
+  \item{conf.level}{a numeric scalar between 0 and 1 (non-inclusive) which
+    species the confidence level to use for any calculated CI's.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
