@@ -314,8 +314,9 @@ roc.test.roc <- function(roc1, roc2,
 	
 	if (method == "delong") {
 		if (paired) {
-			stat <- delong.paired.test(roc1, roc2)
-			stat.ci <- ci.delong.paired(roc1, roc2, conf.level)
+			delong.calcs <- delong.paired.calculations(roc1, roce)
+			stat <- delong.paired.test(delong.calcs)
+			stat.ci <- ci.delong.paired(delong.calcs, conf.level)
 			names(stat) <- "Z"
 			htest$statistic <- stat
 			htest$method <- "DeLong's test for two correlated ROC curves"
