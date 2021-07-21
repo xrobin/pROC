@@ -25,7 +25,7 @@
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="first", progress=getOption("pROCProgress")$name,
-parallel=FALSE, ...)
+parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ...)
@@ -97,6 +97,8 @@ na.rm=TRUE, method=NULL, ...)
   \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
     parallel backend provided by plyr (foreach).
   }
+  \item{conf.level}{a numeric scalar between 0 and 1 (non-inclusive) which
+    species the confidence level to use for any calculated CI's.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
@@ -300,6 +302,7 @@ na.rm=TRUE, method=NULL, ...)
   \item{statistic}{the value of the Z (\code{method="delong"}) or D
     (\code{method="bootstrap"}) statistics.
   }
+  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifiying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{the character string \dQuote{DeLong's test for two
       correlated ROC curves} (if \code{method="delong"}) or
