@@ -15,7 +15,7 @@ expect_htest <- function(ht) {
 expect_venkatraman_htest <- function(ht) {
 	expect_htest(ht)
 	expect_equal(unname(ht$null.value), 0)
-	expect_named(ht$null.value, "difference in AUC")
+	expect_named(ht$null.value, "difference in ROC operating points")
 	expect_is(ht$statistic, c("numeric", "integer")) # Can be either?
 	expect_named(ht$statistic, "E")
 	expect_is(ht$parameter, "numeric")
@@ -26,7 +26,7 @@ expect_venkatraman_htest <- function(ht) {
 expect_bootstrap_htest <- function(ht) {
 	expect_htest(ht)
 	expect_equal(unname(ht$null.value), 0)
-	expect_named(ht$null.value, "difference in AUC")
+	expect_named(ht$null.value) # multiple values are possible
 	expect_is(ht$statistic, c("numeric", "integer")) # Can be either?
 	expect_named(ht$statistic, "D")
 	expect_is(ht$parameter, "numeric")

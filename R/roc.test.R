@@ -367,7 +367,7 @@ roc.test.roc <- function(roc1, roc2,
 		htest$parameter <- parameter
 		pval <- sum(stats[[2]]>=stats[[1]])/boot.n
 		htest$p.value <- pval
-		names(null.value) <- "difference in ROC operating points"
+		names(htest$null.value) <- "difference in ROC operating points"
 		htest$estimate <- NULL # AUC not relevant in venkatraman
 	}
 	else { # method == "bootstrap" or "sensitivity" or "specificity"
@@ -387,6 +387,8 @@ roc.test.roc <- function(roc1, roc2,
 				htest$method <- "Specificity test for two correlated ROC curves"
 			else
 				htest$method <- "Specificity test for two ROC curves"
+			names(htest$null.value) <- sprintf("difference in sensitivity at %s specificity",
+											   specificity)
 		}
 		else if (method == "sensitivity") {
 			if (! is.numeric(sensitivity) || length(sensitivity) != 1) {
@@ -397,6 +399,9 @@ roc.test.roc <- function(roc1, roc2,
 				htest$method <- "Sensitivity test for two correlated ROC curves"
 			else
 				htest$method <- "Sensitivity test for two ROC curves"
+			
+			names(htest$null.value) <- sprintf("difference in specificity at %s sensitivity",
+											   sensitivity)
 		}
 		else {
 			stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args, progress, parallel)

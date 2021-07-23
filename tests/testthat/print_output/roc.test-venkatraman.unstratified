@@ -3,5 +3,5 @@
 
 data:  r.s100b and r.wfns
 E = 43, boot.n = 12, p-value = 0.05
-alternative hypothesis: true difference in AUC is not equal to 0
+alternative hypothesis: true difference in ROC operating points is not equal to 0
 
