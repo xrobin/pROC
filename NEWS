@@ -1,4 +1,5 @@
-1.17.0.2 (2020-05-16):
+1.18.0 (future):
+  * Add CI of the estimate for 'roc.test' (DeLong, paired only for now) (code contributed by Zane Billings) (pr #95) 
   * Fix documentation and alternative hypothesis for Venkatraman test (issue #92)
 
 1.17.0.1 (2020-01-07):
@@ -60,7 +61,7 @@
   * The 'multiclass.roc' function now accepts multivariate decision values (code contributed by Matthias Döring)
   * 'ggroc' supports multiple aesthetics (issue #42)
   * Make 'ggplot2' dependency optional
-  * Suggested packages can be installed interactively when required
+  * CSuggested packages can be installed interactively when required
   * Passing both 'cases' and 'controls' or 'response' and 'predictor' arguments is now an error
   * Many small bug fixes
 

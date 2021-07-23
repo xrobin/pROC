@@ -1,8 +1,8 @@
 Package: pROC
 Type: Package
 Title: Display and Analyze ROC Curves
-Version: 1.17.0.1.9999
-Date: 2021-05-16
+Version: 1.17.9999
+Date: 2021-07-23
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: methods, plyr, Rcpp (>= 0.11.1)
@@ -22,7 +22,9 @@ Authors@R: c(person("Xavier", "Robin", role = c("cre", "aut"),
                     comment = "Fast DeLong code", 
                     email = "stefan_siegert@gmx.de"),
              person("Matthias", "Doering", role = "ctb", 
-                    comment = "Hand & Till Multiclass"))
+                    comment = "Hand & Till Multiclass"),
+             person("Zane", "Billings", role = "ctb", 
+                    comment = "DeLong paired test CI"))
 Description: Tools for visualizing, smoothing and comparing receiver operating characteristic (ROC curves). (Partial) area under the curve (AUC) can be compared with statistical tests based on U-statistics or bootstrap. Confidence intervals can be computed for (p)AUC or ROC curves.
 License: GPL (>= 3)
 URL: http://expasy.org/tools/pROC/
