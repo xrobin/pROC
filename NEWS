@@ -1,8 +1,8 @@
-1.18.0 (future):
+1.18.0 (2021-08-02):
   * Add CI of the estimate for 'roc.test' (DeLong, paired only for now) (code contributed by Zane Billings) (pr #95) 
   * Fix documentation and alternative hypothesis for Venkatraman test (issue #92)
 
-1.17.0.1 (2020-01-07):
+1.17.0.1 (2021-01-07):
   * Fix CRAN incoming checks as requested by CRAN
 
 1.17.0 (2020-12-29)
