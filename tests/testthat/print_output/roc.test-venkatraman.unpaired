@@ -3,5 +3,5 @@
 
 data:  r.s100b and r.wfns
 E = 41, boot.n = 12, p-value = 0.5483
-alternative hypothesis: true difference in ROC operating points is not equal to 0
+alternative hypothesis: true difference in at least one ROC operating points is not equal to 0
 
