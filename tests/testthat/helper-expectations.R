@@ -15,7 +15,7 @@ expect_htest <- function(ht) {
 expect_venkatraman_htest <- function(ht) {
 	expect_htest(ht)
 	expect_equal(unname(ht$null.value), 0)
-	expect_named(ht$null.value, "difference in ROC operating points")
+	expect_named(ht$null.value, "difference in at least one ROC operating point")
 	expect_is(ht$statistic, c("numeric", "integer")) # Can be either?
 	expect_named(ht$statistic, "E")
 	expect_is(ht$parameter, "numeric")
