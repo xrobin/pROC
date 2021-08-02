@@ -225,8 +225,38 @@ roc.utils.max.thresholds.idx <- function(thresholds, sp, se) {
   return(local.maximas)
 }
 
+detect.env.true <- function(x) {
+	value <- Sys.getenv(x)
+	if (value == "T" || value == "True" || value == "TRUE" || value == "true") {
+		return(TRUE)
+	}
+	else {
+		return(FALSE)
+	}
+}
+
+# Detect if _R_CHECK_LENGTH_1_CONDITION_  or _R_CHECK_LENGTH_1_LOGIC2_  are set
+# to "True" values, which would break some progress bars.
+# See https://cran.r-project.org/doc/manuals/r-devel/R-ints.html and #97
+# Return True or False accordingly
+roc.utils.dumb.progress.bar <- function() {
+	if (detect.env.true("_R_CHECK_LENGTH_1_CONDITION_") || detect.env.true("_R_CHECK_LENGTH_1_LOGIC2_")) {
+		return(TRUE)
+	}
+	else {
+		return(FALSE)
+	}
+}
+
 # Define which progress bar to use
 roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
+	
+  if (roc.utils.dumb.progress.bar()) {
+    # If the length 1 checks are on, we need to return only
+    # the progress bar name
+    return(getOption("pROCProgress")$name)
+  }
+  # Otherwise proceed normally
   if (name == "tk") { # load tcltk if possible
     if (!requireNamespace("tcltk")) {
       # If tcltk cannot be loaded fall back to default text progress bar
