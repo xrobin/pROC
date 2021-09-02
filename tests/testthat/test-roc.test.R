@@ -13,6 +13,15 @@ test_that("roc.test works", {
 	expect_is(t3, "htest")
 })
 
+
+test_that("DeLong roc.test works when curves are identical", {
+	t4 <- roc.test(r.wfns, r.wfns)
+	expect_is(t4, "htest")
+	expect_equal(t4$p.value, 1)
+	expect_equal(t4$statistic, c(Z=0))
+})
+
+
 test_that("roc.test statistic and p are as expected with defaults", {
 	expect_equal(t1$statistic, c(Z=2.20898359144091))
 	expect_equal(t1$p.value, 0.0271757822291882)
