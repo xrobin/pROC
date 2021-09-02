@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.com/xrobin/pROC.svg?branch=master)](https://travis-ci.com/github/xrobin/pROC)
+[![Build Status](https://api.travis-ci.com/xrobin/pROC.svg?branch=master)](https://app.travis-ci.com/github/xrobin/pROC)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/xrobin/pROC?branch=master&svg=true)](https://ci.appveyor.com/project/xrobin/pROC)
 [![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://codecov.io/github/xrobin/pROC) 
 [![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](https://cran.r-project.org/package=pROC)
