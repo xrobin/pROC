@@ -24,7 +24,7 @@ delong.paired.test <- function(calcs) {
 	
 	zscore <- with(calcs, d/sig)
 	
-	if (is.nan(zscore) && calc$d == 0 && calcs$sig == 0)
+	if (is.nan(zscore) && calcs$d == 0 && calcs$sig == 0)
 		zscore <- 0 # special case: no difference between theta's produces a NaN
 	
   return(zscore)
