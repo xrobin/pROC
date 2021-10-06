@@ -292,7 +292,7 @@ Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
   DOI: \doi{10.1109/LSP.2014.2337313}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
+  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

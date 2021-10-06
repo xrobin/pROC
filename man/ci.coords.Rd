@@ -149,7 +149,7 @@ progress=getOption("pROCProgress")$name, ...)
   \doi{10.1016/j.patrec.2005.10.010}.
   
   Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \href{https://www.jstatsoft.org/v40/i01}{www.jstatsoft.org/v40/i01}.
+  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

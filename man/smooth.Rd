@@ -229,7 +229,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   Lutz Duembgen, Kaspar Rufibach (2011) ``logcondens: Computations Related
   to Univariate Log-Concave Density Estimation''. \emph{Journal of Statistical
-  Software}, \bold{39}, 1--28. URL: \href{https://www.jstatsoft.org/v39/i06/}{jstatsoft.org/v39/i06}.
+  Software}, \bold{39}, 1--28. URL: \doi{10.18637/jss.v039.i06}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
