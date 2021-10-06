@@ -239,7 +239,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
   \emph{The International Journal of Biostatistics}, \bold{8}, accepted. DOI: 
   \doi{10.1515/1557-4679.1378}. arXiv:
-  \href{https://arxiv.org/abs/1103.1787}{1103.1787}.
+  \href{https://arxiv.org/abs/1103.1787}{arXiv:1103.1787}.
+
 
   William N. Venables, Brian D. Ripley (2002). ``Modern Applied Statistics with S''. New York, Springer.
   \href{http://books.google.ch/books?id=974c4vKurNkC}{Google books}.
