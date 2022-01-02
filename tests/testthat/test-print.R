@@ -139,3 +139,20 @@ test_that("print works with ci.sp", {
 	expect_known_output(print(ci.sp(r.ndka, boot.n = 3, progress = "none")), "print_output/r.ndka.ci.sp")
 })
 
+test_that("print works with a formula passed as variable", {
+	x <- outcome ~ ndka
+	expect_known_output(print(roc(x, aSAH)), "print_output/ndka_formula_var")
+})
+
+test_that("print works with a formula with data attached", {
+	attach(aSAH)
+	x <- outcome ~ ndka
+	expect_known_output(print(roc(x)), "print_output/ndka_formula_var_attached")
+	expect_known_output(print(roc(outcome ~ ndka)), "print_output/ndka_formula_attached")
+})
+
+test_that("print works with a formula with data attached with 'with'", {
+	x <- outcome ~ ndka
+	expect_known_output(with(aSAH, print(roc(x))), "print_output/ndka_formula_var_attached")
+	expect_known_output(with(print(roc(outcome ~ ndka))), "print_output/ndka_formula_attached")
+})
