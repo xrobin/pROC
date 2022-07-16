@@ -621,7 +621,7 @@ roc.utils.extract.formula <- function(formula, data, data.missing, call, ...) {
 		stop("A formula argument is required")
 	}
 	# Keep the standard arguments and run them in model.frame
-	temp <- call[c(1,indx)]  
+	temp <- call[c(1,indx)]
 	temp[[1]] <- as.name("model.frame")
 	# Only na.pass and na.fail should be used
 	if (indx[5] != 0) {
