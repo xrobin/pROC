@@ -9,7 +9,8 @@
 }
 \description{
   This function returns the coordinates of the ROC curve at the
-  specified point.
+  specified point (or multiple points, e.g. all potential thresholds
+  based on observed data).
 }
 \usage{
 coords(...)
