@@ -197,7 +197,7 @@ cov.roc <- function(roc1, roc2,
     if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls))
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
 
-    if(class(progress) != "list") {
+    if(inherits(progress, "list")) {
       progress <- roc.utils.get.progress.bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
     

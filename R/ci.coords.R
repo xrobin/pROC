@@ -86,7 +86,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
@@ -160,7 +160,7 @@ ci.coords.roc <- function(roc,
   	stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {

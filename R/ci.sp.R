@@ -74,7 +74,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="SP confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
@@ -117,7 +117,7 @@ ci.sp.roc <- function(roc,
   	warning("ci.sp() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="SP confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {

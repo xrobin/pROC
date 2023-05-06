@@ -67,7 +67,7 @@ var.roc <- function(roc,
       # partial auc: go for bootstrap
       method <- "bootstrap"
     }
-    else if (class(roc) == "smooth.roc") {
+    else if (inherits(roc, "smooth.roc")) {
       # smoothing: bootstrap
       method <- "bootstrap"
     }
@@ -117,11 +117,11 @@ var.roc <- function(roc,
 }
 
 var.roc.bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, ...) {
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="AUC variance", label="Bootstrap in progress...", ...)
 
   ## Smoothed ROC curve variance
-  if (class(roc) == "smooth.roc") {
+  if (inherits(roc, "smooth.roc")) {
     smoothing.args <- roc$smoothing.args
     smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")
