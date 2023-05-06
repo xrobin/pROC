@@ -8,9 +8,8 @@
   Coordinates of a ROC curve
 }
 \description{
-  This function returns the coordinates of the ROC curve at the
-  specified point (or multiple points, e.g. all potential thresholds
-  based on observed data).
+  This function returns the coordinates of the ROC curve at one
+  or several specified point(s).
 }
 \usage{
 coords(...)
