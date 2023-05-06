@@ -226,10 +226,16 @@ print.dataline <- function(x) {
     cat("Data: ", length(x$controls), " controls ", x$direction, " ", length(x$cases), " cases.\n", sep="")
   }
   else {
-    # get predictor name
-    if ("predictor" %in% names(x$call))
-      predictor.name <- as.character(x$call[match("predictor", names(x$call))])
+  	if ("predictor.name" %in% names(x)) {
+  		predictor.name <- x$predictor.name
+  	}
+    else if ("predictor" %in% names(x$call)) {
+    	predictor.name <- as.character(x$call[match("predictor", names(x$call))])
+    }
     else if (!is.null(x$call$formula)) {
+    	# TODO: remove this case in a future version.
+    	# This is kept for backward-compatibility with older objects.
+    	# See issue #101.
     	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(x$call), nomatch=0)
     	temp <- x$call[c(1,indx)]
     	temp[[1]] <- as.name("model.frame")
@@ -237,18 +243,27 @@ print.dataline <- function(x) {
     	response.name <- names(m)[1]
     	predictor.name <- names(m)[-1]
     }
-    else
-      return()
+    else {
+    	predictor.name <- "(unknown)"
+    }
     # Get response
-    if ("response" %in% names(x$call))
-      response.name <- as.character(x$call[match("response", names(x$call))])
+  	if ("response.name" %in% names(x)) {
+  		response.name <- x$response.name
+  	}
+    else if ("response" %in% names(x$call)) {
+    	response.name <- as.character(x$call[match("response", names(x$call))])
+    }
     else if (!is.null(x$call$formula)) {
     	# We've already extracted it with the predictor
+    	# TODO: remove this case in a future version.
+    	# See above.
     }
-    else if ("x" %in% names(x$call))
-      response.name <- as.character(x$call[match("x", names(x$call))])
-    else
-      return()
+    else if ("x" %in% names(x$call)) {
+    	response.name <- as.character(x$call[match("x", names(x$call))])
+    }
+    else {
+    	response.name <- "(unknown)"
+    }
     cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", x$levels[1], ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", x$levels[2], ").\n", sep="")
   }
 }

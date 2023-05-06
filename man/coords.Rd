@@ -8,8 +8,8 @@
   Coordinates of a ROC curve
 }
 \description{
-  This function returns the coordinates of the ROC curve at the
-  specified point.
+  This function returns the coordinates of the ROC curve at one
+  or several specified point(s).
 }
 \usage{
 coords(...)

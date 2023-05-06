@@ -22,6 +22,8 @@ remove.response.names.recursive <- function(x) {
 	x$ci <- remove.response.names.recursive(x$ci)
 	names(x$response) <- NULL
 	names(x$original.response) <- NULL
+	x$response.name <- NULL
+	x$predictor.name <- NULL
 	return(x)
 }
 

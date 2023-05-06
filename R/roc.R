@@ -36,6 +36,8 @@ roc.formula <- function (formula, data, ...) {
 	if (ncol(predictors) == 1) {
 		roc <- roc.default(response, predictors[, 1], ...)
 		roc$call <- match.call()
+		roc$predictor.name <- roc.data$predictor.names
+		roc$response.name <- roc.data$response.name
 		if (!is.null(roc$smooth))
 			attr(roc, "roc")$call <- roc$call
 		return(roc)
@@ -48,6 +50,8 @@ roc.formula <- function (formula, data, ...) {
 			formula[3] <- call(predictor) # replace the predictor in formula
 			call$formula <- formula # Replace modified formula
 			roc$call <- call
+			roc$predictor.name <- predictor
+			roc$response.name <- roc.data$response.name
 			return(roc)
 		}, formula = formula, m.data = predictors, call = match.call(), ...)
 		# Set the list names
