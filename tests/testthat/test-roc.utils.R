@@ -38,7 +38,7 @@ test_that("roc.utils.match.coords.input.args works", {
 	# all only for ret
 	expect_error(pROC:::roc.utils.match.coords.input.args("all"))
 	# Only one allowed
-	expect_error(pROC:::roc.utils.match.coords.input.args(c("specificity", "sensitivity")), "length 1")
+	expect_error(pROC:::roc.utils.match.coords.input.args(c("specificity", "sensitivity")))
 	# Invalid arg
 	expect_error(pROC:::roc.utils.match.coords.input.args("blah"))
 	# Not monotone

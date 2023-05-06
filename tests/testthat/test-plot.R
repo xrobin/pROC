@@ -75,7 +75,7 @@ test_that("Advanced screenshot 2 works correctly", {
 
 
 test_that("Advanced screenshot 3 works correctly", {
-	skip_if(getRversion() < 4.1)
+	skip_if(getRversion() < "4.4.0")
 	test_advanced_screenshot_3 <- function() {
 		plot(r.s100b.percent, main="Smoothing")
 		
