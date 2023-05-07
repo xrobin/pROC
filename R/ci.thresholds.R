@@ -79,7 +79,7 @@ ci.thresholds.roc <- function(roc,
     thresholds.num <- thresholds
   }
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {

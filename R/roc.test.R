@@ -349,7 +349,7 @@ roc.test.roc <- function(roc1, roc2,
 		}
 	}
 	else if (method == "venkatraman") {
-		if(class(progress) != "list")
+		if(inherits(progress, "list"))
 			progress <- roc.utils.get.progress.bar(progress, title="Venkatraman ROC test", label="Permutations in progress...", ...)
 		if (paired) {
 			stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method, progress, parallel)
@@ -375,7 +375,7 @@ roc.test.roc <- function(roc1, roc2,
 		if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls))
 			stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
 		
-		if(class(progress) != "list")
+		if(inherits(progress, "list"))
 			progress <- roc.utils.get.progress.bar(progress, title="Bootstrap ROC test", label="Bootstrap in progress...", ...)
 		
 		if (method == "specificity") {

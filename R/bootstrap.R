@@ -277,7 +277,7 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
 ##########  AUC of one ROC curves (ci.auc, var)  ##########
 
 ci.auc.bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...) {
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {

@@ -1,3 +1,8 @@
+1.18.1 (2023-05-07):
+  * Fix 'print'ing some curves built from a formula (issue #101)
+  * Fix tests following upstream updates in density() (https://bugs.r-project.org/show_bug.cgi?id=18337)
+  * Improvements in documentation
+
 1.18.0 (2021-09-02):
   * Add CI of the estimate for 'roc.test' (DeLong, paired only for now) (code contributed by Zane Billings) (pr #95) 
   * Fix documentation and alternative hypothesis for Venkatraman test (issue #92)

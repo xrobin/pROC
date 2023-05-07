@@ -96,7 +96,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   auc.args$allow.invalid.partial.auc.correct <- TRUE
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
-  if(class(progress) != "list")
+  if(inherits(progress, "list"))
     progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {

@@ -1,6 +1,6 @@
 [![Build Status](https://api.travis-ci.com/xrobin/pROC.svg?branch=master)](https://app.travis-ci.com/github/xrobin/pROC)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/xrobin/pROC?branch=master&svg=true)](https://ci.appveyor.com/project/xrobin/pROC)
-[![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://codecov.io/github/xrobin/pROC) 
+[![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://app.codecov.io/github/xrobin/pROC) 
 [![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](https://cran.r-project.org/package=pROC)
 [![Downloads](http://cranlogs.r-pkg.org/badges/pROC)](https://cran.r-project.org/package=pROC)
 
@@ -128,7 +128,7 @@ Development
 
 ### Installing the development version
 
-Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtools](https://github.com/r-lib/devtools/wiki) package by [Hadley Wickham](http://hadley.nz) to automate the process (make sure you follow [the full instructions to get started](https://devtools.r-lib.org/)):
+Download the source code from git, unzip it if necessary, and then type `R CMD INSTALL pROC`. Alternatively, you can use the [devtools](https://github.com/r-lib/devtools/wiki) package by [Hadley Wickham](https://hadley.nz) to automate the process (make sure you follow [the full instructions to get started](https://devtools.r-lib.org/)):
 
 ```R
 if (! requireNamespace("devtools")) install.packages("devtools")

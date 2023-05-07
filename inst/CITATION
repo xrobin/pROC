@@ -1,8 +1,8 @@
 citHeader("If you use pROC in published research, please cite the following paper:")
 
-citEntry(entry="Article",
+bibentry(bibtype="Article",
          title = "pROC: an open-source package for R and S+ to analyze and compare ROC curves",
-         author = personList(as.person("Xavier Robin"), as.person("Natacha Turck") , as.person("Alexandre Hainard") , as.person("Natalia Tiberti") , as.person("Frédérique Lisacek") , as.person("Jean-Charles Sanchez"), as.person("Markus Müller")),
+         author = c(as.person("Xavier Robin"), as.person("Natacha Turck") , as.person("Alexandre Hainard") , as.person("Natalia Tiberti") , as.person("Frédérique Lisacek") , as.person("Jean-Charles Sanchez"), as.person("Markus Müller")),
          year = 2011,
          journal = "BMC Bioinformatics",
          volume = 12,
