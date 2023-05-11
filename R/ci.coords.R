@@ -23,7 +23,7 @@ ci.coords <- function(...) {
 
 ci.coords.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {
@@ -61,12 +61,12 @@ ci.coords.smooth.roc <- function(smooth.roc,
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(smooth.roc)) {
+  if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
  
   input <- match.arg(input)
-  ret <- roc.utils.match.coords.ret.args(ret)
+  ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
   if (is.character(x)) {
     x <- match.arg(x, c("all", "local maximas", "best"))
@@ -87,7 +87,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
@@ -134,7 +134,7 @@ ci.coords.roc <- function(roc,
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(roc)) {
+  if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
  
@@ -142,10 +142,10 @@ ci.coords.roc <- function(roc,
   
   if (missing(ret) && input != "threshold") {
   	# Don't show NA thresholds by default
-  	ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
+  	ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
   }
   else {
-  	ret <- roc.utils.match.coords.ret.args(ret)
+  	ret <- roc_utils_match_coords_ret_args(ret)
   }
   
   best.policy <- match.arg(best.policy)
@@ -161,7 +161,7 @@ ci.coords.roc <- function(roc,
   }
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)

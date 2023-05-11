@@ -24,7 +24,7 @@ roc.test <- function(...) {
 roc.test.formula <- function (formula, data, ...) {
 	data.missing <- missing(data)
 	call <- match.call()
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = call)
 	if (length(roc.data$predictor.name) != 2) {
@@ -128,7 +128,7 @@ roc.test.roc <- function(roc1, roc2,
 		roc2$auc <- auc2
 	}
 	
-	if (roc.utils.is.perfect.curve(roc1) && roc.utils.is.perfect.curve(roc2)) {
+	if (roc_utils_is_perfect_curve(roc1) && roc_utils_is_perfect_curve(roc2)) {
 		warning("roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
 	}
 	
@@ -316,7 +316,7 @@ roc.test.roc <- function(roc1, roc2,
 		if (paired) {
 			delong.calcs <- delong.paired.calculations(roc1, roc2)
 			stat <- delong.paired.test(delong.calcs)
-			stat.ci <- ci.delong.paired(delong.calcs, conf.level)
+			stat.ci <- ci_delong_paired(delong.calcs, conf.level)
 			names(stat) <- "Z"
 			htest$statistic <- stat
 			htest$method <- "DeLong's test for two correlated ROC curves"
@@ -350,7 +350,7 @@ roc.test.roc <- function(roc1, roc2,
 	}
 	else if (method == "venkatraman") {
 		if(inherits(progress, "list"))
-			progress <- roc.utils.get.progress.bar(progress, title="Venkatraman ROC test", label="Permutations in progress...", ...)
+			progress <- roc_utils_get_progress_bar(progress, title="Venkatraman ROC test", label="Permutations in progress...", ...)
 		if (paired) {
 			stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method, progress, parallel)
 			htest$method <- "Venkatraman's test for two paired ROC curves"
@@ -376,7 +376,7 @@ roc.test.roc <- function(roc1, roc2,
 			stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
 		
 		if(inherits(progress, "list"))
-			progress <- roc.utils.get.progress.bar(progress, title="Bootstrap ROC test", label="Bootstrap in progress...", ...)
+			progress <- roc_utils_get_progress_bar(progress, title="Bootstrap ROC test", label="Bootstrap in progress...", ...)
 		
 		if (method == "specificity") {
 			if (! is.numeric(specificity) || length(specificity) != 1) {

@@ -25,7 +25,7 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
 	data.missing <- missing(data)
 	call <- match.call()
 	names(call)[2] <- "formula" # forced to be x by definition of lines
-	roc.data <- roc.utils.extract.formula(formula=x, data, subset, na.action, ..., 
+	roc.data <- roc_utils_extract_formula(formula=x, data, subset, na.action, ..., 
 										  data.missing = data.missing,
 										  call = call)
 	if (length(roc.data$predictor.name) > 1) {

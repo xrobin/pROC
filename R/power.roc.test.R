@@ -37,7 +37,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
   if (!is.null(attr(roc1$auc, "partial.auc.correct")) && attr(roc1$auc, "partial.auc.correct")) {
     stop("Cannot compute power with corrected partial AUCs")
   }
-  roc1 <- roc.utils.unpercent(roc1)
+  roc1 <- roc_utils_unpercent(roc1)
 
   if (!missing(roc2) && !is.null(roc2)) {
     alternative <- match.arg(alternative)
@@ -53,7 +53,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       if (!is.null(attr(roc2$auc, "partial.auc.correct")) && attr(roc2$auc, "partial.auc.correct")) {
         stop("Cannot compute power with corrected partial AUCs")
       }
-      roc2 <- roc.utils.unpercent(roc2)
+      roc2 <- roc_utils_unpercent(roc2)
 
       # Make sure the ROC curves are paired
       rocs.are.paired <- are.paired(roc1, roc2)
@@ -161,7 +161,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     zbeta <- qnorm(power)
 
     tryCatch(
-             root <- uniroot(power.roc.test.optimize.auc.function, interval=c(0.5, 1-1e-16), ncontrols=ncontrols, ncases=ncases, zalpha=zalpha, zbeta=zbeta),
+             root <- uniroot(power_roc_test_optimize_auc_function, interval=c(0.5, 1-1e-16), ncontrols=ncontrols, ncases=ncases, zalpha=zalpha, zbeta=zbeta),
              error=function(e) {stop(sprintf("AUC could not be solved:\n%s", e))}
              )
     auc <- root$root
@@ -179,7 +179,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
       stop("'sig.level' or 'ncases' and 'ncontrols' must be provided.")
 
     theta <- as.numeric(auc)
-    Vtheta <- var.theta.obuchowski(theta, kappa)
+    Vtheta <- var_theta_obuchowski(theta, kappa)
     
     ncases <- solve.nd(zalpha = qnorm(1 - sig.level),
     				   zbeta = qnorm(power),
@@ -200,7 +200,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   	
     kappa <- ncontrols / ncases
     theta <- as.numeric(auc)
-    Vtheta <- var.theta.obuchowski(theta, kappa)
+    Vtheta <- var_theta_obuchowski(theta, kappa)
     
     zbeta <- solve.zbeta(nd = ncases,
     					 zalpha = qnorm(1 - sig.level),
@@ -221,7 +221,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   	
     kappa <- ncontrols / ncases
     theta <- as.numeric(auc)
-    Vtheta <- var.theta.obuchowski(theta, kappa)
+    Vtheta <- var_theta_obuchowski(theta, kappa)
     
     zalpha <- solve.zalpha(nd = ncases,
     					  zbeta = qnorm(power),
@@ -331,14 +331,14 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
 #### HIDDEN FUNCTIONS ####
 
 # A function to 'optimize' auc
-power.roc.test.optimize.auc.function <- function(x, ncontrols, ncases, zalpha, zbeta) {
+power_roc_test_optimize_auc_function <- function(x, ncontrols, ncases, zalpha, zbeta) {
   kappa <- ncontrols / ncases
-  Vtheta <- var.theta.obuchowski(x, kappa)
+  Vtheta <- var_theta_obuchowski(x, kappa)
   (zalpha * sqrt(0.0792 * (1 + 1/kappa)) + zbeta * sqrt(Vtheta))^2 / (x - 0.5)^2 - ncases
 }
 
 # Compute variance of a delta from a 'covvar' list (see 'covvar' below)
-var.delta.covvar <- function(covvar) {
+var_delta_covvar <- function(covvar) {
   covvar$var1 + covvar$var2 - 2 * covvar$cov12
 }
 
@@ -354,7 +354,7 @@ ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
   delta <- roc1$auc - roc2$auc
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
-  va <- var.delta.covvar(covvar)
+  va <- var_delta_covvar(covvar)
   nd <- solve.nd(zalpha = zalpha,
   			   zbeta = zbeta,
   			   v0 = v0, va = va,
@@ -365,12 +365,12 @@ ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
 # Compute the number of cases with Obuchowski formula from params
 ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
   covvar <- list(
-                 var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
-                 var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-                 cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+                 var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+                 var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+                 cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
                  )
   v0 <- var0.delta.covvar(covvar)
-  va <- var.delta.covvar(covvar)
+  va <- var_delta_covvar(covvar)
   nd <- solve.nd(zalpha = zalpha,
   			   zbeta = zbeta,
   			   v0 = v0, va = va,
@@ -384,7 +384,7 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   ncases <- length(roc1$cases)
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
-  va <- var.delta.covvar(covvar)
+  va <- var_delta_covvar(covvar)
   zalpha <- solve.zalpha(nd=ncases,
   					   zbeta = zbeta,
   					   v0 = v0, va = va,
@@ -395,12 +395,12 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
 # Compute the z alpha with Obuchowski formula from params
 zalpha.obuchowski.params <- function(parslist, zbeta, ncases, kappa) {
   covvar <- list(
-                 var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
-                 var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-                 cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+                 var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+                 var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+                 cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
                  )
   v0 <- var0.delta.covvar(covvar)
-  va <- var.delta.covvar(covvar)
+  va <- var_delta_covvar(covvar)
   zalpha <- solve.zalpha(nd=ncases,
   					   zbeta = zbeta,
   					   v0 = v0, va = va,
@@ -414,7 +414,7 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   ncases <- length(roc1$cases)
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
-  va <- var.delta.covvar(covvar)
+  va <- var_delta_covvar(covvar)
   zbeta <- solve.zbeta(nd=ncases,
   					 zalpha = zalpha,
   					 v0 = v0, va = va,
@@ -425,12 +425,12 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
 # Compute the z beta with Obuchowski formula from params
 zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
 	covvar <- list(
-		var1 = var.params.obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
-		var2 = var.params.obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-		cov12 = cov.params.obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+		var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
+		var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
+		cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
 	)
 	v0 <- var0.delta.covvar(covvar)
-	va <- var.delta.covvar(covvar)
+	va <- var_delta_covvar(covvar)
 	a <- va
 	zbeta <- solve.zbeta(nd=ncases,
 						 zalpha = zalpha,

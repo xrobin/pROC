@@ -23,7 +23,7 @@ ci <- function(...) {
 
 ci.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {

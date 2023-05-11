@@ -8,28 +8,28 @@ level.values <- list(
 
 expected.algorithm <- list()
 expected.algorithm[["wfns"]] <- list(
-	pROC:::roc.utils.perfs.all.safe,
-	pROC:::roc.utils.perfs.all.fast,
+	pROC:::roc_utils_perfs_all_safe,
+	pROC:::roc_utils_perfs_all_fast,
 	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc.utils.perfs.all.test,
+	pROC:::roc_utils_perfs_all_test,
 	pROC:::rocUtilsPerfsAllC, # 6 thresholds
 	pROC:::rocUtilsPerfsAllC # ordered
 )
 expected.algorithm[["ndka"]] <- list(
-	pROC:::roc.utils.perfs.all.safe,
-	pROC:::roc.utils.perfs.all.fast,
+	pROC:::roc_utils_perfs_all_safe,
+	pROC:::roc_utils_perfs_all_fast,
 	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc.utils.perfs.all.test,
-	pROC:::roc.utils.perfs.all.fast, # 110 thresholds
-	pROC:::roc.utils.perfs.all.fast # numeric
+	pROC:::roc_utils_perfs_all_test,
+	pROC:::roc_utils_perfs_all_fast, # 110 thresholds
+	pROC:::roc_utils_perfs_all_fast # numeric
 )
 expected.algorithm[["s100b"]] <-list(
-	pROC:::roc.utils.perfs.all.safe,
-	pROC:::roc.utils.perfs.all.fast,
+	pROC:::roc_utils_perfs_all_safe,
+	pROC:::roc_utils_perfs_all_fast,
 	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc.utils.perfs.all.test,
+	pROC:::roc_utils_perfs_all_test,
 	pROC:::rocUtilsPerfsAllC, # 51 thresholds
-	pROC:::roc.utils.perfs.all.fast # numeric
+	pROC:::roc_utils_perfs_all_fast # numeric
 )
 
 smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")

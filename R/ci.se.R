@@ -23,7 +23,7 @@ ci.se <- function(...) {
 
 ci.se.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {
@@ -59,7 +59,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(smooth.roc)) {
+  if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
@@ -75,7 +75,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- ldply(1:boot.n, stratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
@@ -113,12 +113,12 @@ ci.se.roc <- function(roc,
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(roc)) {
+  if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- ldply(1:boot.n, stratified.ci.se, roc=roc, sp=specificities, .progress=progress, .parallel=parallel)

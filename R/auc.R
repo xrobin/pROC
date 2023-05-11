@@ -23,7 +23,7 @@ auc <- function(...) {
 
 auc.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {
@@ -107,7 +107,7 @@ auc.roc <- function(roc,
   # Ensure partial.auc is sorted with partial.auc[1] >= partial.auc[2]
   partial.auc <- sort(partial.auc, decreasing=TRUE)
   # Get and sort the sensitivities and specificities
-  roc <- sort(roc)
+  roc <- sort_roc(roc)
   se <- roc$sensitivities
   sp <- roc$specificities
 
@@ -189,8 +189,8 @@ auc.roc <- function(roc,
 
   # Correction according to McClish DC, 1989
   if (all(!identical(partial.auc, FALSE), partial.auc.correct)) { # only for pAUC
-    min <- roc.utils.min.partial.auc(partial.auc, percent)
-    max <- roc.utils.max.partial.auc(partial.auc, percent)
+    min <- roc_utils_min_partial_auc(partial.auc, percent)
+    max <- roc_utils_max_partial_auc(partial.auc, percent)
     # The correction is defined only when auc >= min
     if (!allow.invalid.partial.auc.correct && auc < min) {
     	warning("Partial AUC correction not defined for ROC curves below the diagonal.")

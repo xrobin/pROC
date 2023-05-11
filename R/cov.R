@@ -54,7 +54,7 @@ cov.roc <- function(roc1, roc2,
     roc2$auc <- auc2
   }
   
-  if (roc.utils.is.perfect.curve(roc1) && roc.utils.is.perfect.curve(roc2)) {
+  if (roc_utils_is_perfect_curve(roc1) && roc_utils_is_perfect_curve(roc2)) {
   	warning("cov() of two ROC curves with AUC == 1 is always 0 and can be misleading.")
   }
 
@@ -186,7 +186,7 @@ cov.roc <- function(roc1, roc2,
   }
   
   else if (method == "obuchowski") {
-    cov <- cov.roc.obuchowski(roc1, roc2) / length(roc1$cases)
+    cov <- cov_roc_obuchowski(roc1, roc2) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
@@ -198,7 +198,7 @@ cov.roc <- function(roc1, roc2,
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
 
     if(inherits(progress, "list")) {
-      progress <- roc.utils.get.progress.bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
+      progress <- roc_utils_get_progress_bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
     
     cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel)

@@ -42,19 +42,19 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     stop("ROC curves of ordered predictors can be smoothed only with binormal smoothing.")
 
   if (method == "binormal") {
-    sesp <- smooth.roc.binormal(roc, n)
+    sesp <- smooth_roc_binormal(roc, n)
   }
   else if (method == "fitdistr") {
-    sesp <- smooth.roc.fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
+    sesp <- smooth_roc_fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
   }
   else if (method == "density") {
-    sesp <- smooth.roc.density(roc, n, density.controls, density.cases, bw, ...)
+    sesp <- smooth_roc_density(roc, n, density.controls, density.cases, bw, ...)
   }
   else if (method == "logcondens") {
-    sesp <- smooth.roc.logcondens(roc, n)
+    sesp <- smooth_roc_logcondens(roc, n)
   }
   else if (method == "logcondens.smooth") {
-    sesp <- smooth.roc.logcondens.smooth(roc, n)
+    sesp <- smooth_roc_logcondens_smooth(roc, n)
   }
   else {
     stop(sprintf("Impossible smooth method value '%s'. Please report this bug to <%s>.",
@@ -62,7 +62,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   }
 
   class(sesp) <- "smooth.roc"
-  sesp <- sort(sesp) # sort se and sp
+  sesp <- sort_smooth_roc(sesp) # sort se and sp
   # anchor SE/SP at 0/100
   sesp$specificities <- c(0, as.vector(sesp$specificities), ifelse(roc$percent, 100, 1))
   sesp$sensitivities <- c(ifelse(roc$percent, 100, 1), as.vector(sesp$sensitivities), 0)
@@ -112,7 +112,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   return(sesp)
 }
 
-smooth.roc.density <- function(roc, n, density.controls, density.cases, bw,
+smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
                                # catch args for density
                                cut = 3, adjust = 1, kernel = window, window = "gaussian",
                                percent = roc$percent, direction = roc$direction,
@@ -155,13 +155,13 @@ smooth.roc.density <- function(roc, n, density.controls, density.cases, bw,
   if (length(density.controls) != length(density.cases))
     stop("Length of 'density.controls' and 'density.cases' differ.")
 
-  perfs <- sapply((1:length(density.controls))+.5, roc.utils.perfs.dens, x=(1:length(density.controls))+.5, dens.controls=density.controls, dens.cases=density.cases, direction=direction)
+  perfs <- sapply((1:length(density.controls))+.5, roc_utils_perfs_dens, x=(1:length(density.controls))+.5, dens.controls=density.controls, dens.cases=density.cases, direction=direction)
 
   return(list(sensitivities = perfs[2,] * ifelse(percent, 100, 1),
               specificities = perfs[1,] * ifelse(percent, 100, 1)))
 }
 
-smooth.roc.binormal <- function(roc, n) {
+smooth_roc_binormal <- function(roc, n) {
   df <- data.frame(sp=qnorm(roc$sp * ifelse(roc$percent, 1/100, 1)), se=qnorm(roc$se * ifelse(roc$percent, 1/100, 1)))
   df <- df[apply(df, 1, function(x) all(is.finite(x))),]
   if (dim(df)[1] <= 1) # ROC curve or with only 1 point
@@ -177,7 +177,7 @@ smooth.roc.binormal <- function(roc, n) {
               model = model))
 }
 
-smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
+smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
   load.suggested.package("MASS")
 
   densfuns.list <- list(beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
@@ -225,14 +225,14 @@ smooth.roc.fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   density.controls <- do.call(densfun.controls, c(list(x=x), fit.controls$estimate, dots.controls))
   density.cases <- do.call(densfun.cases, c(list(x=x), fit.cases$estimate, dots.cases))
 
-  perfs <- sapply(x, roc.utils.perfs.dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
+  perfs <- sapply(x, roc_utils_perfs_dens, x=x, dens.controls=density.controls, dens.cases=density.cases, direction=roc$direction)
 
   return(list(sensitivities = perfs[2,] * ifelse(roc$percent, 100, 1),
               specificities = perfs[1,] * ifelse(roc$percent, 100, 1),
               fit.controls=fit.controls, fit.cases=fit.cases))
 }
 
-smooth.roc.logcondens <- function(roc, n) {
+smooth_roc_logcondens <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1/(n-1))
@@ -244,7 +244,7 @@ smooth.roc.logcondens <- function(roc, n) {
               logcondens = logcondens))
 }
 
-smooth.roc.logcondens.smooth <- function(roc, n) {
+smooth_roc_logcondens_smooth <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1/(n-1))

@@ -23,7 +23,7 @@ roc <- function(...) {
 
 roc.formula <- function (formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	response <- roc.data$response
@@ -328,9 +328,9 @@ roc.default <- function(response, predictor,
       dir <- "<"
     else
       dir <- direction
-    smooth.roc <- smooth.roc.density(density.controls=density.controls, density.cases=density.cases, percent=percent, direction=dir)
+    smooth.roc <- smooth_roc_density(density.controls=density.controls, density.cases=density.cases, percent=percent, direction=dir)
     class(smooth.roc) <- "smooth.roc"
-    smooth.roc <- sort(smooth.roc) # sort se and sp
+    smooth.roc <- sort_smooth_roc(smooth.roc) # sort se and sp
     # anchor SE/SP at 0/100
     smooth.roc$specificities <- c(0, as.vector(smooth.roc$specificities), ifelse(percent, 100, 1))
     smooth.roc$sensitivities <- c(ifelse(percent, 100, 1), as.vector(smooth.roc$sensitivities), 0)
@@ -339,7 +339,7 @@ roc.default <- function(response, predictor,
     smooth.roc$call <- match.call()
     if (auc) {
       smooth.roc$auc <- auc(smooth.roc, ...)
-      if (direction == "auto" && smooth.roc$auc < roc.utils.min.partial.auc.auc(smooth.roc$auc)) {
+      if (direction == "auto" && smooth.roc$auc < roc_utils_min_partial_auc_auc(smooth.roc$auc)) {
         smooth.roc <- roc.default(density.controls=density.controls, density.cases=density.cases, levels=levels,
                                   percent=percent, direction=">", auc=auc, ci=ci, plot=plot, ...)
         smooth.roc$call <- match.call()
@@ -385,10 +385,10 @@ roc.default <- function(response, predictor,
   else if (isTRUE(algorithm == 0)) {
   	load.suggested.package("microbenchmark")
     cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
-    thresholds <- roc.utils.thresholds(c(controls, cases), direction)
+    thresholds <- roc_utils_thresholds(c(controls, cases), direction)
     benchmark <- microbenchmark::microbenchmark(
-#      "1" = roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      "2" = roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+#      "1" = roc_utils_perfs_all_safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
+      "2" = roc_utils_perfs_all_fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
       times = 10
     )
@@ -401,7 +401,7 @@ roc.default <- function(response, predictor,
     cat(sprintf("Selecting algorithm %s.\n", algorithm))
   }
   else if (isTRUE(algorithm == 5)) {
-    thresholds <- length(roc.utils.thresholds(c(controls, cases), direction))
+    thresholds <- length(roc_utils_thresholds(c(controls, cases), direction))
     if (thresholds > 55) { # critical number determined in inst/extra/algorithms.speed.test.R
       algorithm <- 2
     } else {
@@ -410,22 +410,22 @@ roc.default <- function(response, predictor,
   }
   
   if (isTRUE(algorithm == 2)) {
-    fun.sesp <- roc.utils.perfs.all.fast
+    fun.sesp <- roc_utils_perfs_all_fast
   }
   else if (isTRUE(algorithm  == 3)) {
     fun.sesp <- rocUtilsPerfsAllC
   }
   else if (isTRUE(algorithm ==  1)) {
-    fun.sesp <- roc.utils.perfs.all.safe
+    fun.sesp <- roc_utils_perfs_all_safe
   }
   else if (isTRUE(algorithm == 4)) {
-    fun.sesp <- roc.utils.perfs.all.test
+    fun.sesp <- roc_utils_perfs_all_test
   }
   else {
     stop("Unknown algorithm (must be 0, 1, 2, 3, 4 or 5).")
   }
 
-  roc <- roc.cc.nochecks(controls, cases,
+  roc <- roc_cc_nochecks(controls, cases,
              percent=percent,
              direction=direction,
              fun.sesp=fun.sesp,
@@ -463,7 +463,7 @@ roc.default <- function(response, predictor,
 }
 
 #' Creates a ROC object from response, predictor, ... without argument checking. Not to be exposed to the end user
-roc.rp.nochecks <- function(response, predictor, levels, ...) {
+roc_rp_nochecks <- function(response, predictor, levels, ...) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(levels[1])]]
   if (length(controls) == 0)
@@ -471,18 +471,18 @@ roc.rp.nochecks <- function(response, predictor, levels, ...) {
   cases <- splitted[[as.character(levels[2])]]
   if (length(cases) == 0)
     stop("No case observation.")
-  roc.cc.nochecks(controls, cases, ...)
+  roc_cc_nochecks(controls, cases, ...)
 }
 
 #' Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
-roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smooth, smooth.method, smooth.n, auc, ...) {
+roc_cc_nochecks <- function(controls, cases, percent, direction, fun.sesp, smooth, smooth.method, smooth.n, auc, ...) {
   # create the roc object
   roc <- list()
   class(roc) <- "roc"
   roc$percent <- percent
 
   # compute SE / SP
-  thresholds <- roc.utils.thresholds(c(controls, cases), direction)
+  thresholds <- roc_utils_thresholds(c(controls, cases), direction)
   perfs <- fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 
   se <- perfs$se
@@ -497,7 +497,7 @@ roc.cc.nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
   roc$sensitivities <- se
   roc$specificities <- sp
   roc$thresholds <- thresholds
-  roc <- sort(roc)
+  roc <- sort_roc(roc)
   roc$direction <- direction
   roc$cases <- cases
   roc$controls <- controls

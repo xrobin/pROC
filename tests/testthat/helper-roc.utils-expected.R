@@ -1,4 +1,4 @@
-expected_roc.utils.calc.coords <-
+expected_roc_utils_calc_coords <-
 structure(c(-1, -2, -3, -4, 1, 0.5, 0.1, 0, 0, 0.5, 0.9, 1, 0.36283185840708, 
 0.5, 0.609734513274336, 0.63716814159292, 0, 36, 64.8, 72, 41, 
 20.5, 4.1, 0, 0, 20.5, 36.9, 41, 72, 36, 7.2, 0, NaN, 0.63716814159292, 
@@ -17,7 +17,7 @@ NULL, c("threshold", "sensitivity", "specificity", "accuracy",
 "1-npv", "1-ppv", "precision", "recall", "youden", "closest.topleft"
 )))
 
-expected_roc.utils.calc.coords.percent <-
+expected_roc_utils_calc_coords.percent <-
 structure(c(-1, -2, -3, -4, 100, 50, 10, 0, 0, 50, 90, 100, 36.283185840708, 
 50, 60.9734513274336, 63.716814159292, 0, 36, 64.8, 72, 41, 20.5, 
 4.1, 0, 0, 20.5, 36.9, 41, 72, 36, 7.2, 0, NaN, 63.716814159292, 

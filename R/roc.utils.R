@@ -20,16 +20,16 @@
 # Helper functions for the ROC curves. These functions should not be called directly as they peform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Robust algorithm
-roc.utils.perfs.all.safe <- function(thresholds, controls, cases, direction) {
-  perf.matrix <- sapply(thresholds, roc.utils.perfs, controls=controls, cases=cases, direction=direction)
-  #stopifnot(identical(roc.utils.perfs.all.fast(thresholds, controls, cases, direction), list(se=perf.matrix[2,], sp=perf.matrix[1,])))
+roc_utils_perfs_all_safe <- function(thresholds, controls, cases, direction) {
+  perf.matrix <- sapply(thresholds, roc_utils_perfs, controls=controls, cases=cases, direction=direction)
+  #stopifnot(identical(roc_utils_perfs_all_fast(thresholds, controls, cases, direction), list(se=perf.matrix[2,], sp=perf.matrix[1,])))
   return(list(se=perf.matrix[2,], sp=perf.matrix[1,]))
 }
 
 
-roc.utils.perfs.all.test <- function(thresholds, controls, cases, direction) {
-	perfs.safe <- roc.utils.perfs.all.safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-	perfs.fast <- roc.utils.perfs.all.fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+roc_utils_perfs_all_test <- function(thresholds, controls, cases, direction) {
+	perfs.safe <- roc_utils_perfs_all_safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+	perfs.fast <- roc_utils_perfs_all_fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 	perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 	if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
 		sessionInfo <- sessionInfo()
@@ -41,7 +41,7 @@ roc.utils.perfs.all.test <- function(thresholds, controls, cases, direction) {
 
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
-roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
+roc_utils_perfs_all_fast <- function(thresholds, controls, cases, direction) {
   ncontrols <- length(controls)
   ncases <- length(cases)
   predictor <- c(controls, cases)
@@ -76,16 +76,16 @@ roc.utils.perfs.all.fast <- function(thresholds, controls, cases, direction) {
   return(list(se=se, sp=sp))
 }
 
-# As roc.utils.perfs.all but returns an "old-style" matrix (pre-fast-algo-compatible)
-#roc.utils.perfs.all.matrix <- function(...) {
-#  perfs <- roc.utils.perfs.all(...)
+# As roc_utils_perfs.all but returns an "old-style" matrix (pre-fast-algo-compatible)
+#roc_utils_perfs.all.matrix <- function(...) {
+#  perfs <- roc_utils_perfs.all(...)
 #  return(matrix(c(perfs$sp, perfs$se), nrow=2, byrow=TRUE))
 #}
 
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
-# sp <- roc.utils.perfs(...)[1,]
-# se <- roc.utils.perfs(...)[2,]
-roc.utils.perfs <- function(threshold, controls, cases, direction) {
+# sp <- roc_utils_perfs(...)[1,]
+# se <- roc_utils_perfs(...)[2,]
+roc_utils_perfs <- function(threshold, controls, cases, direction) {
   if (direction == '>') {
     tp <- sum(cases <= threshold)
     tn <- sum(controls > threshold)
@@ -98,8 +98,8 @@ roc.utils.perfs <- function(threshold, controls, cases, direction) {
   return(c(sp=tn/length(controls), se=tp/length(cases)))
 }
 
-# as roc.utils.perfs, but for densities
-roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direction) {
+# as roc_utils_perfs, but for densities
+roc_utils_perfs_dens <- function(threshold, x, dens.controls, dens.cases, direction) {
   if (direction == '>') {
     tp <- sum(dens.cases[x <= threshold])
     tn <- sum(dens.controls[x > threshold])
@@ -113,7 +113,7 @@ roc.utils.perfs.dens <- function(threshold, x, dens.controls, dens.cases, direct
 }
 
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
-roc.utils.thresholds <- function(predictor, direction) {
+roc_utils_thresholds <- function(predictor, direction) {
   unique.candidates <- sort(unique(predictor))
   thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
   thresholds2 <- (c(-Inf, unique.candidates)/2 + c(unique.candidates, +Inf)/2)
@@ -172,7 +172,7 @@ roc.utils.thresholds <- function(predictor, direction) {
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
-roc.utils.max.thresholds.idx <- function(thresholds, sp, se) {
+roc_utils_max_thresholds_idx <- function(thresholds, sp, se) {
   reversed <- FALSE
   if (is.unsorted(sp)) {
     # make sure SP is sorted increasingly, and sort thresholds accordingly
@@ -183,7 +183,7 @@ roc.utils.max.thresholds.idx <- function(thresholds, sp, se) {
   }
   # TODO: find whether the duplicate check is still needed.
   # Should have been fixed by passing only c(controls, cases)
-  # instead of whole 'predictor' to roc.utils.thresholds in roc.default
+  # instead of whole 'predictor' to roc_utils_thresholds in roc.default
   # but are there other potential issues like that?
   dup <- duplicated(data.frame(sp, se))
   thresholds <- thresholds[!dup]
@@ -239,7 +239,7 @@ detect.env.true <- function(x) {
 # to "True" values, which would break some progress bars.
 # See https://cran.r-project.org/doc/manuals/r-devel/R-ints.html and #97
 # Return True or False accordingly
-roc.utils.dumb.progress.bar <- function() {
+roc_utils_dumb_progress_bar <- function() {
 	if (detect.env.true("_R_CHECK_LENGTH_1_CONDITION_") || detect.env.true("_R_CHECK_LENGTH_1_LOGIC2_")) {
 		return(TRUE)
 	}
@@ -249,9 +249,9 @@ roc.utils.dumb.progress.bar <- function() {
 }
 
 # Define which progress bar to use
-roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
+roc_utils_get_progress_bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
 	
-  if (roc.utils.dumb.progress.bar()) {
+  if (roc_utils_dumb_progress_bar()) {
     # If the length 1 checks are on, we need to return only
     # the progress bar name
     return(getOption("pROCProgress")$name)
@@ -285,7 +285,7 @@ roc.utils.get.progress.bar <- function(name = getOption("pROCProgress")$name, ti
 }
 
 # sort roc curve. Make sure specificities are increasing.
-sort.roc <- function(roc) {
+sort_roc <- function(roc) {
   if (is.unsorted(roc$specificities)) {
     roc$sensitivities <- rev(roc$sensitivities)
     roc$specificities <- rev(roc$specificities)
@@ -295,7 +295,7 @@ sort.roc <- function(roc) {
 }
 
 # sort smoothed roc curve. Make sure specificities are increasing.
-sort.smooth.roc <- function(roc) {
+sort_smooth_roc <- function(roc) {
   if (is.unsorted(roc$specificities)) {
     roc$sensitivities <- rev(roc$sensitivities)
     roc$specificities <- rev(roc$specificities)
@@ -314,7 +314,7 @@ roc.utils.valid.coords <- c("specificity", "sensitivity", "accuracy",
 
 # Arguments which can be returned by coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
-roc.utils.match.coords.ret.args <- function(x, threshold = TRUE) {
+roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
 	valid.ret.args <- roc.utils.valid.coords
 	if (threshold) {
 		valid.ret.args <- c("threshold", valid.ret.args)
@@ -335,7 +335,7 @@ roc.utils.match.coords.ret.args <- function(x, threshold = TRUE) {
 
 # Arguments which can be used as input for coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
-roc.utils.match.coords.input.args <- function(x, threshold = TRUE) {
+roc_utils_match_coords_input_args <- function(x, threshold = TRUE) {
 	valid.args <- roc.utils.valid.coords
 	if (threshold) {
 		valid.args <- c("threshold", valid.args)
@@ -354,16 +354,16 @@ roc.utils.match.coords.input.args <- function(x, threshold = TRUE) {
 
 # Compute the min/max for partial AUC
 # ... with an auc
-roc.utils.min.partial.auc.auc <- function(auc) {
-  roc.utils.min.partial.auc(attr(auc, "partial.auc"), attr(auc, "percent"))
+roc_utils_min_partial_auc_auc <- function(auc) {
+  roc_utils_min_partial_auc(attr(auc, "partial.auc"), attr(auc, "percent"))
 }
 
-roc.utils.max.partial.auc.auc <- function(roc) {
-  roc.utils.max.partial.auc(attr(auc, "partial.auc"), attr(auc, "percent"))
+roc_utils_max_partial_auc_auc <- function(roc) {
+  roc_utils_max_partial_auc(attr(auc, "partial.auc"), attr(auc, "percent"))
 }
 
 # ... with partial.auc/percent
-roc.utils.min.partial.auc <- function(partial.auc, percent) {
+roc_utils_min_partial_auc <- function(partial.auc, percent) {
   if (!identical(partial.auc, FALSE)) {
     min <- sum(ifelse(percent, 100, 1)-partial.auc)*abs(diff(partial.auc))/2/ifelse(percent, 100, 1)
   }
@@ -373,7 +373,7 @@ roc.utils.min.partial.auc <- function(partial.auc, percent) {
   return(min)
 }
 
-roc.utils.max.partial.auc <- function(partial.auc, percent) {
+roc_utils_max_partial_auc <- function(partial.auc, percent) {
   if (!identical(partial.auc, FALSE)) {
     max <- abs(diff(partial.auc))
   }
@@ -386,7 +386,7 @@ roc.utils.max.partial.auc <- function(partial.auc, percent) {
 # Checks if the 
 # Input: roc object
 # Output: boolean, true the curve reaches 100%/100%, false otherwise
-roc.utils.is.perfect.curve <- function(roc) {
+roc_utils_is_perfect_curve <- function(roc) {
 	best.point <- max(roc$sensitivities + roc$specificities) / ifelse(roc$percent, 100, 1)
 	return(abs(best.point - 2) < .Machine$double.eps ^ 0.5) # or best.point == 2, with numerical tolerance
 }
@@ -426,7 +426,7 @@ load.suggested.package <- function(pkg) {
 # @param thr, se, sp
 # @param best.weights: see coords 
 # @return data.frame
-roc.utils.calc.coords <- function(roc, thr, se, sp, best.weights) {
+roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
 	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
 	substr.percent <- ifelse(roc$percent, 100, 1)
@@ -446,8 +446,8 @@ roc.utils.calc.coords <- function(roc, thr, se, sp, best.weights) {
 	tnr <- sp
 	fnr <- substr.percent * fn / (tp + fn)
 	fdr <- substr.percent * fp / (tp + fp)
-	youden <- roc.utils.optim.crit(se, sp, substr.percent, best.weights, "youden")
-	closest.topleft <- - roc.utils.optim.crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
+	youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
+	closest.topleft <- - roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
 	
 	return(cbind(
 		threshold=thr,
@@ -485,7 +485,7 @@ roc.utils.calc.coords <- function(roc, thr, se, sp, best.weights) {
 # @param roc: the roc curve
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
-roc.utils.thr.idx <- function(roc, x) {
+roc_utils_thr_idx <- function(roc, x) {
 	cut_points <- sort(unique(roc$predictor))
 	thr_idx <- rep(NA_integer_, length(x))
 	if (roc$direction == "<") {
@@ -522,7 +522,7 @@ roc.utils.thr.idx <- function(roc, x) {
 # @param weights: see coords(best.weights=)
 # @param method: youden or closest.topleft coords(best.method=)
 # @return numeric vector along roc$thresholds/roc$se/roc$sp.
-roc.utils.optim.crit <- function(se, sp, max, weights, method) {
+roc_utils_optim_crit <- function(se, sp, max, weights, method) {
 	if (is.numeric(weights) && length(weights) == 2) {
 		r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
 	}
@@ -607,7 +607,7 @@ coord.is.decreasing <- c(
 # @param ... the ... from the parent function
 # @return a list with 3 elements: response (vector), predictor.names (character),
 #         predictors (data.frame).
-roc.utils.extract.formula <- function(formula, data, data.missing, call, ...) {
+roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
 	# Get predictors (easy)
 	if (data.missing) {
 		predictors <- attr(terms(formula), "term.labels")

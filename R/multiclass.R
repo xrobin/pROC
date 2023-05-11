@@ -23,7 +23,7 @@ multiclass.roc <- function(...)
 multiclass.roc.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
 	call <- match.call()
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = call)
 	response <- roc.data$response
@@ -39,7 +39,7 @@ multiclass.roc.formula <- function(formula, data, ...) {
 	return(multiclass.roc)
 }
 
-multiclass.roc.univariate <- function(response, predictor,
+multiclass_roc_univariate <- function(response, predictor,
                                    levels=base::levels(as.factor(response)),
                                    percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                                    direction,
@@ -90,7 +90,7 @@ compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, di
     return(auc)
 }
 
-multiclass.roc.multivariate <- function(response, predictor, levels, percent, direction, ...) {
+multiclass_roc_multivariate <- function(response, predictor, levels, percent, direction, ...) {
     # Reference: "A Simple Generalisation of the Area Under the ROC 
     # Curve for Multiple Class Classification Problems" (Hand and Till, 2001)
     if (!methods::is(predictor, "matrix") && !methods::is(predictor, "data.frame")) {
@@ -178,11 +178,11 @@ multiclass.roc.default <- function(response, predictor,
     	else {
     		direction <- match.arg(direction)
     	}
-        mc.roc <- multiclass.roc.multivariate(response, predictor, levels, percent, direction, ...)
+        mc.roc <- multiclass_roc_multivariate(response, predictor, levels, percent, direction, ...)
     } else {
         # for a single decision value for separating the classes
     	direction <- match.arg(direction)
-    	mc.roc <- multiclass.roc.univariate(response, predictor, levels, percent, direction, ...)
+    	mc.roc <- multiclass_roc_univariate(response, predictor, levels, percent, direction, ...)
     }
 	mc.roc$call <- match.call()
 	return(mc.roc)

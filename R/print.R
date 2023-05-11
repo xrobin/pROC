@@ -22,7 +22,7 @@ print.smooth.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRU
   if (call)
     cat("\nCall:\n", deparse(x$call), "\n\n", sep="")
   # Always print number of patients, controls, thresholds, levels?
-  print.dataline(attr(x, "roc")) # take this from original roc
+  print_dataline(attr(x, "roc")) # take this from original roc
 
   # Smoothing
   cat("Smoothing: ")
@@ -126,7 +126,7 @@ print.roc <- function(x, digits=max(3, getOption("digits") - 3), call=TRUE, ...)
   if (call)
     cat("\nCall:\n", deparse(x$call), "\n\n", sep="")
   # Always print number of patients, controls, thresholds, levels?
-  print.dataline(x)
+  print_dataline(x)
 
   # AUC if exists
   if (!is.null(x$auc)) {
@@ -220,7 +220,7 @@ print.ci.coords <- function(x, digits=max(3, getOption("digits") - 3), ...) {
   invisible(x)
 }
 
-print.dataline <- function(x) {
+print_dataline <- function(x) {
   # Case / Controls call
   if ("cases" %in%  names(x$call) && "controls" %in% names(x$call)) {
     cat("Data: ", length(x$controls), " controls ", x$direction, " ", length(x$cases), " cases.\n", sep="")

@@ -23,7 +23,7 @@ ci.thresholds <- function(...) {
 
 ci.thresholds.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {
@@ -56,7 +56,7 @@ ci.thresholds.roc <- function(roc,
   if (conf.level > 1 | conf.level < 0)
     stop("'conf.level' must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(roc)) {
+  if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.thresholds() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
 
@@ -80,7 +80,7 @@ ci.thresholds.roc <- function(roc,
   }
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- laply(1:boot.n, stratified.ci.thresholds, roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)

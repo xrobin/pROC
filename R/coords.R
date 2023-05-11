@@ -40,7 +40,7 @@ coords.smooth.roc <- function(smooth.roc,
   }
   
   # match return
-  ret <- roc.utils.match.coords.ret.args(ret, threshold = FALSE)
+  ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
 
   if (is.character(x)) {
     x <- match.arg(x, c("all", "best")) # no thresholds in smoothed roc: only best or all are possible
@@ -69,7 +69,7 @@ coords.smooth.roc <- function(smooth.roc,
       
       if (any(! ret %in% c("specificity", "sensitivity"))) {
         # Deduce additional tn, tp, fn, fp, npv, ppv
-        res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
+        res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
       }
       else {
         res <- cbind(
@@ -84,7 +84,7 @@ coords.smooth.roc <- function(smooth.roc,
       if (best.method == "topleft") {
         best.method <- "closest.topleft"
       }
-      optim.crit <- roc.utils.optim.crit(smooth.roc$sensitivities, smooth.roc$specificities,
+      optim.crit <- roc_utils_optim_crit(smooth.roc$sensitivities, smooth.roc$specificities,
                                          ifelse(smooth.roc$percent, 100, 1),
                                          best.weights, best.method)
       
@@ -110,7 +110,7 @@ coords.smooth.roc <- function(smooth.roc,
       
       if (any(! ret %in% c("specificity", "sensitivity", best.method))) {
       	# Deduce additional tn, tp, fn, fp, npv, ppv
-      	res <- roc.utils.calc.coords(smooth.roc, NA, se, sp, best.weights)
+      	res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
       }
       else {
       	res <- cbind(
@@ -151,7 +151,7 @@ coords.smooth.roc <- function(smooth.roc,
   }
   
   # match input 
-  input <- roc.utils.match.coords.input.args(input, threshold = FALSE)
+  input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
   
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
@@ -179,11 +179,11 @@ coords.roc <- function(roc,
   }
   
   # match input 
-  input <- roc.utils.match.coords.input.args(input)
+  input <- roc_utils_match_coords_input_args(input)
   # match return
-  ret <- roc.utils.match.coords.ret.args(ret)
+  ret <- roc_utils_match_coords_ret_args(ret)
   # make sure the sort of roc is correct
-  roc <- sort(roc)
+  roc <- sort_roc(roc)
 
   if (is.character(x)) {
     x <- match.arg(x, c("all", "local maximas", "best"))
@@ -240,7 +240,7 @@ coords.roc <- function(roc,
       	warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
       	return(NULL)
       }
-      lm.idx <- roc.utils.max.thresholds.idx(thres, sp=sp, se=se)
+      lm.idx <- roc_utils_max_thresholds_idx(thres, sp=sp, se=se)
       res <- cbind(
       	threshold = thres[lm.idx],
       	specificity = sp[lm.idx],
@@ -253,7 +253,7 @@ coords.roc <- function(roc,
       if (best.method == "topleft") {
         best.method <- "closest.topleft"
       }
-      optim.crit <- roc.utils.optim.crit(roc$sensitivities, roc$specificities,
+      optim.crit <- roc_utils_optim_crit(roc$sensitivities, roc$specificities,
       								   ifelse(roc$percent, 100, 1),
       								   best.weights, best.method)
 
@@ -295,7 +295,7 @@ coords.roc <- function(roc,
   }
   else if (is.numeric(x)) {
     if (input == "threshold") {
-    	thr_idx <- roc.utils.thr.idx(roc, x)
+    	thr_idx <- roc_utils_thr_idx(roc, x)
     	res <- cbind(
     		threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
     		specificity = roc$specificities[thr_idx],
@@ -313,7 +313,7 @@ coords.roc <- function(roc,
                         specificity = rep(NA, length(x))
                    )
       if (input %in% c("sensitivity", "specificity")) {
-        # Shortcut slow roc.utils.calc.coords
+        # Shortcut slow roc_utils_calc_coords
         se <- roc$sensitivities
         sp <- roc$specificities
         if (methods::is(roc, "smooth.roc")) {
@@ -330,7 +330,7 @@ coords.roc <- function(roc,
         }
       }
       else {
-        all_coords <- roc.utils.calc.coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
+        all_coords <- roc_utils_calc_coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
         input_values <- all_coords[, input]
         se <- all_coords[, "sensitivity"]
         sp <- all_coords[, "specificity"]
@@ -380,7 +380,7 @@ coords.roc <- function(roc,
   
   if (any(! ret %in% colnames(res))) {
   	# Deduce additional tn, tp, fn, fp, npv, ppv
-  	res <- roc.utils.calc.coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights)
+  	res <- roc_utils_calc_coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights)
   }
 
   if (as.list) {

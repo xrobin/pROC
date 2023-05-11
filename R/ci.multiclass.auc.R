@@ -43,7 +43,7 @@
 #   percent <- multiclass.roc$percent
 #   oldauc <- multiclass.roc$auc
 #   if (percent) {
-#   	multiclass.roc <- roc.utils.unpercent(multiclass.roc)
+#   	multiclass.roc <- roc_utils_unpercent(multiclass.roc)
 #   }
 # 
 #   ci <- ci.multiclass.auc.bootstrap(multiclass.roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)

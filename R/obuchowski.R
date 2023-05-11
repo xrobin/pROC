@@ -19,7 +19,7 @@
 
 # Formula 3 from Obuchowski 2004, p. 1123
 # Variance of an AUC given kappa
-var.theta.obuchowski <- function(theta, kappa) {
+var_theta_obuchowski <- function(theta, kappa) {
     A <- qnorm(theta) * 1.414
     (0.0099 * exp(-A^2/2)) * ((5 * A^2 + 8) + (A^2 + 8)/kappa)
 }
@@ -81,7 +81,7 @@ g.partial <- function(A, B, FPR1, FPR2) {
 }
 
 # Variance of a ROC curve given a 'roc' object
-var.roc.obuchowski <- function(roc) {
+var_roc_obuchowski <- function(roc) {
   binormal <- smooth(roc, method="binormal")$model
   A <- unname(coefficients(binormal)[1])
   B <- unname(coefficients(binormal)[2])
@@ -90,10 +90,10 @@ var.roc.obuchowski <- function(roc) {
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
     FPR1 <- 1 - attr(roc$auc, "partial.auc")[2]
     FPR2 <- 1 - attr(roc$auc, "partial.auc")[1]
-    va <- var.params.obuchowski(A, B, kappa, FPR1, FPR2)
+    va <- var_params_obuchowski(A, B, kappa, FPR1, FPR2)
   }
   else {
-    va <- var.params.obuchowski(A, B, kappa)
+    va <- var_params_obuchowski(A, B, kappa)
   }
   return(va)
 }
@@ -103,7 +103,7 @@ var.roc.obuchowski <- function(roc) {
 # A and B: params of the binormal ROC curve
 # kappa: proportion controls / cases
 # FPR1, FPR2: the bottom (1) or top (2) bounds of the pAUC interval
-var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
+var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
   if (!missing(FPR1) && !is.null(FPR1) && !missing(FPR1) && !is.null(FPR2)) {
     f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / kappa + A^2/2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + kappa) / (2*kappa)
   }
@@ -113,7 +113,7 @@ var.params.obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 }
 
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
-cov.roc.obuchowski <- function(roc1, roc2) {
+cov_roc_obuchowski <- function(roc1, roc2) {
   binormal1 <- smooth(roc1, method="binormal")$model
   A1 <- unname(coefficients(binormal1)[1])
   B1 <- unname(coefficients(binormal1)[2])
@@ -128,10 +128,10 @@ cov.roc.obuchowski <- function(roc1, roc2) {
     FPR12 <- 1 - attr(roc1$auc, "partial.auc")[1]
     FPR21 <- 1 - attr(roc2$auc, "partial.auc")[2]
     FPR22 <- 1 - attr(roc2$auc, "partial.auc")[1]
-    co <- cov.params.obuchowski(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
+    co <- cov_params_obuchowski(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
   }
   else {
-    co <- cov.params.obuchowski(A1, B1, A2, B2, rn, ra, kappa)
+    co <- cov_params_obuchowski(A1, B1, A2, B2, rn, ra, kappa)
   }
   return(co)
 }
@@ -148,10 +148,10 @@ cov0.roc.obuchowski <- function(roc1, roc2) {
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
     FPR1 <- attr(roc1$auc, "partial.auc")[2]
     FPR2 <- attr(roc1$auc, "partial.auc")[1]
-    co <- cov.params.obuchowski(A, B, A, B, rn, ra, kappa, FPR1, FPR2, FPR1, FPR2)
+    co <- cov_params_obuchowski(A, B, A, B, rn, ra, kappa, FPR1, FPR2, FPR1, FPR2)
   }
   else {
-    co <- cov.params.obuchowski(A, B, A, B, rn, ra, kappa)
+    co <- cov_params_obuchowski(A, B, A, B, rn, ra, kappa)
   }
   return(co)
 }
@@ -165,7 +165,7 @@ cov0.roc.obuchowski <- function(roc1, roc2) {
 # FPR(1|2)(1|2): the bounds of the pAUC interval:
 #    ***** ROC curve 1 or 2
 #         ***** bottom (1) or top (2) of the interval
-cov.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
+cov_params_obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
   if (!missing(FPR11) && !is.null(FPR11) &&
       !missing(FPR12) && !is.null(FPR12) &&
       !missing(FPR21) && !is.null(FPR21) &&

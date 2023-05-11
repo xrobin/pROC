@@ -23,7 +23,7 @@ ci.auc <- function(...) {
 
 ci.auc.formula <- function(formula, data, ...) {
 	data.missing <- missing(data)
-	roc.data <- roc.utils.extract.formula(formula, data, ..., 
+	roc.data <- roc_utils_extract_formula(formula, data, ..., 
 										  data.missing = data.missing,
 										  call = match.call())
 	if (length(roc.data$predictor.name) > 1) {
@@ -62,7 +62,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   if (conf.level > 1 | conf.level < 0)
     stop("conf.level must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(smooth.roc)) {
+  if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
 
@@ -97,7 +97,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
   if(inherits(progress, "list"))
-    progress <- roc.utils.get.progress.bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
+    progress <- roc_utils_get_progress_bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
@@ -139,7 +139,7 @@ ci.auc.roc <- function(roc,
   if (conf.level > 1 | conf.level < 0)
     stop("conf.level must be within the interval [0,1].")
   
-  if (roc.utils.is.perfect.curve(roc)) {
+  if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
 
@@ -151,7 +151,7 @@ ci.auc.roc <- function(roc,
   percent <- roc$percent
   oldauc <- roc$auc
   if (percent) {
-  	roc <- roc.utils.unpercent(roc)
+  	roc <- roc_utils_unpercent(roc)
   }
 
   # Check the method
@@ -181,9 +181,9 @@ ci.auc.roc <- function(roc,
   }
 
   if (method == "delong")
-    ci <- ci.auc.delong(roc, conf.level)
+    ci <- ci_auc_delong(roc, conf.level)
   else
-    ci <- ci.auc.bootstrap(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
 
   if (percent) {
     ci <- ci * 100
