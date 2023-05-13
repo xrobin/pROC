@@ -170,7 +170,7 @@ test_that("coords with specificity works with percent", {
 
 
 test_that("coords with specificity works with as.list", {
-	obtained <- coords(r.s100b.percent, "best", ret = c("threshold", "specificity", "accuracy"), as.list = TRUE)
+	expect_warning(obtained <- coords(r.s100b.percent, "best", ret = c("threshold", "specificity", "accuracy"), as.list = TRUE), "as.list")
 	expect_equal(obtained, list(
 		threshold = 0.205,
 		specificity = unname(expected.coords["specificity", 18]) * 100,
@@ -179,9 +179,9 @@ test_that("coords with specificity works with as.list", {
 })
 
 test_that("coords with specificity works with as.list and drop=FALSE", {
-	obtained <- coords(r.s100b.percent, "best", 
+	expect_warning(obtained <- coords(r.s100b.percent, "best", 
 					   ret = c("threshold", "specificity", "accuracy"), 
-					   as.list = TRUE, drop = FALSE)
+					   as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], list(
 		threshold = 0.205,
 		specificity = unname(expected.coords["specificity", 18]) * 100,
@@ -191,9 +191,9 @@ test_that("coords with specificity works with as.list and drop=FALSE", {
 
 
 test_that("coords with specificity works with as.list and several thresholds", {
-	obtained <- coords(r.s100b.percent, c(0.205, 0.51), 
+	expect_warning(obtained <- coords(r.s100b.percent, c(0.205, 0.51), 
 					   ret = c("threshold", "specificity", "accuracy"), 
-					   as.list = TRUE, drop = FALSE)
+					   as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], list(
 		threshold = 0.205,
 		specificity = unname(expected.coords["specificity", 18]) * 100,
@@ -310,19 +310,19 @@ test_that("coords works with smooth.roc and x = 'best'", {
 	obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect)
 	
-	obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[, 1]))
 	expect_equal(names(obtained), rownames(expect))
 	
-	obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[, 1])) # names
 	expect_equal(names(obtained[[1]]), rownames(expect))
 	
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[reduced.cols, 1]))
 	expect_equal(names(obtained), reduced.cols)
 	
-	obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1])) # names
 	expect_equal(names(obtained[[1]]), reduced.cols)
 })
@@ -417,24 +417,24 @@ test_that("coords works with smooth.roc and x = numeric", {
 	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret="all", as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret="all", as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[, 1]))
 	expect_equal(obtained[[2]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1]))
 	expect_equal(obtained[[2]], as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret="all", as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "specificity", ret=reduced.cols, as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 2]))
 })
 
@@ -477,24 +477,24 @@ test_that("coords works with smooth.roc and x = numeric and input = 'se'", {
 	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, drop = FALSE, transpose=TRUE)
 	expect_equal(obtained, expect[reduced.cols, 2, drop=FALSE])
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret="all", as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret="all", as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[, 1]))
 	expect_equal(obtained[[2]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, c(0.5, 0.9), input = "se", ret=reduced.cols, as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1]))
 	expect_equal(obtained[[2]], as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, as.list = TRUE, drop = TRUE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, as.list = TRUE, drop = TRUE), "as.list")
 	expect_equal(obtained, as.list(expect[reduced.cols, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "se", ret="all", as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[, 2]))
 	
-	obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, as.list = TRUE, drop = FALSE)
+	expect_warning(obtained <- coords(smooth.s100b, 0.9, input = "se", ret=reduced.cols, as.list = TRUE, drop = FALSE), "as.list")
 	expect_equal(obtained[[1]], as.list(expect[reduced.cols, 2]))
 })
 

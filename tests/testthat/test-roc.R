@@ -187,9 +187,11 @@ test_that("roc.formula behaves", {
 	# Generate missing values
 	aSAH.missing <- aSAH
 	aSAH.missing$ndka[1:20] <- NA
+	expect_warning(roc1 <- roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit), "na.omit")
+	roc2 <- roc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka)[roc.check.only.items]
 	expect_identical(
-		roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit)[roc.check.only.items],
-		roc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka)[roc.check.only.items]
+		roc1[roc.check.only.items],
+		roc2[roc.check.only.items]
 	)
 	#na.fail should fail
 	expect_error(roc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
@@ -200,9 +202,11 @@ test_that("roc.formula behaves", {
 	
 	
 	# Both na.action and subset
+	expect_warning(roc1 <- roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female")), "na.omit")
+	roc2 <- roc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"])
 	expect_identical(
-		roc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female"))[roc.check.only.items],
-		roc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"])[roc.check.only.items]
+		roc1[roc.check.only.items],
+		roc2[roc.check.only.items]
 	)
 })
 
@@ -331,7 +335,7 @@ test_that("roc_ works", {
 
 test_that("roc.data.frame reject invalid columns", {
 	outcomes <- aSAH$outcome
-	expect_error(roc(aSAH, outcomes, s100b), "Column")
+	expect_error(roc_(aSAH, outcomes, s100b), "Column")
 	expect_error(roc(aSAH, "outcomes", "s100b"), "Column")
 	expect_error(roc_(aSAH, "outcomes", "s100b"), "Column")
 	s100c <- aSAH$s100b
@@ -341,11 +345,11 @@ test_that("roc.data.frame reject invalid columns", {
 })
 
 test_that("roc reject and warns for invalid levels", {
-	expect_error(roc(aSAH$gos6, aSAH$s100b), "No case observation")
+	expect_warning(expect_error(roc(aSAH$gos6, aSAH$s100b), "No case observation"), "levels")
 	expect_error(roc(aSAH$gos6, aSAH$s100b, levels = levels(aSAH$gos6)), "levels")
 	expect_warning(roc(factor(aSAH$gos6), aSAH$s100b, quiet = TRUE), "levels")
 	
-	expect_error(roc(aSAH, gos6, s100b), "No case observation")
+	expect_warning(expect_error(roc(aSAH, gos6, s100b), "No case observation"), "levels")
 	expect_error(roc(aSAH, gos6, s100b, levels = levels(aSAH$gos6)), "levels")
 	dat <- aSAH
 	dat$gos6 <- factor(aSAH$gos6)

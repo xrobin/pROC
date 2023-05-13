@@ -187,19 +187,17 @@ test_that("auc.formula behaves", {
 	# Generate missing values
 	aSAH.missing <- aSAH
 	aSAH.missing$ndka[1:20] <- NA
-	expect_equal(
-		as.numeric(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit)),
-		as.numeric(auc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka))
-	)
+	expect_warning(auc1 <- auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit), "na.omit")
+	auc2 <- auc(aSAH[21:113,]$outcome, aSAH[21:113,]$ndka)
+	expect_equal(as.numeric(auc1), as.numeric(auc2))
 	#na.fail should fail
 	expect_error(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.fail))
 	#weights should fail too
 	expect_error(auc(outcome ~ ndka, data = aSAH, weights = seq_len(nrow(aSAH))), regexp = "weights are not supported")
 	
 	# Both na.action and subset
-	expect_equal(
-		as.numeric(auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female"))),
-		as.numeric(auc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"]))
-	)
+	expect_warning(auc1 <- auc(outcome ~ ndka, data = aSAH.missing, na.action = na.omit, subset = (gender == "Female")), "na.omit")
+	auc2 <- auc(aSAH[21:113,]$outcome[aSAH[21:113,]$gender == "Female"], aSAH[21:113,]$ndka[aSAH[21:113,]$gender == "Female"])
+	expect_equal(as.numeric(auc1), as.numeric(auc2))
 })
 

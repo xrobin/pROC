@@ -4,7 +4,7 @@ data(aSAH)
 context("multiclass-roc")
 
 test_that("univariate multiclass roc/auc works", {
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b)
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b), "2")
 	expect_equal(class(uv.mr), "multiclass.roc")
 	expect_equal(length(uv.mr$rocs), 6)
 	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
@@ -14,18 +14,18 @@ test_that("univariate multiclass roc/auc works", {
 })
 
 test_that("univariate multiclass roc works with formula", {
-	uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH)
+	expect_warning(uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH), "2")
 	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
-	uv.mr <- multiclass.roc(aSAH$gos6 ~ aSAH$s100b)
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6 ~ aSAH$s100b), "2")
 	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
 	
-	uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH, subset = (gender == "Female"))
+	expect_warning(uv.mr <- multiclass.roc(gos6 ~ s100b, aSAH, subset = (gender == "Female")), "2")
 	expect_equal(length(uv.mr$response), sum(aSAH$gender == "Female"))
 	expect_error(multiclass.roc(gos6 ~ s100b, aSAH, weights=age))
 })
 
 test_that("univariate multiclass roc/auc works with percent=TRUE", {
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE), "2")
 	uv.ma <- auc(uv.mr)
 	expect_equal(as.numeric(uv.ma), 65.39999352)
 	expect_equal(as.numeric(uv.mr$auc), 65.39999352)
@@ -38,7 +38,7 @@ test_that("univariate multiclass roc/auc works with percent=TRUE", {
 
 test_that("univariate multiclass roc/auc works with partial.auc", {
 	pauc.spec <- c(1, .9)
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, partial.auc=pauc.spec)
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, partial.auc=pauc.spec), "2")
 	uv.ma <- auc(uv.mr, partial.auc=pauc.spec)
 	expect_equal(as.numeric(uv.mr$auc), 0.0116176879)
 	expect_equal(as.numeric(uv.ma), 0.0116176879)
@@ -48,7 +48,7 @@ test_that("univariate multiclass roc/auc works with partial.auc", {
 	expect_equal(as.numeric(auc(uv.mr)), 0.6539999352)
 
 	# SE
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, partial.auc=pauc.spec, partial.auc.focus="se")
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, partial.auc=pauc.spec, partial.auc.focus="se"), "2")
 	uv.ma <- auc(uv.mr, partial.auc=pauc.spec, partial.auc.focus="se")
 	expect_equal(as.numeric(uv.mr$auc), 0.02513286)
 	expect_equal(as.numeric(uv.ma), 0.02513286)
@@ -58,15 +58,15 @@ test_that("univariate multiclass roc/auc works with partial.auc", {
 })
 
 test_that("univariate multiclass roc/auc works with directions", {
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction="auto")
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction="auto"), "2")
 	expect_equal(sapply(uv.mr$rocs, "[[", "direction"), c("<", ">", ">", ">", ">", ">"))
 	expect_equal(as.numeric(uv.mr$auc), 0.6539999352)
 	
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction="<")
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction="<"), "2")
 	expect_equal(sapply(uv.mr$rocs, "[[", "direction"), rep("<", 6))
 	expect_equal(as.numeric(uv.mr$auc), 0.3487473175)
 	
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction=">")
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b, direction=">"), "2")
 	expect_equal(sapply(uv.mr$rocs, "[[", "direction"), rep(">", 6))
 	expect_equal(as.numeric(uv.mr$auc), 0.6512526825)
 })
@@ -262,7 +262,7 @@ test_that("multivariate behavior with missing levels/columns", {
 })
 
 test_that("Invalid CI functions fail cleanly", {
-	uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b)
+	expect_warning(uv.mr <- multiclass.roc(aSAH$gos6, aSAH$s100b), "2")
 	expect_error(ci.se(uv.mr), "not available for multiclass ROC curves")
 	expect_error(ci.se(uv.mr$auc), "not available for multiclass ROC curves")
 	expect_error(ci.sp(uv.mr), "not available for multiclass ROC curves")
