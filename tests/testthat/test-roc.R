@@ -335,7 +335,7 @@ test_that("roc_ works", {
 
 test_that("roc.data.frame reject invalid columns", {
 	outcomes <- aSAH$outcome
-	expect_error(roc_(aSAH, outcomes, s100b), "Column")
+	expect_error(roc(aSAH, outcomes, s100b), "Column")
 	expect_error(roc(aSAH, "outcomes", "s100b"), "Column")
 	expect_error(roc_(aSAH, "outcomes", "s100b"), "Column")
 	s100c <- aSAH$s100b
