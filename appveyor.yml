@@ -8,8 +8,9 @@ init:
         Import-Module '..\appveyor-tool.ps1'
 
 install:
-  ps: Bootstrap
-  ps: Rscript -e 'install.packages("covr")'
+  ps: |
+        Bootstrap
+        Rscript -e 'install.packages("covr")'
 
 cache:
   - C:\RLibrary
