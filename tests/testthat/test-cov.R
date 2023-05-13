@@ -70,14 +70,13 @@ test_that("cov with delong, percent, direction = > and mixed roc/auc", {
 
 test_that("cov with bootstrap works", {
 	skip_slow()
-	if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
-		RNGkind(sample.kind="Rounding")
-	}
+	skip_if(getRversion() < "3.6.0")  # added sample.kind
+	RNGkind(sample.kind="Rejection")
 	set.seed(42)
-	expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100), -0.0004581385)
-	expect_equal(cov(r.ndka.percent, r.s100b.percent, method = "bootstrap", boot.n = 100), -6.312029126)
-	expect_equal(cov(r.s100b.partial1, r.wfns.partial1, method = "bootstrap", boot.n = 100), 2.899627e-05)
-	expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100, boot.stratified = FALSE), -0.000419791)
+	expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100), -0.000648524)
+	expect_equal(cov(r.ndka.percent, r.s100b.percent, method = "bootstrap", boot.n = 100), -7.17528365)
+	expect_equal(cov(r.s100b.partial1, r.wfns.partial1, method = "bootstrap", boot.n = 100), 2.294465e-05)
+	expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100, boot.stratified = FALSE), -0.0007907488)
 })
 
 test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
@@ -97,16 +96,16 @@ test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
 
 test_that("bootstrap cov works with smooth and !reuse.auc", {
 	skip_slow()
+	skip_if(getRversion() < "3.6.0")  # added sample.kind
 	# First calculate cov by giving full curves
 	roc1 <- smooth(roc(aSAH$outcome, aSAH$wfns, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
 	roc2 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
 	
-	if (R.version$minor >= "6.0") {
-		RNGkind(sample.kind="Rounding")
-	}
+	suppressWarnings(RNGkind(sample.kind="Rejection"))
+
 	set.seed(42) # For reproducible CI
 	expected_cov <- cov(roc1, roc2, boot.n = 100)
-	expect_equal(expected_cov, 2.485882e-05)
+	expect_equal(expected_cov, -0.0000030024)
 	
 	# Now with reuse.auc
 	set.seed(42) # For reproducible CI
@@ -115,3 +114,4 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
 						boot.n = 100)
 	expect_equal(expected_cov, obtained_cov)
 })
+

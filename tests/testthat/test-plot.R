@@ -55,9 +55,7 @@ test_that("Advanced screenshot 2 works correctly", {
 	skip_slow()
 	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_2 <- function() {
-		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
-			RNGkind(sample.kind="Rounding")
-		}
+		RNGkind(sample.kind="Rejection")
 		set.seed(42) # For reproducible CI
 		rocobj <- plot.roc(aSAH$outcome, aSAH$s100b,
 						   main="Confidence intervals", percent=TRUE,
@@ -100,9 +98,7 @@ test_that("Advanced screenshot 4 works correctly", {
 	skip_slow()
 	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_4 <- function() {
-		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
-			RNGkind(sample.kind="Rounding")
-		}
+		RNGkind(sample.kind="Rejection")
 		set.seed(42) # For reproducible CI
 		rocobj <- plot.roc(aSAH$outcome, aSAH$s100b,
 						   main="Confidence intervals of specificity/sensitivity", percent=TRUE,
@@ -123,9 +119,7 @@ test_that("Advanced screenshot 5 works correctly", {
 	skip_slow()
 	skip_if(getRversion() < 4.1)
 	test_advanced_screenshot_5 <- function() {
-		if (paste0(R.version$major, ".", R.version$minor) >= "3.6.0") {
-			RNGkind(sample.kind="Rounding")
-		}
+		RNGkind(sample.kind="Rejection")
 		set.seed(42) # For reproducible CI
 		plot.roc(aSAH$outcome, aSAH$s100b,
 				 main="Confidence interval of a threshold", percent=TRUE,
