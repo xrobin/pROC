@@ -1,3 +1,6 @@
+1.18.2 (2023-05-13):
+  * Fix CRAN submission NOTE (issue #112)
+
 1.18.1 (2023-05-07):
   * Fix 'print'ing some curves built from a formula (issue #101)
   * Fix tests following upstream updates in density() (https://bugs.r-project.org/show_bug.cgi?id=18337)
