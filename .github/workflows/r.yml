@@ -19,10 +19,10 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        r-version: ['3.6.3', '4.1.1']
+        r-version: ['devel', 'release']
 
     steps:
       - uses: actions/checkout@v3
@@ -31,10 +31,15 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
+        with:
+          extra-packages: covr
         run: |
           install.packages(c("remotes", "rcmdcheck"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+        shell: Rscript {0}
+      - name: Test coverage
+        run: covr::codecov()
         shell: Rscript {0}
