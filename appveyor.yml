@@ -9,6 +9,7 @@ init:
 
 install:
   ps: Bootstrap
+  ps: Rscript -e 'install.packages("covr")'
 
 cache:
   - C:\RLibrary
@@ -48,6 +49,9 @@ test_script:
 on_failure:
   - 7z a failure.zip *.Rcheck\*
   - appveyor PushArtifact failure.zip
+
+on_success:
+  - Rscript -e 'library(covr); codecov()'
 
 artifacts:
   - path: '*.Rcheck\**\*.log'
