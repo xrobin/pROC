@@ -9,3 +9,4 @@ codecov.yml
 ^\.github
 ^revdep
 ^DEPENDENCIES*
+^\.github$
