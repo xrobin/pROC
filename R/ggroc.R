@@ -61,7 +61,7 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 
 ggroc.smooth.roc <- ggroc.roc
 
-ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "group"), legacy.axes = FALSE, ...) {
+ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "size", "linewidth", "group"), legacy.axes = FALSE, ...) {
 	load.ggplot2()
 	if (missing(aes)) {
 		aes <- "colour"
