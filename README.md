@@ -1,3 +1,5 @@
+[![R build status](https://github.com/xrobin/pROC/workflows/R-CMD-check/badge.svg)](https://github.com/xrobin/pROC/actions?workflow=R-CMD-check)
+[![R build status](https://github.com/xrobin/pROC/workflows/test-coverage/badge.svg)](https://github.com/xrobin/pROC/actions?workflow=test-coverage)
 [![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/xrobin/pROC?branch=master&svg=true)](https://ci.appveyor.com/project/xrobin/pROC)
 [![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://app.codecov.io/github/xrobin/pROC) 
 [![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](https://cran.r-project.org/package=pROC)
