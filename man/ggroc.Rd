@@ -14,7 +14,7 @@
 \usage{
 \S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
 \S3method{ggroc}{smooth.roc}(data, legacy.axes = FALSE, ...)
-\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "size", "group"),
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "linewidth", "size", "group"),
       legacy.axes = FALSE, ...)
 }
 		   
@@ -32,7 +32,8 @@
     (\code{TRUE}) as in most legacy software.
   }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
-    to set: \code{alpha}, \code{colour}, \code{linetype} and \code{size}.
+    to set: \code{alpha}, \code{colour}, \code{linetype}, \code{linewidth} 
+    (new in ggplot2 3.4.0), \code{size} (before ggplot2 3.4.0) and \code{group}.
   }
 }
 
