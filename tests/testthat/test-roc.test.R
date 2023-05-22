@@ -3,11 +3,13 @@ data(aSAH)
 
 context("roc.test")
 
+# define variables shared among multiple tests here
+roc.test_env <- environment()
 
 test_that("roc.test works", {
-	t1 <<- roc.test(r.wfns, r.s100b)
-	t2 <<- roc.test(r.wfns, r.ndka)
-	t3 <<- roc.test(r.ndka, r.s100b)
+	roc.test_env$t1 <- roc.test(r.wfns, r.s100b)
+	roc.test_env$t2 <- roc.test(r.wfns, r.ndka)
+	roc.test_env$t3 <- roc.test(r.ndka, r.s100b)
 	expect_is(t1, "htest")
 	expect_is(t2, "htest")
 	expect_is(t3, "htest")
@@ -67,9 +69,9 @@ test_that("two.sided roc.test produces identical p values when roc curves are re
 
 test_that("unpaired roc.test works", {
 	# Warns about pairing
-	expect_warning(t1up <<- roc.test(r.wfns, r.s100b, paired = FALSE))
-	expect_warning(t2up <<- roc.test(r.wfns, r.ndka, paired = FALSE))
-	expect_warning(t3up <<- roc.test(r.ndka, r.s100b, paired = FALSE))
+	expect_warning(roc.test_env$t1up <- roc.test(r.wfns, r.s100b, paired = FALSE))
+	expect_warning(roc.test_env$t2up <- roc.test(r.wfns, r.ndka, paired = FALSE))
+	expect_warning(roc.test_env$t3up <- roc.test(r.ndka, r.s100b, paired = FALSE))
 })
 
 test_that("unpaired roc.test statistic and p are as expected", {
