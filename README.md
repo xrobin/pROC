@@ -170,7 +170,7 @@ To run all the test cases (incl. slow ones) from the command line:
 
 ```R
 run_slow_tests <- TRUE
-vdiffr::manage_cases()
+testthat::snapshot_review()
 ```
 
 To run the checks upon R CMD check, set environment variable `NOT_CRAN=1`:
