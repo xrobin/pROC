@@ -133,7 +133,7 @@ Download the source code from git, unzip it if necessary, and then type `R CMD I
 
 ```R
 if (! requireNamespace("devtools")) install.packages("devtools")
-devtools::install_github("xrobin/pROC")
+devtools::install_github("xrobin/pROC@develop")
 ```
 
 ### Check
