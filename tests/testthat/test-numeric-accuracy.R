@@ -81,11 +81,11 @@ test_that("Hard predictor has same results as easy one, random sampling", {
 							   0, 0.001, 0.01, 0.1,
 							   5, 6, 7, 8, 9, 10,
 							   101, 102, 103)
-	a <- replicate(1000, function(n) {
+	a <- replicate(100, {
 		response <- rbinom(length(numacc.predictor.easy), 1, 0.5)
 		sample.vector <- sample(length(numacc.predictor.easy), replace = as.logical(rbinom(1, 1, 0.5)))
-		roc.hard <- roc(response, numacc.predictor.hard[sample.vector], direction="<")
-		roc.easy <- roc(response, numacc.predictor.easy[sample.vector], direction="<")
+		expect_message(roc.hard <- roc(response, numacc.predictor.hard[sample.vector], direction="<"))
+		expect_message(roc.easy <- roc(response, numacc.predictor.easy[sample.vector], direction="<"))
 		expect_equal(roc.hard$sensitivities, roc.easy$sensitivities, info = 
 					 	c(paste("Random response: ", paste(response,      collapse=",")),
 					 	  paste("Random sample:",    paste(sample.vector, collapse=","))))

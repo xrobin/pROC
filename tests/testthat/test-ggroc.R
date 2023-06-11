@@ -4,7 +4,7 @@ context("ggroc")
 
 test_that("Ggroc screenshot looks normal", {
 	test_ggplot_screenshot <- function() {
-		print(ggroc(r.s100b.percent, , alpha = 0.5, colour = "red", linetype = 2, size = 2))
+		print(ggroc(r.s100b.percent, alpha = 0.5, colour = "red", linetype = 2, size = 2))
 	}
 	expect_doppelganger("ggroc.screenshot", test_ggplot_screenshot)
 })
