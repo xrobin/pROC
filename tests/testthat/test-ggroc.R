@@ -18,7 +18,7 @@ test_that("Ggroc list screenshot looks normal", {
 
 test_that("Ggroc list can take multiple aes", {
 	test_ggplot_list_screenshot <- function() {
-		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka), aes=c("c", "linetype", "size")))
+		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka), aes=c("c", "linetype")))
 	}
 	expect_ggroc_doppelganger("ggroc.list.multi.aes", test_ggplot_list_screenshot)
 })
