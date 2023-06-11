@@ -138,13 +138,28 @@ devtools::install_github("xrobin/pROC@develop")
 
 ### Check
 
-To run all automated tests, including slow tests:
+To run all automated tests and R checks, including slow tests:
 
 ```
 cd .. # Run from parent directory
 VERSION=$(grep Version pROC/DESCRIPTION | sed "s/.\+ //")
 R CMD build pROC
 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
+```
+
+Or from an R command prompt with devtools:
+
+```
+devtools::check()
+```
+
+### Tests
+
+To run automated tests only from an R command prompt:
+
+```
+run_slow_tests <- TRUE  # Optional, include slow tests
+devtools::test()
 ```
 
 ### vdiffr
