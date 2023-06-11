@@ -1,5 +1,5 @@
 
-#' Returns the coords as a data.frame in the right ordering for ggplot2 
+# Returns the coords as a data.frame in the right ordering for ggplot2 
 get.coords.for.ggplot <- function(roc) {
 	df <- coords(roc, "all", transpose = FALSE)
 	return(df[rev(seq(nrow(df))),])
