@@ -3,8 +3,9 @@ context("ggroc")
 
 
 test_that("Ggroc screenshot looks normal", {
+	skip_if(packageVersion("ggplot2") < 2.4)
 	test_ggplot_screenshot <- function() {
-		print(ggroc(r.s100b.percent, alpha = 0.5, colour = "red", linetype = 2, size = 2))
+		print(ggroc(r.s100b.percent, alpha = 0.5, colour = "red", linetype = 2, linewidth = 2))
 	}
 	expect_ggroc_doppelganger("ggroc.screenshot", test_ggplot_screenshot)
 })
@@ -49,8 +50,9 @@ test_that("Ggroc aesthetics can be modified with scale_colour_manual", {
 
 
 test_that("Ggroc screenshot looks normal with a single smooth.roc", {
+	skip_if(packageVersion("ggplot2") < 2.4)
 	test_ggplot_screenshot <- function() {
-		print(ggroc(smooth(r.s100b), , alpha = 0.5, colour = "red", linetype = 2, size = 2))
+		print(ggroc(smooth(r.s100b), , alpha = 0.5, colour = "red", linetype = 2, linewidth = 2))
 	}
 	expect_ggroc_doppelganger("ggroc.smooth.screenshot", test_ggplot_screenshot)
 })
