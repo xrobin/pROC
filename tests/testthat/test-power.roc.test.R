@@ -4,7 +4,6 @@ data(aSAH)
 context("power.roc.test")
 
 # define variables shared among multiple tests here
-power.roc.test_env <- environment()
 
 test_that("power.roc.test basic function", {
   res <- power.roc.test(r.s100b)
@@ -148,15 +147,15 @@ test_that("power.roc.test sig.level can take 2 ROC curves with Obuchowski varian
 test_that("power.roc.test works with partial AUC", {
   skip_slow()
   skip("Bootstrap cannot be tested yet")
-  power.roc.test_env$r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
-  power.roc.test_env$r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))
+  r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
+  r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))
   power.roc.test(r.wfns.partial, r.ndka.partial, power=0.9)
 })
 
 
 test_that("power.roc.test works with partial AUC", {
-  power.roc.test_env$r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
-  power.roc.test_env$r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))
+  r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
+  r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))
   res <- power.roc.test(r.wfns.partial, r.ndka.partial, power=0.9, method="obuchowski")
   
   expect_equal(res$ncases, 0.5061498, tolerance = 0.000001)
