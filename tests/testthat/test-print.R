@@ -7,7 +7,7 @@ test_that("print.auc works", {
 	expect_output(print(auc(r.wfns)), "^Area under the curve: 0.8237$")
 	expect_output(print(auc(r.ndka.percent)), "^Area under the curve: 61.2%$")
 	
-	expect_output(print(r.ndka.partial$auc), "^Partial area under the curve \\(specificity 1-0.9\\): 0.0107$")
+	expect_output(print(r.ndka.partial1$auc), "^Partial area under the curve \\(specificity 0\\.99-0\\.9\\): 0\\.01046$")
 	expect_output(print(r.s100b.percent.partial1$auc), "^Partial area under the curve \\(specificity 99%-90%\\): 2.983%$")
 	expect_output(print(r.s100b.partial2$auc), "^Partial area under the curve \\(sensitivity 0.99-0.9\\): 0.01376$")
 })
