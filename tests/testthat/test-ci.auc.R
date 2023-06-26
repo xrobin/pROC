@@ -44,7 +44,7 @@ test_that("ci.auc works with a direction = > and percent", {
 })
 
 
-test_that("ci.auc.auc works with a partial AUC from a roc with full AUC", {
+test_that_no_progress("ci.auc.auc works with a partial AUC from a roc with full AUC", {
 	ci.s100b <- ci.auc(r.s100b)
 	expect_equal(attr(ci.s100b, "method"), "delong")
 	pauc.s100b <- auc(r.s100b, partial.auc = c(1, .9), partial.auc.focus = "se", partial.auc.correct = TRUE)
@@ -61,7 +61,7 @@ test_that("ci.auc.auc works with a partial AUC from a roc with full AUC", {
 # Doesn't test whether the results are correct.
 for (stratified in c(TRUE, FALSE)) {
 	for (test.roc in list(r.s100b, smooth(r.s100b), auc(r.s100b), r.s100b.partial1, r.s100b.partial2$auc)) {
-		test_that("ci.auc with bootstrap works", {
+		test_that_no_progress("ci.auc with bootstrap works", {
 			n <- round(runif(1, 3, 9)) # keep boot.n small
 			test.ci <- ci.auc(test.roc, method = "bootstrap", boot.n = n, conf.level = .91, boot.stratified = stratified)
 			expect_is(test.ci, "ci.auc")

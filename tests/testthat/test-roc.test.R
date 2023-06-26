@@ -216,7 +216,7 @@ test_that("one-sided roc.test work with direction='>' and produce expected resul
 	expect_equal(m1lt$p.value, 0.986412108885406)
 })
 
-test_that("paired roc.test works with bootstrap", {
+test_that_no_progress("paired roc.test works with bootstrap", {
 	skip_slow()
 	ht <- roc.test(r.wfns, r.s100b, method = "bootstrap", boot.n = 12, paired = TRUE)
 	expect_bootstrap_htest(ht)
@@ -225,7 +225,7 @@ test_that("paired roc.test works with bootstrap", {
 	expect_equal(unname(ht$parameter), c(12, 1))
 })
 
-test_that("unpaired roc.test works with bootstrap", {
+test_that_no_progress("unpaired roc.test works with bootstrap", {
 	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE), "paired")
 	expect_bootstrap_htest(ht)
@@ -234,7 +234,7 @@ test_that("unpaired roc.test works with bootstrap", {
 	expect_equal(unname(ht$parameter), c(12, 1))
 })
 
-test_that("paired, non stratified roc.test works with bootstrap", {
+test_that_no_progress("paired, non stratified roc.test works with bootstrap", {
 	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = TRUE, boot.stratified = FALSE)
 	expect_bootstrap_htest(ht)
@@ -243,7 +243,7 @@ test_that("paired, non stratified roc.test works with bootstrap", {
 	expect_equal(unname(ht$parameter), c(12, 0))
 })
 
-test_that("unpaired, non stratified roc.test works with bootstrap", {
+test_that_no_progress("unpaired, non stratified roc.test works with bootstrap", {
 	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE, boot.stratified = FALSE), "paired")
 	expect_bootstrap_htest(ht)
@@ -252,7 +252,7 @@ test_that("unpaired, non stratified roc.test works with bootstrap", {
 	expect_equal(unname(ht$parameter), c(12, 0))
 })
 
-test_that("bootstrap roc.test works with mixed roc, auc and smooth.roc objects", {
+test_that_no_progress("bootstrap roc.test works with mixed roc, auc and smooth.roc objects", {
 	skip_slow()
 	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial2, r.s100b.partial2$auc)) {
 		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns), r.wfns.partial1, r.wfns.partial1$auc)) {
@@ -277,7 +277,7 @@ test_that("bootstrap roc.test works with mixed roc, auc and smooth.roc objects",
 	}
 })
 
-test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
+test_that_no_progress("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
 	skip_slow()
 	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial2, r.s100b.partial2$auc)) {
 		for (roc2 in list(r.wfns, auc(r.wfns), smooth(r.wfns), r.wfns.partial1, r.wfns.partial1$auc)) {
