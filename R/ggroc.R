@@ -9,33 +9,34 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
 	# Prepare the aesthetics
 	if(roc$percent) {
 		if (legacy.axes) {
-			aes_list <- list(x = ggplot2::expr(.data[["1-specificity"]]),
-							 y = ggplot2::expr(.data[["sensitivity"]]))
+			aes_list <- list(x = "1-specificity",
+							 y = "sensitivity")
 			xlims <- ggplot2::scale_x_continuous(lim=c(0, 100))		
 		}
 		else {
-			aes_list <- list(x = ggplot2::expr(.data[["specificity"]]),
-							 y = ggplot2::expr(.data[["sensitivity"]]))
+			aes_list <- list(x = "specificity",
+							 y = "sensitivity")
 			xlims <- ggplot2::scale_x_reverse(lim=c(100, 0))
 		}
 	}
 	else {
 		if (legacy.axes) {
-			aes_list <- list(x = ggplot2::expr(.data[["1-specificity"]]),
-							 y = ggplot2::expr(.data[["sensitivity"]]))
+			aes_list <- list(x = "1-specificity",
+							 y = "sensitivity")
 			xlims <- ggplot2::scale_x_continuous(lim=c(0, 1))
 		}
 		else {
-			aes_list <- list(x = ggplot2::expr(.data[["specificity"]]),
-							 y = ggplot2::expr(.data[["sensitivity"]]))
+			aes_list <- list(x = "specificity",
+							 y = "sensitivity")
 			xlims <- ggplot2::scale_x_reverse(lim=c(1, 0))
 		}
 	}
 	# Add extra aes
 	for (ae in extra_aes) {
-		aes_list[[ae]] <- ggplot2::expr(.data[["name"]])
+		aes_list[[ae]] <- "name"
 	}
-	aes <- do.call(ggplot2::aes, aes_list)
+	quoted_aes_list <- lapply(aes_list, function(x) ggplot2::expr(.data[[x]]))
+	aes <- do.call(ggplot2::aes, quoted_aes_list)
 	
 	return(list(aes=aes, xlims=xlims))
 }
