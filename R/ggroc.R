@@ -35,6 +35,7 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
 	for (ae in extra_aes) {
 		aes_list[[ae]] <- "name"
 	}
+	.data <- rlang::.data
 	quoted_aes_list <- lapply(aes_list, function(x) ggplot2::expr(.data[[x]]))
 	aes <- do.call(ggplot2::aes, quoted_aes_list)
 	
