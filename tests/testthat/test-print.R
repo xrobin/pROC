@@ -74,8 +74,8 @@ test_that("print works without the auc", {
 
 test_that("print works with the CI", {
 	skip_slow()
-	if (R.version$minor >= "6.0") {
-		RNGkind(sample.kind="Rounding")
+	if (getRversion() > "3.6.0") {
+		suppressWarnings(RNGkind(sample.kind="Rounding"))
 	}
 	set.seed(42) # For reproducible CI
 	expect_known_output(print(roc(outcome ~ ndka, aSAH, ci=TRUE)), "print_output/r.ndka.formula.ci")

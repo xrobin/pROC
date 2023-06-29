@@ -5,8 +5,8 @@ context("ci.formula")
 
 test_that("bootstrap cov works with smooth and !reuse.auc", {
 	skip_slow()
-	if (R.version$minor >= "6.0") {
-		RNGkind(sample.kind="Rounding")
+	if (getRversion() > "3.6.0") {
+		suppressWarnings(RNGkind(sample.kind="Rounding"))
 	}
 	
 	for (pair in list(
