@@ -1,3 +1,8 @@
+1.18.3 (2023-07-02):
+  * Fix warning about 'aes_string' in 'ggroc'
+  * Improvements in tests (thanks to Michael Chirico, pr #114, #115)
+  * Fix upcoming CRAN warning about numeric version comparisons
+
 1.18.2 (2023-05-13):
   * Fix CRAN submission NOTE (issue #112)
 
