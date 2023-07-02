@@ -10,6 +10,34 @@ test_that("Ggroc screenshot looks normal", {
 	expect_ggroc_doppelganger("ggroc.screenshot", test_ggplot_screenshot)
 })
 
+test_that("Ggroc works with legacy.axis and percent", {
+	skip_if(packageVersion("ggplot2") < "2.4")
+	
+	# nothing
+	test_ggplot_screenshot <- function() {
+		print(ggroc(r.s100b))
+	}
+	expect_ggroc_doppelganger("ggroc.screenshot_base", test_ggplot_screenshot)
+	
+	# percent
+	test_ggplot_screenshot <- function() {
+		print(ggroc(r.s100b.percent))
+	}
+	expect_ggroc_doppelganger("ggroc.screenshot_percent", test_ggplot_screenshot)
+	
+	# legacy.axes
+	test_ggplot_screenshot <- function() {
+		print(ggroc(r.s100b, legacy.axes=TRUE))
+	}
+	expect_ggroc_doppelganger("ggroc.screenshot_legacy", test_ggplot_screenshot)
+	
+	# percent, legacy.axes
+	test_ggplot_screenshot <- function() {
+		print(ggroc(r.s100b.percent, legacy.axes=TRUE))
+	}
+	expect_ggroc_doppelganger("ggroc.screenshot_percent_legacy", test_ggplot_screenshot)
+})
+
 test_that("Ggroc list screenshot looks normal", {
 	test_ggplot_list_screenshot <- function() {
 		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka)))

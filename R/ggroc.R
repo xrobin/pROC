@@ -2,6 +2,7 @@
 # Returns the coords as a data.frame in the right ordering for ggplot2 
 get.coords.for.ggplot <- function(roc) {
 	df <- coords(roc, "all", transpose = FALSE)
+	df[["1-specificity"]] <- ifelse(roc$percent, 100, 1) - df[["specificity"]]
 	return(df[rev(seq(nrow(df))),])
 }
 
