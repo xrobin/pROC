@@ -170,6 +170,7 @@ To run all the test cases (incl. slow ones) from the command line:
 
 ```R
 run_slow_tests <- TRUE
+devtools::test() # Must run the new tests
 testthat::snapshot_review()
 ```
 
