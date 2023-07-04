@@ -1,3 +1,6 @@
+1.18.4 (2023-07-04):
+  * Fix broken 'legacy.axes' in 'ggroc'
+
 1.18.3 (2023-07-02):
   * Fix warning about 'aes_string' in 'ggroc'
   * Improvements in tests (thanks to Michael Chirico, pr #114, #115)
