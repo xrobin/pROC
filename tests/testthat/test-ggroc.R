@@ -52,6 +52,13 @@ test_that("Ggroc list can take multiple aes", {
 	expect_ggroc_doppelganger("ggroc.list.multi.aes", test_ggplot_list_screenshot)
 })
 
+test_that("Ggroc list doesn't get merged with set colour", {
+	test_ggplot_list_screenshot <- function() {
+		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka), colour="red"))
+	}
+	expect_ggroc_doppelganger("ggroc.list.colour", test_ggplot_list_screenshot)
+})
+
 test_that("Ggroc list extra aestetics screenshot looks normal", {
 	test_ggplot_list_extra_aes_screenshot <- function() {
 		print(ggroc(list(s100b=r.s100b, wfns=r.wfns, ndka=r.ndka), aes="linetype", color="red"))

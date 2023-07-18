@@ -22,9 +22,7 @@
   \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
   }
   \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2:geom_path]{geom_line}} 
-    to map to the different ROC curves supplied. Use \dQuote{group} if
-    you want the curves to appear with the same aestetic, for instance if you are 
-    faceting instead.
+    to map to the different ROC curves supplied.
   }
   \item{legacy.axes}{a logical indicating if the specificity axis (x
     axis) must be plotted as as decreasing \dQuote{specificity}
@@ -33,7 +31,9 @@
   }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
     to set: \code{alpha}, \code{colour}, \code{linetype}, \code{linewidth} 
-    (new in ggplot2 3.4.0), \code{size} (before ggplot2 3.4.0) and \code{group}.
+    (new in ggplot2 3.4.0), and \code{size} (before ggplot2 3.4.0).
+    The \code{group} aesthetic is always active since version 1.18.5 and is
+    kept for backwards compatibility.
   }
 }
 
@@ -91,9 +91,5 @@ g5
 
 # OR faceting
 g.list + facet_grid(.~name) + theme(legend.position="none")
-# To have all the curves of the same color, use aes="group":
-g.group <- ggroc(roc.list, aes="group")
-g.group
-g.group + facet_grid(.~name)
 }
 }

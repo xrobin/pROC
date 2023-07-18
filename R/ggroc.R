@@ -6,7 +6,7 @@ get.coords.for.ggplot <- function(roc) {
 	return(df[rev(seq(nrow(df))),])
 }
 
-get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
+get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE) {
 	# Prepare the aesthetics
 	if(roc$percent) {
 		if (legacy.axes) {
@@ -35,6 +35,10 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c()) {
 	# Add extra aes
 	for (ae in extra_aes) {
 		aes_list[[ae]] <- "name"
+	}
+	# Add group
+	if (group) {
+		aes_list[["group"]] <- "name"
 	}
 	.data <- rlang::.data
 	quoted_aes_list <- lapply(aes_list, function(x) ggplot2::expr(.data[[x]]))
@@ -109,7 +113,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
     coord.dfs$name <- factor(coord.dfs$name, as.vector(names(data)))
 	
 	# Prepare the aesthetics
-	aes.ggplot <- get.aes.for.ggplot(data[[1]], legacy.axes, aes)
+	aes.ggplot <- get.aes.for.ggplot(data[[1]], legacy.axes, aes, group = TRUE)
 
 	# Do the plotting
 	ggplot2::ggplot(coord.dfs, aes.ggplot$aes) + ggplot2::geom_line(...) + aes.ggplot$xlims
