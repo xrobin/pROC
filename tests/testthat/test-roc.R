@@ -414,6 +414,31 @@ test_that("roc works with spaces in formula", {
 })
 
 
+test_that("roc works with `with` and formula", {
+	# This is the correct way to do things... with on the formula
+	formW <- with(aSAH, as.formula("outcome ~ wfns"))
+	roc(formW)
+	
+	# This must fail gracefully
+	form <- as.formula("outcome ~ wfns")
+	expect_error(roc(form), "outcome")
+	
+	# Now this can work with #111
+	with(aSAH, roc(form))
+	
+	# Wrapping functinos can mess things up...
+	wrap_roc <- function(formula) {
+		roc(formula)
+	}
+	with(aSAH, wrap_roc(form))
+	
+	wrap_roc2 <- function(formula) {
+		with(aSAH, roc(formula))
+	}
+	wrap_roc2(form)
+})
+
+
 # The code below can be used to refresh the "expected.roc" data, just in case...
 # expected.roc <- list()
 # for (marker in c("ndka", "wfns", "s100b")) {

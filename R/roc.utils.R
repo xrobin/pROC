@@ -635,13 +635,40 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
 	else {
 		temp$na.action = "na.pass"
 	}
-	# Adjust call with data from caller
-	if (data.missing) {
-		temp$data <- NULL
-	}
 	
-	# Run model.frame in the parent
-	m <- eval.parent(temp, n = 2)
+	# If data is missing we have to "find" it
+	if (data.missing) {
+		m <- tryCatch({	
+			# First try normally. This works if the formula refers to variables
+			# on the caller's environment or an attached database.
+			eval.parent(temp, n = 2)
+		},
+		error=function(cond) {
+			# If the function was called in a "with" call, the data is
+			# a few frames up. 7 and 5 look like magic numbers here...
+			# but they will change depending on the context and if the
+			# roc function was wrapped. So we start with 7 and walk down
+			# the frames until we find the data we want
+			frames <- sys.frames()
+			for (frame in frames[(length(frames)-7):1]) {
+				temp$data <- frame
+				for (n in 5:9) {
+					# n controls where the given formula will be found.
+					# Here as well, 5-9 seem to be magic numbers
+					try({
+						return(eval.parent(temp, n = n))
+					}, silent=TRUE)
+				}
+			}
+			# If we're here it means we didn't find anything.
+			# Stop with the initial message
+			stop(cond)
+		})
+	}
+	else {
+		# Run model.frame in the parent
+		m <- eval.parent(temp, n = 2)
+	}
 	
 	if (!is.null(model.weights(m))) stop("weights are not supported")
 	
