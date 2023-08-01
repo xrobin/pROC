@@ -645,8 +645,12 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
 	
 	if (!is.null(model.weights(m))) stop("weights are not supported")
 	
+	# Sanity checks
+	stopifnot(length(predictors) == ncol(m) - 1)
+	stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
+	
 	return(list(response.name = names(m)[1],
 				response = model.response(m),
-				predictor.names = predictors,
-				predictors = m[predictors]))
+				predictor.names = names(m)[-1],
+				predictors = m[-1]))
 }
