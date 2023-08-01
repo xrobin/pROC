@@ -1,3 +1,8 @@
+1.18.5 (later):
+  * Fixed formula input when given as variable and combined with `with` (issue #111)
+  * Fixed formula containing variables with spaces (issue #120)
+  * Fixed broken grouping when `colour` argument was given in `ggroc` (issue #121)
+  
 1.18.4 (2023-07-04):
   * Fix broken 'legacy.axes' in 'ggroc'
 
