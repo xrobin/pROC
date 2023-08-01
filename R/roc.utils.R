@@ -254,7 +254,7 @@ roc_utils_get_progress_bar <- function(name = getOption("pROCProgress")$name, ti
   if (roc_utils_dumb_progress_bar()) {
     # If the length 1 checks are on, we need to return only
     # the progress bar name
-    return(getOption("pROCProgress")$name)
+    return(name)
   }
   # Otherwise proceed normally
   if (name == "tk") { # load tcltk if possible
