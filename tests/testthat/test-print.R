@@ -149,6 +149,7 @@ test_that("print works with a formula with data attached", {
 	x <- outcome ~ ndka
 	expect_known_output(print(roc(x)), "print_output/ndka_formula_var_attached")
 	expect_known_output(print(roc(outcome ~ ndka)), "print_output/ndka_formula_attached")
+	detach(aSAH)
 })
 
 test_that("print works with a formula with data attached with 'with'", {
