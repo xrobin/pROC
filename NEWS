@@ -1,4 +1,4 @@
-1.18.5 (later):
+1.18.5 (2023-11-01):
   * Fixed formula input when given as variable and combined with `with` (issue #111)
   * Fixed formula containing variables with spaces (issue #120)
   * Fixed broken grouping when `colour` argument was given in `ggroc` (issue #121)
