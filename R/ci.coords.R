@@ -53,6 +53,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
 											best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 											best.policy = c("stop", "omit", "random"),
 											conf.level = 0.95,
+									        one.sided = FALSE,
 											boot.n = 2000,
 											boot.stratified = TRUE,
 											progress = getOption("pROCProgress")$name,
@@ -126,6 +127,7 @@ ci.coords.roc <- function(roc,
 								  best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 								  best.policy = c("stop", "omit", "random"),
 								  conf.level = 0.95,
+						          one.sided = FALSE,
 								  boot.n = 2000,
 								  boot.stratified = TRUE,
 								  progress = getOption("pROCProgress")$name,
@@ -180,7 +182,61 @@ ci.coords.roc <- function(roc,
   	}
   }
   
+  if (! isFALSE(one.sided)) {
+  	# Adjust conf.level
+  	orig.conf.level <- conf.level
+  	conf.level <- 1 - (1 - conf.level) * 2
+  }
+  
   summarized.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  
+  if (! isFALSE(one.sided)) {
+  	conf.level <- orig.conf.level
+  	# Adjust values
+  	if (one.sided == "greater") {
+  		baseline.values <- c("threshold" = -Inf,
+  							 "specificity" = 0,
+  							 "sensitivity" = 0,
+  							 "accuracy" = 0,
+  							 "tn" = 0,
+  							 "tp" = 0,
+  							 "fn"= 0, 
+  							 "fp" = 0,
+  							 "npv" = 0,
+  							 "ppv" = 0,
+  							 "1-specificity" = 1,
+  							 "1-sensitivity" = 1,
+  							 "1-accuracy" = 1,
+  							 "1-npv" = 1,
+  							 "1-ppv" = 1)
+  		cols <- dimnames(summarized.perfs)[[3]]
+  		summarized.perfs[1,,] <- baseline.values[cols]
+
+  	}
+  	else if (one.sided == "less") {
+  		baseline.values <- c("threshold" = Inf,
+  							 "specificity" = 1,
+  							 "sensitivity" = 1,
+  							 "accuracy" = 1,
+  							 "tn" = 1,
+  							 "tp" = 1,
+  							 "fn"= 1, 
+  							 "fp" = 1,
+  							 "npv" = 1,
+  							 "ppv" = 1,
+  							 "1-specificity" = 0,
+  							 "1-sensitivity" = 0,
+  							 "1-accuracy" = 0,
+  							 "1-npv" = 0,
+  							 "1-ppv" = 0)
+  		cols <- dimnames(summarized.perfs)[[3]]
+  		summarized.perfs[1,, ] <- baseline.values[cols]
+  	}
+  	else {
+  		stop(sprintf("Invalid value for one.sided: '%s'.", one.sided))
+  	}
+  }
+  
   ci <- sapply(ret, function(x) t(summarized.perfs[,,x]), simplify = FALSE)
 
   class(ci) <- c("ci.coords", "ci", class(ci))
@@ -188,6 +244,7 @@ ci.coords.roc <- function(roc,
   attr(ci, "x") <- x
   attr(ci, "ret") <- ret
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "one.sided") <- one.sided
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "roc") <- roc
