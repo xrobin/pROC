@@ -10,3 +10,4 @@ codecov.yml
 ^revdep
 ^DEPENDENCIES*
 ^\.github$
+^COPYING$
