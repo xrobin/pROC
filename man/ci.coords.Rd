@@ -13,7 +13,6 @@
 \description{
   This function computes the confidence interval (CI) of the coordinates
   of a ROC curves with the \code{\link{coords}} function.
-  By default, the 95\% CI are computed with 2000 stratified bootstrap replicates.
 }
 
 \usage{
