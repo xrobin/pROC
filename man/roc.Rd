@@ -80,13 +80,13 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
     (ignored by \code{roc.formula}).
   }
-  \item{direction}{in which direction to make the comparison?
-    \dQuote{auto} (default): automatically define in which group the
-    median is higher and take the direction accordingly.
-    \dQuote{>}: if the predictor values for the control group are
-    higher than the values of the case group (controls > t >= cases).
-    \dQuote{<}: if the predictor values for the control group are lower
-    or equal than the values of the case group (controls < t <= cases).
+  \item{direction}{how are positive observations defined?
+    \dQuote{<}: observations are positive when they
+    are greater than or equal (\code{>=}) to the threshold.
+    \dQuote{>}: observations are positive when they are smaller than or equal 
+    (\code{<=}) to the threshold.
+    \dQuote{auto} (default): automatically detect in which group the
+    median is higher and take the direction accordingly. See details.
     You should set this explicity to \dQuote{>} or \dQuote{<} whenever
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
@@ -180,6 +180,13 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   density.cases}, which will result in a smoothed ROC curve even if
   \code{smooth=FALSE}, but are ignored if \code{response, predictor} or
   \code{controls, cases} are provided.
+  
+  Thresholds are selected as the means between any two consecutive values 
+  observed in the data. This choice is aimed to facilitate their interpretation,
+  as any data point will be unambiguously positive or negative
+  regardless of whether the comparison operator includes equality
+  or not. As a corollary, thresholds do not correspond to actual values
+  in the data.
 
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
@@ -253,28 +260,6 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
   by \code{\link{smooth}}, with or without additional elements
   \code{auc} and \code{ci} (according to the call).
-}
-
-\section{Thresholds}{
-  
-  Thresholds are selected as the means between any two consecutive values 
-  observed in the data. This choice is aimed to facilitate their interpretation,
-  as any data point will be unambiguously positive or negative
-  regardless of whether the comparison operator includes equality
-  or not.
-  
-  In rare cases it might not be possible to represent the
-  mean between two consecutive values, or one might want to use a custom 
-  threshold. In those cases, the semantic of the comparison
-  is as follows: with \code{direction = '>'},
-  observations are positive when they are smaller than or equal 
-  (\code{<=}) to the threshold.
-  With \code{direction = '<'}, observations are positive when they
-  are greater than or equal (\code{>=}) to the threshold.
-  
-  As a corollary, thresholds do not correspond to actual values
-  in the data.
-  
 }
 
 \section{Pipelines}{
