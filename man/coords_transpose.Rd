@@ -75,17 +75,21 @@ THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
 \section{Changes in 1.19}{
-\itemize{
-	\item{Deprecated \code{transpose}, \code{as.list}, \code{as.matrix} and \code{drop}.}
+\enumerate{
+	\item{Setting \code{transpose=TRUE} is deprecated and triggers a warning.}
+	\item{The  \code{as.list}, \code{as.matrix} and \code{drop} are deprecated.
+	Setting them to any value triggers a waring.}
+	\item{\code{transpose=FALSE} continues to work normally.}
 }
 }
 
 \section{Changes in future versions}{
-\itemize{
-	\item{
-	The \code{transpose} and \code{drop}, \code{as.list} and \code{as.matrix} 
-	arguments will be removed in a future version.
-	}
+\enumerate{
+	\item{Setting \code{transpose} to \code{TRUE} will stop working and result
+	in an error.}
+	\item{The \code{drop}, \code{as.list} and \code{as.matrix} arguments will 
+	be removed.}
+	\item{\code{transpose=FALSE} will keep working indefinitely.}
 }
 }
 
