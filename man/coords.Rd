@@ -51,7 +51,7 @@ as.matrix=FALSE, ...)
   \item{as.list}{DEPRECATED. If the returned object must be a list.
    Will be removed in a future version.
   }
-  \item{drop}{If \code{TRUE} the result is coerced to the lowest
+  \item{drop}{DEPRECATED. If \code{TRUE} the result is coerced to the lowest
     possible dimension, as per \link{Extract}. By default only drops
     if \code{transpose = TRUE} and either \code{ret} or \code{x} is
     of length 1.
@@ -63,12 +63,12 @@ as.matrix=FALSE, ...)
   \item{best.weights}{if \code{x="best"}, the weights to determine the
     best threshold. See details in the \sQuote{Best thresholds} section.
   }
-  \item{transpose}{whether
+  \item{transpose}{DEPRECATED. Whether
   	to return the thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
   	Since pROC 1.16 the default value is \code{FALSE}.
   	See \link{coords_transpose} for more details the change.
   }
-  \item{as.matrix}{if \code{transpose} is \code{FALSE}, whether to return
+  \item{as.matrix}{DEPRECATED. If \code{transpose} is \code{FALSE}, whether to return
     a \code{\link{matrix}} (\code{TRUE}) or a \code{\link{data.frame}}
     (\code{FALSE}, the default). A \code{data.frame} is more convenient
     and flexible to use, but incurs a slight speed penalty. Consider
@@ -217,36 +217,17 @@ as.matrix=FALSE, ...)
 } % details
 
 \value{
-  Depending on the length of \code{x} and \code{as.list} argument.
 
+  A \code{data.frame} with \code{ret} as columns and as many rows as
+  given by \code{x}.
   
-  \tabular{lll}{
-	\tab
-	length(x) == 1 or length(ret) == 1 \tab
-	length(x) > 1 or length(ret) > 1 or drop == FALSE
-	\cr
-	
-    \code{as.list=TRUE} \tab
-	a list of the length of, in the order of, and named after, \code{ret}. \tab
-	a list of the length of, and named after, \code{x}. Each element of this list is a list of the length of, in the order of, and named after, \code{ret}. \cr
-
-    \code{as.list=FALSE}  \tab
-	a numeric vector of the length of, in the order of, and named after, \code{ret} (if \code{length(x) == 1})
-	or a numeric vector of the length of, in the order of, and named after, \code{x} (if \code{length(ret) == 1}.\tab
-	a numeric matrix with one row for each \code{ret} and one column for each \code{x}\cr
-  }
-  
-  In all cases if \code{input="specificity"} or \code{input="sensitivity"}
+  In all cases where \code{input="specificity"} or \code{input="sensitivity"}
   and interpolation was required, threshold is returned as \code{NA}.
 
   Note that if giving a character as \code{x} (\dQuote{all},
-  \dQuote{local maximas} or \dQuote{best}), you cannot predict the
-  dimension of the return value unless \code{drop=FALSE}. Even
-  \dQuote{best} may return more than one value (for example if the ROC
-  curve is below the identity line, both extreme points). 
-
-  \code{coords} may also return \code{NULL} when there a partial area is
-  defined but no point of the ROC curve falls within the region.
+  \dQuote{local maximas} or \dQuote{best}), you cannot predict the dimension of
+  the return value. Even \dQuote{best} may return more than one value (for
+  example if the ROC curve is below the identity line, both extreme points). 
 }
 
 \references{
@@ -275,34 +256,34 @@ data(aSAH)
 roc.s100b <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
 # Get the coordinates of S100B threshold 0.55
-coords(roc.s100b, 0.55, transpose = FALSE)
+coords(roc.s100b, 0.55)
 
 # Get the coordinates at 50\% sensitivity
-coords(roc=roc.s100b, x=50, input="sensitivity", transpose = FALSE)
+coords(roc=roc.s100b, x=50, input="sensitivity")
 # Can be abbreviated:
-coords(roc.s100b, 50, "se", transpose = FALSE)
+coords(roc.s100b, 50, "se")
 
 # Works with smoothed ROC curves
-coords(smooth(roc.s100b), 90, "specificity", transpose = FALSE)
+coords(smooth(roc.s100b), 90, "specificity")
 
 # Get the sensitivities for all thresholds
-cc <- coords(roc.s100b, "all", ret="sensitivity", transpose = FALSE)
+cc <- coords(roc.s100b, "all", ret="sensitivity")
 print(cc$sensitivity)
 
 # Get the best threshold
-coords(roc.s100b, "best", ret="threshold", transpose = FALSE)
+coords(roc.s100b, "best", ret="threshold")
 
 # Get the best threshold according to different methods
 roc.ndka <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
-coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", 
        best.method="youden") # default
-coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", 
        best.method="closest.topleft")
 
 # and with different weights
-coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", 
        best.method="youden", best.weights=c(50, 0.2))
-coords(roc.ndka, "best", ret="threshold", transpose = FALSE, 
+coords(roc.ndka, "best", ret="threshold", 
        best.method="closest.topleft", best.weights=c(5, 0.2))
        
 # This is available with the plot.roc function too:
@@ -311,26 +292,26 @@ plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
 
 # Return more values:
 coords(roc.s100b, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
-                           "precision", "recall"), transpose = FALSE)
+                           "precision", "recall"))
 
 # Return all values
-coords(roc.s100b, "best", ret = "all", transpose = FALSE)
+coords(roc.s100b, "best", ret = "all")
                            
 # You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
 plot(specificity + sensitivity ~ threshold, 
-     coords(roc.ndka, "all", transpose = FALSE), 
+     coords(roc.ndka, "all"), 
      type = "l", log="x", 
      subset = is.finite(threshold))
 
 # Plot the Precision-Recall curve
 plot(precision ~ recall, 
-     coords(roc.ndka, "all", ret = c("recall", "precision"), transpose = FALSE),
+     coords(roc.ndka, "all", ret = c("recall", "precision")),
      type="l", ylim = c(0, 100))
 
 # Alternatively plot the curve with TPR and FPR instead of SE/SP 
 # (identical curve, only the axis change)
 plot(tpr ~ fpr, 
-     coords(roc.ndka, "all", ret = c("tpr", "fpr"), transpose = FALSE),
+     coords(roc.ndka, "all", ret = c("tpr", "fpr")),
      type="l")
 }
 

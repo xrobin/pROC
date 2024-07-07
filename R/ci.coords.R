@@ -90,10 +90,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
+    perfs <- raply(boot.n, as.matrix(stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy)), .progress=progress, .drop=FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
+    perfs <- raply(boot.n, as.matrix(nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy)), .progress=progress, .drop=FALSE)
   }
 
   if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
@@ -164,12 +164,12 @@ ci.coords.roc <- function(roc,
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
+    perfs <- raply(boot.n, as.matrix(stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy)), .progress=progress, .drop = FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
+    perfs <- raply(boot.n, as.matrix(nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy)), .progress=progress, .drop = FALSE)
   }
-
+  
   if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")
