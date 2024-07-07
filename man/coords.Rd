@@ -184,6 +184,8 @@ as.matrix=FALSE, ...)
 		\code{tnr} \tab True Negative Rate \tab tn / (tn + fp) \tab specificity \tab Yes \cr
 		\code{fnr} \tab False Negative Rate \tab fn / (tp + fn) \tab 1-sensitivity \tab Yes \cr
 		\code{fdr} \tab False Discovery Rate \tab fp / (tp + fp) \tab 1-ppv \tab No \cr
+		\code{lr_pos} \tab Positive Likelihood Ratio \tab se / (1 - sp) \tab - \tab No \cr
+		\code{lr_neg} \tab Negative Likelihood Ratio \tab (1 - se) / (sp) \tab - \tab No \cr
 		\code{youden} \tab Youden Index \tab 
 			se + r * sp
 			\tab - \tab No \cr
