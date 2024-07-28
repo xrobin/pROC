@@ -1,4 +1,5 @@
 1.18.9999
+  * 'ci.coords' can now take the same 'input' values as 'coords' (issue #90)
   * Added "lr_pos" and "lr_neg" to 'coords' (issue #102)
   * Deprecated 'transpose', 'as.list', 'as.matrix' and 'drop' in 'coords'
 
