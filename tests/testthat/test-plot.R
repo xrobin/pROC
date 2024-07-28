@@ -164,7 +164,7 @@ test_that("PR curve with CI works", {
 		set.seed(42) # For reproducible CI
 		
 		co <- coords(r.s100b, x = "all", input="recall", ret=c("recall", "precision"))
-		ci <- ci.coords(roc1, x = seq(0, 1, .1), input="recall", ret="precision")
+		ci <- ci.coords(r.s100b, x = seq(0, 1, .1), input="recall", ret="precision")
 		plot(co, type="l", ylim = c(0, 1))
 		plot(ci, type="shape")
 		plot(ci, type="bars")
