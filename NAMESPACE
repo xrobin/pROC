@@ -139,6 +139,7 @@ S3method("plot", "smooth.roc")
 S3method("plot", "ci.thresholds")
 S3method("plot", "ci.sp")
 S3method("plot", "ci.se")
+S3method("plot", "ci.coords")
 
 export(plot.roc)
 S3method("plot.roc", "roc")

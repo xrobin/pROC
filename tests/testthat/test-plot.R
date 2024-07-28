@@ -155,3 +155,21 @@ test_that("plot and lines work with formula and subset", {
 	expect_doppelganger("plot_formula", test_plot_formula)
 })
 
+
+test_that("PR curve with CI works", {
+	skip_slow()
+	skip_if(getRversion() < "4.1")
+	test_plot_pr <- function() {
+		RNGkind(sample.kind="Rejection")
+		set.seed(42) # For reproducible CI
+		
+		co <- coords(r.s100b, x = "all", input="recall", ret=c("recall", "precision"))
+		ci <- ci.coords(roc1, x = seq(0, 1, .1), input="recall", ret="precision")
+		plot(co, type="l", ylim = c(0, 1))
+		plot(ci, type="shape")
+		plot(ci, type="bars")
+		lines(co)
+	}
+	expect_doppelganger("plot_pr", test_plot_pr)
+})
+

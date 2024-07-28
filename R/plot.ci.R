@@ -70,3 +70,28 @@ plot.ci.se <- function(x, type=c("bars", "shape"), length=.01*ifelse(attr(x, "ro
   }
   invisible(x)
 }
+
+plot.ci.coords <- function(x, type=c("bars", "shape"), input=NULL, length=NULL, col=ifelse(type=="bars", par("fg"), "gainsboro"), ...) {
+	type <- match.arg(type)
+	if (length(x) > 1) {
+		warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))
+	}
+	if (is.null(length)) {
+		x_range <- range(attr(x, "x"))
+		length <- (x_range[2] - x_range[1]) / length(attr(x, "x")) / 5
+	}
+	if (type == "bars") {
+		x_val <- attr(x, "x")
+		suppressWarnings(segments(x_val, x[[1]][,1], x_val, x[[1]][,3], col=col, ...))
+		suppressWarnings(segments(x_val - length, x[[1]][,1], x_val + length, x[[1]][,1], col=col, ...))
+		suppressWarnings(segments(x_val - length, x[[1]][,3], x_val + length, x[[1]][,3], col=col, ...))
+	}
+	else {
+		if (length(x[[1]][,1]) < 15)
+			warning("Low definition shape.")
+		suppressWarnings(polygon(c(attr(x, "x"), rev(attr(x, "x"))), c(x[[1]][,1], rev(x[[1]][,3])), col=col, ...))
+	}
+	invisible(x)
+}
+
+
