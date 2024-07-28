@@ -18,7 +18,7 @@
 \usage{
 # ci.coords(...)
 \S3method{ci.coords}{roc}(roc, x,
-input=c("threshold", "specificity", "sensitivity"),
+input="threshold",
 ret=c("threshold", "specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("stop", "omit", "random"),

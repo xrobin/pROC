@@ -4,6 +4,7 @@
 \alias{plot.ci.thresholds}
 \alias{plot.ci.se}
 \alias{plot.ci.sp}
+\alias{plot.ci.coords}
 
 \title{
   Plot confidence intervals
@@ -21,9 +22,8 @@
 \S3method{plot}{ci.se}(x, type=c("bars", "shape"), length=.01*ifelse(attr(x,
 "roc")$percent, 100, 1), col=ifelse(type=="bars", par("fg"),
 "gainsboro"), no.roc=FALSE, ...)
-\S3method{plot}{ci.coords}(x, type=c("bars", "shape"), length=.01*ifelse(attr(x,
-"roc")$percent, 100, 1), col=ifelse(type=="bars", par("fg"),
-"gainsboro"), no.roc=FALSE, ...)
+\S3method{plot}{ci.coords}(x, type=c("bars", "shape"), length=NULL,
+col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
 }
 		   
 \arguments{

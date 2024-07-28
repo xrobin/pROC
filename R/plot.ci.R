@@ -71,7 +71,7 @@ plot.ci.se <- function(x, type=c("bars", "shape"), length=.01*ifelse(attr(x, "ro
   invisible(x)
 }
 
-plot.ci.coords <- function(x, type=c("bars", "shape"), input=NULL, length=NULL, col=ifelse(type=="bars", par("fg"), "gainsboro"), ...) {
+plot.ci.coords <- function(x, type=c("bars", "shape"), length=NULL, col=ifelse(type=="bars", par("fg"), "gainsboro"), ...) {
 	type <- match.arg(type)
 	if (length(x) > 1) {
 		warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))
