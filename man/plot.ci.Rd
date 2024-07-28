@@ -110,10 +110,10 @@ plot.roc(aSAH$outcome, aSAH$s100b,
          ci=TRUE, of="thresholds")
 
 # CI of a PR curve
-co <- coords(roc1, x = "all", input="recall", ret=c("recall", "precision"))
-ci <- ci.coords(roc1, x = seq(0, 1, .1), input="recall", ret="precision")
+co <- coords(rocobj, x = "all", input="recall", ret=c("recall", "precision"))
+ci <- ci.coords(rocobj, x = seq(0, 1, .1), input="recall", ret="precision")
 plot(co, type="l", ylim = c(0, 1))
-#plot(ci, type="shape")
+plot(ci, type="shape")
 plot(ci, type="bars")
 lines(co)
 }
