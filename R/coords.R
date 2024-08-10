@@ -73,10 +73,28 @@ coords.smooth.roc <- function(smooth.roc,
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
           se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
           sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+          partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
+          if (! partial.auc.limits[1] %in% se) {
+          	se <- c(partial.auc.limits[1], se)
+          	sp <- c(coords(smooth.roc, x=partial.auc.limits[1], input="sensitivity", ret="specificity")[1, 1], sp)
+          }
+          if (! partial.auc.limits[2] %in% se) {
+          	se <- c(se, partial.auc.limits[2])
+          	sp <- c(sp, coords(smooth.roc, x=partial.auc.limits[2], input="sensitivity", ret="specificity")[1, 1])
+          }
         }
         else {
           se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
           sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+          partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
+          if (! partial.auc.limits[1] %in% sp) {
+          	se <- c(se, coords(smooth.roc, x=partial.auc.limits[1], input="specificity", ret="sensitivity")[1, 1])
+          	sp <- c(sp, partial.auc.limits[1])
+          }
+          if (! partial.auc.limits[2] %in% sp) {
+          	se <- c(coords(smooth.roc, x=partial.auc.limits[2], input="specificity", ret="sensitivity")[1, 1], se)
+          	sp <- c(partial.auc.limits[2], sp)
+          }
         }
       }
       if (length(se) == 0) {
@@ -234,11 +252,33 @@ coords.roc <- function(roc,
           se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
+          partial.auc.limits <- attr(roc$auc, "partial.auc")
+          if (! partial.auc.limits[1] %in% se) {
+          	se <- c(partial.auc.limits[1], se)
+          	sp <- c(coords(roc, x=partial.auc.limits[1], input="sensitivity", ret="specificity")[1, 1], sp)
+          	thres <- c(NA, thres)
+          }
+          if (! partial.auc.limits[2] %in% se) {
+          	se <- c(se, partial.auc.limits[2])
+          	sp <- c(sp, coords(roc, x=partial.auc.limits[2], input="sensitivity", ret="specificity")[1, 1])
+          	thres <- c(thres, NA)
+          }
         }
         else {
           se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
+          partial.auc.limits <- attr(roc$auc, "partial.auc")
+          if (! partial.auc.limits[1] %in% sp) {
+          	se <- c(se, coords(roc, x=partial.auc.limits[1], input="specificity", ret="sensitivity")[1, 1])
+          	sp <- c(sp, partial.auc.limits[1])
+          	thres <- c(thres, NA)
+          }
+          if (! partial.auc.limits[2] %in% sp) {
+          	se <- c(coords(roc, x=partial.auc.limits[2], input="specificity", ret="sensitivity")[1, 1], se)
+          	sp <- c(partial.auc.limits[2], sp)
+          	thres <- c(NA, thres)
+          }
         }
       }
       if (length(thres) == 0) {

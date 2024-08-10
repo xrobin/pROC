@@ -508,14 +508,16 @@ test_that("coords with x = 'best' takes partial AUC into account with smooth.roc
 
 test_that("coords with x = 'all' takes partial AUC into account", {
 	# with sp
-	obtained <- coords(r.s100b.partial1, "all", ret="t")
-	expect_equal(dim(obtained), c(7, 1))
-	expect_equal(min(obtained), 0.435)
+	obtained <- coords(r.s100b.partial1, "all", ret=c("t", "se", "sp"))
+	expect_equal(dim(obtained), c(9, 3))
+	expect_equivalent(obtained[1,], c(NA, 0.3902439, 0.9))
+	expect_equivalent(obtained[9,], c(NA, 0.292682926, 0.99))
 	
 	# with se
-	obtained <- coords(r.s100b.partial2, "all", ret="t")
-	expect_equal(dim(obtained), c(5, 1))
-	expect_equal(max(obtained), 0.075)
+	obtained <- coords(r.s100b.partial2, "all", ret=c("t", "se", "sp"))
+	expect_equal(dim(obtained), c(7, 3))
+	expect_equivalent(obtained[1,], c(NA, 0.99, 0.0))
+	expect_equivalent(obtained[7,], c(NA, 0.9, 0.230555555555556))
 })
 
 
@@ -523,13 +525,15 @@ test_that("coords with x = 'all' takes partial AUC into account", {
 test_that("coords with x = 'all' takes partial AUC into account with smooth.roc", {
 	# with sp
 	obtained <- coords(smooth(r.s100b.partial1), "all", ret="sp")
-	expect_equal(dim(obtained), c(139, 1))
-	expect_equal(min(obtained), 0.90060885)
+	expect_equal(dim(obtained), c(141, 1))
+	expect_equal(min(obtained), 0.9)
+	expect_equal(max(obtained), 0.99)
 	
 	# with se
 	obtained <- coords(smooth(r.s100b.partial2), "all", ret="se")
-	expect_equal(dim(obtained), c(46, 1))
-	expect_equal(min(obtained), 0.90019569)
+	expect_equal(dim(obtained), c(48, 1))
+	expect_equal(min(obtained), 0.9)
+	expect_equal(max(obtained), 0.99)
 })
 
 
