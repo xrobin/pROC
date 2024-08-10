@@ -520,6 +520,15 @@ test_that("coords with x = 'all' takes partial AUC into account", {
 	expect_equivalent(obtained[7,], c(NA, 0.9, 0.230555555555556))
 })
 
+test_that("coords with ignore.partial.auc = TRUE ignores partial AUC", {
+	# with sp
+	obtained <- coords(r.s100b.partial1, "all", ret="t", ignore.partial.auc=TRUE)
+	expect_equal(dim(obtained), c(51, 1))
+
+	# with se
+	obtained <- coords(r.s100b.partial2, "all", ret="t", ignore.partial.auc=TRUE)
+	expect_equal(dim(obtained), c(51, 1))
+})
 
 
 test_that("coords with x = 'all' takes partial AUC into account with smooth.roc", {
@@ -534,6 +543,16 @@ test_that("coords with x = 'all' takes partial AUC into account with smooth.roc"
 	expect_equal(dim(obtained), c(48, 1))
 	expect_equal(min(obtained), 0.9)
 	expect_equal(max(obtained), 0.99)
+})
+
+test_that("coords with ignore.partial.auc = TRUE ignores partial AUC of smooth.roc", {
+	# with sp
+	obtained <- coords(smooth(r.s100b.partial1), "all", ret="sp", ignore.partial.auc=TRUE)
+	expect_equal(dim(obtained), c(514, 1))
+	
+	# with se
+	obtained <- coords(smooth(r.s100b.partial2), "all", ret="se", ignore.partial.auc=TRUE)
+	expect_equal(dim(obtained), c(514, 1))
 })
 
 

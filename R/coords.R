@@ -24,6 +24,7 @@ coords.smooth.roc <- function(smooth.roc,
                               x,
                               input,
                               ret=c("specificity", "sensitivity"),
+							  ignore.partial.auc=FALSE,
                               as.list=FALSE,
                               drop=TRUE,
                               best.method=c("youden", "closest.topleft"),
@@ -65,7 +66,7 @@ coords.smooth.roc <- function(smooth.roc,
     
     if (x == "all") {
       # Pre-filter thresholds based on partial.auc
-      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
+      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- smooth.roc$sensitivities
         sp <- smooth.roc$specificities
       }
@@ -123,7 +124,7 @@ coords.smooth.roc <- function(smooth.roc,
                                          ifelse(smooth.roc$percent, 100, 1),
                                          best.weights, best.method)
       
-      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE)) {
+      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- smooth.roc$sensitivities[optim.crit==max(optim.crit)]
         sp <- smooth.roc$specificities[optim.crit==max(optim.crit)]
         optim.crit <- optim.crit[optim.crit==max(optim.crit)]
@@ -198,6 +199,7 @@ coords.roc <- function(roc,
                        x,
                        input="threshold",
                        ret=c("threshold", "specificity", "sensitivity"),
+					   ignore.partial.auc=FALSE,
                        as.list=FALSE,
                        drop=TRUE,
                        best.method=c("youden", "closest.topleft"),
@@ -242,7 +244,7 @@ coords.roc <- function(roc,
     partial.auc <- attr(roc$auc, "partial.auc")
     if (x == "all") {
       # Pre-filter thresholds based on partial.auc
-      if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
+      if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- roc$sensitivities
         sp <- roc$specificities
         thres <- roc$thresholds
@@ -293,7 +295,7 @@ coords.roc <- function(roc,
     }
     else if (x == "local maximas") {
       # Pre-filter thresholds based on partial.auc
-      if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
+      if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- roc$sensitivities
         sp <- roc$specificities
         thres <- roc$thresholds
@@ -332,7 +334,7 @@ coords.roc <- function(roc,
       								   best.weights, best.method)
 
       # Filter thresholds based on partial.auc
-      if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
+      if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
       	se <- roc$sensitivities[optim.crit==max(optim.crit)]
       	sp <- roc$specificities[optim.crit==max(optim.crit)]
         thres <- roc$thresholds[optim.crit==max(optim.crit)]

@@ -14,13 +14,13 @@
 \usage{
 coords(...)
 \S3method{coords}{roc}(roc, x, input="threshold", ret=c("threshold",
-"specificity", "sensitivity"),
+"specificity", "sensitivity"),  ignore.partial.auc=FALSE,
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
 best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
 \S3method{coords}{smooth.roc}(smooth.roc, x, input, ret=c("specificity",
-"sensitivity"), as.list=FALSE, drop=TRUE, best.method=c("youden",
-"closest.topleft"), best.weights=c(1, 0.5), transpose = FALSE,
-as.matrix=FALSE, ...)
+"sensitivity"), ignore.partial.auc=FALSE, as.list=FALSE, drop=TRUE, 
+best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), 
+transpose = FALSE, as.matrix=FALSE, ...)
 }
 		   
 \arguments{
@@ -47,6 +47,9 @@ as.matrix=FALSE, ...)
   \item{ret}{The coordinates to return. See \dQuote{Available coordinates}
   	section below. Alternatively, the single value \dQuote{all} can be used to return
     every coordinate available.
+  }
+  \item{ignore.partial.auc}{If the \code{roc} object contains a partial AUC
+    specification, it will be ignored.
   }
   \item{as.list}{DEPRECATED. If the returned object must be a list.
    Will be removed in a future version.
@@ -92,9 +95,10 @@ as.matrix=FALSE, ...)
   thresholds, only the thresholds defining local maximas (upper angles of the
   ROC curve), or only the threshold(s) corresponding to the best sum of
   sensitivity + specificity respectively. Note that \dQuote{best} can
-  return more than one threshold. If \code{x} is a character, the
-  coordinates are limited to the thresholds within the partial AUC if it
-  has been defined, and not necessarily to the whole curve.
+  return more than one threshold. If \code{x} is a character, and
+  \code{ignore.partial.auc=TRUE}, the coordinates are limited to the
+  thresholds within the partial AUC if it has been defined, and not
+  necessarily to the whole curve.
   
   For \code{input="specificity"} and \code{input="sensitivity"},
   the function checks if the specificity or sensitivity is one of the
