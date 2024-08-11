@@ -20,6 +20,14 @@
 coords <- function(...)
   UseMethod("coords")
 
+
+coords.auc <- function(auc,
+					   ...) {
+	roc <- attr(auc, "roc")
+	roc$auc <- auc
+	return(coords(roc))
+}
+
 coords.smooth.roc <- function(smooth.roc,
                               x,
                               input,

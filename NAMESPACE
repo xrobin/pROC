@@ -54,6 +54,7 @@ S3method("ci.auc", "multiclass.roc")
 S3method("ci.auc", "multiclass.auc")
 
 export(coords)
+S3method("coords", "auc")
 S3method("coords", "roc")
 S3method("coords", "smooth.roc")
 

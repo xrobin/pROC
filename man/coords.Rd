@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{coords}
 \alias{coords}
+\alias{coords.auc}
 \alias{coords.roc}
 \alias{coords.smooth.roc}
 
@@ -13,6 +14,7 @@
 }
 \usage{
 coords(...)
+\S3method{coords}{auc}{auc, ...}
 \S3method{coords}{roc}(roc, x, input="threshold", ret=c("threshold",
 "specificity", "sensitivity"),  ignore.partial.auc=FALSE,
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
@@ -26,7 +28,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
 \arguments{
   \item{roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link[=smooth.roc]{smooth}} function.
+	\code{\link[=smooth.roc]{smooth}} function, or an \dQuote{auc} object
+	from the \code{\link{auc}} function.
   }
   \item{x}{
 		the coordinates to look for. Numeric (if so, their meaning is
