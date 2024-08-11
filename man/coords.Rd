@@ -26,7 +26,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
 }
 		   
 \arguments{
-  \item{roc, smooth.roc}{a \dQuote{roc} object from the
+  \item{auc, roc, smooth.roc}{a \dQuote{roc} object from the
 	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
 	\code{\link[=smooth.roc]{smooth}} function, or an \dQuote{auc} object
 	from the \code{\link{auc}} function.
