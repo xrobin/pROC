@@ -14,7 +14,7 @@
 }
 \usage{
 coords(...)
-\S3method{coords}{auc}{auc, ...}
+\S3method{coords}{auc}(auc, ...)
 \S3method{coords}{roc}(roc, x, input="threshold", ret=c("threshold",
 "specificity", "sensitivity"),  ignore.partial.auc=FALSE,
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),

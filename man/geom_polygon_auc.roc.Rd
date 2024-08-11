@@ -12,8 +12,9 @@
   EXPERIMENTAL - Add an AUC polygon to a ggroc plot.
 }
 \usage{
-\S3method{geom_polygon_auc}{roc}(data, legacy.axes = FALSE, ...)
-\S3method{geom_polygon_auc}{smooth.roc}(data, legacy.axes = FALSE, ...)
+\S3method{geom_polygon_auc}{auc}(data, legacy.axes = FALSE, ...)
+\S3method{geom_polygon_auc}{roc}(data, ...)
+\S3method{geom_polygon_auc}{smooth.roc}(data, ...)
 }
 
 \arguments{
