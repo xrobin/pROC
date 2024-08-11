@@ -17,9 +17,9 @@ test_that("geom_polygon_auc works with percent and legacy.axes = TRUE", {
 
 test_that("geom_polygon_auc works with percent and legacy.axes = TRUE", {
 	test_geom_polygon_auc_partial_screenshot <- function() {
-		auc_sp = auc(roc.s100b, partial.auc = c(0.8, 0.9), partial.auc.focus="sp")
-		auc_se = auc(roc.s100b, partial.auc = c(0.8, 0.9), partial.auc.focus="se")
-		print(ggroc(roc.s100b) + 
+		auc_sp = auc(r.s100b, partial.auc = c(0.8, 0.9), partial.auc.focus="sp")
+		auc_se = auc(r.s100b, partial.auc = c(0.8, 0.9), partial.auc.focus="se")
+		print(ggroc(r.s100b) + 
 			  	geom_polygon_auc(auc_se) +
 			  	geom_polygon_auc(auc_sp))
 	}
