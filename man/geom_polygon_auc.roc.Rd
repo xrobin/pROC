@@ -29,6 +29,7 @@
 }
 
 \details{
+  This is highly experimental and may change in the future.
 }
 
 
