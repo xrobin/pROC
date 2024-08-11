@@ -153,6 +153,11 @@ S3method("ggroc", "roc")
 S3method("ggroc", "smooth.roc")
 S3method("ggroc", "list")
 
+export(geom_polygon_auc)
+S3method("geom_polygon_auc", "auc")
+S3method("geom_polygon_auc", "roc")
+S3method("geom_polygon_auc", "smooth.roc")
+
 #export(select)
 #export(select_)
 #importFrom("dplyr", "select")
