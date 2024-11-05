@@ -426,7 +426,7 @@ test_that("roc works with `with` and formula", {
 	# Now this can work with #111
 	with(aSAH, roc(form))
 	
-	# Wrapping functinos can mess things up...
+	# Wrapping functions can mess things up...
 	wrap_roc <- function(formula) {
 		roc(formula)
 	}
