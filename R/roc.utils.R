@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Helper functions for the ROC curves. These functions should not be called directly as they peform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
+# Helper functions for the ROC curves. These functions should not be called directly as they perform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Robust algorithm
 roc_utils_perfs_all_safe <- function(thresholds, controls, cases, direction) {
