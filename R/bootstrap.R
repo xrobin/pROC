@@ -68,14 +68,14 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
     #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
     #auc1skeleton$response <- response.roc1
     #auc2skeleton$response <- response.roc2
-    resampled.values <- laply(1:boot.n, stratified.bootstrap.test, roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton, .progress=progress, .parallel=parallel)
+    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
   else {
     auc1skeleton$levels <- roc1$levels
     auc1skeleton$direction <- roc1$direction
     auc2skeleton$levels <- roc2$levels
     auc2skeleton$direction <- roc2$direction
-    resampled.values <- laply(1:boot.n, nonstratified.bootstrap.test, roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton, .progress=progress, .parallel=parallel)
+    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
 
   # are there NA values?
@@ -142,14 +142,14 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
     #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
     #auc1skeleton$response <- response.roc1
     #auc2skeleton$response <- response.roc2
-    resampled.values <- laply(1:boot.n, stratified.bootstrap.test, roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton, .progress=progress, .parallel=parallel)
+    resampled.values <- lvpply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
   else {
     auc1skeleton$levels <- roc1$levels
     auc1skeleton$direction <- roc1$direction
     auc2skeleton$levels <- roc2$levels
     auc2skeleton$direction <- roc2$direction
-    resampled.values <- laply(1:boot.n, nonstratified.bootstrap.test, roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton, .progress=progress, .parallel=parallel)
+    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
 
   # compute the statistics

@@ -83,10 +83,10 @@ ci.thresholds.roc <- function(roc,
     progress <- roc_utils_get_progress_bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- laply(1:boot.n, stratified.ci.thresholds, roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
+    perfs <- vapply(seq_len(boot.n), stratified.ci.thresholds, FUN.VALUE=double(2L), roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
   }
   else {
-    perfs <- laply(1:boot.n, nonstratified.ci.thresholds, roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
+    perfs <- vapply(seq_len(boot.n), nonstratified.ci.thresholds, FUN.VALUE=double(2L), roc=roc, thresholds=thresholds.num, .progress=progress, .parallel=parallel)
   }
 
   if (length(thresholds.num) > 1) {
