@@ -142,7 +142,7 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
     #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
     #auc1skeleton$response <- response.roc1
     #auc2skeleton$response <- response.roc2
-    resampled.values <- lvpply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
+    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
   else {
     auc1skeleton$levels <- roc1$levels
