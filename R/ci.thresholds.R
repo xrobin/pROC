@@ -86,24 +86,12 @@ ci.thresholds.roc <- function(roc,
   bootstrap_fun <- if (boot.stratified) stratified.ci.thresholds else nonstratified.ci.thresholds
   perfs <- vapply(seq_len(boot.n), bootstrap_fun, FUN.VALUE=perfs_shape, roc=roc, thresholds=thresholds.num)
 
-  if (length(thresholds.num) > 1) {
-    if (any(is.na(perfs))) {
-      warning("NA value(s) produced during bootstrap were ignored.")
-      perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
-    }
-    # laply returns a 3d matrix, with dim 1 = bootstrap replicates, dim 2 = SE/SP and dim 3 = thresholds
-    # [,1,] = SP and [,2,] = SE
-    sp <- t(apply(perfs[,1,], 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-    se <- t(apply(perfs[,2,], 2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
-  }
-  else {
-    if (any(is.na(perfs))) {
-      warning("NaN value(s) in bootstrap ignored in confidence interval.")
-      perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))),]
-    }
-    sp <- as.matrix(t(quantile(perfs[,1], probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))))
-    se <- as.matrix(t(quantile(perfs[,2], probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2))))
-  }
+  probs <- c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)
+  # output is length(probs) x 2 x length(thresholds.num)
+  perf_quantiles <- apply(perfs, 1:2, quantile, probs=probs)
+
+  sp <- t(perf_quantiles[,1L,])
+  se <- t(perf_quantiles[,2L,])
 
   rownames(se) <- rownames(sp) <- thresholds.num
 
