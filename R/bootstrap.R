@@ -281,10 +281,10 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress,
     progress <- roc_utils_get_progress_bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    aucs <- unlist(llply(1:boot.n, .fun=stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc=roc))
   }
   else {
-    aucs <- unlist(llply(1:boot.n, .fun=nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc=roc))
   }
 
   if (sum(is.na(aucs)) > 0) {
