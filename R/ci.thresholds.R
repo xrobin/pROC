@@ -82,12 +82,9 @@ ci.thresholds.roc <- function(roc,
   if(inherits(progress, "list"))
     progress <- roc_utils_get_progress_bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
-  if (boot.stratified) {
-    perfs <- vapply(seq_len(boot.n), stratified.ci.thresholds, FUN.VALUE=double(2L), roc=roc, thresholds=thresholds.num)
-  }
-  else {
-    perfs <- vapply(seq_len(boot.n), nonstratified.ci.thresholds, FUN.VALUE=double(2L), roc=roc, thresholds=thresholds.num)
-  }
+  perfs_shape <- matrix(NA_real_, nrow=2L, ncol=length(thresholds.num))
+  bootstrap_fun <- if (boot.stratified) stratified.ci.thresholds else nonstratified.ci.thresholds
+  perfs <- vapply(seq_len(boot.n), bootstrap_fun, FUN.VALUE=perfs_shape, roc=roc, thresholds=thresholds.num)
 
   if (length(thresholds.num) > 1) {
     if (any(is.na(perfs))) {
