@@ -301,7 +301,7 @@ roc.utils.valid.coords <- c("specificity", "sensitivity", "accuracy",
 	"npv", "ppv", "fdr",
 	"fpr", "tpr", "tnr", "fnr", 
 	"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-	"precision", "recall",
+	"precision", "recall", "lr_pos", "lr_neg",
 	"youden", "closest.topleft")
 
 # Arguments which can be returned by coords
@@ -464,6 +464,8 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 		"1-ppv"=substr.percent-ppv,
 		precision=precision,
 		recall=recall,
+		"lr_pos"=(se / substr.percent) / (1 - sp / substr.percent),
+		"lr_neg"=(1 - se / substr.percent) / (sp / substr.percent),
 		youden=youden,
 		closest.topleft=closest.topleft
 	))
@@ -557,6 +559,8 @@ coord.is.monotone <- c(
 	"1-ppv"=FALSE,
 	"precision"=FALSE,
 	"recall"=TRUE,
+	"lr_pos"=FALSE,
+	"lr_neg"=FALSE,
 	"youden"=FALSE,
 	"closest.topleft"=FALSE
 )
@@ -584,6 +588,8 @@ coord.is.decreasing <- c(
 	"1-ppv"=NA,
 	"precision"=NA,
 	"recall"=TRUE,
+	"lr_pos"=NA,
+	"lr_neg"=NA,
 	"youden"=NA,
 	"closest.topleft"=NA
 )

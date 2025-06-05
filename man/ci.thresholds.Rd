@@ -13,7 +13,6 @@
 \description{
   This function computes the confidence interval (CI) of the sensitivity
   and specificity of the thresholds given in argument.
-  By default, the 95\% CI are computed with 2000 stratified bootstrap replicates.
 }
 
 \usage{
