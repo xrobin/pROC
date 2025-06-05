@@ -15,8 +15,7 @@
 
 \description{
   This function computes the confidence interval (CI) of an area under
-  the curve (AUC). By default, the 95\% CI is computed with 2000
-  stratified bootstrap replicates.
+  the curve (AUC).
 }
 
 \usage{
@@ -89,10 +88,9 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   or a formula (response~predictor) arguments, the \code{\link{roc}}
   function is called to build the ROC curve first.
 
-  The default is to use
-  \dQuote{delong} method except for comparison of partial AUC and smoothed
-  curves, where \code{bootstrap} is used. Using \dQuote{delong} for
-  partial AUC and smoothed ROCs is not supported.
+  The default is to use the \dQuote{delong} method, except for comparison of
+  partial AUC and smoothed curves, where \code{bootstrap} is used. Using
+  \dQuote{delong} for partial AUC and smoothed ROCs is not supported.
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in

@@ -1,7 +1,7 @@
 
 # Returns the coords as a data.frame in the right ordering for ggplot2 
-get.coords.for.ggplot <- function(roc) {
-	df <- coords(roc, "all", transpose = FALSE)
+get.coords.for.ggplot <- function(roc, ignore.partial.auc) {
+	df <- coords(roc, "all", transpose = FALSE, ignore.partial.auc = ignore.partial.auc)
 	df[["1-specificity"]] <- ifelse(roc$percent, 100, 1) - df[["specificity"]]
 	return(df[rev(seq(nrow(df))),])
 }
@@ -61,7 +61,7 @@ ggroc <- function(data, ...) {
 ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 	load.ggplot2()
 	# Get the roc data with coords
-	df <- get.coords.for.ggplot(data)
+	df <- get.coords.for.ggplot(data, ignore.partial.auc = TRUE)
 
 	# Prepare the aesthetics
 	aes <- get.aes.for.ggplot(data, legacy.axes)
@@ -101,7 +101,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
 	}
 	
 	# Get the coords
-	coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE)
+	coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE, ignore.partial.auc = TRUE)
 
 	# Add a "name" colummn
 	for (i in seq_along(coord.dfs)) {

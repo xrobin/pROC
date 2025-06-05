@@ -4,6 +4,7 @@
 \alias{plot.ci.thresholds}
 \alias{plot.ci.se}
 \alias{plot.ci.sp}
+\alias{plot.ci.coords}
 
 \title{
   Plot confidence intervals
@@ -21,11 +22,14 @@
 \S3method{plot}{ci.se}(x, type=c("bars", "shape"), length=.01*ifelse(attr(x,
 "roc")$percent, 100, 1), col=ifelse(type=="bars", par("fg"),
 "gainsboro"), no.roc=FALSE, ...)
+\S3method{plot}{ci.coords}(x, type=c("bars", "shape"), length=NULL,
+col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
 }
 		   
 \arguments{
   \item{x}{a confidence interval object from the functions
-    \code{\link{ci.thresholds}}, \code{\link{ci.se}} or \code{\link{ci.sp}}.
+    \code{\link{ci.thresholds}}, \code{\link{ci.se}}, \code{\link{ci.sp}} or
+    \code{\link{ci.coords}}.
   }
   \item{type}{type of plot, \dQuote{bars} or \dQuote{shape}. Can be
     shortened to \dQuote{b} or \dQuote{s}. \dQuote{shape} is only available for
@@ -104,6 +108,14 @@ plot(ci.sp.obj, type="shape", col="blue")
 # Direct syntax (response, predictor):
 plot.roc(aSAH$outcome, aSAH$s100b,
          ci=TRUE, of="thresholds")
+
+# CI of a PR curve
+co <- coords(rocobj, x = "all", input="recall", ret=c("recall", "precision"))
+ci <- ci.coords(rocobj, x = seq(0, 1, .1), input="recall", ret="precision")
+plot(co, type="l", ylim = c(0, 1))
+plot(ci, type="shape")
+plot(ci, type="bars")
+lines(co)
 }
 }
 

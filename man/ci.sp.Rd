@@ -13,7 +13,6 @@
 \description{
   This function computes the confidence interval (CI) of the specificity
   at the given sensitivity points.
-  By default, the 95\% CI are computed with 2000 stratified bootstrap replicates.
 }
 
 \usage{
