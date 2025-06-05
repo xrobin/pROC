@@ -267,16 +267,8 @@ roc_utils_get_progress_bar <- function(name = getOption("pROCProgress")$name, ti
       warning("Package tcltk required with progress='tk' but could not be loaded. Falling back to text progress bar.")
     }
   }
-  if (name == "none")
-    progress_none()
-  else if (name == "text") {
-    # Put some default values if user only passed a name
-    if (missing(style) && missing(char) && missing(width) && getOption("pROCProgress")$name != "text") {
-      style <- 3
-      char <- "="
-      width <- NA
-    }
-    progress_text(char=char, style=style, width=width)
+  if (name == "text") {
+    stop("'text' progress bar is deprecated")
   }
   else if (name == "tk" || name == "win")
     match.fun(paste("progress", name, sep = "_"))(title=title, label=label, width=width)
