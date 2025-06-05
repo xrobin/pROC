@@ -89,14 +89,16 @@ ci.coords.smooth.roc <- function(smooth.roc,
   if(inherits(progress, "list"))
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
-  if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
-  }
-  else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
+  smooth_coords_fun <- if (boot.stratified) stratified.ci.smooth.coords else nonstratified.ci.smooth.coords
+  # output: length(x) x length(ret) x boot.n
+  perfs <- replicate(boot.n, smooth_coords_fun(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy))
+  # override drop() in some length-1 edge cases (e.g. length(x)==length(ret)==1)
+  if (is.null(dim(perfs))) {
+    dim(perfs) <- c(length(x), length(ret), boot.n)
+    dimnames(perfs) <- list(NULL, ret, NULL)
   }
 
-  if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs, 3L, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")
   	}
@@ -106,8 +108,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   	}
   }
 
-  summarized.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
-  ci <- sapply(ret, function(x) t(summarized.perfs[,,x]), simplify = FALSE)
+  summarized.perfs <- apply(perfs, 1:2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  ci <- lapply(ret, function(x) t(summarized.perfs[,,x]))
+  names(ci) <- re
   
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "input") <- input
@@ -163,14 +166,16 @@ ci.coords.roc <- function(roc,
   if(inherits(progress, "list"))
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
-  if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
-  }
-  else {
-    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
+  coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
+  # output: length(x) x length(ret) x boot.n
+  perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy))
+  # override drop() in some length-1 edge cases (e.g. length(x)==length(ret)==1)
+  if (is.null(dim(perfs))) {
+    dim(perfs) <- c(length(x), length(ret), boot.n)
+    dimnames(perfs) <- list(NULL, ret, NULL)
   }
 
-  if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs, 3L, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")
   	}
@@ -180,8 +185,9 @@ ci.coords.roc <- function(roc,
   	}
   }
   
-  summarized.perfs <- apply(perfs, c(2, 3), quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
-  ci <- sapply(ret, function(x) t(summarized.perfs[,,x]), simplify = FALSE)
+  summarized.perfs <- apply(perfs, 1:2, quantile, probs=c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2), na.rm=TRUE)
+  ci <- lapply(ret, function(x) t(summarized.perfs[,,x]))
+  names(ci) <- ret
 
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "input") <- input
