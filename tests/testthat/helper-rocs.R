@@ -21,3 +21,4 @@ r.ndka.percent.partial1 <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE, quiet = 
 r.s100b.percent.partial1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE, partial.auc = c(90, 99))
 
 r.s100b.partial2 <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(.9, .99), partial.auc.focus = "se")
+r.s100b.percent.partial2 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE, partial.auc = c(90, 99), partial.auc.focus = "se")

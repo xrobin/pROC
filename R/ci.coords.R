@@ -64,8 +64,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
   if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
- 
-  input <- match.arg(input)
+	
+  input <- roc_utils_match_coords_input_args(input)
   ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
   if (is.character(x)) {
@@ -90,10 +90,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
+    perfs <- raply(boot.n, as.matrix(stratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy)), .progress=progress, .drop=FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy), .progress=progress, .drop=FALSE)
+    perfs <- raply(boot.n, as.matrix(nonstratified.ci.smooth.coords(roc, x, input, ret, best.method, best.weights,smooth.roc.call, best.policy)), .progress=progress, .drop=FALSE)
   }
 
   if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
@@ -122,7 +122,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
 
 ci.coords.roc <- function(roc,
 								  x,
-								  input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
+								  input="threshold", ret=c("threshold", "specificity", "sensitivity"),
 								  best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 								  best.policy = c("stop", "omit", "random"),
 								  conf.level = 0.95,
@@ -137,8 +137,8 @@ ci.coords.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
- 
-  input <- match.arg(input)
+	
+  input <- roc_utils_match_coords_input_args(input)
   
   if (missing(ret) && input != "threshold") {
   	# Don't show NA thresholds by default
@@ -164,12 +164,12 @@ ci.coords.roc <- function(roc,
     progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- raply(boot.n, stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
+    perfs <- raply(boot.n, as.matrix(stratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy)), .progress=progress, .drop = FALSE)
   }
   else {
-    perfs <- raply(boot.n, nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy), .progress=progress, .drop = FALSE)
+    perfs <- raply(boot.n, as.matrix(nonstratified.ci.coords(roc, x, input, ret, best.method, best.weights, best.policy)), .progress=progress, .drop = FALSE)
   }
-
+  
   if (any(which.ones <- apply(perfs, 1, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")
