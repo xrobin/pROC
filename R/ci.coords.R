@@ -64,8 +64,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
   if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
- 
-  input <- match.arg(input)
+	
+  input <- roc_utils_match_coords_input_args(input)
   ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
   if (is.character(x)) {
@@ -125,7 +125,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
 
 ci.coords.roc <- function(roc,
 								  x,
-								  input=c("threshold", "specificity", "sensitivity"), ret=c("threshold", "specificity", "sensitivity"),
+								  input="threshold", ret=c("threshold", "specificity", "sensitivity"),
 								  best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 								  best.policy = c("stop", "omit", "random"),
 								  conf.level = 0.95,
@@ -140,8 +140,8 @@ ci.coords.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
- 
-  input <- match.arg(input)
+	
+  input <- roc_utils_match_coords_input_args(input)
   
   if (missing(ret) && input != "threshold") {
   	# Don't show NA thresholds by default

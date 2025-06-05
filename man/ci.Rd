@@ -14,8 +14,6 @@
 \description{
   This function computes the confidence interval (CI) of a ROC curve. The
   \code{of} argument controls the type of CI that will be computed.
-  By default, the 95\% CI are computed with 2000 stratified bootstrap
-  replicates.
 }
 \usage{
 ci(...)

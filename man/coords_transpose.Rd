@@ -62,34 +62,39 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in colums
 }
 
 \section{Changes in 1.16}{
-\enumerate{
+\itemize{
 	\item{Change of the default \code{transpose} to \code{TRUE}.}
 }
 THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
 \section{Changes in 1.17}{
-\enumerate{
+\itemize{
 	\item{Dropped the warning if \code{transpose} is missing.}
+}
+}
+
+\section{Changes in 1.19}{
+\enumerate{
+	\item{Setting \code{transpose=TRUE} is deprecated and triggers a warning.}
+	\item{The  \code{as.list}, \code{as.matrix} and \code{drop} are deprecated.
+	Setting them to any value triggers a waring.}
+	\item{\code{transpose=FALSE} continues to work normally.}
 }
 }
 
 \section{Changes in future versions}{
 \enumerate{
-	\item{Support for  the \code{as.list} argument might be dropped in the future.
-	This is still under consideration.}
-	\item{
-	The \code{transpose} and \code{drop} arguments might be deprecated in the future, but will remain available for a few additional major versions.
-	}
+	\item{Setting \code{transpose} to \code{TRUE} will stop working and result
+	in an error.}
+	\item{The \code{drop}, \code{as.list} and \code{as.matrix} arguments will 
+	be removed.}
+	\item{\code{transpose=FALSE} will keep working indefinitely.}
 }
 }
 
 \section{Related changes in ci.coords}{
 In version 1.16, the format of the \code{\link{ci.coords}} return value was changed from a matrix-like object with mixed \code{x} and \code{ret} in rows and 3 columns, into a list-like object which should be easier to use programatically.
-}
-
-\section{Recommendations}{
-If you are writing a new script calling the \code{coords} function, set \code{transpose = FALSE} to silence the warning and benefit from the latest improvements in pROC and obtain a tidy data.
 }
 
 \section{See also}{
