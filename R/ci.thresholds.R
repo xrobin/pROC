@@ -65,7 +65,7 @@ ci.thresholds.roc <- function(roc,
     if (length(thresholds) != 1)
       stop("'thresholds' of class character must be of length 1.")
     thresholds <- match.arg(thresholds, c("all", "best", "local maximas"))
-    thresholds.num <- coords(roc, x=thresholds, input="threshold", ret="threshold", as.matrix = TRUE, transpose = FALSE, ...)[, 1]
+    thresholds.num <- coords(roc, x=thresholds, input="threshold", ret="threshold", ...)[, 1]
     attr(thresholds.num, "coords") <- thresholds
   }
   else if (is.logical(thresholds)) {
