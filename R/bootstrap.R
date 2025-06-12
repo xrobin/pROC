@@ -171,14 +171,15 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
     roc2 <- do.call("smooth.roc", c(list(roc=roc2), smoothing.args$roc2))
   }
 
+  browser()
   if (test == "sp") {
-    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
   }
   else if (test == "se") {
-    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
   }
   else {
@@ -219,13 +220,13 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
       return(c(coord1, coord2))
     }
     else {
@@ -259,13 +260,13 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
       return(c(coord1, coord2))
     }
     else {
