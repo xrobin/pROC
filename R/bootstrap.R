@@ -171,7 +171,6 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
     roc2 <- do.call("smooth.roc", c(list(roc=roc2), smoothing.args$roc2))
   }
 
-  browser()
   if (test == "sp") {
     coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
     coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
