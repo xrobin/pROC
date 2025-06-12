@@ -178,45 +178,6 @@ test_that("coords with specificity works with percent", {
 })
 
 
-
-test_that("coords with specificity works with as.list", {
-	expect_warning(obtained <- coords(r.s100b.percent, "best", ret = c("threshold", "specificity", "accuracy"), as.list = TRUE), "as.list")
-	expect_equal(obtained, list(
-		threshold = 0.205,
-		specificity = unname(expected.coords[18, "specificity"]) * 100,
-		accuracy = unname(expected.coords[18, "accuracy"]) * 100
-	))
-})
-
-test_that("coords with specificity works with as.list and drop=FALSE", {
-	expect_warning(obtained <- coords(r.s100b.percent, "best", 
-					   ret = c("threshold", "specificity", "accuracy"), 
-					   as.list = TRUE, drop = FALSE), "as.list")
-	expect_equal(obtained[[1]], list(
-		threshold = 0.205,
-		specificity = unname(expected.coords[18, "specificity"]) * 100,
-		accuracy = unname(expected.coords[18, "accuracy"]) * 100
-	))
-})
-
-
-test_that("coords with specificity works with as.list and several thresholds", {
-	expect_warning(obtained <- coords(r.s100b.percent, c(0.205, 0.51), 
-					   ret = c("threshold", "specificity", "accuracy"), 
-					   as.list = TRUE, drop = FALSE), "as.list")
-	expect_equal(obtained[[1]], list(
-		threshold = 0.205,
-		specificity = unname(expected.coords[18, "specificity"]) * 100,
-		accuracy = unname(expected.coords[18, "accuracy"]) * 100
-	))
-	expect_equal(obtained[[2]], list(
-		threshold = 0.51,
-		specificity = unname(expected.coords[40, "specificity"]) * 100,
-		accuracy = unname(expected.coords[40, "accuracy"]) * 100
-	))
-})
-
-
 test_that("drop works", {
 	suppressWarnings({
 		# First make sure we get matrices with drop = FALSE
@@ -231,23 +192,6 @@ test_that("drop works", {
 		expect_is(coords(r.s100b, c(0.51, 0.2), input = "threshold", ret = "specificity", drop = TRUE, transpose=TRUE), "numeric")
 	})
 })
-
-
-test_that("as.matrix works", {
-	suppressWarnings({
-		obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", as.matrix = TRUE)
-		expect_equivalent(obtained, as.matrix(expected.coords[c(40, 18), "sensitivity", drop = FALSE]))
-	})
-})
-
-
-test_that("as.matrix works with drop=TRUE", {
-	suppressWarnings({
-		obtained <- coords(r.s100b, c(0.51, 0.205), ret="sensitivity", as.matrix = TRUE, drop = TRUE)
-		expect_equal(obtained, expected.coords[c(40, 18), "sensitivity", drop = TRUE])
-	})
-})
-
 
 test_that("coords returns the correct basic values ", {
 	obtained <- coords(r.s100b, 0.205, 
@@ -377,15 +321,15 @@ test_that("coords works with smooth.roc", {
 		expect_equivalent(obtained, as.data.frame(t(expect[reduced.cols,])))
 		
 		# drop = TRUE
-		obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE)
+		expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE))
 		expect_equal(obtained, as.list(expect[reduced.cols,]))
 		
 		# With as.matrix
-		obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE)
+		expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE))
 		expect_equal(obtained, t(expect[reduced.cols,, drop=FALSE]))
 		
 		# With matrix and drop = TRUE
-		obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE, drop = TRUE)
+		expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE, drop = TRUE))
 		expect_equal(obtained, expect[reduced.cols,])
 		
 		# Default drop with numeric
