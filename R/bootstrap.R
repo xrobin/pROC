@@ -172,13 +172,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   }
 
   if (test == "sp") {
-    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
   }
   else if (test == "se") {
-    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
   }
   else {
@@ -219,13 +219,13 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
       return(c(coord1, coord2))
     }
     else {
@@ -259,13 +259,13 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
   }
   else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
     }
     else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"), as.matrix=TRUE, transpose=FALSE)[1]
+      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
       return(c(coord1, coord2))
     }
     else {
@@ -281,10 +281,10 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress,
     progress <- roc_utils_get_progress_bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    aucs <- unlist(llply(1:boot.n, .fun=stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc=roc))
   }
   else {
-    aucs <- unlist(llply(1:boot.n, .fun=nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc=roc))
   }
 
   if (sum(is.na(aucs)) > 0) {

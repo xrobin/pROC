@@ -100,10 +100,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
     progress <- roc_utils_get_progress_bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call))
   }
   else {
-    aucs <- unlist(llply(1:boot.n, nonstratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
+    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call))
   }
 
   if (sum(is.na(aucs)) > 0) {
