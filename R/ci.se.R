@@ -78,10 +78,10 @@ ci.se.smooth.roc <- function(smooth.roc,
     progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- ldply(1:boot.n, stratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
+    perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call))
   }
   else {
-    perfs <- ldply(1:boot.n, nonstratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call, .progress=progress, .parallel=parallel)
+    perfs <- do.call(rbind, lapply(seq_len(boot.n), nonstratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call))
   }
 
   if (any(is.na(perfs))) {
@@ -121,10 +121,10 @@ ci.se.roc <- function(roc,
     progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
-    perfs <- ldply(1:boot.n, stratified.ci.se, roc=roc, sp=specificities, .progress=progress, .parallel=parallel)
+    perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.se, roc=roc, sp=specificities))
   }
   else {
-    perfs <- ldply(1:boot.n, nonstratified.ci.se, roc=roc, sp=specificities, .progress=progress, .parallel=parallel)
+    perfs <- do.call(rbind, lapply(seq_len(boot.n), nonstratified.ci.se, roc=roc, sp=specificities))
   }
 
   if (any(is.na(perfs))) {

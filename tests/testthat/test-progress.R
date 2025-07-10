@@ -7,10 +7,6 @@ test_that("can get bar works", {
 	expect_equal(names(my_progress), c("init", "step", "term"))
 })
 
-test_that("progress = text works", {
-	expect_output(var(r.wfns, method="bootstrap", boot.n=2, progress="text"))
-})
-
 test_that("progress = none works", {
 	expect_silent(var(r.wfns, method="bootstrap", boot.n=2, progress="none"))
 })

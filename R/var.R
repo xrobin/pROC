@@ -132,19 +132,19 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, 
     auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
     if (boot.stratified) {
-      aucs <- unlist(llply(1:boot.n, stratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
+      aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call))
     }
     else {
-      aucs <- unlist(llply(1:boot.n, nonstratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call, .progress=progress, .parallel=parallel))
+      aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.smooth.auc, roc=non.smoothed.roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call))
     }
   }
   ## Non smoothed ROC curves variance
   else {
     if (boot.stratified) {
-      aucs <- unlist(llply(1:boot.n, stratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel)) # ci.auc: returns aucs just as we need for var, so re-use it!
+      aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc=roc)) # ci.auc: returns aucs just as we need for var, so re-use it!
     }
     else {
-      aucs <- unlist(llply(1:boot.n, nonstratified.ci.auc, roc=roc, .progress=progress, .parallel=parallel))
+      aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc=roc))
     }
   }
 
