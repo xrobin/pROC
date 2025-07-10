@@ -53,7 +53,7 @@ coords.smooth.roc <- function(smooth.roc,
   	warning("'drop' is deprecated and will be removed in a future version.")
   }
   
-  if (!missing(as.matrix)) {
+  if (!missing(as.matrix) && as.matrix) {
   	warning("'as.matrix' is deprecated and will be removed in a future version.")
   }
 
@@ -61,7 +61,7 @@ coords.smooth.roc <- function(smooth.roc,
 	warning("'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version.")
   }
 	
-  if (!missing(as.list)) {
+  if (!missing(as.list) && as.list) {
   	warning("'as.list' is deprecated and will be removed in a future version.")
   }
   
@@ -228,7 +228,7 @@ coords.roc <- function(roc,
 	warning("'drop' is deprecated and will be removed in a future version.")
   }
 
-  if (!missing(as.matrix)) {
+  if (!missing(as.matrix) && as.matrix) {
 	warning("'as.matrix' is deprecated and will be removed in a future version.")
   }
 
@@ -236,7 +236,7 @@ coords.roc <- function(roc,
   	warning("'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version.")
   }
 
-  if (!missing(as.list)) {
+  if (!missing(as.list) && as.list) {
 	warning("'as.list' is deprecated and will be removed in a future version.")
   }
 

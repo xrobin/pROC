@@ -176,7 +176,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   }
   \item{fit.controls, fit.cases}{with  \code{method="fitdistr"} only: 
     the result of \pkg{MASS}'s
-    \code{\link{fitdistr}} function for controls and cases, with an
+    \code{\link[MASS]{fitdistr}} function for controls and cases, with an
     additional \dQuote{densfun} item indicating the density function, if
     possible as character.
   }
