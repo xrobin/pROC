@@ -45,6 +45,7 @@ jobs:
           plugins: noop
           disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: xrobin/pROC
 
       - name: Show testthat output
         if: always()
