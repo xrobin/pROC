@@ -57,6 +57,7 @@ for (marker in c("ndka", "wfns", "s100b")) {
 				for (smooth.method in available.smooth.methods) {
 					context(sprintf("smooth(roc(...)) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
 					test_that("smoothing a ROC curve produces expected results", {
+						skip_slow()
 						skip_if(getRversion() < "4.4.0")
 						if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
 							testthat::skip_if_not_installed("logcondens")
@@ -69,6 +70,7 @@ for (marker in c("ndka", "wfns", "s100b")) {
 						expect_equal(s$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
 					})
 					test_that("building curve with smooth=TRUE produces expected results", {
+						skip_slow()
 						skip_if(getRversion() < "4.4.0")
 						context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
 						if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
