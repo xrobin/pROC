@@ -82,7 +82,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
     resampled.values <- resampled.values[!apply(resampled.values, 1, function(x) any(is.na(x))),]
   }
 
-  cov <- stats::cov(resampled.values[,1], resampled.values[,2])
+  cov <- stats::cov(resampled.values[1,], resampled.values[2,])
   if (boot.return) {
     attr(cov, "resampled.values") <- resampled.values
   }
@@ -149,7 +149,7 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   }
 
   # compute the statistics
-  diffs <- resampled.values[,1] - resampled.values[,2]
+  diffs <- resampled.values[1,] - resampled.values[2,]
 
   # are there NA values?
   if ((num.NAs <- sum(is.na(diffs))) > 0) {
