@@ -143,7 +143,7 @@ roc.default <- function(response, predictor,
                         percent=FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80))
                         na.rm=TRUE,
                         direction=c("auto", "<", ">"), # direction of the comparison. Auto: automatically define in which group the median is higher and take the good direction to have an AUC >= 0.5
-                        algorithm=6,
+                        algorithm=2,
 						quiet = FALSE,
 
                         # what computation must be done
@@ -373,62 +373,14 @@ roc.default <- function(response, predictor,
       density.cases <- density
   }
   
-  # Choose algorithm
-  if (isTRUE(algorithm == 6)) {
-    if (is.numeric(predictor)) {
-      algorithm <- 2
-    }
-    else {
-      algorithm <- 3
-    }
-  }
-  else if (isTRUE(algorithm == 0)) {
-  	load.suggested.package("microbenchmark")
-    cat("Starting benchmark of algorithms 2 and 3, 10 iterations...\n")
-    thresholds <- roc_utils_thresholds(c(controls, cases), direction)
-    benchmark <- microbenchmark::microbenchmark(
-#      "1" = roc_utils_perfs_all_safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      "2" = roc_utils_perfs_all_fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      "3" = rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction),
-      times = 10
-    )
-    print(summary(benchmark))
-    if (any(is.na(benchmark))) {
-      warning("Microbenchmark returned NA. Using default algorithm 1.")
-      algorithm <- 2
-    }
-    algorithm <- as.integer(names(which.min(tapply(benchmark$time, benchmark$expr, sum))))
-    cat(sprintf("Selecting algorithm %s.\n", algorithm))
-  }
-  else if (isTRUE(algorithm == 5)) {
-    thresholds <- length(roc_utils_thresholds(c(controls, cases), direction))
-    if (thresholds > 55) { # critical number determined in inst/extra/algorithms.speed.test.R
-      algorithm <- 2
-    } else {
-      algorithm <- 3
-    }
-  }
-  
-  if (isTRUE(algorithm == 2)) {
-    fun.sesp <- roc_utils_perfs_all_fast
-  }
-  else if (isTRUE(algorithm  == 3)) {
-    fun.sesp <- rocUtilsPerfsAllC
-  }
-  else if (isTRUE(algorithm ==  1)) {
-    fun.sesp <- roc_utils_perfs_all_safe
-  }
-  else if (isTRUE(algorithm == 4)) {
-    fun.sesp <- roc_utils_perfs_all_test
-  }
-  else {
-    stop("Unknown algorithm (must be 0, 1, 2, 3, 4 or 5).")
+  # Only support algorithm
+  if (algorithm != 2) {
+  	warning("Ignoring algorithm=%s argument: since pROC 1.19, only algorithm 2 is available.")
   }
 
   roc <- roc_cc_nochecks(controls, cases,
              percent=percent,
              direction=direction,
-             fun.sesp=fun.sesp,
              smooth = smooth, density.cases = density.cases,  density.controls = density.controls, smooth.method = smooth.method, smooth.n = smooth.n,
              auc, ...)
   
@@ -475,7 +427,7 @@ roc_rp_nochecks <- function(response, predictor, levels, ...) {
 }
 
 # Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
-roc_cc_nochecks <- function(controls, cases, percent, direction, fun.sesp, smooth, smooth.method, smooth.n, auc, ...) {
+roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.method, smooth.n, auc, ...) {
   # create the roc object
   roc <- list()
   class(roc) <- "roc"
@@ -483,7 +435,7 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
 
   # compute SE / SP
   thresholds <- roc_utils_thresholds(c(controls, cases), direction)
-  perfs <- fun.sesp(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
+  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
 
   se <- perfs$se
   sp <- perfs$sp
@@ -501,8 +453,7 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, fun.sesp, smoot
   roc$direction <- direction
   roc$cases <- cases
   roc$controls <- controls
-  roc$fun.sesp <- fun.sesp
-  
+
   if (smooth) {
     roc <- smooth.roc(roc, method=smooth.method, n=smooth.n, ...)
   }

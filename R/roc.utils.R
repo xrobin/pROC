@@ -19,29 +19,8 @@
 
 # Helper functions for the ROC curves. These functions should not be called directly as they perform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
-# returns a list of sensitivities (se) and specificities (sp) for the given data. Robust algorithm
-roc_utils_perfs_all_safe <- function(thresholds, controls, cases, direction) {
-  perf.matrix <- sapply(thresholds, roc_utils_perfs, controls=controls, cases=cases, direction=direction)
-  #stopifnot(identical(roc_utils_perfs_all_fast(thresholds, controls, cases, direction), list(se=perf.matrix[2,], sp=perf.matrix[1,])))
-  return(list(se=perf.matrix[2,], sp=perf.matrix[1,]))
-}
-
-
-roc_utils_perfs_all_test <- function(thresholds, controls, cases, direction) {
-	perfs.safe <- roc_utils_perfs_all_safe(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-	perfs.fast <- roc_utils_perfs_all_fast(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-	perfs.C <- rocUtilsPerfsAllC(thresholds=thresholds, controls=controls, cases=cases, direction=direction)
-	if (! (identical(perfs.safe, perfs.fast) && identical(perfs.safe, perfs.C))) {
-		sessionInfo <- sessionInfo()
-		save(thresholds, controls, cases, direction, sessionInfo, file="pROC_bug.RData")
-		stop(sprintf("pROC: algorithms returned different values. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", utils::packageDescription("pROC")$BugReports))
-	}
-	return(perfs.safe)
-}
-
-
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
-roc_utils_perfs_all_fast <- function(thresholds, controls, cases, direction) {
+roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   ncontrols <- length(controls)
   ncases <- length(cases)
   predictor <- c(controls, cases)
@@ -75,12 +54,6 @@ roc_utils_perfs_all_fast <- function(thresholds, controls, cases, direction) {
   }
   return(list(se=se, sp=sp))
 }
-
-# As roc_utils_perfs.all but returns an "old-style" matrix (pre-fast-algo-compatible)
-#roc_utils_perfs.all.matrix <- function(...) {
-#  perfs <- roc_utils_perfs.all(...)
-#  return(matrix(c(perfs$sp, perfs$se), nrow=2, byrow=TRUE))
-#}
 
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
 # sp <- roc_utils_perfs(...)[1,]

@@ -6,115 +6,84 @@ level.values <- list(
 	reversed = c("Poor", "Good")
 )
 
-expected.algorithm <- list()
-expected.algorithm[["wfns"]] <- list(
-	pROC:::roc_utils_perfs_all_safe,
-	pROC:::roc_utils_perfs_all_fast,
-	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc_utils_perfs_all_test,
-	pROC:::rocUtilsPerfsAllC, # 6 thresholds
-	pROC:::rocUtilsPerfsAllC # ordered
-)
-expected.algorithm[["ndka"]] <- list(
-	pROC:::roc_utils_perfs_all_safe,
-	pROC:::roc_utils_perfs_all_fast,
-	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc_utils_perfs_all_test,
-	pROC:::roc_utils_perfs_all_fast, # 110 thresholds
-	pROC:::roc_utils_perfs_all_fast # numeric
-)
-expected.algorithm[["s100b"]] <-list(
-	pROC:::roc_utils_perfs_all_safe,
-	pROC:::roc_utils_perfs_all_fast,
-	pROC:::rocUtilsPerfsAllC,
-	pROC:::roc_utils_perfs_all_test,
-	pROC:::rocUtilsPerfsAllC, # 51 thresholds
-	pROC:::roc_utils_perfs_all_fast # numeric
-)
-
 smooth.methods <- c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth")
 
 for (marker in c("ndka", "wfns", "s100b")) {
 	for (levels.direction in names(level.values)) {
 		for (percent in c(FALSE, TRUE)) {
 			for (direction in c("auto", "<", ">")) {
-				for (algorithm in 1:5) {
-					context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s and algorithm = %s", percent, marker, levels.direction, direction, algorithm))
-					expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
-					r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE)
-					
-					test_that("roc.formula produces the same results as roc.default", {
-						rf <- roc(as.formula(sprintf("outcome ~ %s", marker)), data = aSAH, levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE)
-						expect_is(rf, "roc")
-						expect_equal(as.numeric(rf$auc), as.numeric(r$auc))
-						for (item in c("percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp")) {
-							expect_identical(rf[[item]], r[[item]], label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
-						}
-						for (item in c("original.predictor", "original.response", "predictor", "response", "levels")) {
-							expect_identical(unname(rf[[item]]), unname(r[[item]]), label = sprintf("roc(outcome ~ %s, %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, algorithm, item))
-						}
-						expect_identical(rf$fun.sesp, expected.algorithm[[marker]][[algorithm]])
-					})
-					
-					test_that("roc.default works with control/cases as well", {
-						rcs <- roc(controls = r$controls, cases = r$cases, levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE)
-						expect_is(rcs, "roc")
-						expect_equal(as.numeric(rcs$auc), as.numeric(r$auc))
-						for (item in c("percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls", "fun.sesp")) {
-							expect_identical(rcs[[item]], r[[item]])
-						}
-						expect_identical(rcs$fun.sesp, expected.algorithm[[marker]][[algorithm]])
-					})
-					
-					test_that("roc.default produces the expected results", {
-						expect_is(r, "roc")
-						expect_identical(r$percent, percent)
-						expect_identical(r$fun.sesp, expected.algorithm[[marker]][[algorithm]])
-						expect_identical(r$direction, expected.direction)
-						expect_identical(r$levels, level.values[[levels.direction]])
-						
-						expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
-						expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
-						expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
-					})
-					
-					if (algorithm == 3) {
-						if (marker == "wfns") {
-							available.smooth.methods <- "binormal"
-						}
-						else {
-							available.smooth.methods <- smooth.methods
-						}
-						for (smooth.method in available.smooth.methods) {
-							context(sprintf("smooth(roc(...)) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
-							test_that("smoothing a ROC curve produces expected results", {
-								skip_if(getRversion() < "4.4.0")
-								if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
-									testthat::skip_if_not_installed("logcondens")
-								}
-								s <- smooth(r, method=smooth.method, 10)
-								expect_is(s, "smooth.roc")
-								expect_identical(s$percent, percent)
-								expect_identical(s$direction, expected.direction)
-								expect_equal(s$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
-								expect_equal(s$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
-							})
-							test_that("building curve with smooth=TRUE produces expected results", {
-								skip_if(getRversion() < "4.4.0")
-								context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
-								if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
-									testthat::skip_if_not_installed("logcondens")
-								}
-								s2 <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, algorithm = algorithm, quiet = TRUE, 
-										  smooth = TRUE, smooth.n = 10, smooth.method=smooth.method)
-								expect_is(s2, "smooth.roc")
-								expect_identical(s2$percent, percent)
-								expect_identical(s2$direction, expected.direction)
-								expect_equal(s2$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
-								expect_equal(s2$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
-							})
-						}
+				context(sprintf("'roc' function works with percent = %s, marker = %s, levels.direction = %s, direction = %s", percent, marker, levels.direction, direction))
+				expected.direction <- ifelse(direction == "auto", ifelse(levels.direction == "forward", "<", ">"), direction)
+				r <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+				
+				test_that("roc.formula produces the same results as roc.default", {
+					rf <- roc(as.formula(sprintf("outcome ~ %s", marker)), data = aSAH, levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+					expect_is(rf, "roc")
+					expect_equal(as.numeric(rf$auc), as.numeric(r$auc))
+					for (item in c("percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls")) {
+						expect_identical(rf[[item]], r[[item]], label = sprintf("roc(outcome ~ %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, item))
 					}
+					for (item in c("original.predictor", "original.response", "predictor", "response", "levels")) {
+						expect_identical(unname(rf[[item]]), unname(r[[item]]), label = sprintf("roc(outcome ~ %s, %s, %s, %s)[[\"%s\"]]", marker, levels.direction, percent, direction, item))
+					}
+				})
+				
+				test_that("roc.default works with control/cases as well", {
+					rcs <- roc(controls = r$controls, cases = r$cases, levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE)
+					expect_is(rcs, "roc")
+					expect_equal(as.numeric(rcs$auc), as.numeric(r$auc))
+					for (item in c("percent", "sensitivities", "specificities", "thresholds", "direction", "cases", "controls")) {
+						expect_identical(rcs[[item]], r[[item]])
+					}
+				})
+				
+				test_that("roc.default produces the expected results", {
+					expect_is(r, "roc")
+					expect_identical(r$percent, percent)
+					expect_identical(r$direction, expected.direction)
+					expect_identical(r$levels, level.values[[levels.direction]])
+					
+					expect_equal(r$thresholds, expected.roc[[marker]][[levels.direction]][[expected.direction]][["thresholds"]])
+					expect_equal(r$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["sensitivities"]] * ifelse(percent, 100, 1))
+					expect_equal(r$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["specificities"]] * ifelse(percent, 100, 1))
+				})
+				
+				if (marker == "wfns") {
+					available.smooth.methods <- "binormal"
+				}
+				else {
+					available.smooth.methods <- smooth.methods
+				}
+				for (smooth.method in available.smooth.methods) {
+					context(sprintf("smooth(roc(...)) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
+					test_that("smoothing a ROC curve produces expected results", {
+						skip_slow()
+						skip_if(getRversion() < "4.4.0")
+						if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
+							testthat::skip_if_not_installed("logcondens")
+						}
+						s <- smooth(r, method=smooth.method, 10)
+						expect_is(s, "smooth.roc")
+						expect_identical(s$percent, percent)
+						expect_identical(s$direction, expected.direction)
+						expect_equal(s$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
+						expect_equal(s$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
+					})
+					test_that("building curve with smooth=TRUE produces expected results", {
+						skip_slow()
+						skip_if(getRversion() < "4.4.0")
+						context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
+						if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
+							testthat::skip_if_not_installed("logcondens")
+						}
+						s2 <- roc(aSAH$outcome, aSAH[[marker]], levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE, 
+								  smooth = TRUE, smooth.n = 10, smooth.method=smooth.method)
+						expect_is(s2, "smooth.roc")
+						expect_identical(s2$percent, percent)
+						expect_identical(s2$direction, expected.direction)
+						expect_equal(s2$sensitivities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["sensitivities"]] * ifelse(percent, 100, 1))
+						expect_equal(s2$specificities, expected.roc[[marker]][[levels.direction]][[expected.direction]][["smooth"]][[smooth.method]][["specificities"]] * ifelse(percent, 100, 1))
+					})
 				}
 			}
 		}
@@ -212,20 +181,6 @@ test_that("roc.formula behaves", {
 
 test_that("roc can't take both response/predictor and case/control", {
 	expect_error(roc(aSAH$outcome, aSAH$ndka, controls = aSAH$ndka[aSAH$outcome == "Good"], cases = aSAH$ndka[aSAH$outcome == "Poor"]))
-})
-
-
-test_that("microbenchmark works", {
-	skip_if_not_installed("microbenchmark")
-	skip_on_cran()
-	skip("Not enough difference any longer, randomly selecting algorithm 2.")
-	# Algorithm 3 (C) should be selected with small low number of thresholds like aSAH$wfns
-	expect_output(r <- roc(aSAH$outcome, aSAH$wfns, algorithm = 0), "Selecting algorithm 3")
-	
-	# Algorithm 2 (R cumsum) should be selected with large datasets with many thresholds
-	# This is going to be slow, so skip unless we're running slow tests
-	skip_slow()
-	expect_output(r <- roc(round(runif(10000)), rnorm(10000), algorithm = 0), "Selecting algorithm 2")
 })
 
 test_that("roc with multiple predictors returns expected ROC curves", {

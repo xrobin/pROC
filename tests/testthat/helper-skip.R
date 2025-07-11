@@ -5,7 +5,7 @@ skip_slow <- function(message = "Slow test skipped") {
 			skip(message)
 		}
 	}
-	else if (identical(Sys.getenv("RUN_SLOW_TESTS"), "true")) {
+	else if (! identical(Sys.getenv("RUN_SLOW_TESTS"), "true")) {
 		skip(message)
 	}
 }
