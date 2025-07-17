@@ -238,7 +238,7 @@ Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
 CRAN packages \pkg{ROCR}, \pkg{verification} or Bioconductor's \pkg{roc}
 for ROC curves.
 
-CRAN packages \pkg{plyr}, \pkg{MASS} and \pkg{logcondens} employed in this package.
+CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this package.
 }
 \examples{
 data(aSAH)

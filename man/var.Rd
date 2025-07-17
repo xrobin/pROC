@@ -212,8 +212,6 @@ progress = NULL, parallel=FALSE, ...)
 
 \seealso{
  \code{\link{roc}}, \code{\link{cov.roc}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{

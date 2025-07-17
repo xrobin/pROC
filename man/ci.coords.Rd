@@ -150,8 +150,6 @@ progress = NULL, ...)
   \code{\link{roc}},
   \code{\link{coords}},
   \code{\link{ci}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{

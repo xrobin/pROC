@@ -364,8 +364,6 @@ na.rm=TRUE, method=NULL, ...)
 
 \seealso{
   \code{\link{roc}}, \code{\link{power.roc.test}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
 }
 
 \examples{

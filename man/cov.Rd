@@ -253,9 +253,7 @@ cov(...)
 }
 
 \seealso{
-  \code{\link{roc}}, \code{\link{var.roc}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
+  \code{\link{roc}}, \code{\link{var.roc}}  
 }
 
 \examples{

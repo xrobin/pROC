@@ -175,5 +175,4 @@ S3method("ci", "sp")
 S3method("ci", "thresholds")
 
 import(Rcpp, grDevices, graphics, stats)
-importFrom(plyr, laply, ldply, llply, progress_none, progress_text, raply)
 useDynLib(pROC, .registration = TRUE)
