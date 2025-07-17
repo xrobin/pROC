@@ -62,11 +62,11 @@ test_that("Advanced screenshot 2 works correctly", {
 						   ci=TRUE, # compute AUC (of AUC by default)
 						   print.auc=TRUE)) # print the AUC (will contain the CI)
 
-		ciobj <- ci.se(rocobj, progress = "none", # CI of sensitivity
+		ciobj <- ci.se(rocobj, # CI of sensitivity
 					   specificities=seq(0, 100, 5)) # over a select set of specificities
 
 		plot(ciobj, type="shape", col="#1c61b6AA") # plot as a blue shape
-		plot(ci(rocobj, of="thresholds", thresholds="best", progress="none")) # add one threshold
+		plot(ci(rocobj, of="thresholds", thresholds="best")) # add one threshold
 	}
 	expect_doppelganger("advanced.screenshot.2", test_advanced_screenshot_2)
 })
@@ -104,10 +104,10 @@ test_that("Advanced screenshot 4 works correctly", {
 						   main="Confidence intervals of specificity/sensitivity", percent=TRUE,
 						   ci=TRUE, of="se", # ci of sensitivity
 						   specificities=seq(0, 100, 5), # on a select set of specificities
-						   ci.type="shape", ci.col="#1c61b6AA", # plot the CI as a blue shape
-						   progress = "none")) # hide progress bar
+						   ci.type="shape", ci.col="#1c61b6AA" # plot the CI as a blue shape
+						   ))
 		
-		plot(ci.sp(rocobj, sensitivities=seq(0, 100, 5), progress = "none"), # ci of specificity
+		plot(ci.sp(rocobj, sensitivities=seq(0, 100, 5)), # ci of specificity
 			 type="bars") # print this one as bars
 	}
 	expect_doppelganger("advanced.screenshot.4", test_advanced_screenshot_4)
@@ -125,8 +125,8 @@ test_that("Advanced screenshot 5 works correctly", {
 				 main="Confidence interval of a threshold", percent=TRUE,
 				 ci=TRUE, of="thresholds", # compute AUC (of threshold)
 				 thresholds="best", # select the (best) threshold
-				 print.thres="best", # also highlight this threshold on the plot
-				 progress = "none")) # hide progress bar
+				 print.thres="best" # also highlight this threshold on the plot
+				 ))
 	}
 	expect_doppelganger("advanced.screenshot.5", test_advanced_screenshot_5)
 })

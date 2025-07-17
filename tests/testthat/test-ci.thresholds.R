@@ -7,10 +7,6 @@ context("ci.thresholds")
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
 
-# Silence progress bars
-options(pROCProgress = list(name = "none"))
-
-
 for (stratified in c(TRUE, FALSE)) {
 	test_that("ci.threshold accepts thresholds=best", {
 		n <- round(runif(1, 3, 9)) # keep boot.n small

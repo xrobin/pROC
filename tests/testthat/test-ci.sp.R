@@ -7,10 +7,6 @@ context("ci.sp")
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
 
-# Silence progress bars
-options(pROCProgress = list(name = "none"))
-
-
 for (stratified in c(TRUE, FALSE)) {
 	for (test.roc in list(r.s100b, smooth(r.s100b))) {
 		test_that("ci.sp with default sensitivities", {

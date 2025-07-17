@@ -100,7 +100,7 @@ test_that("print works with ci.auc", {
 	RNGkind(sample.kind="Rejection")
 
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.auc(r.ndka, method = "bootstrap", boot.n = 3, progress = "none")), "print_output/r.ndka.ci.auc")
+	expect_known_output(print(ci.auc(r.ndka, method = "bootstrap", boot.n = 3)), "print_output/r.ndka.ci.auc")
 })
 
 test_that("print works with ci.coords", {
@@ -109,7 +109,7 @@ test_that("print works with ci.coords", {
 	RNGkind(sample.kind="Rejection")
 	
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.coords(r.ndka, x = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.coords")
+	expect_known_output(print(ci.coords(r.ndka, x = c(0.5, 0.2), boot.n = 3)), "print_output/r.ndka.ci.coords")
 })
 
 test_that("print works with ci.thresholds", {
@@ -118,7 +118,7 @@ test_that("print works with ci.thresholds", {
 	RNGkind(sample.kind="Rejection")
 	
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.thresholds(r.ndka, thresholds = c(0.5, 0.2), boot.n = 3, progress = "none")), "print_output/r.ndka.ci.thresholds")
+	expect_known_output(print(ci.thresholds(r.ndka, thresholds = c(0.5, 0.2), boot.n = 3)), "print_output/r.ndka.ci.thresholds")
 })
 
 test_that("print works with ci.se", {
@@ -127,7 +127,7 @@ test_that("print works with ci.se", {
 	RNGkind(sample.kind="Rejection")
 	
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.se(r.ndka, boot.n = 3, progress = "none")), "print_output/r.ndka.ci.se")
+	expect_known_output(print(ci.se(r.ndka, boot.n = 3)), "print_output/r.ndka.ci.se")
 })
 
 test_that("print works with ci.sp", {
@@ -136,7 +136,7 @@ test_that("print works with ci.sp", {
 	RNGkind(sample.kind="Rejection")
 	
 	set.seed(42) # For reproducible CI
-	expect_known_output(print(ci.sp(r.ndka, boot.n = 3, progress = "none")), "print_output/r.ndka.ci.sp")
+	expect_known_output(print(ci.sp(r.ndka, boot.n = 3)), "print_output/r.ndka.ci.sp")
 })
 
 test_that("print works with a formula passed as variable", {

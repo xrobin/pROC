@@ -38,7 +38,7 @@ test_that("var with delong and percent works", {
 # Only test whether var runs and returns without error.
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
-test_that_no_progress("bootstrap var runs with roc, auc and smooth.roc objects", {
+test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
 	skip_slow()
 	for (roc1 in list(r.s100b, auc(r.s100b), smooth(r.s100b), r.s100b.partial1, r.s100b.partial1$auc)) {
 		n <- round(runif(1, 3, 9)) # keep boot.n small

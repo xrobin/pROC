@@ -1,7 +1,7 @@
 library(pROC)
 data(aSAH)
 
-test_that_no_progress("paired venkatraman works as expected", {
+test_that("paired venkatraman works as expected", {
 	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12)
 	expect_venkatraman_htest(ht)
@@ -14,7 +14,7 @@ test_that_no_progress("paired venkatraman works as expected", {
 	expect_known_output(print(ht), "print_output/roc.test-venkatraman.paired")
 })
 
-test_that_no_progress("unpaired venkatraman works as expected", {
+test_that("unpaired venkatraman works as expected", {
 	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, paired = FALSE), "paired")
 	expect_venkatraman_htest(ht)
@@ -27,7 +27,7 @@ test_that_no_progress("unpaired venkatraman works as expected", {
 	expect_known_output(print(ht), "print_output/roc.test-venkatraman.unpaired")
 })
 
-test_that_no_progress("non stratified venkatraman works as expected", {
+test_that("non stratified venkatraman works as expected", {
 	skip_slow()
 	ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE)
 	expect_venkatraman_htest(ht)
@@ -40,7 +40,7 @@ test_that_no_progress("non stratified venkatraman works as expected", {
 	expect_known_output(print(ht), "print_output/roc.test-venkatraman.unstratified")
 })
 
-test_that_no_progress("non stratified, unpaired venkatraman works as expected", {
+test_that("non stratified, unpaired venkatraman works as expected", {
 	skip_slow()
 	expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE, paired = FALSE), "paired")
 	expect_venkatraman_htest(ht)
