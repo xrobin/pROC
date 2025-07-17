@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.onLoad <- function(lib, pkg) {
+.onAttach <- function(lib, pkg) {
   # Remove deprecated pROCProgress option
   if (! is.null(getOption("pROCProgress")) && getOption("pROCProgress")$name != "none") {
-  	message("Progress bars are deprecated in pROC 1.19. Removing pROCProgress option.")
+    packageStartupMessage("Progress bars are deprecated in pROC 1.19. Removing pROCProgress option.")
   }
   options("pROCProgress" = NULL)
 }
