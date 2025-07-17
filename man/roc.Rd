@@ -24,7 +24,7 @@ ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 6, quiet = FALSE, 
+direction=c("auto", "<", ">"), algorithm = 2, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, ...)
 roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
@@ -91,23 +91,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
   }
-  \item{algorithm}{the method used to compute sensitivity and specificity, 
-    an integer of length 1 between \code{0} and \code{6}.
-    \code{1}: a safe, well-tested, pure-\R code that is efficient when the 
-    number of thresholds is low. It goes with O(T*N).
-    \code{2}: an alternative pure-\R algorithm that goes in
-    O(N). Typically faster than \code{1} when the number of thresholds of
-    the ROC curve is above 1000. Less tested than \code{1}.
-    \code{3}: a C++ 
-    implementation of \code{1}, about 3-5x faster. Typically the fastest with
-    ROC curves with less than 50-100 thresholds, but has a very bad worst-case
-    when that number increases.
-    \code{4} (debug only, slow):
-    runs algorithms 1 to 3 and makes sure they return the same values.
-    \code{5}: select \code{2} or \code{3} based on the number of thresholds.
-    \code{6} (default): quickly select the algorithm on the class of the data: \code{2}
-    for \code{\link{numeric}} and \code{3} for \code{\link{ordered}}.
-    \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
+  \item{algorithm}{DEPRECATED. A value other than \code{2} will produce a 
+    warning. The argument will be removed in a future version.
   }
   \item{ret}{for \code{roc.data.frame} only, whether to return the
 	threshold sensitivity and specificity at all thresholds (\dQuote{coords}),
@@ -246,8 +231,6 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     reported in percent, as defined in argument.
   }
   \item{direction}{the direction of the comparison, as defined in argument.}
-  \item{fun.sesp}{the function used to compute sensitivities and specificities.
-    Will be re-used in bootstrap operations.}
   \item{sensitivities}{the sensitivities defining the ROC curve.}
   \item{specificities}{the specificities defining the ROC curve.}
   \item{thresholds}{the thresholds at which the sensitivities and

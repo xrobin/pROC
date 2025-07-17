@@ -7,40 +7,26 @@ numacc.predictor <- c(0.960602681556147, 0.0794407386056549, 0.144842404246611,
 			   0.796401132206396, 0.427720540184519, 0.811278021288732, 0.0188323116581187, 
 			   0.653549466997938588442, 0.653549466997938477419, 0.959111701445925, 0.931816485855784, 
 			   0.663663279418747, 0.800100838413179, 0.780456095511079)
+expected.auc <- 0x1.8ef606a63bd82p-1
 # Predictor has near-ties that can break numerical comparisons
 
-test_that("AUC is consistent across algorithms with numerical near-ties", {
-	r1 <- roc(numacc.response, numacc.predictor, algorithm=1)
+test_that("AUC is consistent with numerical near-ties", {
 	r2 <- roc(numacc.response, numacc.predictor, algorithm=2)
-	r3 <- roc(numacc.response, numacc.predictor, algorithm=3)
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r2)))
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r3)))
+	expect_equal(expected.auc, as.numeric(auc(r2)))
 })
 
-test_that("AUC is consistent across algorithms with numerical near-ties and direction = >", {
-	r1 <- roc(2-numacc.response, numacc.predictor, algorithm=1)
+test_that("AUC is consistent with numerical near-ties and direction = >", {
 	r2 <- roc(2-numacc.response, numacc.predictor, algorithm=2)
-	r3 <- roc(2-numacc.response, numacc.predictor, algorithm=3)
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r2)))
-	expect_equal(as.numeric(auc(r1)), as.numeric(auc(r3)))
-})
+	expect_equal(expected.auc, as.numeric(auc(r2)))})
 
 test_that("delong theta is consistent with auc", {
-	r1 <- roc(numacc.response, numacc.predictor, algorithm=1)
 	r2 <- roc(numacc.response, numacc.predictor, algorithm=2)
-	r3 <- roc(numacc.response, numacc.predictor, algorithm=3)
-	expect_equal(pROC:::delongPlacements(r1)$theta, as.numeric(auc(r1)))
 	expect_equal(pROC:::delongPlacements(r2)$theta, as.numeric(auc(r2)))
-	expect_equal(pROC:::delongPlacements(r3)$theta, as.numeric(auc(r3)))
 })
 
 test_that("delong theta is consistent with auc and direction = >", {
-	r1 <- roc(2-numacc.response, numacc.predictor, algorithm=1)
 	r2 <- roc(2-numacc.response, numacc.predictor, algorithm=2)
-	r3 <- roc(2-numacc.response, numacc.predictor, algorithm=3)
-	expect_equal(pROC:::delongPlacements(r1)$theta, as.numeric(auc(r1)))
 	expect_equal(pROC:::delongPlacements(r2)$theta, as.numeric(auc(r2)))
-	expect_equal(pROC:::delongPlacements(r3)$theta, as.numeric(auc(r3)))
 })
 
 # Test some crazy values

@@ -28,7 +28,9 @@ valid_coords_input <- coord.is.monotone <- c(
 for (input in valid_coords_input) {
 	for (stratified in c(TRUE, FALSE)) {
 		for (test.roc in list(r.s100b, smooth(r.s100b))) {
+			context(sprintf("input: %s, stratified: %s, class: %s", input, stratified, class(test.roc)))
 			test_that("ci.coords accepts one x and one ret", {
+				skip_slow()
 				obtained <- ci.coords(test.roc, x=0.8, input = input, ret="sp", 
 									  boot.n=3, conf.level = .91, boot.stratified = stratified)
 				expect_equal(attr(obtained, "ret"), "specificity")
@@ -40,6 +42,7 @@ for (input in valid_coords_input) {
 			})
 			
 			test_that("ci.coords accepts one x and multiple ret", {
+				skip_slow()
 				obtained <- ci.coords(test.roc, x=0.8, input = input, ret=c("sp", "ppv", "tp", "1-sensitivity"), 
 									  boot.n=3, conf.level = .91, boot.stratified = stratified)
 				expect_equal(attr(obtained, "ret"), c("specificity", "ppv", "tp", "1-sensitivity"))
@@ -51,6 +54,7 @@ for (input in valid_coords_input) {
 			})
 			
 			test_that("ci.coords accepts multiple x and one ret", {
+				skip_slow()
 				obtained <- ci.coords(test.roc, x=c(0.8, 0.9), input = input, ret="sp", 
 									  boot.n=3, conf.level = .91, boot.stratified = stratified)
 				expect_equal(attr(obtained, "ret"), "specificity")
@@ -62,6 +66,7 @@ for (input in valid_coords_input) {
 			})
 			
 			test_that("ci.coords accepts multiple x and ret", {
+				skip_slow()
 				obtained <- ci.coords(test.roc, x=c(0.9, 0.8), input = input, ret=c("sp", "ppv", "tp", "1-se"), 
 									  boot.n=3, conf.level = .91, boot.stratified = stratified)
 				expect_equal(attr(obtained, "ret"), c("specificity", "ppv", "tp", "1-sensitivity"))
