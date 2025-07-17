@@ -55,7 +55,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
 											conf.level = 0.95,
 											boot.n = 2000,
 											boot.stratified = TRUE,
-											progress = getOption("pROCProgress")$name,
+											progress = NULL,
 											...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -63,6 +63,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   
   if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 	
   input <- roc_utils_match_coords_input_args(input)
@@ -85,9 +88,6 @@ ci.coords.smooth.roc <- function(smooth.roc,
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
 
   smooth_coords_fun <- if (boot.stratified) stratified.ci.smooth.coords else nonstratified.ci.smooth.coords
   # Replicate with simplify=FALSE returns a list of length boot.n
@@ -130,7 +130,7 @@ ci.coords.roc <- function(roc,
 								  conf.level = 0.95,
 								  boot.n = 2000,
 								  boot.stratified = TRUE,
-								  progress = getOption("pROCProgress")$name,
+								  progress = NULL,
                       ...
                       ) {
   if (conf.level > 1 | conf.level < 0)
@@ -138,6 +138,9 @@ ci.coords.roc <- function(roc,
   
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 	
   input <- roc_utils_match_coords_input_args(input)
@@ -162,9 +165,6 @@ ci.coords.roc <- function(roc,
   	stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="Coords confidence interval", label="Bootstrap in progress...", ...)
-
   coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
   # Replicate with simplify=FALSE returns a list of length boot.n
   perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy), simplify=FALSE)
@@ -172,7 +172,7 @@ ci.coords.roc <- function(roc,
   perfs_array <- array(unlist(perfs),
   					 dim = c(length(x), length(ret), boot.n),
   					 dimnames = list(x, ret, NULL))
-  
+
   if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
   	if (all(which.ones)) {
   		warning("All bootstrap iterations produced NA values only.")

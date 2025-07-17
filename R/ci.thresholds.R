@@ -49,7 +49,7 @@ ci.thresholds.roc <- function(roc,
                    boot.n = 2000,
                    boot.stratified = TRUE,
                    thresholds = "local maximas",
-                   progress = getOption("pROCProgress")$name,
+                   progress = NULL,
                    parallel = FALSE,
                    ...
                    ) {
@@ -58,6 +58,9 @@ ci.thresholds.roc <- function(roc,
   
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.thresholds() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # Check and prepare thresholds
@@ -78,9 +81,6 @@ ci.thresholds.roc <- function(roc,
   else {
     thresholds.num <- thresholds
   }
-
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="Thresholds confidence interval", label="Bootstrap in progress...", ...)
 
   perfs_shape <- matrix(NA_real_, nrow=2L, ncol=length(thresholds.num))
   bootstrap_fun <- if (boot.stratified) stratified.ci.thresholds else nonstratified.ci.thresholds

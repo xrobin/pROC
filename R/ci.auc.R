@@ -55,7 +55,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
                    boot.n = 2000,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
-                   progress = getOption("pROCProgress")$name,
+                   progress = NULL,
                    parallel = FALSE,
                    ...
                    ) {
@@ -64,6 +64,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
   
   if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
+  }
+
+  if ( ! is.null(progress)) {
+  	warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # We need an auc
@@ -95,9 +99,6 @@ ci.auc.smooth.roc <- function(smooth.roc,
   auc.args <- attributes(smooth.roc$auc)[grep("partial.auc", names(attributes(smooth.roc$auc)))]
   auc.args$allow.invalid.partial.auc.correct <- TRUE
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
-
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="AUC confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.smooth.auc, roc=roc, smooth.roc.call=smooth.roc.call, auc.call=auc.call))
@@ -132,7 +133,7 @@ ci.auc.roc <- function(roc,
                    boot.n = 2000,
                    boot.stratified = TRUE,
                    reuse.auc=TRUE,
-                   progress = getOption("pROCProgress")$name,
+                   progress = NULL,
                    parallel = FALSE,
                    ...
                    ) {
@@ -141,6 +142,9 @@ ci.auc.roc <- function(roc,
   
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # We need an auc
@@ -183,7 +187,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong")
     ci <- ci_auc_delong(roc, conf.level)
   else
-    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress, parallel, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, parallel, ...)
 
   if (percent) {
     ci <- ci * 100

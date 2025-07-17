@@ -43,7 +43,7 @@ var.roc <- function(roc,
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc=TRUE,
-                    progress = getOption("pROCProgress")$name,
+                    progress = NULL,
                     parallel = FALSE,
                     ...) {
   # We need an auc
@@ -52,6 +52,9 @@ var.roc <- function(roc,
   
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("var() of a ROC curve with AUC == 1 is always 0 and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # do all the computations in fraction, re-transform in percent later
@@ -107,7 +110,7 @@ var.roc <- function(roc,
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   }
   else {
-    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress, parallel, ...)
+    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, parallel, ...)
   }
   
   if (percent) {
@@ -116,10 +119,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress, parallel, ...) {
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="AUC variance", label="Bootstrap in progress...", ...)
-
+var_roc_bootstrap <- function(roc, boot.n, boot.stratified, parallel, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
     smoothing.args <- roc$smoothing.args

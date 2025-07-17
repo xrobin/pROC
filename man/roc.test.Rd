@@ -28,7 +28,7 @@
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
-ties.method="first", progress=getOption("pROCProgress")$name,
+ties.method="first", progress = NULL,
 parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
@@ -91,13 +91,8 @@ na.rm=TRUE, method=NULL, ...)
     \code{\link{rank}} specifying how ties are handled. Defaults to
     \dQuote{first} as described in the paper.
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning. The argument will be removed in a future version.}
   \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
     parallel backend provided by plyr (foreach).
   }

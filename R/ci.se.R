@@ -52,7 +52,7 @@ ci.se.smooth.roc <- function(smooth.roc,
                       conf.level = 0.95,
                       boot.n = 2000,
                       boot.stratified = TRUE,
-                      progress = getOption("pROCProgress")$name,
+                      progress = NULL,
                       parallel = FALSE,
                       ...
                       ) {
@@ -61,6 +61,9 @@ ci.se.smooth.roc <- function(smooth.roc,
   
   if (roc_utils_is_perfect_curve(smooth.roc)) {
   	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
+  }
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # Check if called with density.cases or density.controls
@@ -73,9 +76,6 @@ ci.se.smooth.roc <- function(smooth.roc,
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
 
   if (boot.stratified) {
     perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.smooth.se, roc=roc, sp=specificities, smooth.roc.call=smooth.roc.call))
@@ -106,7 +106,7 @@ ci.se.roc <- function(roc,
                       conf.level = 0.95,
                       boot.n = 2000,
                       boot.stratified = TRUE,
-                      progress = getOption("pROCProgress")$name,
+                      progress = NULL,
                       parallel = FALSE,
                       ...
                       ) {
@@ -116,9 +116,9 @@ ci.se.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
   	warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-
-  if(inherits(progress, "list"))
-    progress <- roc_utils_get_progress_bar(progress, title="SE confidence interval", label="Bootstrap in progress...", ...)
+  if ( ! is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
+  }
 
   if (boot.stratified) {
     perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.se, roc=roc, sp=specificities))

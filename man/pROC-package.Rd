@@ -147,33 +147,9 @@ aSAH \%>\%
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Progress bars}{
-	  A progressbar shows the progress of bootstrap operations. It is handled by the \pkg{plyr} package (Wickham, 2011),
-	  and is created by the \code{progress_*} family of functions.
-	  Sensible defaults are guessed during the package loading:
-	  \itemize{
-	    \item In non-\link{interactive} mode, no progressbar is displayed.
-	    \item In embedded GNU Emacs \dQuote{ESS}, a \code{\link{txtProgressBar}}
-#ifdef windows
-	    \item In Windows, a \code{\link{winProgressBar}} bar.
-#endif
-#ifdef unix 
-	    \item In Windows, a \code{winProgressBar} bar.
-#endif
-	    \item In other systems with or without a graphical display, a \code{\link{txtProgressBar}}.
-	  }
-
-	  The default can be changed with the option \dQuote{pROCProgress}. The option must be a list with
-	  a \code{name} item setting the type of progress bar (\dQuote{none}, \dQuote{win}, \dQuote{tk}
-	  or \dQuote{text}). Optional items of the list are \dQuote{width}, \dQuote{char} and \dQuote{style},
-	  corresponding to the arguments to the underlying progressbar functions.
-	  For example, to force a text progress bar:
-	  
-	  \preformatted{options(pROCProgress = list(name = "text", width = NA, char = "=", style = 3)}
-
-	  To inhibit the progress bars completely:
-	  
-	  \preformatted{options(pROCProgress = list(name = "none"))}
-    
+	  Progress bars are no longer supported in pROC 1.19. The use of the
+	  \code{progress} argument is deprecated, and any value other than \code{NULL}
+	  will produce a warning. The argument will be removed in a future version.
 	}
 }
 

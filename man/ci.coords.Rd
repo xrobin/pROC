@@ -24,7 +24,7 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress=getOption("pROCProgress")$name, ...) 
+progress = NULL, ...) 
 \S3method{ci.coords}{formula}(formula, data, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
@@ -32,7 +32,7 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress=getOption("pROCProgress")$name, ...)
+progress = NULL, ...)
 \S3method{ci.coords}{default}(response, predictor, ...)
 }
 		   
@@ -62,13 +62,8 @@ progress=getOption("pROCProgress")$name, ...)
 	of cases/controls in each replicate than in the original sample) or
 	not.
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning. The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.

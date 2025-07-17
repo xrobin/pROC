@@ -208,47 +208,6 @@ detect.env.true <- function(x) {
 	}
 }
 
-# Detect if _R_CHECK_LENGTH_1_CONDITION_  or _R_CHECK_LENGTH_1_LOGIC2_  are set
-# to "True" values, which would break some progress bars.
-# See https://cran.r-project.org/doc/manuals/r-devel/R-ints.html and #97
-# Return True or False accordingly
-roc_utils_dumb_progress_bar <- function() {
-	if (detect.env.true("_R_CHECK_LENGTH_1_CONDITION_") || detect.env.true("_R_CHECK_LENGTH_1_LOGIC2_")) {
-		return(TRUE)
-	}
-	else {
-		return(FALSE)
-	}
-}
-
-# Define which progress bar to use
-roc_utils_get_progress_bar <- function(name = getOption("pROCProgress")$name, title = "Bootstrap", label = "", width = getOption("pROCProgress")$width, char = getOption("pROCProgress")$char, style = getOption("pROCProgress")$style, ...) {
-	
-  if (roc_utils_dumb_progress_bar()) {
-    # If the length 1 checks are on, we need to return only
-    # the progress bar name
-    return(name)
-  }
-  # Otherwise proceed normally
-  if (name == "tk") { # load tcltk if possible
-    if (!requireNamespace("tcltk")) {
-      # If tcltk cannot be loaded fall back to default text progress bar
-      name <- "text"
-      style <- 3
-      char <- "="
-      width <- NA
-      warning("Package tcltk required with progress='tk' but could not be loaded. Falling back to text progress bar.")
-    }
-  }
-  if (name == "text") {
-    stop("'text' progress bar is deprecated")
-  }
-  else if (name == "tk" || name == "win")
-    match.fun(paste("progress", name, sep = "_"))(title=title, label=label, width=width)
-  else # in the special case someone made a progress_other function
-    match.fun(paste("progress", name, sep = "_"))(title=title, label=label, width=width, char=char, style=style)
-}
-
 # sort roc curve. Make sure specificities are increasing.
 sort_roc <- function(roc) {
   if (is.unsorted(roc$specificities)) {

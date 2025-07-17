@@ -19,7 +19,7 @@
 # ci.thresholds(...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
-progress=getOption("pROCProgress")$name, parallel=FALSE, ...) 
+progress = NULL, parallel=FALSE, ...) 
 \S3method{ci.thresholds}{formula}(formula, data, ...)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
@@ -49,13 +49,8 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
 	  maximas} or \dQuote{best} that will be used to determine the threshold(s) 
 	  on the supplied curve with \code{\link{coords}} (not on the resampled curves).
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning. The argument will be removed in a future version.}
   \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
     parallel backend provided by plyr (foreach).
   }

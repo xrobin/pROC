@@ -19,10 +19,10 @@
 # ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress=getOption("pROCProgress")$name, parallel=FALSE, ...) 
+progress = NULL, parallel=FALSE, ...) 
 \S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
-boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
+boot.stratified=TRUE, progress = NULL, parallel=FALSE, ...)
 \S3method{ci.sp}{formula}(formula, data, ...)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }
@@ -46,13 +46,8 @@ boot.stratified=TRUE, progress=getOption("pROCProgress")$name, parallel=FALSE, .
 	of cases/controls in each replicate than in the original sample) or
 	not.
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning.The argument will be removed in a future version.}
   \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
     parallel backend provided by plyr (foreach).
   }
