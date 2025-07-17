@@ -64,9 +64,8 @@ progress = NULL, parallel=FALSE, ...)
   }
   \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
     a warning. The argument will be removed in a future version.}
-  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
-    parallel backend provided by plyr (foreach).
-  }
+  \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
+    The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.

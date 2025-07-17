@@ -187,7 +187,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong")
     ci <- ci_auc_delong(roc, conf.level)
   else
-    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, parallel, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, ...)
 
   if (percent) {
     ci <- ci * 100

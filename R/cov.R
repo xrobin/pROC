@@ -200,7 +200,7 @@ cov.roc <- function(roc1, roc2,
     if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls))
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
     
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, parallel)
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args)
   }
 
   return(cov)

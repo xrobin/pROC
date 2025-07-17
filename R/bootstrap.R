@@ -19,7 +19,7 @@
 
 ##########  AUC of two ROC curves (roc.test, cov)  ##########
 
-bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, parallel) {
+bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args) {
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
   smoothing.args$roc1$method <- NULL
@@ -52,13 +52,13 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
   if (any(duplicated.auc1skeleton)) {
   	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, parallel, sessionInfo, file="pROC_bug.RData")
+  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file="pROC_bug.RData")
   	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
   	
   }
   if (any(duplicated.auc2skeleton)) {
   	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, parallel, sessionInfo, file="pROC_bug.RData")
+  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file="pROC_bug.RData")
   	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
   }
   if (boot.stratified) { # precompute sorted responses if stratified
@@ -90,7 +90,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
 }
 
 # Bootstrap test, used by roc.test.roc
-bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, parallel) {
+bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args) {
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
   smoothing.args$roc1$method <- NULL
@@ -123,13 +123,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
   if (any(duplicated.auc1skeleton)) {
   	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, parallel, sessionInfo, file="pROC_bug.RData")
+  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file="pROC_bug.RData")
   	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
   	
   }
   if (any(duplicated.auc2skeleton)) {
   	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, parallel, sessionInfo, file="pROC_bug.RData")
+  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file="pROC_bug.RData")
   	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
   }
 
@@ -272,7 +272,7 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
 
 ##########  AUC of one ROC curves (ci.auc, var)  ##########
 
-ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, parallel, ...) {
+ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, ...) {
 
   if (boot.stratified) {
     aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc=roc))
@@ -584,7 +584,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
   
-    perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)

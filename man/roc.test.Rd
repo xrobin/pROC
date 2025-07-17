@@ -93,9 +93,8 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
     a warning. The argument will be removed in a future version.}
-  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
-    parallel backend provided by plyr (foreach).
-  }
+  \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
+    The argument will be removed in a future version.}
   \item{conf.level}{a numeric scalar between 0 and 1 (non-inclusive) which
     species the confidence level to use for any calculated CI's.}
   \item{\dots}{further arguments passed to or from other methods,

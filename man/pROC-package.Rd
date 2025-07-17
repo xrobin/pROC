@@ -182,18 +182,10 @@ system.time(ci(rocobj, progress = "none"))
     It is of course possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
 
     \subsection{Parallel processing}{
-  		Bootstrap operations can be performed in parallel. The backend provided by the \pkg{plyr} package is used, which in turn relies on the \pkg{foreach} package.
-  
-  		To enable parallell processing, you first need to load an adaptor for the \pkg{foreach} package (\pkg{doMC}, \pkg{doMPI}, \pkg{doParallel}, \pkg{doRedis}, \pkg{doRNG} or \pkg{doSNOW})), register the backend, and set \code{parallel=TRUE}. 
-  
-  		\preformatted{
-library(doParallel)
-registerDoParallel(cl <- makeCluster(getOption("mc.cores", 2)))
-ci(rocobj, method="bootstrap", parallel=TRUE)
-stopCluster(cl)
-  		}
-    
-    Progress bars are not available when parallel processing is enabled.
+	    Parallel processing is no longer supported in pROC 1.19. The use of the
+	    \code{parallel} argument is deprecated, and any value other than
+	    \code{FALSE} will produce a warning. The argument will be removed in a
+	    future version.
   	}
   }
   
@@ -203,7 +195,6 @@ stopCluster(cl)
         \preformatted{
 rocobj <- roc(response, round(predictor), algorithm=3)
 system.time(ci(rocobj, method="delong"))
-system.time(ci(rocobj, method="bootstrap", parallel = TRUE))
     }
   }
 }
@@ -332,15 +323,6 @@ plot(roc2, add=TRUE)
 \dontrun{
 # CI of thresholds
 plot(ci.thresholds(roc2))}
-
-# In parallel
-if (require(doParallel)) {
-    registerDoParallel(cl <- makeCluster(getOption("mc.cores", 2L)))
-    \dontrun{ci(roc2, method="bootstrap", parallel=TRUE)}
-    \dontshow{ci(roc2, method="bootstrap", parallel=TRUE, boot.n=20)}
-    stopCluster(cl)
-}
-
 
 ## Comparisons ##
 

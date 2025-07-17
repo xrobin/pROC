@@ -353,11 +353,11 @@ roc.test.roc <- function(roc1, roc2,
 	}
 	else if (method == "venkatraman") {
 		if (paired) {
-			stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method, parallel)
+			stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method)
 			htest$method <- "Venkatraman's test for two paired ROC curves"
 		}
 		else {
-			stats <- venkatraman.unpaired.test(roc1, roc2, boot.n, ties.method, parallel)
+			stats <- venkatraman.unpaired.test(roc1, roc2, boot.n, ties.method)
 			htest$method <- "Venkatraman's test for two unpaired ROC curves"
 		}
 		stat <- stats[[1]]
@@ -380,7 +380,7 @@ roc.test.roc <- function(roc1, roc2,
 			if (! is.numeric(specificity) || length(specificity) != 1) {
 				stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")
 			}
-			stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args, parallel)
+			stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args)
 			if (paired)
 				htest$method <- "Specificity test for two correlated ROC curves"
 			else
@@ -392,7 +392,7 @@ roc.test.roc <- function(roc1, roc2,
 			if (! is.numeric(sensitivity) || length(sensitivity) != 1) {
 				stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
 			}
-			stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args, parallel)
+			stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args)
 			if (paired)
 				htest$method <- "Sensitivity test for two correlated ROC curves"
 			else
@@ -402,7 +402,7 @@ roc.test.roc <- function(roc1, roc2,
 											   sensitivity)
 		}
 		else {
-			stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args, parallel)
+			stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args)
 			if (paired)
 				htest$method <- "Bootstrap test for two correlated ROC curves"
 			else

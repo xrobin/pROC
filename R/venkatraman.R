@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first", parallel) {
+venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first") {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
@@ -29,7 +29,7 @@ venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method="first", par
   return(list(E, EP))
 }
 
-venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first", parallel) {
+venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method="first") {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
