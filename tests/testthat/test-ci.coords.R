@@ -28,6 +28,7 @@ valid_coords_input <- coord.is.monotone <- c(
 for (input in valid_coords_input) {
 	for (stratified in c(TRUE, FALSE)) {
 		for (test.roc in list(r.s100b, smooth(r.s100b))) {
+			context(sprintf("input: %s, stratified: %s, class: %s", input, stratified, class(test.roc)))
 			test_that("ci.coords accepts one x and one ret", {
 				obtained <- ci.coords(test.roc, x=0.8, input = input, ret="sp", 
 									  boot.n=3, conf.level = .91, boot.stratified = stratified)
