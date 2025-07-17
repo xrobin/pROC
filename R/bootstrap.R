@@ -62,10 +62,6 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
   }
   if (boot.stratified) { # precompute sorted responses if stratified
-    #response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
-    #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
-    #auc1skeleton$response <- response.roc1
-    #auc2skeleton$response <- response.roc2
     resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
   }
   else {
