@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -25,13 +25,13 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   ncases <- length(cases)
   predictor <- c(controls, cases)
   response <- c(rep(0, length(controls)), rep(1, length(cases)))
-  decr <- direction=="<"
-  predictor.order <- order(predictor, decreasing=decr)
+  decr <- direction == "<"
+  predictor.order <- order(predictor, decreasing = decr)
   predictor.sorted <- predictor[predictor.order]
   response.sorted <- response[predictor.order]
-  
-  tp <- cumsum(response.sorted==1)
-  fp <- cumsum(response.sorted==0)
+
+  tp <- cumsum(response.sorted == 1)
+  fp <- cumsum(response.sorted == 0)
   se <- tp / ncases
   sp <- (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
@@ -40,106 +40,99 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   dups <- dups.pred | dups.sesp
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
-  	sessionInfo <- sessionInfo()
-  	save(thresholds, controls, cases, direction, sessionInfo, file="pROC_bug.RData")
+    sessionInfo <- sessionInfo()
+    save(thresholds, controls, cases, direction, sessionInfo, file = "pROC_bug.RData")
     stop(sprintf("pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", utils::packageDescription("pROC")$BugReports))
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
     sp <- rev(c(1, sp[!dups]))
-  }
-  else {
+  } else {
     se <- c(0, se[!dups])
     sp <- c(1, sp[!dups])
   }
-  return(list(se=se, sp=sp))
+  return(list(se = se, sp = sp))
 }
 
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
 # sp <- roc_utils_perfs(...)[1,]
 # se <- roc_utils_perfs(...)[2,]
 roc_utils_perfs <- function(threshold, controls, cases, direction) {
-  if (direction == '>') {
+  if (direction == ">") {
     tp <- sum(cases <= threshold)
     tn <- sum(controls > threshold)
-  }
-  else if (direction == '<') {
+  } else if (direction == "<") {
     tp <- sum(cases >= threshold)
     tn <- sum(controls < threshold)
   }
   # return(c(sp, se))
-  return(c(sp=tn/length(controls), se=tp/length(cases)))
+  return(c(sp = tn / length(controls), se = tp / length(cases)))
 }
 
 # as roc_utils_perfs, but for densities
 roc_utils_perfs_dens <- function(threshold, x, dens.controls, dens.cases, direction) {
-  if (direction == '>') {
+  if (direction == ">") {
     tp <- sum(dens.cases[x <= threshold])
     tn <- sum(dens.controls[x > threshold])
-  }
-  else if (direction == '<') {
+  } else if (direction == "<") {
     tp <- sum(dens.cases[x >= threshold])
     tn <- sum(dens.controls[x < threshold])
   }
   # return(c(sp, se))
-  return(c(sp=tn/sum(dens.controls), se=tp/sum(dens.cases)))
+  return(c(sp = tn / sum(dens.controls), se = tp / sum(dens.cases)))
 }
 
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
 roc_utils_thresholds <- function(predictor, direction) {
   unique.candidates <- sort(unique(predictor))
-  thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf))/2
-  thresholds2 <- (c(-Inf, unique.candidates)/2 + c(unique.candidates, +Inf)/2)
+  thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf)) / 2
+  thresholds2 <- (c(-Inf, unique.candidates) / 2 + c(unique.candidates, +Inf) / 2)
   thresholds <- ifelse(abs(thresholds1) > 1e100, thresholds2, thresholds1)
   if (any(ties <- thresholds %in% predictor)) {
-  	# If we get here, some thresholds are identical to the predictor
-  	# This is caused by near numeric ties that caused the mean to equal
-  	# one of the candidate
-  	# We need to make sure we select the right threshold more carefully
-  	if (direction == '>') {
-  		# We have:
-  		# tp <- sum(cases <= threshold)
-  		# tn <- sum(controls > threshold)
-  		# We need to make sure the selected threshold
-  		# Corresponds to the lowest observation of the predictor
-  		# Identify problematic thresholds
-  		# rows <- which(ties)
-  		for (tie.idx in which(ties)) {
-  			if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
-  				# We're already good, nothing to do
-  			}
-  			else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
-  				thresholds[tie.idx] <- unique.candidates[tie.idx - 1]
-  			}
-  			else {
-  				sessionInfo <- sessionInfo()
-  				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
-  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
-  			}
-  		}
-  	}
-  	else if (direction == '<') {
-  		# We have:
-  		# tp <- sum(cases >= threshold)
-  		# tn <- sum(controls < threshold)
-  		# We need to make sure the selected threshold
-  		# Corresponds to the highest observation of the predictor
-  		# Identify the problematic thresholds:
-  		# rows <- which(apply(o, 1, any))
-  		for (tie.idx in which(ties)) {
-  			if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
-  				# Easy to fix: should be unique.candidates[tie.idx]
-  				thresholds[tie.idx] <- unique.candidates[tie.idx]
-  			} else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
-  				# We're already good, nothing to do
-  			}
-  			else {
-  				sessionInfo <- sessionInfo()
-  				save(predictor, direction, sessionInfo, file="pROC_bug.RData")
-  				stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
-  			}
-  		}
-  	}
+    # If we get here, some thresholds are identical to the predictor
+    # This is caused by near numeric ties that caused the mean to equal
+    # one of the candidate
+    # We need to make sure we select the right threshold more carefully
+    if (direction == ">") {
+      # We have:
+      # tp <- sum(cases <= threshold)
+      # tn <- sum(controls > threshold)
+      # We need to make sure the selected threshold
+      # Corresponds to the lowest observation of the predictor
+      # Identify problematic thresholds
+      # rows <- which(ties)
+      for (tie.idx in which(ties)) {
+        if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
+          # We're already good, nothing to do
+        } else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
+          thresholds[tie.idx] <- unique.candidates[tie.idx - 1]
+        } else {
+          sessionInfo <- sessionInfo()
+          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
+          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+        }
+      }
+    } else if (direction == "<") {
+      # We have:
+      # tp <- sum(cases >= threshold)
+      # tn <- sum(controls < threshold)
+      # We need to make sure the selected threshold
+      # Corresponds to the highest observation of the predictor
+      # Identify the problematic thresholds:
+      # rows <- which(apply(o, 1, any))
+      for (tie.idx in which(ties)) {
+        if (thresholds[tie.idx] == unique.candidates[tie.idx - 1]) {
+          # Easy to fix: should be unique.candidates[tie.idx]
+          thresholds[tie.idx] <- unique.candidates[tie.idx]
+        } else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
+          # We're already good, nothing to do
+        } else {
+          sessionInfo <- sessionInfo()
+          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
+          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+        }
+      }
+    }
   }
   return(thresholds)
 }
@@ -165,47 +158,46 @@ roc_utils_max_thresholds_idx <- function(thresholds, sp, se) {
   # Find the local maximas
   if (length(thresholds) == 1) {
     local.maximas <- TRUE # let's consider that if there is only 1 point, we should print it.
-  }
-  else if (length(thresholds) == 2) {
+  } else if (length(thresholds) == 2) {
     local.maximas <- c(se[1] > se[2], sp[2] > sp[1])
-  }
-  else {
+  } else {
     local.maximas <- se[1] > se[2]
-    for (i in 2:(length(thresholds)-1)) {
-      if (sp[i] > sp[i-1] & se[i] > se[i+1])
+    for (i in 2:(length(thresholds) - 1)) {
+      if (sp[i] > sp[i - 1] & se[i] > se[i + 1]) {
         local.maximas <- c(local.maximas, TRUE)
-      else if (sp[i] > sp[i-1] & se[i] == 0)
+      } else if (sp[i] > sp[i - 1] & se[i] == 0) {
         local.maximas <- c(local.maximas, TRUE)
-      else if (se[i] > se[i-1] & sp[i] == 1)
+      } else if (se[i] > se[i - 1] & sp[i] == 1) {
         local.maximas <- c(local.maximas, TRUE)
-      else
+      } else {
         local.maximas <- c(local.maximas, FALSE)
+      }
     }
-    local.maximas <- c(local.maximas, sp[length(thresholds)] > sp[length(thresholds)-1])
+    local.maximas <- c(local.maximas, sp[length(thresholds)] > sp[length(thresholds) - 1])
   }
   if (any(dup)) {
     lms <- rep(FALSE, length(dup))
     lms[!dup] <- local.maximas
     local.maximas <- lms
   }
-  if (reversed)
+  if (reversed) {
     rev(local.maximas)
+  }
 
   # Remove +-Inf at the limits of the curve
-  #local.maximas <- local.maximas & is.finite(thresholds)
+  # local.maximas <- local.maximas & is.finite(thresholds)
   # Question: why did I do that? It breaks coords.roc when partial.auc contains only the extreme point
 
   return(local.maximas)
 }
 
 detect.env.true <- function(x) {
-	value <- Sys.getenv(x)
-	if (value == "T" || value == "True" || value == "TRUE" || value == "true") {
-		return(TRUE)
-	}
-	else {
-		return(FALSE)
-	}
+  value <- Sys.getenv(x)
+  if (value == "T" || value == "True" || value == "TRUE" || value == "true") {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
 }
 
 # sort roc curve. Make sure specificities are increasing.
@@ -228,52 +220,54 @@ sort_smooth_roc <- function(roc) {
 }
 
 # The list of valid coordinate arguments, without 'thresholds'
-roc.utils.valid.coords <- c("specificity", "sensitivity", "accuracy",
-	"tn", "tp", "fn", "fp",
-	"npv", "ppv", "fdr",
-	"fpr", "tpr", "tnr", "fnr", 
-	"1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
-	"precision", "recall", "lr_pos", "lr_neg",
-	"youden", "closest.topleft")
+roc.utils.valid.coords <- c(
+  "specificity", "sensitivity", "accuracy",
+  "tn", "tp", "fn", "fp",
+  "npv", "ppv", "fdr",
+  "fpr", "tpr", "tnr", "fnr",
+  "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv",
+  "precision", "recall", "lr_pos", "lr_neg",
+  "youden", "closest.topleft"
+)
 
 # Arguments which can be returned by coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
 roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
-	valid.ret.args <- roc.utils.valid.coords
-	if (threshold) {
-		valid.ret.args <- c("threshold", valid.ret.args)
-	}
+  valid.ret.args <- roc.utils.valid.coords
+  if (threshold) {
+    valid.ret.args <- c("threshold", valid.ret.args)
+  }
 
-	if ("all" %in% x) {
-		if (length(x) > 1) {
-			stop("ret='all' can't be used with other 'ret' options.")
-		}
-		x <- valid.ret.args
-	}
-	x <- replace(x, x=="topleft", "closest.topleft")
-	x <- replace(x, x=="t", "threshold")
-	x <- replace(x, x=="npe", "1-npv")
-	x <- replace(x, x=="ppe", "1-ppv")
-	return(match.arg(x, valid.ret.args, several.ok=TRUE))
+  if ("all" %in% x) {
+    if (length(x) > 1) {
+      stop("ret='all' can't be used with other 'ret' options.")
+    }
+    x <- valid.ret.args
+  }
+  x <- replace(x, x == "topleft", "closest.topleft")
+  x <- replace(x, x == "t", "threshold")
+  x <- replace(x, x == "npe", "1-npv")
+  x <- replace(x, x == "ppe", "1-ppv")
+  return(match.arg(x, valid.ret.args, several.ok = TRUE))
 }
 
 # Arguments which can be used as input for coords
 # @param threshold: FALSE for smooth.roc where threshold isn't valid
 roc_utils_match_coords_input_args <- function(x, threshold = TRUE) {
-	valid.args <- roc.utils.valid.coords
-	if (threshold) {
-		valid.args <- c("threshold", valid.args)
-	}
-	x <- replace(x, x=="topleft", "closest.topleft")
-	x <- replace(x, x=="t", "threshold")
-	x <- replace(x, x=="npe", "1-npv")
-	x <- replace(x, x=="ppe", "1-ppv")
-	matched <- match.arg(x, valid.args, several.ok=FALSE)
-	# We only handle monotone coords
-	if (! coord.is.monotone[matched]) {
-		stop(sprintf("Coordinate '%s' is not monotone and cannot be used as input.", matched))
-	}
-	return(matched)
+  valid.args <- roc.utils.valid.coords
+  if (threshold) {
+    valid.args <- c("threshold", valid.args)
+  }
+  x <- replace(x, x == "topleft", "closest.topleft")
+  x <- replace(x, x == "t", "threshold")
+  x <- replace(x, x == "npe", "1-npv")
+  x <- replace(x, x == "ppe", "1-ppv")
+  matched <- match.arg(x, valid.args, several.ok = FALSE)
+  # We only handle monotone coords
+  if (!coord.is.monotone[matched]) {
+    stop(sprintf("Coordinate '%s' is not monotone and cannot be used as input.", matched))
+  }
+  return(matched)
 }
 
 # Compute the min/max for partial AUC
@@ -289,9 +283,8 @@ roc_utils_max_partial_auc_auc <- function(roc) {
 # ... with partial.auc/percent
 roc_utils_min_partial_auc <- function(partial.auc, percent) {
   if (!identical(partial.auc, FALSE)) {
-    min <- sum(ifelse(percent, 100, 1)-partial.auc)*abs(diff(partial.auc))/2/ifelse(percent, 100, 1)
-  }
-  else {
+    min <- sum(ifelse(percent, 100, 1) - partial.auc) * abs(diff(partial.auc)) / 2 / ifelse(percent, 100, 1)
+  } else {
     min <- 0.5 * ifelse(percent, 100, 1)
   }
   return(min)
@@ -300,107 +293,103 @@ roc_utils_min_partial_auc <- function(partial.auc, percent) {
 roc_utils_max_partial_auc <- function(partial.auc, percent) {
   if (!identical(partial.auc, FALSE)) {
     max <- abs(diff(partial.auc))
-  }
-  else {
+  } else {
     max <- 1 * ifelse(percent, 100, 1)
   }
   return(max)
 }
 
-# Checks if the 
+# Checks if the
 # Input: roc object
 # Output: boolean, true the curve reaches 100%/100%, false otherwise
 roc_utils_is_perfect_curve <- function(roc) {
-	best.point <- max(roc$sensitivities + roc$specificities) / ifelse(roc$percent, 100, 1)
-	return(abs(best.point - 2) < .Machine$double.eps ^ 0.5) # or best.point == 2, with numerical tolerance
+  best.point <- max(roc$sensitivities + roc$specificities) / ifelse(roc$percent, 100, 1)
+  return(abs(best.point - 2) < .Machine$double.eps^0.5) # or best.point == 2, with numerical tolerance
 }
 
-# Load package namespace 'pkg'. 
+# Load package namespace 'pkg'.
 # Input: package name
 # Returns: TRUE upon success (or if the package was already loaded)
 # Stops if the package can't be loaded
 load.suggested.package <- function(pkg) {
-	if (requireNamespace(pkg)) {
-		return(TRUE)
-	}
-	else if (interactive()) {
-		if (getRversion() < "3.5.0") { # utils::askYesNo not available
-			message(sprintf("Package %s not available, do you want to install it now?", pkg))
-			auto.install <- utils::menu(c("Yes", "No")) == 1
-		}
-		else {
-			auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
-		}
-		if (isTRUE(auto.install)) {
-			utils::install.packages(pkg)
-			if (requireNamespace(pkg)) {
-				return(TRUE)
-			}
-			else {
-				stop(sprintf("Installation of %s failed!", pkg))
-			}
-		}
-	}
-	stop(sprintf("Package '%s' not available.", pkg))
+  if (requireNamespace(pkg)) {
+    return(TRUE)
+  } else if (interactive()) {
+    if (getRversion() < "3.5.0") { # utils::askYesNo not available
+      message(sprintf("Package %s not available, do you want to install it now?", pkg))
+      auto.install <- utils::menu(c("Yes", "No")) == 1
+    } else {
+      auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
+    }
+    if (isTRUE(auto.install)) {
+      utils::install.packages(pkg)
+      if (requireNamespace(pkg)) {
+        return(TRUE)
+      } else {
+        stop(sprintf("Installation of %s failed!", pkg))
+      }
+    }
+  }
+  stop(sprintf("Package '%s' not available.", pkg))
 }
 
 
 # Calculate coordinates
 # @param roc: the roc curve, used to guess if data is in percent and number of cases and controls.
 # @param thr, se, sp
-# @param best.weights: see coords 
+# @param best.weights: see coords
 # @return data.frame
 roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
-	ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
-	ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
-	substr.percent <- ifelse(roc$percent, 100, 1)
-	
-	tp <- se * ncases / substr.percent
-	fn <- ncases - tp
-	tn <- sp * ncontrols / substr.percent
-	fp <- ncontrols - tn
-	npv <- substr.percent * tn / (tn + fn)
-	ppv <- substr.percent * tp / (tp + fp)
-	#res <- matrix(NA, nrow = length(ret), ncol = length(se))
-	#if ("tp" %in% ret) {}
-	accuracy <- substr.percent * (tp + tn) / (ncases + ncontrols)
-	precision <- ppv
-	recall <- tpr <- se
-	fpr <- substr.percent - sp
-	tnr <- sp
-	fnr <- substr.percent * fn / (tp + fn)
-	fdr <- substr.percent * fp / (tp + fp)
-	youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
-	closest.topleft <- - roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
-	
-	return(cbind(
-		threshold=thr,
-		sensitivity=se, 
-		specificity=sp, 
-		accuracy=accuracy, 
-		tn=tn, 
-		tp=tp,
-		fn=fn,
-		fp=fp,
-		npv=npv,
-		ppv=ppv,
-		tpr=tpr,
-		tnr=tnr,
-		fpr=fpr,
-		fnr=fnr,
-		fdr=fdr,
-		"1-specificity"=substr.percent-sp,
-		"1-sensitivity"=substr.percent-se,
-		"1-accuracy"=substr.percent-accuracy,
-		"1-npv"=substr.percent-npv,
-		"1-ppv"=substr.percent-ppv,
-		precision=precision,
-		recall=recall,
-		"lr_pos"=(se / substr.percent) / (1 - sp / substr.percent),
-		"lr_neg"=(1 - se / substr.percent) / (sp / substr.percent),
-		youden=youden,
-		closest.topleft=closest.topleft
-	))
+  ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
+  ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
+  substr.percent <- ifelse(roc$percent, 100, 1)
+
+  tp <- se * ncases / substr.percent
+  fn <- ncases - tp
+  tn <- sp * ncontrols / substr.percent
+  fp <- ncontrols - tn
+  npv <- substr.percent * tn / (tn + fn)
+  ppv <- substr.percent * tp / (tp + fp)
+  # res <- matrix(NA, nrow = length(ret), ncol = length(se))
+  # if ("tp" %in% ret) {}
+  accuracy <- substr.percent * (tp + tn) / (ncases + ncontrols)
+  precision <- ppv
+  recall <- tpr <- se
+  fpr <- substr.percent - sp
+  tnr <- sp
+  fnr <- substr.percent * fn / (tp + fn)
+  fdr <- substr.percent * fp / (tp + fp)
+  youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
+  closest.topleft <- -roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
+
+  return(cbind(
+    threshold = thr,
+    sensitivity = se,
+    specificity = sp,
+    accuracy = accuracy,
+    tn = tn,
+    tp = tp,
+    fn = fn,
+    fp = fp,
+    npv = npv,
+    ppv = ppv,
+    tpr = tpr,
+    tnr = tnr,
+    fpr = fpr,
+    fnr = fnr,
+    fdr = fdr,
+    "1-specificity" = substr.percent - sp,
+    "1-sensitivity" = substr.percent - se,
+    "1-accuracy" = substr.percent - accuracy,
+    "1-npv" = substr.percent - npv,
+    "1-ppv" = substr.percent - ppv,
+    precision = precision,
+    recall = recall,
+    "lr_pos" = (se / substr.percent) / (1 - sp / substr.percent),
+    "lr_neg" = (1 - se / substr.percent) / (sp / substr.percent),
+    youden = youden,
+    closest.topleft = closest.topleft
+  ))
 }
 
 # Match arbitrary user-supplied thresholds to the threshold of the ROC curve.
@@ -412,33 +401,32 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
 roc_utils_thr_idx <- function(roc, x) {
-	cut_points <- sort(unique(roc$predictor))
-	thr_idx <- rep(NA_integer_, length(x))
-	if (roc$direction == "<") {
-		cut_points <- c(cut_points, Inf)
-		j <- 1
-		o <- order(x)
-		for (i in seq_along(x)) {
-			t <- x[o[i]]
-			while (cut_points[j] < t) {
-				j <- j + 1
-			}
-			thr_idx[o[i]] <- j
-		}
-	}
-	else {
-		cut_points <- c(rev(cut_points), -Inf)
-		j <- 1
-		o <- order(x, decreasing = TRUE)
-		for (i in seq_along(x)) {
-			t <- x[o[i]]
-			while (cut_points[j] > t) {
-				j <- j + 1
-			}
-			thr_idx[o[i]] <- j
-		}
-	}
-	return(thr_idx)
+  cut_points <- sort(unique(roc$predictor))
+  thr_idx <- rep(NA_integer_, length(x))
+  if (roc$direction == "<") {
+    cut_points <- c(cut_points, Inf)
+    j <- 1
+    o <- order(x)
+    for (i in seq_along(x)) {
+      t <- x[o[i]]
+      while (cut_points[j] < t) {
+        j <- j + 1
+      }
+      thr_idx[o[i]] <- j
+    }
+  } else {
+    cut_points <- c(rev(cut_points), -Inf)
+    j <- 1
+    o <- order(x, decreasing = TRUE)
+    for (i in seq_along(x)) {
+      t <- x[o[i]]
+      while (cut_points[j] > t) {
+        j <- j + 1
+      }
+      thr_idx[o[i]] <- j
+    }
+  }
+  return(thr_idx)
 }
 
 
@@ -449,165 +437,169 @@ roc_utils_thr_idx <- function(roc, x) {
 # @param method: youden or closest.topleft coords(best.method=)
 # @return numeric vector along roc$thresholds/roc$se/roc$sp.
 roc_utils_optim_crit <- function(se, sp, max, weights, method) {
-	if (is.numeric(weights) && length(weights) == 2) {
-		r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
-	}
-	else {
-		stop("'best.weights' must be a numeric vector of length 2")
-	}
-	if (weights[2] <= 0 || weights[2] >= 1) {
-		stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
-	}
-	
-	if (method == "youden") {
-		optim.crit <- se + r * sp
-	}
-	else if (method == "closest.topleft" || method == "topleft") {
-		optim.crit <- - ((max - se)^2 + r * (max - sp)^2)
-	}
-	return(optim.crit)
+  if (is.numeric(weights) && length(weights) == 2) {
+    r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
+  } else {
+    stop("'best.weights' must be a numeric vector of length 2")
+  }
+  if (weights[2] <= 0 || weights[2] >= 1) {
+    stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
+  }
+
+  if (method == "youden") {
+    optim.crit <- se + r * sp
+  } else if (method == "closest.topleft" || method == "topleft") {
+    optim.crit <- -((max - se)^2 + r * (max - sp)^2)
+  }
+  return(optim.crit)
 }
 
 coord.is.monotone <- c(
-	"threshold"=TRUE,
-	"sensitivity"=TRUE,
-	"specificity"=TRUE,
-	"accuracy"=FALSE,
-	"tn"=TRUE, 
-	"tp"=TRUE,
-	"fn"=TRUE,
-	"fp"=TRUE,       
-	"npv"=FALSE,
-	"ppv"=FALSE,
-	"tpr"=TRUE,
-	"tnr"=TRUE,
-	"fpr"=TRUE,
-	"fnr"=TRUE,
-	"fdr"=FALSE,
-	"1-specificity"=TRUE,
-	"1-sensitivity"=TRUE,
-	"1-accuracy"=FALSE,
-	"1-npv"=FALSE,
-	"1-ppv"=FALSE,
-	"precision"=FALSE,
-	"recall"=TRUE,
-	"lr_pos"=FALSE,
-	"lr_neg"=FALSE,
-	"youden"=FALSE,
-	"closest.topleft"=FALSE
+  "threshold" = TRUE,
+  "sensitivity" = TRUE,
+  "specificity" = TRUE,
+  "accuracy" = FALSE,
+  "tn" = TRUE,
+  "tp" = TRUE,
+  "fn" = TRUE,
+  "fp" = TRUE,
+  "npv" = FALSE,
+  "ppv" = FALSE,
+  "tpr" = TRUE,
+  "tnr" = TRUE,
+  "fpr" = TRUE,
+  "fnr" = TRUE,
+  "fdr" = FALSE,
+  "1-specificity" = TRUE,
+  "1-sensitivity" = TRUE,
+  "1-accuracy" = FALSE,
+  "1-npv" = FALSE,
+  "1-ppv" = FALSE,
+  "precision" = FALSE,
+  "recall" = TRUE,
+  "lr_pos" = FALSE,
+  "lr_neg" = FALSE,
+  "youden" = FALSE,
+  "closest.topleft" = FALSE
 )
 
 coord.is.decreasing <- c(
-	"threshold"=NA, # Depends on direction
-	"sensitivity"=TRUE,
-	"specificity"=FALSE,
-	"accuracy"=NA,
-	"tn"=FALSE, 
-	"tp"=TRUE,
-	"fn"=FALSE,
-	"fp"=TRUE,       
-	"npv"=NA,
-	"ppv"=NA,
-	"tpr"=TRUE,
-	"tnr"=FALSE,
-	"fpr"=TRUE,
-	"fnr"=FALSE,
-	"fdr"=NA,
-	"1-specificity"=TRUE,
-	"1-sensitivity"=FALSE,
-	"1-accuracy"=NA,
-	"1-npv"=NA,
-	"1-ppv"=NA,
-	"precision"=NA,
-	"recall"=TRUE,
-	"lr_pos"=NA,
-	"lr_neg"=NA,
-	"youden"=NA,
-	"closest.topleft"=NA
+  "threshold" = NA, # Depends on direction
+  "sensitivity" = TRUE,
+  "specificity" = FALSE,
+  "accuracy" = NA,
+  "tn" = FALSE,
+  "tp" = TRUE,
+  "fn" = FALSE,
+  "fp" = TRUE,
+  "npv" = NA,
+  "ppv" = NA,
+  "tpr" = TRUE,
+  "tnr" = FALSE,
+  "fpr" = TRUE,
+  "fnr" = FALSE,
+  "fdr" = NA,
+  "1-specificity" = TRUE,
+  "1-sensitivity" = FALSE,
+  "1-accuracy" = NA,
+  "1-npv" = NA,
+  "1-ppv" = NA,
+  "precision" = NA,
+  "recall" = TRUE,
+  "lr_pos" = NA,
+  "lr_neg" = NA,
+  "youden" = NA,
+  "closest.topleft" = NA
 )
 
 # Get response and predictor(s) from a formula.
 # This function takes care of all the logic to handle
-# weights, subset, na.action etc. It handles formulas with 
+# weights, subset, na.action etc. It handles formulas with
 # and without data. It rejects weights and certain na.actions.
 # @param formula
 # @param data
-# @param data.missing 
+# @param data.missing
 # @param call the call from the parent function
 # @param ... the ... from the parent function
 # @return a list with 3 elements: response (vector), predictor.names (character),
 #         predictors (data.frame).
 roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
-	# Get predictors (easy)
-	if (data.missing) {
-		predictors <- attr(terms(formula), "term.labels")
-	}
-	else {
-		predictors <- attr(terms(formula, data = data), "term.labels")
-	}
-	
-	indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch=0)
-	if (indx[1] == 0) {
-		stop("A formula argument is required")
-	}
-	# Keep the standard arguments and run them in model.frame
-	temp <- call[c(1,indx)]
-	temp[[1]] <- as.name("model.frame")
-	# Only na.pass and na.fail should be used
-	if (indx[5] != 0) {
-		na.action.value = as.character(call[indx[5]])
-		if (! na.action.value %in% c("na.pass", "na.fail")) {
-			warning(paste0(sprintf("Value %s of na.action is not supported ", na.action.value),
-						   "and will break pairing in roc.test and are.paired. ",
-						   "Please use 'na.rm = TRUE' instead."))
-		}
-	}
-	else {
-		temp$na.action = "na.pass"
-	}
-	
-	# If data is missing we have to "find" it
-	if (data.missing) {
-		m <- tryCatch({	
-			# First try normally. This works if the formula refers to variables
-			# on the caller's environment or an attached database.
-			eval.parent(temp, n = 2)
-		},
-		error=function(cond) {
-			# If the function was called in a "with" call, the data is
-			# a few frames up. 7 and 5 look like magic numbers here...
-			# but they will change depending on the context and if the
-			# roc function was wrapped. So we start with 7 and walk down
-			# the frames until we find the data we want
-			frames <- sys.frames()
-			for (frame in frames[(length(frames)-7):1]) {
-				temp$data <- frame
-				for (n in 5:9) {
-					# n controls where the given formula will be found.
-					# Here as well, 5-9 seem to be magic numbers
-					try({
-						return(eval.parent(temp, n = n))
-					}, silent=TRUE)
-				}
-			}
-			# If we're here it means we didn't find anything.
-			# Stop with the initial message
-			stop(cond)
-		})
-	}
-	else {
-		# Run model.frame in the parent
-		m <- eval.parent(temp, n = 2)
-	}
-	
-	if (!is.null(model.weights(m))) stop("weights are not supported")
-	
-	# Sanity checks
-	stopifnot(length(predictors) == ncol(m) - 1)
-	stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
-	
-	return(list(response.name = names(m)[1],
-				response = model.response(m),
-				predictor.names = names(m)[-1],
-				predictors = m[-1]))
+  # Get predictors (easy)
+  if (data.missing) {
+    predictors <- attr(terms(formula), "term.labels")
+  } else {
+    predictors <- attr(terms(formula, data = data), "term.labels")
+  }
+
+  indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch = 0)
+  if (indx[1] == 0) {
+    stop("A formula argument is required")
+  }
+  # Keep the standard arguments and run them in model.frame
+  temp <- call[c(1, indx)]
+  temp[[1]] <- as.name("model.frame")
+  # Only na.pass and na.fail should be used
+  if (indx[5] != 0) {
+    na.action.value <- as.character(call[indx[5]])
+    if (!na.action.value %in% c("na.pass", "na.fail")) {
+      warning(paste0(
+        sprintf("Value %s of na.action is not supported ", na.action.value),
+        "and will break pairing in roc.test and are.paired. ",
+        "Please use 'na.rm = TRUE' instead."
+      ))
+    }
+  } else {
+    temp$na.action <- "na.pass"
+  }
+
+  # If data is missing we have to "find" it
+  if (data.missing) {
+    m <- tryCatch(
+      {
+        # First try normally. This works if the formula refers to variables
+        # on the caller's environment or an attached database.
+        eval.parent(temp, n = 2)
+      },
+      error = function(cond) {
+        # If the function was called in a "with" call, the data is
+        # a few frames up. 7 and 5 look like magic numbers here...
+        # but they will change depending on the context and if the
+        # roc function was wrapped. So we start with 7 and walk down
+        # the frames until we find the data we want
+        frames <- sys.frames()
+        for (frame in frames[(length(frames) - 7):1]) {
+          temp$data <- frame
+          for (n in 5:9) {
+            # n controls where the given formula will be found.
+            # Here as well, 5-9 seem to be magic numbers
+            try(
+              {
+                return(eval.parent(temp, n = n))
+              },
+              silent = TRUE
+            )
+          }
+        }
+        # If we're here it means we didn't find anything.
+        # Stop with the initial message
+        stop(cond)
+      }
+    )
+  } else {
+    # Run model.frame in the parent
+    m <- eval.parent(temp, n = 2)
+  }
+
+  if (!is.null(model.weights(m))) stop("weights are not supported")
+
+  # Sanity checks
+  stopifnot(length(predictors) == ncol(m) - 1)
+  stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
+
+  return(list(
+    response.name = names(m)[1],
+    response = model.response(m),
+    predictor.names = names(m)[-1],
+    predictors = m[-1]
+  ))
 }

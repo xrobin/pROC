@@ -8,9 +8,9 @@ r.wfns.percent <- roc(aSAH$outcome, aSAH$wfns, percent = TRUE, quiet = TRUE)
 r.ndka.percent <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE, quiet = TRUE)
 r.s100b.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
 
-r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc=c(1, 0.9))
-r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc=c(1, 0.9))
-r.s100b.partial <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc=c(1, 0.9))
+r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc = c(1, 0.9))
+r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, 0.9))
+r.s100b.partial <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, 0.9))
 
 r.wfns.partial1 <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc = c(0.9, 0.99))
 r.ndka.partial1 <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(0.9, 0.99))

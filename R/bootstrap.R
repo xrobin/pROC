@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -33,14 +33,14 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   auc1skeleton$class <- NULL
   auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <-  "smooth.n"
+  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
   auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <-  "smooth.n"
+  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
 
   auc1skeleton$auc <- auc2skeleton$auc <- TRUE
 
@@ -51,34 +51,32 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
   duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
   if (any(duplicated.auc1skeleton)) {
-  	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
-  	
+    sessionInfo <- sessionInfo()
+    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
+    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
   }
   if (any(duplicated.auc2skeleton)) {
-  	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils::packageDescription("pROC")$BugReports))
+    sessionInfo <- sessionInfo()
+    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
+    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
   }
   if (boot.stratified) { # precompute sorted responses if stratified
-    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
-  }
-  else {
+    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE = double(2L), roc1 = roc1, roc2 = roc2, test = "boot", x = NULL, paired = TRUE, auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton)
+  } else {
     auc1skeleton$levels <- roc1$levels
     auc1skeleton$direction <- roc1$direction
     auc2skeleton$levels <- roc2$levels
     auc2skeleton$direction <- roc2$direction
-    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test="boot", x=NULL, paired=TRUE, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
+    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE = double(2L), roc1 = roc1, roc2 = roc2, test = "boot", x = NULL, paired = TRUE, auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton)
   }
 
   # are there NA values?
   if ((num.NAs <- sum(apply(resampled.values, 1, is.na))) > 0) {
     warning(sprintf("%i NA value(s) produced during bootstrap were ignored.", num.NAs))
-    resampled.values <- resampled.values[!apply(resampled.values, 1, function(x) any(is.na(x))),]
+    resampled.values <- resampled.values[!apply(resampled.values, 1, function(x) any(is.na(x))), ]
   }
 
-  cov <- stats::cov(resampled.values[1,], resampled.values[2,])
+  cov <- stats::cov(resampled.values[1, ], resampled.values[2, ])
   if (boot.return) {
     attr(cov, "resampled.values") <- resampled.values
   }
@@ -100,14 +98,14 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   auc1skeleton$class <- NULL
   auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <-  "smooth.n"
+  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
   auc2skeleton <- attributes(roc2$auc)
   auc2skeleton$roc <- NULL
   auc2skeleton$direction <- roc2$direction
   auc2skeleton$class <- NULL
   auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
   auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <-  "smooth.n"
+  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
 
   auc1skeleton$auc <- auc2skeleton$auc <- test == "boot"
 
@@ -118,34 +116,32 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
   duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
   if (any(duplicated.auc1skeleton)) {
-  	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
-  	
+    sessionInfo <- sessionInfo()
+    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
+    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
   }
   if (any(duplicated.auc2skeleton)) {
-  	sessionInfo <- sessionInfo()
-  	save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file="pROC_bug.RData")
-  	stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse=", "), utils:: packageDescription("pROC")$BugReports))
+    sessionInfo <- sessionInfo()
+    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
+    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
   }
 
   if (boot.stratified) { # precompute sorted responses if stratified
-    #response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
-    #response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
-    #auc1skeleton$response <- response.roc1
-    #auc2skeleton$response <- response.roc2
-    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
-  }
-  else {
+    # response.roc1 <- factor(c(rep(roc1$levels[1], length(roc1$controls)), rep(roc1$levels[2], length(roc1$cases))), levels=roc1$levels)
+    # response.roc2 <- factor(c(rep(roc2$levels[1], length(roc2$controls)), rep(roc2$levels[2], length(roc2$cases))), levels=roc2$levels)
+    # auc1skeleton$response <- response.roc1
+    # auc2skeleton$response <- response.roc2
+    resampled.values <- vapply(seq_len(boot.n), stratified.bootstrap.test, FUN.VALUE = double(2L), roc1 = roc1, roc2 = roc2, test = test, x = x, paired = paired, auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton)
+  } else {
     auc1skeleton$levels <- roc1$levels
     auc1skeleton$direction <- roc1$direction
     auc2skeleton$levels <- roc2$levels
     auc2skeleton$direction <- roc2$direction
-    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE=double(2L), roc1=roc1, roc2=roc2, test=test, x=x, paired=paired, auc1skeleton=auc1skeleton, auc2skeleton=auc2skeleton)
+    resampled.values <- vapply(seq_len(boot.n), nonstratified.bootstrap.test, FUN.VALUE = double(2L), roc1 = roc1, roc2 = roc2, test = test, x = x, paired = paired, auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton)
   }
 
   # compute the statistics
-  diffs <- resampled.values[1,] - resampled.values[2,]
+  diffs <- resampled.values[1, ] - resampled.values[2, ]
 
   # are there NA values?
   if ((num.NAs <- sum(is.na(diffs))) > 0) {
@@ -156,36 +152,35 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth) {
     smoothing.args$roc1$method <- smoothing.args$roc1$smooth.method
-    roc1 <- do.call("smooth.roc", c(list(roc=roc1), smoothing.args$roc1))
+    roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
   }
   if (smoothing.args$roc2$smooth) {
     smoothing.args$roc2$method <- smoothing.args$roc2$smooth.method
-    roc2 <- do.call("smooth.roc", c(list(roc=roc2), smoothing.args$roc2))
+    roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
   }
 
   if (test == "sp") {
-    coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
-    coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+    coord1 <- coords(roc1, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
+    coord2 <- coords(roc2, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
-  }
-  else if (test == "se") {
-    coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
-    coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+  } else if (test == "se") {
+    coord1 <- coords(roc1, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
+    coord2 <- coords(roc2, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
     D <- (coord1 - coord2) / sd(diffs)
-  }
-  else {
+  } else {
     D <- (roc1$auc - roc2$auc) / sd(diffs)
   }
-  if (is.nan(D) && all(diffs == 0) && roc1$auc == roc2$auc)
-    D <- 0 # special case: no difference between AUCs produces a NaN
+  if (is.nan(D) && all(diffs == 0) && roc1$auc == roc2$auc) {
+    D <- 0
+  } # special case: no difference between AUCs produces a NaN
 
   return(D)
 }
 
 stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skeleton, auc2skeleton) {
   # sample control and cases separately for a stratified bootstrap
-  idx.controls.roc1 <- sample(1:length(roc1$controls), replace=TRUE)
-  idx.cases.roc1 <- sample(1:length(roc1$cases), replace=TRUE)
+  idx.controls.roc1 <- sample(1:length(roc1$controls), replace = TRUE)
+  idx.cases.roc1 <- sample(1:length(roc1$cases), replace = TRUE)
   # finish roc skeletons
   auc1skeleton$controls <- roc1$controls[idx.controls.roc1]
   auc1skeleton$cases <- roc1$cases[idx.cases.roc1]
@@ -193,34 +188,30 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
   if (paired) {
     auc2skeleton$controls <- roc2$controls[idx.controls.roc1]
     auc2skeleton$cases <- roc2$cases[idx.cases.roc1]
-  }
-  else { # for unpaired, resample roc2 separately
-    idx.controls.roc2 <- sample(1:length(roc2$controls), replace=TRUE)
-    idx.cases.roc2 <- sample(1:length(roc2$cases), replace=TRUE)
+  } else { # for unpaired, resample roc2 separately
+    idx.controls.roc2 <- sample(1:length(roc2$controls), replace = TRUE)
+    idx.cases.roc2 <- sample(1:length(roc2$cases), replace = TRUE)
     auc2skeleton$controls <- roc2$controls[idx.controls.roc2]
     auc2skeleton$cases <- roc2$cases[idx.cases.roc2]
   }
 
   # re-compute the resampled ROC curves
-  roc1 <- try(do.call("roc_cc_nochecks", auc1skeleton), silent=TRUE)
-  roc2 <- try(do.call("roc_cc_nochecks", auc2skeleton), silent=TRUE)
+  roc1 <- try(do.call("roc_cc_nochecks", auc1skeleton), silent = TRUE)
+  roc2 <- try(do.call("roc_cc_nochecks", auc2skeleton), silent = TRUE)
 
   # resampled ROCs might not be smoothable: return NA
   if (methods::is(roc1, "try-error") || methods::is(roc2, "try-error")) {
     return(c(NA, NA))
-  }
-  else {
+  } else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord1 <- coords(roc1, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
-    }
-    else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+    } else if (test == "se") {
+      coord1 <- coords(roc1, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
       return(c(coord1, coord2))
-    }
-    else {
+    } else {
       return(c(roc1$auc, roc2$auc))
     }
   }
@@ -228,39 +219,35 @@ stratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skelet
 
 nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1skeleton, auc2skeleton) {
   # sample all patients
-  idx.all.roc1 <- sample(1:length(roc1$response), replace=TRUE)
+  idx.all.roc1 <- sample(1:length(roc1$response), replace = TRUE)
   # finish roc skeletons
   auc1skeleton$response <- roc1$response[idx.all.roc1]
   auc1skeleton$predictor <- roc1$predictor[idx.all.roc1]
   if (paired) { # if paired, resample roc2 as roc1
     auc2skeleton$response <- roc2$response[idx.all.roc1]
     auc2skeleton$predictor <- roc2$predictor[idx.all.roc1]
-  }
-  else { # if unpaired, resample roc2 separately
-    idx.all.roc2 <- sample(1:length(roc2$response), replace=TRUE)
+  } else { # if unpaired, resample roc2 separately
+    idx.all.roc2 <- sample(1:length(roc2$response), replace = TRUE)
     auc2skeleton$response <- roc2$response[idx.all.roc2]
     auc2skeleton$predictor <- roc2$predictor[idx.all.roc2]
   }
 
   # re-compute the resampled ROC curves
-  roc1 <- try(do.call("roc_rp_nochecks", auc1skeleton), silent=TRUE)
-  roc2 <- try(do.call("roc_rp_nochecks", auc2skeleton), silent=TRUE)
+  roc1 <- try(do.call("roc_rp_nochecks", auc1skeleton), silent = TRUE)
+  roc2 <- try(do.call("roc_rp_nochecks", auc2skeleton), silent = TRUE)
   # resampled ROCs might not be smoothable: return NA
   if (methods::is(roc1, "try-error") || methods::is(roc2, "try-error")) {
     return(c(NA, NA))
-  }
-  else {
+  } else {
     if (test == "sp") {
-      coord1 <- coords(roc1, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
-      coord2 <- coords(roc2, x=x, input=c("specificity"), ret=c("sensitivity"))[1, 1]
+      coord1 <- coords(roc1, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
+      coord2 <- coords(roc2, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
       return(c(coord1, coord2))
-    }
-    else if (test == "se") {
-      coord1 <- coords(roc1, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
-      coord2 <- coords(roc2, x=x, input=c("sensitivity"), ret=c("specificity"))[1, 1]
+    } else if (test == "se") {
+      coord1 <- coords(roc1, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
+      coord2 <- coords(roc2, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
       return(c(coord1, coord2))
-    }
-    else {
+    } else {
       return(c(roc1$auc, roc2$auc))
     }
   }
@@ -269,12 +256,10 @@ nonstratified.bootstrap.test <- function(n, roc1, roc2, test, x, paired, auc1ske
 ##########  AUC of one ROC curves (ci.auc, var)  ##########
 
 ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, ...) {
-
   if (boot.stratified) {
-    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc=roc))
-  }
-  else {
-    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc=roc))
+    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc = roc))
+  } else {
+    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc = roc))
   }
 
   if (sum(is.na(aucs)) > 0) {
@@ -283,23 +268,23 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, ...) {
   }
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
   # Prepare the return value
-  return(quantile(aucs, c(0+(1-conf.level)/2, .5, 1-(1-conf.level)/2)))
+  return(quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
 }
 
 stratified.ci.auc <- function(n, roc) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
 
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
+  auc.roc(roc, partial.auc = attr(roc$auc, "partial.auc"), partial.auc.focus = attr(roc$auc, "partial.auc.focus"), partial.auc.correct = attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
 }
 
 nonstratified.ci.auc <- function(n, roc) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
@@ -307,23 +292,23 @@ nonstratified.ci.auc <- function(n, roc) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
 
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
-  
-  auc.roc(roc, partial.auc=attr(roc$auc, "partial.auc"), partial.auc.focus=attr(roc$auc, "partial.auc.focus"), partial.auc.correct=attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
+
+  auc.roc(roc, partial.auc = attr(roc$auc, "partial.auc"), partial.auc.focus = attr(roc$auc, "partial.auc.focus"), partial.auc.correct = attr(roc$auc, "partial.auc.correct"), allow.invalid.partial.auc.correct = TRUE)
 }
 
 ##########  AUC of a smooth ROC curve (ci.smooth.auc)  ##########
 
 # Returns a smoothed auc in a stratified manner
 stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   # need to rebuild a ROC and smooth it
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -336,7 +321,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
+  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
@@ -345,7 +330,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
 
 # Returns a smoothed auc in a non stratified manner
 nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
@@ -353,7 +338,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
 
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -366,7 +351,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
+  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(auc.call$smooth.roc, "try-error")) {
     return(NA)
   }
@@ -376,28 +361,28 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
 ##########  SE of a ROC curve (ci.se)  ##########
 
 stratified.ci.se <- function(n, roc, sp) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
 
-  return(coords.roc(roc, sp, input = "specificity", ret = "sensitivity")[,1])
+  return(coords.roc(roc, sp, input = "specificity", ret = "sensitivity")[, 1])
 }
 
 nonstratified.ci.se <- function(n, roc, sp) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -408,11 +393,11 @@ nonstratified.ci.se <- function(n, roc, sp) {
 ##########  SE of a smooth ROC curve (ci.se)  ##########
 
 stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-    perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -425,22 +410,23 @@ stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
+  }
   return(coords.smooth.roc(smooth.roc, sp, input = "specificity", ret = "sensitivity")[, 1])
 }
 
 nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-    perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -453,20 +439,21 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
+  }
   return(coords.smooth.roc(smooth.roc, sp, input = "specificity", ret = "sensitivity")[, 1])
 }
 
 ##########  SP of a ROC curve (ci.sp)  ##########
 
 stratified.ci.sp <- function(n, roc, se) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -475,15 +462,15 @@ stratified.ci.sp <- function(n, roc, se) {
 }
 
 nonstratified.ci.sp <- function(n, roc, se) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$thresholds <- thresholds
@@ -494,11 +481,11 @@ nonstratified.ci.sp <- function(n, roc, se) {
 ##########  SP of a smooth ROC curve (ci.sp)  ##########
 
 stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-    perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -511,22 +498,23 @@ stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
+  }
   return(coords.smooth.roc(smooth.roc, se, input = "sensitivity", ret = "specificity")[, 1])
 }
 
 nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -539,41 +527,42 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
+  }
   return(coords.smooth.roc(smooth.roc, se, input = "sensitivity", ret = "specificity")[, 1])
 }
 
 ##########  Threshold of a ROC curve (ci.thresholds)  ##########
 
 stratified.ci.thresholds <- function(n, roc, thresholds) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
-  
-  return(sapply(thresholds, roc_utils_perfs, controls=controls, cases=cases, direction=roc$direction))
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
+
+  return(sapply(thresholds, roc_utils_perfs, controls = controls, cases = cases, direction = roc$direction))
 }
 
 # Returns an auc in a non stratified manner
 nonstratified.ci.thresholds <- function(n, roc, thresholds) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
 
-  return(sapply(thresholds, roc_utils_perfs, controls=controls, cases=cases, direction=roc$direction))
+  return(sapply(thresholds, roc_utils_perfs, controls = controls, cases = cases, direction = roc$direction))
 }
 
 
 ##########  Coords of one ROC curves (ci.coords)  ##########
 stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, best.policy) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -584,19 +573,20 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
-  res <- coords.roc(roc, x = x, input = input, ret = ret, 
-                    best.method = best.method, best.weights = best.weights)
+  res <- coords.roc(roc,
+    x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights
+  )
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && nrow(res) != 1) {
-  	return(enforce.best.policy(res, best.policy))
-  }
-  else {
-  	return(res)
+    return(enforce.best.policy(res, best.policy))
+  } else {
+    return(res)
   }
 }
 
 nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, best.policy) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
@@ -605,7 +595,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
 
 
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se
@@ -615,27 +605,28 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$predictor <- c(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
-  
-  res <- coords.roc(roc, x = x, input = input, ret = ret,
-                    best.method = best.method, best.weights = best.weights)
+
+  res <- coords.roc(roc,
+    x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights
+  )
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && nrow(res) != 1) {
-  	return(enforce.best.policy(res, best.policy))
-  }
-  else {
-  	return(res)
+    return(enforce.best.policy(res, best.policy))
+  } else {
+    return(res)
   }
 }
 
 ##########  Coords of a smooth ROC curve (ci.coords)  ##########
 
 stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy) {
-  controls <- sample(roc$controls, replace=TRUE)
-  cases <- sample(roc$cases, replace=TRUE)
+  controls <- sample(roc$controls, replace = TRUE)
+  cases <- sample(roc$cases, replace = TRUE)
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
 
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -648,30 +639,32 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
-  res <- coords.roc(smooth.roc, x = x, input = input, ret = ret,
-                    best.method = best.method, best.weights = best.weights)
+  }
+  res <- coords.roc(smooth.roc,
+    x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights
+  )
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && nrow(res) != 1) {
-  	return(enforce.best.policy(res, best.policy))
-  }
-  else {
-  	return(res)
+    return(enforce.best.policy(res, best.policy))
+  } else {
+    return(res)
   }
 }
 
 nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy) {
-  tmp.idx <- sample(1:length(roc$predictor), replace=TRUE)
+  tmp.idx <- sample(1:length(roc$predictor), replace = TRUE)
   predictor <- roc$predictor[tmp.idx]
   response <- roc$response[tmp.idx]
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
   thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
-  
-  perfs <- roc_utils_perfs_all(thresholds=thresholds, controls=controls, cases=cases, direction=roc$direction)
+
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
   # update ROC
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -684,16 +677,18 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
 
   # call smooth.roc and auc.smooth.roc
   smooth.roc.call$roc <- roc
-  smooth.roc <- try(eval(smooth.roc.call), silent=TRUE)
-  if (methods::is(smooth.roc, "try-error"))
+  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  if (methods::is(smooth.roc, "try-error")) {
     return(NA)
-  res <- coords.roc(smooth.roc, x = x, input = input, ret = ret,
-                    best.method = best.method, best.weights = best.weights)
+  }
+  res <- coords.roc(smooth.roc,
+    x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights
+  )
   # Return a random column with "best"
   if (length(x) == 1 && x == "best" && nrow(res) != 1) {
-  	return(enforce.best.policy(res, best.policy))
-  }
-  else {
-  	return(res)
+    return(enforce.best.policy(res, best.policy))
+  } else {
+    return(res)
   }
 }
