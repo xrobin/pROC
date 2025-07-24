@@ -7,7 +7,7 @@ pROC-Ex.R
 .travis.yml
 codecov.yml
 ^\.github
-^revdep
+^revdep$
 ^DEPENDENCIES*
 ^\.github$
 ^COPYING$
