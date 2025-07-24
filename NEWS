@@ -3,7 +3,7 @@
   * 'ci.coords' can be 'plot'ted
   * Added "lr_pos" and "lr_neg" to 'coords' (issue #102)
   * Deprecated 'transpose', 'as.list', 'as.matrix' and 'drop' in 'coords'
-  * Deprecated the 'algorithm' argument to 'roc'
+  * Deprecated the 'algorithm' argument to 'roc' and 'fun.sesp' value
   * Deprecated the 'progress' and 'parallel' argument for bootstrap operations.
   * Removed dependencies on 'doParallel' and retired package 'plyr' (thanks to Michael Chirico, pr #134, #135, #136, #137, #138, #139 and #140).
   * 'coords' with partial.auc now interpolates bounds when needed

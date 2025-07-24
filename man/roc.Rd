@@ -239,6 +239,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
+  \item{fun.sesp}{DEPRECATED. The value will be removed in a future version.}
 
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
   by \code{\link{smooth}}, with or without additional elements
