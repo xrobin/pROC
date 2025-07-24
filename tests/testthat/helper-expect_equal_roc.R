@@ -15,6 +15,23 @@ remove.calls.recursive <- function(x) {
   return(x)
 }
 
+remove.fun.sesp.recursive <- function(x) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  attr(x, "roc") <- remove.fun.sesp.recursive(attr(x, "roc"))
+  attr(x, "auc") <- remove.fun.sesp.recursive(attr(x, "auc"))
+  attr(x, "ci") <- remove.fun.sesp.recursive(attr(x, "ci"))
+  if (!is.list(x)) {
+    return(x)
+  }
+  x$roc <- remove.fun.sesp.recursive(x$roc)
+  x$auc <- remove.fun.sesp.recursive(x$auc)
+  x$ci <- remove.fun.sesp.recursive(x$ci)
+  x$fun.sesp <- NULL
+  return(x)
+}
+
 remove.response.names.recursive <- function(x) {
   if (is.null(x)) {
     return(NULL)
@@ -28,6 +45,7 @@ remove.response.names.recursive <- function(x) {
   x$roc <- remove.response.names.recursive(x$roc)
   x$auc <- remove.response.names.recursive(x$auc)
   x$ci <- remove.response.names.recursive(x$ci)
+  x$fun.sesp <- remove.response.names.recursive(x$fun.sesp)
   names(x$response) <- NULL
   names(x$original.response) <- NULL
   x$response.name <- NULL
@@ -39,6 +57,8 @@ remove.response.names.recursive <- function(x) {
 expect_equal_ignore_call <- function(x, y, ...) {
   x <- remove.calls.recursive(x)
   y <- remove.calls.recursive(y)
+  x <- remove.fun.sesp.recursive(x)
+  y <- remove.fun.sesp.recursive(y)
   expect_equal(x, y, ...)
 }
 
