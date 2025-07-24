@@ -43,7 +43,7 @@ jobs:
         run: |
 
           revdepcheck::revdep_reset()
-          revdepcheck::revdep_check(num_workers = 4)
+          revdepcheck::revdep_check(num_workers = 1)
 
 
           revdepig <- c(
@@ -56,6 +56,17 @@ jobs:
           usethis::use_build_ignore("revdep")
 
         shell: Rscript {0}
+
+      - name: Collect errors
+        run: |
+          mkdir -p revdep-errors
+          find revdep/checks -name '00*.*' -exec cp --parents {} revdep-errors/ \; || true
+
+      - name: Upload check logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: revdepcheck-error-logs
+          path: revdep-errors/
 
       - name: Commit results
         run: |
