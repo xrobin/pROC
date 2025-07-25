@@ -10,3 +10,4 @@ src/*.o
 src/pROC.so
 src/pROC.dylib
 src/symbols.rds
+revdep/
