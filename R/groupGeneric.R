@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2014 Xavier Robin
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,10 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Ops.auc <- function(e1, e2) {
-  if (methods::is(e1, "auc"))
+  if (methods::is(e1, "auc")) {
     attributes(e1) <- NULL
-  if (methods::is(e2, "auc"))
-   attributes(e2) <- NULL
+  }
+  if (methods::is(e2, "auc")) {
+    attributes(e2) <- NULL
+  }
   NextMethod()
 }
 

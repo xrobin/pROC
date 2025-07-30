@@ -1,3 +1,14 @@
+1.19.0 (2025-07-30)
+  * 'ci.coords' can now take the same 'input' values as 'coords' (issue #90)
+  * 'ci.coords' can be 'plot'ted
+  * Added "lr_pos" and "lr_neg" to 'coords' (issue #102)
+  * 'coords' with partial.auc now interpolates bounds when needed
+  * Added 'ignore.partial.auc' argument to 'coords'
+  * Deprecated 'transpose', 'as.list', 'as.matrix' and 'drop' in 'coords'
+  * Deprecated the 'algorithm' argument to 'roc' and 'fun.sesp' value
+  * Deprecated the 'progress' and 'parallel' argument for bootstrap operations.
+  * Removed dependencies on 'doParallel' and retired package 'plyr' (thanks to Michael Chirico, pr #134, #135, #136, #137, #138, #139 and #140).
+
 1.18.5 (2023-11-01):
   * Fixed formula input when given as variable and combined with `with` (issue #111)
   * Fixed formula containing variables with spaces (issue #120)

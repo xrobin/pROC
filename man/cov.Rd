@@ -20,7 +20,7 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
+  progress=NULL, parallel=FALSE, ...)
 }
 
 \arguments{
@@ -51,16 +51,10 @@ cov(...)
     bootstrapped values. See the \dQuote{Value} section for
     more details.
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
-  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
-    parallel backend provided by plyr (foreach).
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning. The argument will be removed in a future version.}
+  \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
+    The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
@@ -259,9 +253,7 @@ cov(...)
 }
 
 \seealso{
-  \code{\link{roc}}, \code{\link{var.roc}}
-  
-  CRAN package \pkg{plyr}, employed in this function.
+  \code{\link{roc}}, \code{\link{var.roc}}  
 }
 
 \examples{

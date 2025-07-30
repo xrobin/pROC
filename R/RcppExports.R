@@ -9,7 +9,3 @@ delongPlacementsCpp <- function(roc) {
     .Call(`_pROC_delongPlacementsCpp`, roc)
 }
 
-rocUtilsPerfsAllC <- function(thresholds, controls, cases, direction) {
-    .Call(`_pROC_rocUtilsPerfsAllC`, thresholds, controls, cases, direction)
-}
-
