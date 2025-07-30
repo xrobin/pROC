@@ -11,3 +11,4 @@ codecov.yml
 ^DEPENDENCIES*
 ^\.github$
 ^COPYING$
+^run_revdep.R$
