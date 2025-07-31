@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -40,12 +40,12 @@ cov.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 cov.roc <- function(roc1, roc2,
-                         method=c("delong", "bootstrap", "obuchowski"),
-                         reuse.auc=TRUE,
-                         boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-                         progress=getOption("pROCProgress")$name,
-                         parallel = FALSE,
-                         ...) {
+                    method = c("delong", "bootstrap", "obuchowski"),
+                    reuse.auc = TRUE,
+                    boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
+                    progress = NULL,
+                    parallel = FALSE,
+                    ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
     auc2 <- roc2
@@ -53,9 +53,12 @@ cov.roc <- function(roc1, roc2,
     roc2 <- attr(roc2, "roc")
     roc2$auc <- auc2
   }
-  
+
   if (roc_utils_is_perfect_curve(roc1) && roc_utils_is_perfect_curve(roc2)) {
-  	warning("cov() of two ROC curves with AUC == 1 is always 0 and can be misleading.")
+    warning("cov() of two ROC curves with AUC == 1 is always 0 and can be misleading.")
+  }
+  if (!is.null(progress)) {
+    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
 
   # store which objects are smoothed, and how
@@ -64,32 +67,30 @@ cov.roc <- function(roc1, roc2,
     smoothing.args$roc1 <- roc1$smoothing.args
     smoothing.args$roc1$smooth <- TRUE
     roc1 <- attr(roc1, "roc")
-    #oroc1$auc <- roc1$auc
-  }
-  else {
-    smoothing.args$roc1 <- list(smooth=FALSE)
+    # oroc1$auc <- roc1$auc
+  } else {
+    smoothing.args$roc1 <- list(smooth = FALSE)
   }
   if ("smooth.roc" %in% class(roc2)) {
     smoothing.args$roc2 <- roc2$smoothing.args
     smoothing.args$roc2$smooth <- TRUE
     roc2 <- attr(roc2, "roc")
-    #oroc2$auc <- roc2$auc
-  }
-  else {
-    smoothing.args$roc2 <- list(smooth=FALSE)
+    # oroc2$auc <- roc2$auc
+  } else {
+    smoothing.args$roc2 <- list(smooth = FALSE)
   }
 
   # then determine whether the rocs are paired or not
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs=FALSE, reuse.auc=TRUE, reuse.ci=FALSE, reuse.smooth=TRUE)
-  if (! rocs.are.paired) {
+  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  if (!rocs.are.paired) {
     message("ROC curves are unpaired.")
     return(0)
-  }    
+  }
 
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
     if (smoothing.args$roc1$smooth) {
-      roc1$auc <- auc(smooth.roc=do.call("smooth.roc", c(list(roc=roc1), smoothing.args$roc1)), ...)
+      roc1$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1)), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc1 in the following processing,
@@ -97,13 +98,13 @@ cov.roc <- function(roc1, roc2,
       smoothing.args$roc1$partial.auc <- NULL
       smoothing.args$roc1$partial.auc.correct <- NULL
       smoothing.args$roc1$partial.auc.focus <- NULL
-    }
-    else
+    } else {
       roc1$auc <- auc(roc1, ...)
+    }
   }
   if (is.null(roc2$auc) | !reuse.auc) {
     if (smoothing.args$roc2$smooth) {
-      roc2$auc <- auc(smooth.roc=do.call("smooth.roc", c(list(roc=roc2), smoothing.args$roc2)), ...)
+      roc2$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2)), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc2 in the following processing,
@@ -111,17 +112,19 @@ cov.roc <- function(roc1, roc2,
       smoothing.args$roc2$partial.auc <- NULL
       smoothing.args$roc2$partial.auc.correct <- NULL
       smoothing.args$roc2$partial.auc.focus <- NULL
-    }
-    else
+    } else {
       roc2$auc <- auc(roc2, ...)
+    }
   }
-    
+
   # check that the same region was requested in auc. Otherwise, issue a warning
-  if (!identical(attributes(roc1$auc)[names(attributes(roc1$auc))!="roc"], attributes(roc2$auc)[names(attributes(roc2$auc))!="roc"]))
+  if (!identical(attributes(roc1$auc)[names(attributes(roc1$auc)) != "roc"], attributes(roc2$auc)[names(attributes(roc2$auc)) != "roc"])) {
     warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
+  }
   # check that the same smoothing params were requested in auc. Otherwise, issue a warning
-  if (!identical(smoothing.args$roc1, smoothing.args$roc2))
+  if (!identical(smoothing.args$roc1, smoothing.args$roc2)) {
     warning("Different smoothing parameters in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
+  }
 
   # Check the method
   if (missing(method) | is.null(method)) {
@@ -129,45 +132,42 @@ cov.roc <- function(roc1, roc2,
     if (has.partial.auc(roc1)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
-    }
-    else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+    } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
       # smoothing in one or both: bootstrap
       method <- "bootstrap"
-    }
-    else if (roc1$direction != roc2$direction) {
+    } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
-    }
-    else {
+    } else {
       method <- "delong"
     }
-  }
-  else {
+  } else {
     method <- match.arg(method)
     if (method == "delong") {
       # delong NA to pAUC: warn + change
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
-      	stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+        stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
       }
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
-      	stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
+        stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
-      if (roc1$direction != roc2$direction)
+      if (roc1$direction != roc2$direction) {
         warning("DeLong method should not be applied to ROC curves with a different direction.")
-    }
-    else if (method == "obuchowski") {
+      }
+    } else if (method == "obuchowski") {
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
         stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
-      if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity")
-          || (has.partial.auc(roc2) && attr(roc2$auc, "partial.auc.focus") == "sensitivity")) {
+      if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity") ||
+        (has.partial.auc(roc2) && attr(roc2$auc, "partial.auc.focus") == "sensitivity")) {
         stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
-      if (roc1$direction != roc2$direction)
+      if (roc1$direction != roc2$direction) {
         warning("Obuchowski method should not be applied to ROC curves with a different direction.")
+      }
     }
   }
-  
+
   if (method == "delong") {
     n <- length(roc1$controls)
     m <- length(roc1$cases)
@@ -183,25 +183,19 @@ cov.roc <- function(roc1, roc2,
     if (roc1$percent) {
       cov <- cov * (100^2)
     }
-  }
-  
-  else if (method == "obuchowski") {
+  } else if (method == "obuchowski") {
     cov <- cov_roc_obuchowski(roc1, roc2) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
     }
-  }
-  else { # method == "bootstrap"
+  } else { # method == "bootstrap"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls))
+    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
-
-    if(inherits(progress, "list")) {
-      progress <- roc_utils_get_progress_bar(progress, title="Bootstrap covariance", label="Bootstrap in progress...", ...)
     }
-    
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, progress, parallel)
+
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args)
   }
 
   return(cov)

@@ -31,25 +31,10 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rocUtilsPerfsAllC
-List rocUtilsPerfsAllC(NumericVector thresholds, NumericVector controls, NumericVector cases, std::string direction);
-RcppExport SEXP _pROC_rocUtilsPerfsAllC(SEXP thresholdsSEXP, SEXP controlsSEXP, SEXP casesSEXP, SEXP directionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type thresholds(thresholdsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type controls(controlsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type cases(casesSEXP);
-    Rcpp::traits::input_parameter< std::string >::type direction(directionSEXP);
-    rcpp_result_gen = Rcpp::wrap(rocUtilsPerfsAllC(thresholds, controls, cases, direction));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_pROC_RcppVersion", (DL_FUNC) &_pROC_RcppVersion, 0},
     {"_pROC_delongPlacementsCpp", (DL_FUNC) &_pROC_delongPlacementsCpp, 1},
-    {"_pROC_rocUtilsPerfsAllC", (DL_FUNC) &_pROC_rocUtilsPerfsAllC, 4},
     {NULL, NULL, 0}
 };
 

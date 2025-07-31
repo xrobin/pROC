@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -30,17 +30,20 @@ are.paired.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 are.paired.roc <- function(roc1, roc2,
-                           return.paired.rocs=FALSE,
-                           reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth=TRUE,
+                           return.paired.rocs = FALSE,
+                           reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
                            ...) {
   # check return.paired.rocs
-  if (! is.logical(return.paired.rocs) || length(return.paired.rocs) != 1)
+  if (!is.logical(return.paired.rocs) || length(return.paired.rocs) != 1) {
     stop("'return.paired.rocs' must be either TRUE or FALSE.")
+  }
   # Recover base ROC curves (not auc or smoothed)
-  if ("auc" %in% class(roc1))
+  if ("auc" %in% class(roc1)) {
     roc1 <- attr(roc1, "roc")
-  if ("auc" %in% class(roc2))
+  }
+  if ("auc" %in% class(roc2)) {
     roc2 <- attr(roc2, "roc")
+  }
   if ("smooth.roc" %in% class(roc1)) {
     oroc1 <- roc1
     roc1 <- attr(roc1, "roc")
@@ -50,8 +53,9 @@ are.paired.roc <- function(roc1, roc2,
     roc2 <- attr(roc2, "roc")
   }
   # Check if the levels are the same. Otherwise it is not paired.
-  if (!identical(roc1$levels, roc2$levels))
+  if (!identical(roc1$levels, roc2$levels)) {
     return(FALSE)
+  }
   # check if responses of roc 1 and 2 are identical
   if (identical(roc1$response, roc2$response)) {
     retval <- TRUE
@@ -60,18 +64,18 @@ are.paired.roc <- function(roc1, roc2,
       attr(retval, "roc2") <- roc2
     }
     return(retval)
-  }
-  else {
+  } else {
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
     if (identical(roc1$original.response, roc2$original.response)) {
       retval <- TRUE
-      if (! return.paired.rocs)
+      if (!return.paired.rocs) {
         return(retval)
+      }
       # else prepare paired ROCs
-      idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | ! roc1$original.response %in% roc1$levels
-      roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels=roc1$levels, percent=roc1$percent, na.rm=FALSE, direction=roc1$direction, auc=FALSE)
-      roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels=roc2$levels, percent=roc2$percent, na.rm=FALSE, direction=roc2$direction, auc=FALSE)
+      idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
+      roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
+      roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
       # Re-use auc/ci/smooth for roc1
       if (exists("oroc1") && reuse.smooth) {
         args <- oroc1$smoothing.args
@@ -87,7 +91,7 @@ are.paired.roc <- function(roc1, roc2,
       if (!is.null(roc1$ci) && reuse.ci) {
         args <- attributes(roc1$ci)
         args$roc <- NULL
-        roc1.paired$ci <- do.call(class(roc1$ci)[1], c(roc=list(roc1.paired), args))
+        roc1.paired$ci <- do.call(class(roc1$ci)[1], c(roc = list(roc1.paired), args))
       }
       # Re-use auc/ci/smooth for roc2
       if (exists("oroc2") && reuse.smooth) {
@@ -104,15 +108,14 @@ are.paired.roc <- function(roc1, roc2,
       if (!is.null(roc2$ci) && reuse.ci) {
         args <- attributes(roc2$ci)
         args$roc <- NULL
-        roc2.paired$ci <- do.call(class(roc2$ci)[1], c(roc=list(roc2.paired), args))
+        roc2.paired$ci <- do.call(class(roc2$ci)[1], c(roc = list(roc2.paired), args))
       }
 
       # Attach ROCs and return value
       attr(retval, "roc1") <- roc1.paired
       attr(retval, "roc2") <- roc2.paired
       return(retval)
-    }
-    else {
+    } else {
       return(FALSE)
     }
   }

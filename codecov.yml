@@ -2,6 +2,10 @@ coverage:
   round: nearest
   range: "0...100"
   status:
+    patch: # Coverage/Hits of the patch itself
+      default:
+        enabled: true
+        informational: true  # Show it, but don't fail the check
     project:
       default:
         target: 80%

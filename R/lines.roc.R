@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -22,21 +22,23 @@ lines.roc <- function(x, ...) {
 }
 
 lines.roc.formula <- function(x, data, subset, na.action, ...) {
-	data.missing <- missing(data)
-	call <- match.call()
-	names(call)[2] <- "formula" # forced to be x by definition of lines
-	roc.data <- roc_utils_extract_formula(formula=x, data, subset, na.action, ..., 
-										  data.missing = data.missing,
-										  call = call)
-	if (length(roc.data$predictor.name) > 1) {
-		stop("Only one predictor supported in 'lines.roc'.")
-	}
-	response <- roc.data$response
-	predictor <- roc.data$predictors[, 1]
-	roc <- roc(response, predictor, ...)
-	lines.roc.roc(roc, ...)
-	roc$call <- match.call()
-	invisible(roc)
+  data.missing <- missing(data)
+  call <- match.call()
+  names(call)[2] <- "formula" # forced to be x by definition of lines
+  roc.data <- roc_utils_extract_formula(
+    formula = x, data, subset, na.action, ...,
+    data.missing = data.missing,
+    call = call
+  )
+  if (length(roc.data$predictor.name) > 1) {
+    stop("Only one predictor supported in 'lines.roc'.")
+  }
+  response <- roc.data$response
+  predictor <- roc.data$predictors[, 1]
+  roc <- roc(response, predictor, ...)
+  lines.roc.roc(roc, ...)
+  roc$call <- match.call()
+  invisible(roc)
 }
 
 lines.roc.default <- function(x, predictor, ...) {
@@ -50,7 +52,7 @@ lines.roc.smooth.roc <- lines.smooth.roc <- function(x, ...) {
   lines.roc.roc(x, ...) # force usage of lines.roc.roc
 }
 
-lines.roc.roc <- function(x, lwd=2, ...) {
-  suppressWarnings(lines(x$specificities, x$sensitivities, lwd=lwd, ...))
+lines.roc.roc <- function(x, lwd = 2, ...) {
+  suppressWarnings(lines(x$specificities, x$sensitivities, lwd = lwd, ...))
   invisible(x)
 }

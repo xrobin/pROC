@@ -74,11 +74,11 @@
 <text transform='translate(13.05,275.30) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='47.69px' lengthAdjust='spacingAndGlyphs'>sensitivity</text>
 <rect x='656.82' y='236.23' width='57.70' height='78.13' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
 <text x='662.30' y='250.42' style='font-size: 11.00px; font-family: sans;' textLength='27.52px' lengthAdjust='spacingAndGlyphs'>name</text>
-<rect x='662.30' y='257.04' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
+<rect x='662.30' y='257.04' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
 <line x1='664.03' y1='265.68' x2='677.85' y2='265.68' style='stroke-width: 1.07; stroke: #F8766D; stroke-linecap: butt;' />
-<rect x='662.30' y='274.32' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
+<rect x='662.30' y='274.32' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
 <line x1='664.03' y1='282.96' x2='677.85' y2='282.96' style='stroke-width: 1.07; stroke: #00BA38; stroke-linecap: butt;' />
-<rect x='662.30' y='291.60' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #F2F2F2;' />
+<rect x='662.30' y='291.60' width='17.28' height='17.28' style='stroke-width: 1.07; stroke: none; fill: #EBEBEB;' />
 <line x1='664.03' y1='300.24' x2='677.85' y2='300.24' style='stroke-width: 1.07; stroke: #619CFF; stroke-linecap: butt;' />
 <text x='685.06' y='268.71' style='font-size: 8.80px; font-family: sans;' textLength='23.98px' lengthAdjust='spacingAndGlyphs'>s100b</text>
 <text x='685.06' y='285.99' style='font-size: 8.80px; font-family: sans;' textLength='18.10px' lengthAdjust='spacingAndGlyphs'>wfns</text>

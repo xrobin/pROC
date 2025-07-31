@@ -24,7 +24,7 @@ ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
-direction=c("auto", "<", ">"), algorithm = 6, quiet = FALSE, 
+direction=c("auto", "<", ">"), algorithm = 2, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, ...)
 roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
@@ -80,34 +80,19 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
     (ignored by \code{roc.formula}).
   }
-  \item{direction}{in which direction to make the comparison?
-    \dQuote{auto} (default): automatically define in which group the
-    median is higher and take the direction accordingly.
-    \dQuote{>}: if the predictor values for the control group are
-    higher than the values of the case group (controls > t >= cases).
-    \dQuote{<}: if the predictor values for the control group are lower
-    or equal than the values of the case group (controls < t <= cases).
+  \item{direction}{how are positive observations defined?
+    \dQuote{<}: observations are positive when they
+    are greater than or equal (\code{>=}) to the threshold.
+    \dQuote{>}: observations are positive when they are smaller than or equal 
+    (\code{<=}) to the threshold.
+    \dQuote{auto} (default): automatically detect in which group the
+    median is higher and take the direction accordingly. See details.
     You should set this explicity to \dQuote{>} or \dQuote{<} whenever
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
   }
-  \item{algorithm}{the method used to compute sensitivity and specificity, 
-    an integer of length 1 between \code{0} and \code{6}.
-    \code{1}: a safe, well-tested, pure-\R code that is efficient when the 
-    number of thresholds is low. It goes with O(T*N).
-    \code{2}: an alternative pure-\R algorithm that goes in
-    O(N). Typically faster than \code{1} when the number of thresholds of
-    the ROC curve is above 1000. Less tested than \code{1}.
-    \code{3}: a C++ 
-    implementation of \code{1}, about 3-5x faster. Typically the fastest with
-    ROC curves with less than 50-100 thresholds, but has a very bad worst-case
-    when that number increases.
-    \code{4} (debug only, slow):
-    runs algorithms 1 to 3 and makes sure they return the same values.
-    \code{5}: select \code{2} or \code{3} based on the number of thresholds.
-    \code{6} (default): quickly select the algorithm on the class of the data: \code{2}
-    for \code{\link{numeric}} and \code{3} for \code{\link{ordered}}.
-    \code{0}: use \pkg{microbenchmark} to choose between \code{2} and \code{3}.
+  \item{algorithm}{DEPRECATED. A value other than \code{2} will produce a 
+    warning. The argument will be removed in a future version.
   }
   \item{ret}{for \code{roc.data.frame} only, whether to return the
 	threshold sensitivity and specificity at all thresholds (\dQuote{coords}),
@@ -180,6 +165,13 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   density.cases}, which will result in a smoothed ROC curve even if
   \code{smooth=FALSE}, but are ignored if \code{response, predictor} or
   \code{controls, cases} are provided.
+  
+  Thresholds are selected as the means between any two consecutive values 
+  observed in the data. This choice is aimed to facilitate their interpretation,
+  as any data point will be unambiguously positive or negative
+  regardless of whether the comparison operator includes equality
+  or not. As a corollary, thresholds do not correspond to actual values
+  in the data.
 
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
@@ -239,8 +231,6 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     reported in percent, as defined in argument.
   }
   \item{direction}{the direction of the comparison, as defined in argument.}
-  \item{fun.sesp}{the function used to compute sensitivities and specificities.
-    Will be re-used in bootstrap operations.}
   \item{sensitivities}{the sensitivities defining the ROC curve.}
   \item{specificities}{the specificities defining the ROC curve.}
   \item{thresholds}{the thresholds at which the sensitivities and
@@ -249,36 +239,15 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
+  \item{fun.sesp}{DEPRECATED. The value will be removed in a future version.}
 
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
   by \code{\link{smooth}}, with or without additional elements
   \code{auc} and \code{ci} (according to the call).
 }
 
-\section{Thresholds}{
-  
-  Thresholds are selected as the means between any two consecutive values 
-  observed in the data. This choice is aimed to facilitate their interpretation,
-  as any data point will be unambiguously positive or negative
-  regardless of whether the comparison operator includes equality
-  or not.
-  
-  In rare cases it might not be possible to represent the
-  mean between two consecutive values, or one might want to use a custom 
-  threshold. In those cases, the semantic of the comparison
-  is as follows: with \code{direction = '>'},
-  observations are positive when they are smaller than or equal 
-  (\code{<=}) to the threshold.
-  With \code{direction = '<'}, observations are positive when they
-  are greater than or equal (\code{>=}) to the threshold.
-  
-  As a corollary, thresholds do not correspond to actual values
-  in the data.
-  
-}
-
-\section{Experimental: pipelines}{
-	Since version 1.15.0, the \code{roc} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}. This is still a highly experimental feature and will change significantly in future versions  (see \href{https://github.com/xrobin/pROC/issues/54}{issue 54}).
+\section{Pipelines}{
+	The \code{roc} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}.
 	The \code{roc.data.frame} method supports both standard and non-standard evaluation (NSE):
 	
     \preformatted{

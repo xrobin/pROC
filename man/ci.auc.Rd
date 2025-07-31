@@ -15,18 +15,17 @@
 
 \description{
   This function computes the confidence interval (CI) of an area under
-  the curve (AUC). By default, the 95\% CI is computed with 2000
-  stratified bootstrap replicates.
+  the curve (AUC).
 }
 
 \usage{
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress")$name, parallel=FALSE, ...)
+progress = NULL, parallel=FALSE, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
+progress = NULL, parallel=FALSE, ...)
 \S3method{ci.auc}{auc}(auc, ...)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
@@ -63,16 +62,10 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
     test. If false, use optional \code{\dots} arguments to
 	\code{\link{auc}}. See details.
   }
-  \item{progress}{the name of progress bar to display. Typically
-    \dQuote{none}, \dQuote{win}, \dQuote{tk} or \dQuote{text} (see the
-    \code{name} argument to \code{\link[plyr]{create_progress_bar}} for
-    more information), but a list as returned by \code{\link[plyr]{create_progress_bar}}
-    is also accepted. See also the \dQuote{Progress bars} section of
-    \link[=pROC-package]{this package's documentation}.
-  }
-  \item{parallel}{if TRUE, the bootstrap is processed in parallel, using 
-    parallel backend provided by plyr (foreach).
-  }
+  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
+    a warning. The argument will be removed in a future version.}
+  \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
+    The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
@@ -89,10 +82,9 @@ progress=getOption("pROCProgress")$name, parallel=FALSE, ...)
   or a formula (response~predictor) arguments, the \code{\link{roc}}
   function is called to build the ROC curve first.
 
-  The default is to use
-  \dQuote{delong} method except for comparison of partial AUC and smoothed
-  curves, where \code{bootstrap} is used. Using \dQuote{delong} for
-  partial AUC and smoothed ROCs is not supported.
+  The default is to use the \dQuote{delong} method, except for comparison of
+  partial AUC and smoothed curves, where \code{bootstrap} is used. Using
+  \dQuote{delong} for partial AUC and smoothed ROCs is not supported.
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in

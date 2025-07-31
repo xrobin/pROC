@@ -1,5 +1,5 @@
 # pROC: Tools Receiver operating characteristic (ROC curves) with
-# (partial) area under the curve, confidence intervals and comparison. 
+# (partial) area under the curve, confidence intervals and comparison.
 # Copyright (C) 2010-2014 Xavier Robin, Alexandre Hainard, Natacha Turck,
 # Natalia Tiberti, Frédérique Lisacek, Jean-Charles Sanchez
 # and Markus Müller
@@ -17,21 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.onLoad <- function(lib, pkg) {
-  # Generate progressbar option with smart default values
-  if (is.null(getOption("pROCProgress"))) {
-    if (interactive()) {
-      if (!is.null(getOption("STERM")) && getOption("STERM") == "iESS")
-        options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 1))
-      else if (.Platform$OS.type == "windows")
-        options("pROCProgress" = list(name = "win", width = 300))
-      else
-        options("pROCProgress" = list(name = "text", width = NA, char = "=", style = 3))
-    }
-    else {
-      options("pROCProgress" = list(name = "none"))
-    }
+.onAttach <- function(lib, pkg) {
+  # Remove deprecated pROCProgress option
+  if (!is.null(getOption("pROCProgress")) && getOption("pROCProgress")$name != "none") {
+    packageStartupMessage("Progress bars are deprecated in pROC 1.19. Removing pROCProgress option.")
   }
+  options("pROCProgress" = NULL)
 }
 
 .parseRcppVersion <- function(rcpp.version) {
@@ -51,8 +42,10 @@
   runtime_version <- package_version(utils::packageVersion("Rcpp"))
   build_version <- package_version(.parseRcppVersion(RcppVersion()))
   if (runtime_version != build_version) {
-    warning(sprintf("It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems: install.packages(\"pROC\").",
-                    build_version,runtime_version))
+    warning(sprintf(
+      "It seems pROC was compiled with Rcpp version %s, but %s is available now. Please re-install pROC to avoid problems: install.packages(\"pROC\").",
+      build_version, runtime_version
+    ))
   }
 }
 
