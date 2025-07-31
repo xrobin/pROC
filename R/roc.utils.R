@@ -54,6 +54,11 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   return(list(se = se, sp = sp))
 }
 
+roc_utils_fun_sesp <- function(...) {
+  warning("pROC::roc$fun.sesp is deprecated")
+  roc_utils_perfs_all(...)
+}
+
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
 # sp <- roc_utils_perfs(...)[1,]
 # se <- roc_utils_perfs(...)[2,]
