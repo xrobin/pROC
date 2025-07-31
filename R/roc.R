@@ -450,10 +450,7 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
   roc$direction <- direction
   roc$cases <- cases
   roc$controls <- controls
-  roc$fun.sesp <- function(...) {
-    warning("pROC::roc$fun.sesp is deprecated")
-    roc_utils_perfs_all(...)
-  }
+  roc$fun.sesp <- roc_utils_fun_sesp
 
   if (smooth) {
     roc <- smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
