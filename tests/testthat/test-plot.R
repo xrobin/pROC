@@ -7,6 +7,7 @@ context("plot")
 # > manage_cases()
 
 test_that("plot draws correctly", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   test_basic_plot <- function() plot(r)
   # S100b
@@ -21,6 +22,7 @@ test_that("plot draws correctly", {
 })
 
 test_that("legacy.axis works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   r <- r.s100b
   test_legacy.axis_plot <- function() plot(r, legacy.axes = TRUE)
@@ -28,6 +30,7 @@ test_that("legacy.axis works correctly", {
 })
 
 test_that("Advanced screenshot 1 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_1 <- function() {
     plot(r.s100b.percent,
@@ -54,6 +57,7 @@ test_that("Advanced screenshot 1 works correctly", {
 
 
 test_that("Advanced screenshot 2 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_slow()
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_2 <- function() {
@@ -77,6 +81,7 @@ test_that("Advanced screenshot 2 works correctly", {
 
 
 test_that("Advanced screenshot 3 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.4.0")
   test_advanced_screenshot_3 <- function() {
     plot(r.s100b.percent, main = "Smoothing")
@@ -105,6 +110,7 @@ test_that("Advanced screenshot 3 works correctly", {
 
 
 test_that("Advanced screenshot 4 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_slow()
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_4 <- function() {
@@ -127,6 +133,7 @@ test_that("Advanced screenshot 4 works correctly", {
 
 
 test_that("Advanced screenshot 5 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_slow()
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_5 <- function() {
@@ -144,6 +151,7 @@ test_that("Advanced screenshot 5 works correctly", {
 
 
 test_that("Advanced screenshot 6 works correctly", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_6 <- function() {
     plot(r.s100b.percent, main = "Statistical comparison", col = "#1c61b6")
@@ -157,6 +165,7 @@ test_that("Advanced screenshot 6 works correctly", {
 
 
 test_that("plot and lines work with formula and subset", {
+  skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   test_plot_formula <- function() {
     suppressMessages(plot.roc(outcome ~ ndka, data = aSAH, subset = gender == "Female", col = "red"))
@@ -168,6 +177,7 @@ test_that("plot and lines work with formula and subset", {
 
 
 test_that("PR curve with CI works", {
+  skip_if_not_installed("vdiffr")
   skip_slow()
   skip_if(getRversion() < "4.1")
   test_plot_pr <- function() {
