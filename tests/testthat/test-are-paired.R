@@ -105,6 +105,7 @@ test_that("are.paired return.paired.rocs returns smooth curves", {
 })
 
 test_that("are.paired return.paired.rocs smoothes curves with the right method", {
+  skip_if_not_installed("logcondens")
   skip_slow()
   aSAH.missing <- aSAH
   aSAH.missing$ndka[1:20] <- NA

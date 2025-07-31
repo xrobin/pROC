@@ -43,6 +43,7 @@ data(aSAH)
 roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
 roc.s100b.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
+if (require(ggplot2)) {
 ggroc(roc.s100b) + geom_polygon_auc(roc.s100b$auc)
 
 # legacy.axes must be repeated
@@ -54,5 +55,5 @@ auc.s100b.partial.se <- auc(roc.s100b, partial.auc = c(0.8, 0.9), partial.auc.fo
 
 ggroc(roc.s100b) + geom_polygon_auc(auc.s100b.partial.sp)
 ggroc(roc.s100b) + geom_polygon_auc(auc.s100b.partial.se)
-
+}
 }
