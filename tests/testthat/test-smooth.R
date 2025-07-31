@@ -51,6 +51,7 @@ test_that("smooth with two density functions works", {
 
 
 test_that("smooth with fitdistr works", {
+  testthat::skip_if_not_installed("MASS")
   smoothed <- smooth(r.ndka, method = "fitdistr", n = 10)
   expect_is(smoothed, "smooth.roc")
   expect_equal(smoothed$sensitivities, c(
@@ -67,6 +68,7 @@ test_that("smooth with fitdistr works", {
 })
 
 test_that("smooth with fitdistr different densities works", {
+  testthat::skip_if_not_installed("MASS")
   smoothed <- smooth(r.ndka, method = "fitdistr", density.controls = "normal", density.cases = "lognormal", n = 10)
   expect_is(smoothed, "smooth.roc")
   expect_equal(smoothed$sensitivities, c(
@@ -83,6 +85,7 @@ test_that("smooth with fitdistr different densities works", {
 })
 
 test_that("smooth with fitdistr with a density function works", {
+  testthat::skip_if_not_installed("MASS")
   smoothed <- smooth(r.ndka,
     method = "fitdistr", n = 10,
     density.controls = dnorm, start.controls = list(mean = 10, sd = 10),

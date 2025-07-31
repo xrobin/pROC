@@ -273,8 +273,10 @@ rs <- smooth(rocobj, method="binormal")
 plot(rs, add=TRUE, col="green")
 rs2 <- smooth(rocobj, method="density")
 plot(rs2, add=TRUE, col="blue")
+if (requireNamespace("MASS")) {
 rs3 <- smooth(rocobj, method="fitdistr", density="lognormal")
 plot(rs3, add=TRUE, col="magenta")
+}
 if (requireNamespace("logcondens")) {
 rs4 <- smooth(rocobj, method="logcondens")
 plot(rs4, add=TRUE, col="brown")
@@ -287,10 +289,12 @@ legend("bottomright", legend=c("Empirical", "Binormal", "Density", "Log-normal",
 
 ## Advanced smoothing
 
+if (requireNamespace("MASS")) {
 # if we know the distributions are normal with sd=0.1 and an unknown mean:
 smooth(rocobj, method="fitdistr", density=dnorm, start=list(mean=1), sd=.1)
 # different distibutions for controls and cases:
 smooth(rocobj, method="fitdistr", density.controls="normal", density.cases="lognormal")
+}
 
 # with densities
 bw <- bw.nrd0(rocobj$predictor)
@@ -315,7 +319,9 @@ rnorm(1000)
 roc.norm <- roc(controls=rnorm(1000), cases=rnorm(1000)+1, plot=TRUE)
 plot(smooth(roc.norm), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="density"), col="red", lwd=1, add=TRUE)
+if (requireNamespace("MASS")) {
 plot(smooth(roc.norm, method="fitdistr"), col="blue", lwd=1, add=TRUE)
+}
 if (requireNamespace("logcondens")) {
 plot(smooth(roc.norm, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
@@ -328,11 +334,13 @@ legend("bottomright", legend=c("empirical", "binormal", "density", "fitdistr",
 roc.norm.exp <- roc(controls=rnorm(1000), cases=rexp(1000), plot=TRUE)
 plot(smooth(roc.norm.exp), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm.exp, method="density"), col="red", lwd=1, add=TRUE)
+if (requireNamespace("MASS")) {
 # Wrong fitdistr: normality assumed by default
 plot(smooth(roc.norm.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
 # Correct fitdistr
 plot(smooth(roc.norm.exp, method="fitdistr", density.controls="normal",
             density.cases="exponential"), col="purple", lwd=1, add=TRUE)
+}
 if (requireNamespace("logcondens")) {
 plot(smooth(roc.norm.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.norm.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)
@@ -347,8 +355,10 @@ roc.unif.exp <- roc(controls=runif(1000, 2, 3), cases=rexp(1000)+2, plot=TRUE)
 plot(smooth(roc.unif.exp), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density", bw="ucv"), col="magenta", lwd=1, add=TRUE)
+if (requireNamespace("MASS")) {
 # Wrong fitdistr: normality assumed by default (uniform distributions not handled)
 plot(smooth(roc.unif.exp, method="fitdistr"), col="blue", lwd=1, add=TRUE)
+}
 if (requireNamespace("logcondens")) {
 plot(smooth(roc.unif.exp, method="logcondens"), col="brown", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="logcondens.smooth"), col="orange", lwd=1, add=TRUE)

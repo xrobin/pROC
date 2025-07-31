@@ -86,9 +86,15 @@ test_that("print.smooth.roc works", {
   expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH))), "print_output/smooth.s100b.formula")
   expect_known_output(print(smooth(roc(aSAH$outcome, aSAH$ndka))), "print_output/smooth.wfns")
   expect_known_output(print(smooth(roc(aSAH$outcome, aSAH$ndka), method = "binormal")), "print_output/smooth.s100b.binormal")
-  expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method = "fitdistr")), "print_output/smooth.s100b.fitdistr")
   expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method = "density")), "print_output/smooth.s100b.density")
+})
 
+test_that("print.smooth.roc with fitdistr works", {
+  testthat::skip_if_not_installed("MASS")
+  expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method = "fitdistr")), "print_output/smooth.s100b.fitdistr")
+})
+
+test_that("print.smooth.roc with logcondens works", {
   testthat::skip_if_not_installed("logcondens")
   expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method = "logcondens")), "print_output/smooth.s100b.logcondens")
   expect_known_output(print(smooth(roc(outcome ~ s100b, aSAH), method = "logcondens.smooth")), "print_output/smooth.s100b.logcondens.smooth")
