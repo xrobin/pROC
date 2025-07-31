@@ -61,6 +61,9 @@ for (marker in c("ndka", "wfns", "s100b")) {
             if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
               testthat::skip_if_not_installed("logcondens")
             }
+            if (smooth.method == "fitdistr") {
+              testthat::skip_if_not_installed("MASS")
+            }
             s <- smooth(r, method = smooth.method, 10)
             expect_is(s, "smooth.roc")
             expect_identical(s$percent, percent)
@@ -74,6 +77,9 @@ for (marker in c("ndka", "wfns", "s100b")) {
             context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
             if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
               testthat::skip_if_not_installed("logcondens")
+            }
+            if (smooth.method == "fitdistr") {
+              testthat::skip_if_not_installed("MASS")
             }
             s2 <- roc(aSAH$outcome, aSAH[[marker]],
               levels = level.values[[levels.direction]], direction = direction, percent = percent, quiet = TRUE,
