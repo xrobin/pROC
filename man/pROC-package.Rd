@@ -133,7 +133,6 @@ aSAH \%>\%
 }
 
 \section{Bootstrap}{
-
   All the bootstrap operations for \link[=roc.test]{significance testing}, \link[=ci]{confidence interval}, \link[=var]{variance} and \link[=cov]{covariance} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
 
   Stratification of bootstrap can be controlled
@@ -239,6 +238,8 @@ CRAN packages \pkg{ROCR}, \pkg{verification} or Bioconductor's \pkg{roc}
 for ROC curves.
 
 CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this package.
+
+See \code{vignette("FAQ", package = "pROC")} for frequently asked questions.
 }
 \examples{
 data(aSAH)

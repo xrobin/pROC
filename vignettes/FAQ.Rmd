@@ -1,0 +1,176 @@
+---
+title: "Frequently Asked Questions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Frequently Asked Questions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Frequently Asked Questions
+
+## The X axis should be "1-Specificity" instead of "Specificity"!
+
+This is not a bug! 
+
+Most statistical tools cannot plot specificity from 1 to 0, so instead they plot
+1-specificity from 0 to 1. This results in exactly the same plot, just with a
+different labelling of the axis.
+
+R doesn't have this limitation, and `pROC` plots specificity from 1 to 0, saving
+you from doing a few subtractions when you look at the plot. If you are using
+pROC in S+, you only have the choice to plot 1-specificity. 
+
+If you are concerned that your reviewers will be confused and really wish to
+have the "old-style" 1-Specificity from 0 to 1, or if you plan to change the
+axis label to "False Positive Rate" (which is really 1-specificity), you can use
+the `legacy.axis` argument to the plot function. See `?plot.roc` for more
+details.
+
+## I have a GLM/SVM/PLS/<INSERT YOUR FAVORITE MODEL HERE> model, how can I analyze it with pROC?
+
+You need to use the `predict()` function to get predictions that can be passed
+to pROC (as the `predictor` argument).
+
+Specifically you need to get a single vector of numeric predictions. In some
+cases you may have to add pass `type="probabilities"` or something similar to
+the `predict` function (to get probabilities instead of the binary response),
+sometimes you may to have select one of the column of the returned matrix (if
+`predict` returns a matrix of class probabilities). Read the documentation of
+the package you're using and look at your results to find out what to do
+exactly.
+
+## Can I create a ROC curve with two predictors? Can I adjust fixed / random effects in pROC?
+
+Not directly, but you can! You need to use a modeling function (such as `glm()`)
+or package (such as [lme4](http://cran.r-project.org/web/packages/lme4/)); fit
+and check the model, then use the `predict()` function to get predictions that
+can be passed to pROC (as the `predictor` argument).
+
+## When I resample or randomize my dataset I get an biased AUC > 0.5. How come?
+
+This is because pROC tries to auto-detect the direction of the decision due to
+the default value of `direction="auto"`. The decision is based on the median of
+the groups instead of the AUC directly, so you the effect may not be 1:1, but
+you should expect to obtain AUC > 0.5 on average.
+
+Whenever you are resampling with pROC you need to explicitly pass an explicit
+value to `direction`, either `direction="<"` or `direction=">"`. I also
+recommend taking a minute to set the `levels` (value of the `response` for
+controls and cases, respectively) argument explicitly too.
+
+A future version of pROC will be more verbose and print a message when auto-detecting the direction.
+
+## Can I test if a single ROC curve is significantly different from 0.5?
+
+This is equivalent to asking whether the median values of cases and controls are
+significantly different. Therefore you can easily perform a [Wilcoxon Rank Sum
+Test](https://www.rdocumentation.org/packages/stats/topics/wilcox.test).
+
+## My dataset is huge. Can I use pROC?
+
+A large effort has been made to render pROC more and more efficient with large
+ROC curves. An algorithm with complexity of O(n) has been rolled out with pROC
+1.6 and improved over time. Improvements to the DeLong test and the `coords`
+functions have been implemented too.
+
+If you feel that a function is abnormally slow, especially in comparison to
+other packages, feel free to [open a bug
+report](https://github.com/xrobin/pROC/issues/new?template=Bug_report.md).
+
+## Can I compute the confidence interval of the best threshold of the curve (not its SE/SP)?
+
+Yes you can since pROC 1.6 and its `ci.coords` function. For instance:
+
+```{r, eval = FALSE}
+ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
+          ret="threshold")
+# 95% CI (2000 stratified bootstrap replicates):
+#            2.5%   50%  97.5%
+# threshold 0.115 0.205 0.4854
+```
+
+There is 95% chance that the optimal threshold lies between 0.115 and 0.4854.
+
+## The functions are giving me weird error messages I don't understand
+
+Several packages on CRAN provide alternative `roc` or `auc` functions. These
+packages can interfere with pROC, especially if they are loaded later in the
+session (and hence appear earlier in the search path).
+
+For instance, here are a few messages you may see if you have the `AUC` package loaded:
+
+```{r, eval = FALSE}
+roc(outcome ~ ndka, data = aSAH)
+# Not enough distinct predictions to compute area under the ROC curve.
+# 
+# Error in roc(outcome ~ ndka, data = aSAH) : unused argument (data = aSAH)
+
+If that happens, you should unload the package by typing `detach("package:AUC")`.
+To find out where the function is coming from, simply type its name on the R
+prompt:
+
+```r
+roc
+```
+
+The line at the bottom indicates that the function comes from the AUC package.
+
+In addition, you may have defined a `roc` function yourself. In this case,
+`rm(roc)` will solve the problem.
+
+Alternatively you can refer to the pROC version of the function specifically
+through their namespace:
+
+```r
+pROC::auc(pROC::roc(aSAH$outcome, aSAH$ndka))
+```
+
+Here is a list of packages providing `roc`, `auc` and `ci` functions which will
+hide pROC's functions if the package is loaded after pROC:
+
+| Package | roc | auc | ci |
+|---------|-----|-----|-----|
+| analogue | [Generic](http://finzi.psych.upenn.edu/R/library/analogue/html/roc.html) | | |
+| asbio | | [Not Generic](http://finzi.psych.upenn.edu/R/library/asbio/html/auc.html) | |
+| AUC | [Not Generic](http://finzi.psych.upenn.edu/R/library/AUC/html/roc.html) | [Not Generic](http://finzi.psych.upenn.edu/R/library/AUC/html/auc.html) | |
+| aucm | [NA](http://finzi.psych.upenn.edu/R/library/aucm/html/roc.html) | [NA](http://finzi.psych.upenn.edu/R/library/aucm/html/auc.html) | |
+| cutpointr | [Not Generic](http://finzi.psych.upenn.edu/R/library/cutpointr/html/roc.html) | | |
+| distillery | | | [Generic](http://finzi.psych.upenn.edu/R/library/distillery/html/ci.html) |
+| enrichvs | | [Not Generic](http://finzi.psych.upenn.edu/R/library/enrichvs/html/auc.html) | |
+| epiDisplay | [NA](http://finzi.psych.upenn.edu/R/library/epiDisplay/html/roc.html) | | [Generic](http://finzi.psych.upenn.edu/R/library/epiDisplay/html/ci.html) |
+| esvis | | [Not Generic](http://finzi.psych.upenn.edu/R/library/esvis/html/auc.html) | |
+| FFTrees | | [Not Generic](http://finzi.psych.upenn.edu/R/library/FFTrees/html/auc.html) | |
+| flux | | [Not Generic](http://finzi.psych.upenn.edu/R/library/flux/html/auc.html) | |
+| fmsb | [Not Generic](http://finzi.psych.upenn.edu/R/library/fmsb/html/roc.html) | | |
+| gmodels | | | [Generic](http://finzi.psych.upenn.edu/R/library/gmodels/html/ci.html) |
+| grpreg | | [NA](http://finzi.psych.upenn.edu/R/library/grpreg/html/auc.html) | |
+| hutils | | [Not Generic](http://finzi.psych.upenn.edu/R/library/hutils/html/auc.html) | |
+| kulife | | [Not Generic](http://finzi.psych.upenn.edu/R/library/kulife/html/auc.html) | |
+| longROC | [Not Generic](http://finzi.psych.upenn.edu/R/library/longROC/html/roc.html) | [Not Generic](http://finzi.psych.upenn.edu/R/library/longROC/html/auc.html) | |
+| MAMSE | [Not Generic](http://finzi.psych.upenn.edu/R/library/MAMSE/html/roc.html) | | |
+| MESS | | [Not Generic](http://finzi.psych.upenn.edu/R/library/MESS/html/auc.html) | |
+| Metrics | | [Not Generic](http://finzi.psych.upenn.edu/R/library/Metrics/html/auc.html) | |
+| MXM | | [Not Generic](http://finzi.psych.upenn.edu/R/library/MXM/html/auc.html) | |
+| ncvreg | | [NA](http://finzi.psych.upenn.edu/R/library/ncvreg/html/auc.html) | |
+| NEArender | [Not Generic](http://finzi.psych.upenn.edu/R/library/NEArender/html/roc.html) | | |
+| PK | | [Not Generic](http://finzi.psych.upenn.edu/R/library/PK/html/auc.html) | |
+| precrec | | [Generic](http://finzi.psych.upenn.edu/R/library/precrec/html/auc.html) | |
+| PresenceAbsence | | [Not Generic](http://finzi.psych.upenn.edu/R/library/PresenceAbsence/html/auc.html) | |
+| radiant.model | | [Not Generic](http://finzi.psych.upenn.edu/R/library/radiant.model/html/auc.html) | |
+| RMediation | | | [Not Generic](http://finzi.psych.upenn.edu/R/library/RMediation/html/ci.html) |
+| sdm | [Generic](http://finzi.psych.upenn.edu/R/library/sdm/html/roc.html) | | |
+| SDMTools | | [Not Generic](http://finzi.psych.upenn.edu/R/library/SDMTools/html/auc.html) | |
+| spatstat | | [Generic](http://finzi.psych.upenn.edu/R/library/spatstat/html/auc.html) | |
+| StatMeasures | | [Not Generic](http://finzi.psych.upenn.edu/R/library/StatMeasures/html/auc.html) | |
+| survMisc | | | [Generic](http://finzi.psych.upenn.edu/R/library/survMisc/html/ci.html) |
+
+To get an updated list, run `inst/extra/sos_clashes.R`. It may be needed to
+start R with `export R_MAX_NUM_DLLS=1000` to be able to run the script.
