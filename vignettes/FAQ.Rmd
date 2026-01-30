@@ -69,7 +69,7 @@ exactly.
 
 Here is a concrete example using `glm()`:
 
-```{r glm-example, fig.width=7, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+```{r glm-example, fig.width=5, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
 # Fit a logistic regression model
 model <- glm(outcome ~ s100b + wfns, data = aSAH, family = binomial)
 
@@ -83,6 +83,58 @@ roc_glm <- roc(aSAH$outcome, predictions)
 plot(roc_glm, main = "ROC curve from GLM predictions")
 auc(roc_glm)
 ```
+
+## How do I remove empty space on the sides of my ROC plot?
+
+Extra empty space can sometimes appear on either side of the x-axis in your ROC plots.
+This typically happens when the plotting device or window isn't square. By default, pROC
+ensures the plot is square (with `asp = 1`) so that both sensitivity and specificity are
+on the same scale, which is important for visual interpretation.
+
+```{r default-empty-space, fig.width=7, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+plot(rocobj, main = "Default ROC plot (non-squared, with empty space)")
+```
+
+### Solution 1: Make the plotting region square
+
+Use `par(pty = "s")` to make the plotting region square, which will automatically
+remove the extra space:
+
+```{r remove-empty-space, fig.width=7, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+par(pty = "s")
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+plot(rocobj, main = "ROC curve with square plotting region")
+par(pty = "m")  # Reset to default
+```
+
+### Solution 2: Adjust margins for square device
+
+If you're saving to a file, make sure the device is square and adjust margins so
+that top + bottom == left + right:
+
+```{r, eval = FALSE}
+# For file output
+png("roc.png", width = 480, height = 480)
+par(mar = c(4, 4, 4, 4) + 0.1)
+plot(roc(aSAH$outcome, aSAH$s100b, percent = TRUE))
+dev.off()
+```
+
+### Solution 3: Allow free aspect ratio (not recommended)
+
+You can use `asp = NA` to allow a free (unconstrained) aspect ratio, but this will
+distort the axis and make visual interpretation of the ROC curve difficult. It's
+better to keep the plot square for proper visual comparison.
+
+```{r free-aspect-ratio, fig.width=7, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+plot(rocobj, main = "ROC curve with free aspect ratio", asp = NA)
+```
+
+**Note:** Having a squared ROC curve is important for visual interpretation, as it
+allows you to compare distances to the diagonal accurately. The default `asp = 1`
+ensures both axes have the same scale.
 
 ## When I resample or randomize my dataset I get an biased AUC > 0.5. How come?
 
