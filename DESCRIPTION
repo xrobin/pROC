@@ -6,7 +6,8 @@ Date: 2025-07-31
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: methods, Rcpp (>= 0.11.1)
-Suggests: MASS, logcondens, testthat, vdiffr, ggplot2, rlang
+Suggests: MASS, logcondens, testthat, vdiffr, ggplot2, rlang, knitr, rmarkdown
+VignetteBuilder: knitr
 LinkingTo: Rcpp
 Authors@R: c(person("Xavier", "Robin", role = c("cre", "aut"), 
                     email = "pROC-cran@xavier.robin.name",

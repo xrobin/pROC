@@ -13,3 +13,5 @@ codecov.yml
 ^COPYING$
 ^run_revdep.R$
 ^codemeta\.json$
+^doc$
+^Meta$

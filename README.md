@@ -115,6 +115,7 @@ Getting Help
 
 * Type `?pROC` on the R command line
 * Make sure you've [read the FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
+* View the FAQ vignette: `vignette("FAQ", package = "pROC")` or `browseVignettes("pROC")`
 * Search for [questions tagged with pROC-R-package on Stack Overflow](https://stackoverflow.com/questions/tagged/proc-r-package?tab=Votes)
 
 If you still can't find an answer, you can:
@@ -126,6 +127,24 @@ If you still can't find an answer, you can:
 
 Development
 -------
+
+### Building vignettes
+
+To build the vignettes locally:
+
+```R
+devtools::build_vignettes()
+# Or using tools:
+tools::buildVignettes(dir = ".", tangle = FALSE)
+```
+
+The HTML output will be in `inst/doc/` after building. After installing the package, view it with:
+
+```R
+browseVignettes("pROC")
+# Or directly:
+vignette("FAQ", package = "pROC")
+```
 
 ### Installing the development version
 
