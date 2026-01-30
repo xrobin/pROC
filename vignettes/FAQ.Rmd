@@ -10,7 +10,9 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
@@ -25,14 +27,32 @@ Most statistical tools cannot plot specificity from 1 to 0, so instead they plot
 different labelling of the axis.
 
 R doesn't have this limitation, and `pROC` plots specificity from 1 to 0, saving
-you from doing a few subtractions when you look at the plot. If you are using
-pROC in S+, you only have the choice to plot 1-specificity. 
+you from doing a few subtractions when you look at the plot.
 
 If you are concerned that your reviewers will be confused and really wish to
 have the "old-style" 1-Specificity from 0 to 1, or if you plan to change the
 axis label to "False Positive Rate" (which is really 1-specificity), you can use
-the `legacy.axis` argument to the plot function. See `?plot.roc` for more
+the `legacy.axes` argument to the plot function. See `?plot.roc` for more
 details.
+
+Here is a comparison of the two plotting styles:
+
+```{r legacy-axis-comparison, fig.width=10, fig.height=5, fig.align='center', out.width='100%', message=FALSE, warning=FALSE}
+library(pROC)
+data(aSAH)
+
+# Create a ROC curve
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+
+# Plot with default axis (Specificity from 1 to 0)
+par(mfrow = c(1, 2))
+plot(rocobj, main = "Default: Specificity (1 to 0)")
+
+# Plot with legacy axis (1-Specificity from 0 to 1)
+plot(rocobj, main = "Legacy: 1-Specificity (0 to 1)", 
+     legacy.axes = TRUE)
+par(mfrow = c(1, 1))
+```
 
 ## I have a GLM/SVM/PLS/<INSERT YOUR FAVORITE MODEL HERE> model, how can I analyze it with pROC?
 
@@ -47,12 +67,22 @@ sometimes you may to have select one of the column of the returned matrix (if
 the package you're using and look at your results to find out what to do
 exactly.
 
-## Can I create a ROC curve with two predictors? Can I adjust fixed / random effects in pROC?
+Here is a concrete example using `glm()`:
 
-Not directly, but you can! You need to use a modeling function (such as `glm()`)
-or package (such as [lme4](http://cran.r-project.org/web/packages/lme4/)); fit
-and check the model, then use the `predict()` function to get predictions that
-can be passed to pROC (as the `predictor` argument).
+```{r glm-example, fig.width=7, fig.height=5, fig.align='center', message=FALSE, warning=FALSE}
+# Fit a logistic regression model
+model <- glm(outcome ~ s100b + wfns, data = aSAH, family = binomial)
+
+# Get predicted probabilities
+predictions <- predict(model, type = "response")
+
+# Create ROC curve with the predictions
+roc_glm <- roc(aSAH$outcome, predictions)
+
+# Plot and compute AUC
+plot(roc_glm, main = "ROC curve from GLM predictions")
+auc(roc_glm)
+```
 
 ## When I resample or randomize my dataset I get an biased AUC > 0.5. How come?
 
@@ -112,6 +142,7 @@ roc(outcome ~ ndka, data = aSAH)
 # Not enough distinct predictions to compute area under the ROC curve.
 # 
 # Error in roc(outcome ~ ndka, data = aSAH) : unused argument (data = aSAH)
+```
 
 If that happens, you should unload the package by typing `detach("package:AUC")`.
 To find out where the function is coming from, simply type its name on the R
