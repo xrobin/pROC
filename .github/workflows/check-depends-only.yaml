@@ -38,6 +38,7 @@ jobs:
           extra-packages: |
             any::rcmdcheck
             any::testthat
+            any::pdflatex
           dependencies: '"hard"'
           needs: check
 
