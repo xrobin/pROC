@@ -38,11 +38,10 @@ jobs:
           extra-packages: |
             any::rcmdcheck
             any::testthat
-            any::pdflatex
           dependencies: '"hard"'
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: false
-          args: '"--no-vignettes"'
+          args: 'c("--no-vignettes", "--no-manual")'
