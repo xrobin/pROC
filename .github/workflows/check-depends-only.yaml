@@ -19,6 +19,7 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       _R_CHECK_FORCE_SUGGESTS_: false
       _R_CHECK_DEPENDS_ONLY_: true
+      _R_CHECK_DONOTBUILD_VIGNETTES_: true
       RUN_SLOW_TESTS: true
 
     steps:
