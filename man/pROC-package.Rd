@@ -41,10 +41,6 @@
   \doi{10.1186/1471-2105-12-77}
 
   Type \code{citation("pROC")} for a BibTeX entry.
-
-  The authors would be glad to hear how pROC is employed. You are kindly
-  encouraged to notify Xavier Robin <pROC-cran@xavier.robin.name>
-  about any work you publish.
 }
 
 \section{Abbreviations}{
