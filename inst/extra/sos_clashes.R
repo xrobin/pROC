@@ -6,20 +6,20 @@ library(stringr)
 library(dplyr)
 
 # Get auc functions
-auc.search <- findFn("auc") 
+auc.search <- findFn("auc", maxPages=1000)
 auc.functions <- auc.search %>%
 	filter(Function == "auc", Package != "pROC") %>%
 	select(Package, Function, Description, Link)
 rownames(auc.functions) <- auc.functions$Package
 	
-ci.search <- findFn("ci") 
+ci.search <- findFn("ci", maxPages=1000)
 ci.functions <- ci.search %>%
 	filter(Function == "ci", Package != "pROC") %>%
 	select(Package, Function, Description, Link)
 rownames(ci.functions) <- ci.functions$Package
 
 # Get roc functions
-roc.search <- findFn("roc") 
+roc.search <- findFn("roc", maxPages=1000)
 roc.functions <- roc.search %>%
 	filter(Function == "roc", Package != "pROC") %>%
 	select(Package, Function, Description, Link)
@@ -28,15 +28,21 @@ rownames(roc.functions) <- roc.functions$Package
 
 # Install missing packages
 missing.packages <- auc.functions$Package[ ! auc.functions$Package %in% installed.packages()[,"Package"]]
-if (length(missing.packages) > 0)
+if (length(missing.packages) > 0) {
+	paste("Missing packages for auc: ", paste0(missing.packages, collapse=", "))
 	install.packages(missing.packages)
+}
 missing.packages <- roc.functions$Package[ ! roc.functions$Package %in% installed.packages()[,"Package"]]
-if (length(missing.packages) > 0)
+if (length(missing.packages) > 0) {
+	paste("Missing packages for roc: ", paste0(missing.packages, collapse=", "))
 	install.packages(missing.packages)
+}
 
 missing.packages <- ci.functions$Package[ ! ci.functions$Package %in% installed.packages()[,"Package"]]
-if (length(missing.packages) > 0)
+if (length(missing.packages) > 0) {
+	paste("Missing packages for ci: ", paste0(missing.packages, collapse=", "))
 	install.packages(missing.packages)
+}
 
 # Filter packages that are still missing
 available.packages.with.auc <- auc.functions[auc.functions$Package %in% installed.packages()[,"Package"],]
