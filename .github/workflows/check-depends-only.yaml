@@ -3,6 +3,8 @@ on: [push, pull_request]
 
 name: R-CMD-check-depends-only
 
+permissions: read-all
+
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
@@ -17,9 +19,9 @@ jobs:
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
       _R_CHECK_FORCE_SUGGESTS_: false
       _R_CHECK_DEPENDS_ONLY_: true
-      _R_CHECK_DONOTBUILD_VIGNETTES_: true
       RUN_SLOW_TESTS: true
 
     steps:
@@ -35,14 +37,17 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          cache: false
           extra-packages: |
             any::rcmdcheck
             any::testthat
+            any::knitr
+            any::rmarkdown
           dependencies: '"hard"'
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: false
-          build_args: 'c("--no-build-vignettes")'
-          args: 'c("--no-vignettes", "--no-manual")'
+          build_args: 'c("--no-manual", "--no-build-vignettes")'
+          args: 'c("--no-manual", "--no-vignettes", "--ignore-vignettes")'
