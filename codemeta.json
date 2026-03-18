@@ -242,6 +242,6 @@
       }
     }
   ],
-  "contIntegration": ["https://github.com/xrobin/pROC/actions?workflow=R-CMD-check", "https://github.com/xrobin/pROC/actions?workflow=test-coverage", "https://ci.appveyor.com/project/xrobin/pROC", "https://app.codecov.io/github/xrobin/pROC"],
+  "contIntegration": ["https://github.com/xrobin/pROC/actions?workflow=R-CMD-check", "https://github.com/xrobin/pROC/actions?workflow=test-coverage", "https://app.codecov.io/github/xrobin/pROC"],
   "relatedLink": "https://CRAN.R-project.org/package=pROC"
 }
