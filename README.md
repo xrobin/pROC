@@ -1,6 +1,5 @@
 [![R build status](https://github.com/xrobin/pROC/workflows/R-CMD-check/badge.svg)](https://github.com/xrobin/pROC/actions?workflow=R-CMD-check)
 [![R build status](https://github.com/xrobin/pROC/workflows/test-coverage/badge.svg)](https://github.com/xrobin/pROC/actions?workflow=test-coverage)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/xrobin/pROC?branch=master&svg=true)](https://ci.appveyor.com/project/xrobin/pROC)
 [![Codecov coverage](https://codecov.io/github/xrobin/pROC/branch/master/graphs/badge.svg)](https://app.codecov.io/github/xrobin/pROC) 
 [![CRAN Version](http://www.r-pkg.org/badges/version/pROC)](https://cran.r-project.org/package=pROC)
 [![Downloads](http://cranlogs.r-pkg.org/badges/pROC)](https://cran.r-project.org/package=pROC)
@@ -197,19 +196,6 @@ To run the checks upon R CMD check, set environment variable `NOT_CRAN=1`:
 
 ```
 NOT_CRAN=1 RUN_SLOW_TESTS=true R CMD check pROC_$VERSION.tar.gz
-```
-
-### AppVeyor Build Cache
-
-By default, AppVeyor stores a build cache containing installed dependencies.
-Sometimes you want to clean the cache, for instance if a
-`Graphics API versionmismatch` occurs on R-devel, indicating that `ggplot2` was
-built with a previous version of R. For this you need the AppVeyor 
-[API key](https://ci.appveyor.com/api-keys) to make a `DELETE` request:
-
-```R
-export APPVEYOR_TOKEN="<your-api-token>"
-curl -H "Authorization: Bearer $APPVEYOR_TOKEN" -H "Content-Type: application/json" -X DELETE https://ci.appveyor.com/api/projects/xrobin/pROC/buildcache
 ```
 
 ### Release steps

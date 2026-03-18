@@ -1,4 +1,3 @@
-^appveyor\.yml$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^packrat/
