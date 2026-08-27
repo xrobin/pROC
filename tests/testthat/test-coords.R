@@ -255,7 +255,7 @@ test_that("coords works with smooth.roc and x = 'best' and transpose=TRUE", {
       0.391389432485323, 0.300754425357959, 0.228887007344322, 0.418226455954953,
       0.581773544045047, 0.608610567514677, 2.4428179690470926, 0.52125683157286817,
       1.35946774343758, 0.215257834650296
-    ), .Dim = c(25L, 1L), .Dimnames = list(c(
+    ), dim = c(25L, 1L), dimnames = list(c(
       "specificity", "sensitivity",
       "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "fdr", "fpr",
       "tpr", "tnr", "fnr", "1-specificity", "1-sensitivity", "1-accuracy",
@@ -311,7 +311,7 @@ test_that("coords works with smooth.roc", {
       0.391389432485323, 0.300754425357959, 0.228887007344322, 0.418226455954953,
       0.581773544045047, 0.608610567514677, 2.4428179690470926, 0.52125683157286817,
       1.35946774343758, 0.215257834650296
-    ), .Dim = c(25L, 1L), .Dimnames = list(c(
+    ), dim = c(25L, 1L), dimnames = list(c(
       "specificity", "sensitivity",
       "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "fdr", "fpr",
       "tpr", "tnr", "fnr", "1-specificity", "1-sensitivity", "1-accuracy",
