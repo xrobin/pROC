@@ -24,7 +24,7 @@ coords(rocobj, c(0.05, 0.2, 0.5))
 }
 
 This format didn't conform to the grammar of the 
-\href{https://www.tidyverse.org/}{tidyverse} which has become prevalent in modern
+\href{https://tidyverse.org/}{tidyverse} which has become prevalent in modern
 R language.
 
 In addition, the dropping of dimensions by default makes it difficult to guess
