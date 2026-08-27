@@ -1,16 +1,16 @@
 Package: pROC
 Type: Package
 Title: Display and Analyze ROC Curves
-Version: 1.19.0.9999
-Date: 2025-07-31
+Version: 1.19.1
+Date: 2026-08-27
 Encoding: UTF-8
 Depends: R (>= 2.14)
 Imports: methods, Rcpp (>= 0.11.1)
 Suggests: MASS, logcondens, testthat, vdiffr, ggplot2, rlang, knitr, rmarkdown
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 LinkingTo: Rcpp
 Authors@R: c(person("Xavier", "Robin", role = c("cre", "aut"), 
-                    email = "pROC-cran@xavier.robin.name",
+                    email = "pROC-cran@xavamail.net",
                     comment = c(ORCID = "0000-0002-6813-3200")),
              person("Natacha", "Turck", role = "aut"),
              person("Alexandre", "Hainard", role = "aut"),
