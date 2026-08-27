@@ -197,7 +197,7 @@ system.time(ci(rocobj, method="delong"))
 \author{
 Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
 
-Maintainer: Xavier Robin <pROC-cran@xavier.robin.name>
+Maintainer: Xavier Robin <pROC-cran@xavamail.net>
 }
 
 \references{
