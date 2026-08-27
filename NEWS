@@ -1,3 +1,9 @@
+1.19.1 (2026-08-27)
+  * Added a FAQ vignette
+  * Removed unused 'tcltk' from Suggests
+  * Tests now skip if Suggest'ed packages are missing
+  * Fix CRAN checks NOTE about 'structure()' special names ('.Names', '.Dim', '.Dimnames')
+
 1.19.0.1 (2025-07-31)
   * Move 'fun.sesp' definition to work around LudvigOlsen/cvms#44
 
