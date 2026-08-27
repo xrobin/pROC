@@ -18,7 +18,7 @@ expected_roc_utils_calc_coords <-
     1, 1.0000000000000002, NaN, NaN, 1, 1, 1, 1, 0.50462962962962965,
     0.10833333333333334, 0.009259259259259257, 0.009259259259259257,
     0.25231481481481483, 0.8100925925925927, 1
-  ), .Dim = c(4L, 26L), .Dimnames = list(NULL, c(
+  ), dim = c(4L, 26L), dimnames = list(NULL, c(
     "threshold", "sensitivity", "specificity",
     "accuracy", "tn", "tp", "fn", "fp", "npv", "ppv", "tpr", "tnr",
     "fpr", "fnr", "fdr", "1-specificity", "1-sensitivity", "1-accuracy",
@@ -43,7 +43,7 @@ expected_roc_utils_calc_coords.percent <-
     NaN, NaN, 1, 1, 1, 100, 50.462962962962962, 10.833333333333334,
     0.92592592592592571, 0.92592592592592571, 25.231481481481481,
     81.009259259259267, 100
-  ), .Dim = c(4L, 26L), .Dimnames = list(
+  ), dim = c(4L, 26L), dimnames = list(
     NULL, c(
       "threshold", "sensitivity", "specificity", "accuracy",
       "tn", "tp", "fn", "fp", "npv", "ppv", "tpr", "tnr", "fpr",
