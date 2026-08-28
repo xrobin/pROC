@@ -66,20 +66,25 @@ ci.thresholds.roc <- function(roc,
   }
 
   # Check and prepare thresholds
-  if (is.character(thresholds)) {
-    if (length(thresholds) != 1) {
-      stop("'thresholds' of class character must be of length 1.")
-    }
-    thresholds <- match.arg(thresholds, c("all", "best", "local maximas"))
+  special <- if (is.character(thresholds) && length(thresholds) == 1) {
+    pmatch(thresholds, c("all", "best", "local maximas"))
+  } else {
+    NA_integer_
+  }
+  if (is.character(thresholds) && length(thresholds) == 1 && !is.na(special)) {
+    thresholds <- c("all", "best", "local maximas")[special]
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
-  } else if (!is.numeric(thresholds)) {
-    stop("'thresholds' is not character, logical or numeric.")
-  } else {
+  } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
+    if (is.numeric(thresholds) && (is.ordered(roc$thresholds) || is.ordered(roc$predictor))) {
+      stop("Numeric 'thresholds' is not supported for ordered ROC curves. Pass level labels as character or ordered.")
+    }
     thresholds.num <- thresholds
+  } else {
+    stop("'thresholds' is not character, logical, ordered or numeric.")
   }
 
   perfs_shape <- matrix(NA_real_, nrow = 2L, ncol = length(thresholds.num))
@@ -93,7 +98,7 @@ ci.thresholds.roc <- function(roc,
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])
 
-  rownames(se) <- rownames(sp) <- thresholds.num
+  rownames(se) <- rownames(sp) <- as.character(thresholds.num)
 
   if (roc$percent) {
     se <- se * 100

@@ -140,7 +140,9 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 	highest sum sensitivity + specificity is plotted (this might be more
 	than one threshold). \dQuote{all}: all the points of the ROC
 	curve. \dQuote{local maximas}: all the local maximas. Numeric
-	vector: direct definition of the thresholds to display.
+	vector: direct definition of the thresholds to display on a numeric
+	ROC curve. Character or ordered: level labels to display on an
+	ordered ROC curve (numeric values are not allowed then).
 	Note that on a smoothed ROC curve, only \dQuote{best} is supported.
   }
   \item{print.thres.pch, print.thres.adj, print.thres.col,
@@ -150,8 +152,10 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
     \link{par} for more details.
   }
   \item{print.thres.pattern}{the text pattern for the thresholds, as a
-    \link{sprintf} format. Three numerics are passed to sprintf:
-    threshold, specificity, sensitivity.
+    \link{sprintf} format. Three values are passed to sprintf:
+    threshold, specificity, sensitivity. For numeric ROC curves the
+    default uses \code{\%f}; for ordered predictors the threshold is
+    formatted with \code{\%s}.
   }
   \item{print.thres.pattern.cex}{the character expansion factor (cex) for the
     threshold text pattern. See \link{par} for more details.

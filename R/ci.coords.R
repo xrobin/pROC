@@ -71,8 +71,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   input <- roc_utils_match_coords_input_args(input)
   ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
-  if (is.character(x)) {
-    x <- match.arg(x, c("all", "local maximas", "best"))
+  special <- coords_special_x(x)
+  if (!is.na(special)) {
+    x <- special
     if (x == "all" || x == "local maximas") {
       stop("'all' and 'local maximas' are not available for confidence intervals.")
     }
@@ -154,8 +155,9 @@ ci.coords.roc <- function(roc,
   }
 
   best.policy <- match.arg(best.policy)
-  if (is.character(x)) {
-    x <- match.arg(x, c("all", "local maximas", "best"))
+  special <- coords_special_x(x)
+  if (!is.na(special)) {
+    x <- special
     if (x == "all" || x == "local maximas") {
       stop("'all' and 'local maximas' are not available for confidence intervals.")
     }
@@ -168,6 +170,16 @@ ci.coords.roc <- function(roc,
   coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
   # Replicate with simplify=FALSE returns a list of length boot.n
   perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy), simplify = FALSE)
+  perfs <- lapply(perfs, function(df) {
+    df[] <- lapply(df, function(col) {
+      if (is.numeric(col)) {
+        col
+      } else {
+        rep(NA_real_, length(col))
+      }
+    })
+    df
+  })
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),
     dim = c(length(x), length(ret), boot.n),

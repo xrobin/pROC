@@ -90,6 +90,12 @@ progress = NULL, ...)
   where the "best" threshold is assessed on the given ROC curve before
   resampling.
 
+  On an ordered ROC curve, \code{x} with \code{input="threshold"} must be
+  a level label (character or ordered), not a number. Confidence intervals
+  of the threshold itself are not defined for ordered labels and are
+  returned as \code{NA}; intervals of the other \code{ret} coordinates
+  are still computed.
+
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
 }

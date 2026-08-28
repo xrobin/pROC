@@ -173,6 +173,15 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   or not. As a corollary, thresholds do not correspond to actual values
   in the data.
 
+  Ordered predictors are kept as ordered. Thresholds are the defined
+  levels plus one infinite sentinel (\code{Inf} when \code{direction = "<"},
+  \code{-Inf} when \code{direction = ">"}). An observation equal to the
+  threshold is classified as positive: \code{predictor >= threshold} when
+  \code{direction = "<"}, and \code{predictor <= threshold} when
+  \code{direction = ">"}. Unused defined levels are retained. Levels of
+  \code{cases} and \code{controls} must be identical (same labels, same order).
+
+
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
   \code{FALSE}. Especially, in the following case:
@@ -218,15 +227,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     were removed, a \code{na.action} attribute similar
     to \code{\link{na.omit}} stores the row numbers. 
   }
-  \item{predictor}{the predictor vector converted to numeric as used to build the ROC
-    curve. Patients whose response is not \code{\link{\%in\%}} \code{levels} are discarded. If
+  \item{predictor}{the predictor vector as used to build the ROC
+    curve (numeric, or ordered if an ordered predictor was supplied). Patients whose response is not \code{\link{\%in\%}} \code{levels} are discarded. If
     \code{NA} values were removed, a \code{na.action} attribute similar
     to \code{\link{na.omit}} stores the row numbers.
   }
   \item{original.predictor, original.response}{the response and predictor vectors as passed in argument.}
   \item{levels}{the levels of the response as defined in argument.}
-  \item{controls}{the predictor values for the control observations.}
-  \item{cases}{the predictor values for the cases.}
+  \item{controls}{the predictor values for the control observations
+    (numeric, or ordered with the same levels as \code{predictor}).}
+  \item{cases}{the predictor values for the cases
+    (numeric, or ordered with the same levels as \code{predictor}).}
   \item{percent}{if the sensitivities, specificities and AUC are
     reported in percent, as defined in argument.
   }

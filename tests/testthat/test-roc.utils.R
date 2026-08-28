@@ -15,12 +15,12 @@ test_that("roc_utils_thr_idx finds correc thresholds with direction=>", {
 
 test_that("roc_utils_calc_coords works", {
   obtained <- pROC:::roc_utils_calc_coords(r.s100b, -1:-4, c(1, .5, .1, 0), c(0, .5, .9, 1), c(12, .9))
-  expect_equal(obtained, expected_roc_utils_calc_coords)
+  expect_equal(as.matrix(obtained), expected_roc_utils_calc_coords)
 })
 
 test_that("roc_utils_calc_coords works with percent", {
   obtained <- pROC:::roc_utils_calc_coords(r.s100b.percent, -1:-4, c(100, 50, 10, 0), c(0, 50, 90, 100), c(12, .9))
-  expect_equal(obtained, expected_roc_utils_calc_coords.percent)
+  expect_equal(as.matrix(obtained), expected_roc_utils_calc_coords.percent)
 })
 
 test_that("roc_utils_match_coords_input_args works", {

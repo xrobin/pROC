@@ -19,8 +19,103 @@
 
 # Helper functions for the ROC curves. These functions should not be called directly as they perform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
+# Concatenate ordered predictors without dropping to integer codes.
+# levels(x) and levels(y) must be identical (same labels, same order).
+roc_utils_c_ordered <- function(...) {
+  args <- list(...)
+  if (length(args) == 0) {
+    stop("Need at least one ordered vector")
+  }
+  if (!all(vapply(args, is.ordered, logical(1)))) {
+    stop("Arguments to roc_utils_c_ordered must be ordered.")
+  }
+  lvls <- levels(args[[1]])
+  for (x in args) {
+    if (!identical(levels(x), lvls)) {
+      stop("Levels of cases and controls differ.")
+    }
+  }
+  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
+}
+
+# Concatenate predictors, preserving ordered class when needed.
+roc_utils_combine_predictor <- function(...) {
+  args <- list(...)
+  if (any(vapply(args, is.ordered, logical(1)))) {
+    return(do.call(roc_utils_c_ordered, args))
+  }
+  unlist(args, recursive = FALSE, use.names = FALSE)
+}
+
+# Map predictor/threshold labels onto the user scale:
+# user levels -> 1..n, "-Inf" -> 0, "Inf" -> n+1.
+roc_utils_level_index <- function(x, user_levels) {
+  ch <- as.character(x)
+  idx <- match(ch, user_levels)
+  idx[ch == "Inf" | ch == "+Inf"] <- length(user_levels) + 1L
+  idx[ch == "-Inf"] <- 0L
+  idx
+}
+
+# Auto direction from typical control vs case values.
+# Ordered data are compared by level rank so median() is defined when n is even;
+# cases/controls themselves are not converted to numeric.
+roc_utils_auto_direction <- function(controls, cases) {
+  if (is.ordered(controls)) {
+    user_levels <- levels(controls)
+    ctrl <- median(roc_utils_level_index(controls, user_levels))
+    case <- median(roc_utils_level_index(cases, user_levels))
+  } else {
+    ctrl <- median(controls)
+    case <- median(cases)
+  }
+  if (ctrl <= case) "<" else ">"
+}
+
+roc_utils_c_thresholds <- function(...) {
+  args <- list(...)
+  if (any(vapply(args, is.ordered, logical(1)))) {
+    lvls <- levels(args[[which(vapply(args, is.ordered, logical(1)))[1]]])
+    ch <- unlist(lapply(args, function(x) {
+      if (is.ordered(x)) {
+        as.character(x)
+      } else {
+        as.character(x)
+      }
+    }), use.names = FALSE)
+    return(ordered(ch, levels = lvls))
+  }
+  unlist(args, recursive = FALSE, use.names = FALSE)
+}
+
+roc_utils_na_thresholds <- function(n, template) {
+  if (is.ordered(template)) {
+    ordered(rep(NA_character_, n), levels = levels(template))
+  } else {
+    rep(NA_real_, n)
+  }
+}
+
+roc_utils_coords_basic <- function(threshold, specificity, sensitivity, extra = NULL) {
+  res <- data.frame(
+    threshold = threshold,
+    specificity = as.vector(specificity),
+    sensitivity = as.vector(sensitivity),
+    stringsAsFactors = FALSE
+  )
+  if (!is.null(extra)) {
+    for (nm in names(extra)) {
+      res[[nm]] <- extra[[nm]]
+    }
+  }
+  res
+}
+
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
 roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
+  if (is.ordered(thresholds) || is.ordered(cases) || is.ordered(controls)) {
+    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction))
+  }
   ncontrols <- length(controls)
   ncases <- length(cases)
   predictor <- c(controls, cases)
@@ -54,6 +149,18 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   return(list(se = se, sp = sp))
 }
 
+roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) {
+  n <- length(thresholds)
+  se <- numeric(n)
+  sp <- numeric(n)
+  for (i in seq_len(n)) {
+    p <- roc_utils_perfs(thresholds[i], controls, cases, direction)
+    sp[i] <- unname(p["sp"])
+    se[i] <- unname(p["se"])
+  }
+  return(list(se = se, sp = sp))
+}
+
 roc_utils_fun_sesp <- function(...) {
   warning("pROC::roc$fun.sesp is deprecated")
   roc_utils_perfs_all(...)
@@ -63,6 +170,10 @@ roc_utils_fun_sesp <- function(...) {
 # sp <- roc_utils_perfs(...)[1,]
 # se <- roc_utils_perfs(...)[2,]
 roc_utils_perfs <- function(threshold, controls, cases, direction) {
+  if (is.ordered(cases) || is.ordered(controls) || is.ordered(threshold)) {
+    user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
+    return(roc_utils_perfs_ordered(threshold, controls, cases, direction, user_levels))
+  }
   if (direction == ">") {
     tp <- sum(cases <= threshold)
     tn <- sum(controls > threshold)
@@ -72,6 +183,34 @@ roc_utils_perfs <- function(threshold, controls, cases, direction) {
   }
   # return(c(sp, se))
   return(c(sp = tn / length(controls), se = tp / length(cases)))
+}
+
+roc_utils_perfs_ordered <- function(threshold, controls, cases, direction, user_levels) {
+  case_i <- roc_utils_level_index(cases, user_levels)
+  ctrl_i <- roc_utils_level_index(controls, user_levels)
+  thr_i <- roc_utils_level_index(threshold, user_levels)
+  if (length(thr_i) != 1L || is.na(thr_i)) {
+    stop("Invalid ordered threshold.")
+  }
+  if (direction == ">") {
+    tp <- sum(case_i <= thr_i, na.rm = TRUE)
+    tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
+  } else if (direction == "<") {
+    tp <- sum(case_i >= thr_i, na.rm = TRUE)
+    tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
+  }
+  return(c(sp = tn / length(controls), se = tp / length(cases)))
+}
+
+# Evaluate roc_utils_perfs at each threshold without dropping ordered class.
+roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
+  nthr <- length(thresholds)
+  out <- matrix(NA_real_, nrow = 2L, ncol = nthr)
+  rownames(out) <- c("sp", "se")
+  for (i in seq_len(nthr)) {
+    out[, i] <- roc_utils_perfs(thresholds[i], controls = controls, cases = cases, direction = direction)
+  }
+  out
 }
 
 # as roc_utils_perfs, but for densities
@@ -89,6 +228,9 @@ roc_utils_perfs_dens <- function(threshold, x, dens.controls, dens.cases, direct
 
 # return the thresholds to evaluate in the ROC curve, given the 'predictor' values. Returns all unique values of 'predictor' plus 2 extreme values
 roc_utils_thresholds <- function(predictor, direction) {
+  if (is.ordered(predictor)) {
+    return(roc_utils_thresholds_ordered(predictor, direction))
+  }
   unique.candidates <- sort(unique(predictor))
   thresholds1 <- (c(-Inf, unique.candidates) + c(unique.candidates, +Inf)) / 2
   thresholds2 <- (c(-Inf, unique.candidates) / 2 + c(unique.candidates, +Inf) / 2)
@@ -140,6 +282,20 @@ roc_utils_thresholds <- function(predictor, direction) {
     }
   }
   return(thresholds)
+}
+
+# Ordered thresholds are the defined levels plus one Inf sentinel.
+# direction "<": c(levels, Inf); direction ">": c(-Inf, levels).
+# An observation equal to the threshold is classified as positive
+# (>= when direction is "<", <= when direction is ">").
+roc_utils_thresholds_ordered <- function(predictor, direction) {
+  user_levels <- levels(predictor)
+  if (direction == "<") {
+    thr_levels <- c(user_levels, "Inf")
+  } else {
+    thr_levels <- c("-Inf", user_levels)
+  }
+  ordered(thr_levels, levels = thr_levels)
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
@@ -367,7 +523,7 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
   youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
   closest.topleft <- -roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
 
-  return(cbind(
+  return(data.frame(
     threshold = thr,
     sensitivity = se,
     specificity = sp,
@@ -393,7 +549,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
     "lr_pos" = (se / substr.percent) / (1 - sp / substr.percent),
     "lr_neg" = (1 - se / substr.percent) / (sp / substr.percent),
     youden = youden,
-    closest.topleft = closest.topleft
+    closest.topleft = closest.topleft,
+    check.names = FALSE,
+    stringsAsFactors = FALSE
   ))
 }
 
@@ -406,6 +564,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
 roc_utils_thr_idx <- function(roc, x) {
+  if (is.ordered(roc$predictor) || is.ordered(roc$thresholds)) {
+    return(roc_utils_thr_idx_ordered(roc, x))
+  }
   cut_points <- sort(unique(roc$predictor))
   thr_idx <- rep(NA_integer_, length(x))
   if (roc$direction == "<") {
@@ -432,6 +593,22 @@ roc_utils_thr_idx <- function(roc, x) {
     }
   }
   return(thr_idx)
+}
+
+roc_utils_thr_idx_ordered <- function(roc, x) {
+  user_levels <- levels(roc$predictor)
+  x_idx <- roc_utils_level_index(x, user_levels)
+  if (anyNA(x_idx)) {
+    unknown <- unique(as.character(x)[is.na(x_idx)])
+    stop(sprintf("Unknown threshold level(s): %s", paste(unknown, collapse = ", ")))
+  }
+  thr_idx_vals <- roc_utils_level_index(roc$thresholds, user_levels)
+  matched <- match(x_idx, thr_idx_vals)
+  if (anyNA(matched)) {
+    unknown <- unique(as.character(x)[is.na(matched)])
+    stop(sprintf("Unknown threshold level(s): %s", paste(unknown, collapse = ", ")))
+  }
+  return(matched)
 }
 
 

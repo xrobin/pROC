@@ -119,8 +119,8 @@ cov_roc_obuchowski <- function(roc1, roc2) {
   A2 <- unname(coefficients(binormal2)[1])
   B2 <- unname(coefficients(binormal2)[2])
   kappa <- length(roc1$controls) / length(roc1$cases)
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
+  ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
+  rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
     FPR11 <- 1 - attr(roc1$auc, "partial.auc")[2]
     FPR12 <- 1 - attr(roc1$auc, "partial.auc")[1]
@@ -140,8 +140,8 @@ cov0.roc.obuchowski <- function(roc1, roc2) {
   A <- unname(coefficients(binormal)[1])
   B <- unname(coefficients(binormal)[2])
   R <- length(roc1$controls) / length(roc1$cases)
-  ra <- cor(roc1$cases, roc2$cases)
-  rn <- cor(roc1$controls, roc2$controls)
+  ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
+  rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
     FPR1 <- attr(roc1$auc, "partial.auc")[2]
     FPR2 <- attr(roc1$auc, "partial.auc")[1]

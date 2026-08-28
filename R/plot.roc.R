@@ -86,7 +86,13 @@ plot.roc.roc <- function(x,
                          print.thres.pch = 20,
                          print.thres.adj = c(-.05, 1.25),
                          print.thres.col = "black",
-                         print.thres.pattern = ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)"),
+                         print.thres.pattern = {
+                           if (!methods::is(x, "smooth.roc") && (is.ordered(x$thresholds) || is.ordered(x$predictor))) {
+                             ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
+                           } else {
+                             ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
+                           }
+                         },
                          print.thres.cex = par("cex"),
                          print.thres.pattern.cex = print.thres.cex,
                          print.thres.best.method = NULL,
@@ -287,7 +293,8 @@ plot.roc.roc <- function(x,
   if (isTRUE(print.thres)) {
     print.thres <- "best"
   }
-  if (is.character(print.thres)) {
+  if (is.character(print.thres) && length(print.thres) == 1 &&
+    !is.na(pmatch(print.thres, c("no", "all", "local maximas", "best")))) {
     print.thres <- match.arg(print.thres, c("no", "all", "local maximas", "best"))
   }
   if (methods::is(x, "smooth.roc")) {
@@ -305,7 +312,8 @@ plot.roc.roc <- function(x,
     else {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
       suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-      suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, co$threshold, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) as.character(co$threshold) else co$threshold
+      suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
     }
   }
 

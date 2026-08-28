@@ -1,6 +1,7 @@
 data(aSAH)
 
 r.wfns <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
+r.wfns.num <- roc(aSAH$outcome, as.numeric(aSAH$wfns), quiet = TRUE)
 r.ndka <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE)
 r.s100b <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 

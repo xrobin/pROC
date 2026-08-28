@@ -33,11 +33,15 @@ transpose = FALSE, as.matrix=FALSE, ...)
   }
   \item{x}{
 		the coordinates to look for. Numeric (if so, their meaning is
-		defined by the \code{input} argument) or one of \dQuote{all} (all
+		defined by the \code{input} argument), character or ordered (level
+		labels when \code{input="threshold"} on an ordered ROC curve),
+		or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
 		maximas of the ROC curve) or \dQuote{best} (see \code{best.method}
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
-  }
+		Numeric \code{x} is not allowed with \code{input="threshold"} on
+		an ordered ROC curve; pass the level as character or ordered.
+    }
   \item{input}{
   	If \code{x} is numeric, the kind of input coordinate (x).
   	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
@@ -226,7 +230,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
 \value{
 
   A \code{data.frame} with \code{ret} as columns and as many rows as
-  given by \code{x}.
+  given by \code{x}. When the ROC was built from an ordered predictor,
+  the \code{threshold} column is ordered (levels plus the Inf sentinel).
   
   In all cases where \code{input="specificity"} or \code{input="sensitivity"}
   and interpolation was required, threshold is returned as \code{NA}.
@@ -264,6 +269,13 @@ roc.s100b <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
 # Get the coordinates of S100B threshold 0.55
 coords(roc.s100b, 0.55)
+
+# Ordered predictors keep their levels as thresholds:
+roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
+coords(roc.wfns, "3")
+# Numeric x is rejected on an ordered ROC:
+# coords(roc.wfns, 3)  # error
+coords(roc.wfns, "Inf")
 
 # Get the coordinates at 50\% sensitivity
 coords(roc=roc.s100b, x=50, input="sensitivity")

@@ -1,3 +1,13 @@
+1.19.1.9999 (development)
+  * Ordered predictors are no longer converted to numeric. Thresholds
+    are the factor levels plus an Inf sentinel (issue #63). An
+    observation equal to the threshold is classified as positive.
+    This is a breaking change for roc$thresholds, coords(),
+    ci.thresholds(), ci.coords() and plot.roc(print.thres) with ordered
+    predictors such as aSAH$wfns. Numeric threshold lookup on an ordered
+    ROC is now an error; pass the level as character. See
+    docs/ordered-thresholds-api.md.
+
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
   * Removed unused 'tcltk' from Suggests
