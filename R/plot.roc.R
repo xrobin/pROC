@@ -86,13 +86,7 @@ plot.roc.roc <- function(x,
                          print.thres.pch = 20,
                          print.thres.adj = c(-.05, 1.25),
                          print.thres.col = "black",
-                         print.thres.pattern = {
-                           if (!methods::is(x, "smooth.roc") && roc_utils_is_ordered_roc(x)) {
-                             ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
-                           } else {
-                             ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
-                           }
-                         },
+                         print.thres.pattern = NULL,
                          print.thres.cex = par("cex"),
                          print.thres.pattern.cex = print.thres.cex,
                          print.thres.best.method = NULL,
@@ -289,6 +283,14 @@ plot.roc.roc <- function(x,
       plot(x$ci, type = "bars", col = ci.col, ...)
     }
   }
+  if (is.null(print.thres.pattern)) {
+    print.thres.pattern <- if (!methods::is(x, "smooth.roc") && roc_utils_is_ordered_roc(x)) {
+      ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
+    } else {
+      ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
+    }
+  }
+
   # Print the thresholds on the curve if print.thres is TRUE
   if (isTRUE(print.thres)) {
     print.thres <- "best"
