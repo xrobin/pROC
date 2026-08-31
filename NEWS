@@ -5,8 +5,24 @@
     This is a breaking change for roc$thresholds, coords(),
     ci.thresholds(), ci.coords() and plot.roc(print.thres) with ordered
     predictors such as aSAH$wfns. Numeric threshold lookup on an ordered
-    ROC is now an error; pass the level as character. See
-    docs/ordered-thresholds-api.md.
+    ROC is now an error; pass the level as character. 
+  * roc() with ordered cases/controls now aligns predictor and response
+    (controls then cases). The previous mismatch affected non-stratified
+    bootstrap and Venkatraman tests on curves built from ordered
+    cases/controls.
+  * ci.coords() no longer returns a threshold interval by default on
+    ordered ROC curves. Requesting ret="threshold" explicitly still
+    returns NA and now warns.
+  * ci.thresholds() rejects a character threshold on a numeric ROC
+    (previously compared the string lexicographically).
+  * coords() on a numeric ROC restores the match.arg() error for an
+    unknown character x. On an ordered ROC, exact level labels take
+    precedence over keyword prefixes such as "a"/"all".
+  * Mixed-type error messages for cases/controls in roc() were
+    collapsed into one: cases and controls must both be numeric or both
+    be ordered, with identical levels.
+  * enforce.best.policy() now selects a row rather than a column when
+    best.policy="omit".
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

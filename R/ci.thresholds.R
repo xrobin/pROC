@@ -66,23 +66,32 @@ ci.thresholds.roc <- function(roc,
   }
 
   # Check and prepare thresholds
-  special <- if (is.character(thresholds) && length(thresholds) == 1) {
-    pmatch(thresholds, c("all", "best", "local maximas"))
-  } else {
-    NA_integer_
-  }
-  if (is.character(thresholds) && length(thresholds) == 1 && !is.na(special)) {
-    thresholds <- c("all", "best", "local maximas")[special]
+  special <- coords_special_x(thresholds, roc = roc, keywords = c("all", "best", "local maximas"))
+  if (!is.na(special)) {
+    thresholds <- special
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
   } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
-    if (is.numeric(thresholds) && (is.ordered(roc$thresholds) || is.ordered(roc$predictor))) {
+    ordered_roc <- roc_utils_is_ordered_roc(roc)
+    if (is.numeric(thresholds) && ordered_roc) {
       stop("Numeric 'thresholds' is not supported for ordered ROC curves. Pass level labels as character or ordered.")
     }
+    if ((is.character(thresholds) || is.ordered(thresholds)) && !ordered_roc) {
+      if (is.character(thresholds) && length(thresholds) != 1) {
+        stop("'thresholds' of class character must be of length 1.")
+      }
+      stop("'thresholds' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
+    }
     thresholds.num <- thresholds
+    if (ordered_roc) {
+      # Resolve to a T-scale ordered vector so the bootstrap loop can rank
+      # by as.integer() rather than by label.
+      thr_idx <- roc_utils_thr_idx(roc, thresholds.num)
+      thresholds.num <- roc$thresholds[thr_idx]
+    }
   } else {
     stop("'thresholds' is not character, logical, ordered or numeric.")
   }

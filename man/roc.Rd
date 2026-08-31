@@ -181,7 +181,6 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \code{direction = ">"}. Unused defined levels are retained. Levels of
   \code{cases} and \code{controls} must be identical (same labels, same order).
 
-
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
   \code{FALSE}. Especially, in the following case:

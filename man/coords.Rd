@@ -106,6 +106,21 @@ transpose = FALSE, as.matrix=FALSE, ...)
   \code{ignore.partial.auc=TRUE}, the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
   necessarily to the whole curve.
+
+  On an ordered ROC curve a character \code{x} is resolved in this order:
+  an exact keyword (\dQuote{all}, \dQuote{local maximas}, \dQuote{best}),
+  then an exact threshold level, then a unique keyword prefix. If a
+  string is both a keyword and a level, the keyword wins and a warning
+  is issued. Pass an ordered value such as
+  \code{ordered("best", levels = levels(roc$predictor))} to select the
+  level unambiguously. On a numeric ROC curve, a character \code{x} is
+  still matched with \code{\link{match.arg}} as in pROC 1.19.1.
+
+  When the ROC was built from an ordered predictor and
+  \code{input="threshold"}, the \code{threshold} column is taken from
+  \code{roc$thresholds} so it is always ordered on the threshold levels
+  (including the Inf sentinel), regardless of whether \code{x} was
+  passed as character or ordered.
   
   For \code{input="specificity"} and \code{input="sensitivity"},
   the function checks if the specificity or sensitivity is one of the

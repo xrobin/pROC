@@ -19,7 +19,20 @@
 
 # Helper functions for the ROC curves. These functions should not be called directly as they perform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
-# Concatenate ordered predictors without dropping to integer codes.
+# Whether a roc (or smooth.roc) object was built from an ordered predictor.
+# Checks every field that may carry the class so the answer is stable during
+# construction (before original.predictor is assigned) and on finished objects.
+roc_utils_is_ordered_roc <- function(roc) {
+  is.ordered(roc$predictor) || is.ordered(roc$thresholds) ||
+    is.ordered(roc$cases) || is.ordered(roc$controls) ||
+    is.ordered(roc$original.predictor)
+}
+
+# Concatenate ordered predictors. On R >= 4.1, c() of ordered inputs
+# stays ordered only when the level sets are identical; mismatched
+# levels become an unordered factor with the union of the labels.
+# DESCRIPTION still supports R >= 2.14, where c() dropped to integer
+# codes, so the helper remains required on both sides.
 # levels(x) and levels(y) must be identical (same labels, same order).
 roc_utils_c_ordered <- function(...) {
   args <- list(...)
@@ -47,24 +60,13 @@ roc_utils_combine_predictor <- function(...) {
   unlist(args, recursive = FALSE, use.names = FALSE)
 }
 
-# Map predictor/threshold labels onto the user scale:
-# user levels -> 1..n, "-Inf" -> 0, "Inf" -> n+1.
-roc_utils_level_index <- function(x, user_levels) {
-  ch <- as.character(x)
-  idx <- match(ch, user_levels)
-  idx[ch == "Inf" | ch == "+Inf"] <- length(user_levels) + 1L
-  idx[ch == "-Inf"] <- 0L
-  idx
-}
-
 # Auto direction from typical control vs case values.
-# Ordered data are compared by level rank so median() is defined when n is even;
+# Ordered data are compared by as.integer() rank so median() is defined when n is even;
 # cases/controls themselves are not converted to numeric.
 roc_utils_auto_direction <- function(controls, cases) {
   if (is.ordered(controls)) {
-    user_levels <- levels(controls)
-    ctrl <- median(roc_utils_level_index(controls, user_levels))
-    case <- median(roc_utils_level_index(cases, user_levels))
+    ctrl <- median(as.integer(controls))
+    case <- median(as.integer(cases))
   } else {
     ctrl <- median(controls)
     case <- median(cases)
@@ -72,17 +74,29 @@ roc_utils_auto_direction <- function(controls, cases) {
   if (ctrl <= case) "<" else ">"
 }
 
+# P-scale (predictor/cases/controls) rank is as.integer(x).
+# T-scale (thresholds) rank is as.integer(x) - (direction == ">"),
+# because ">" prepends "-Inf" at position 1.
+roc_utils_threshold_rank <- function(threshold, direction) {
+  as.integer(threshold) - (direction == ">")
+}
+
+roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction) {
+  if (direction == ">") {
+    tp <- sum(case_i <= thr_i, na.rm = TRUE)
+    tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
+  } else if (direction == "<") {
+    tp <- sum(case_i >= thr_i, na.rm = TRUE)
+    tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
+  }
+  c(sp = tn / length(ctrl_i), se = tp / length(case_i))
+}
+
 roc_utils_c_thresholds <- function(...) {
   args <- list(...)
   if (any(vapply(args, is.ordered, logical(1)))) {
     lvls <- levels(args[[which(vapply(args, is.ordered, logical(1)))[1]]])
-    ch <- unlist(lapply(args, function(x) {
-      if (is.ordered(x)) {
-        as.character(x)
-      } else {
-        as.character(x)
-      }
-    }), use.names = FALSE)
+    ch <- unlist(lapply(args, as.character), use.names = FALSE)
     return(ordered(ch, levels = lvls))
   }
   unlist(args, recursive = FALSE, use.names = FALSE)
@@ -150,11 +164,17 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
 }
 
 roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) {
+  user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
+  expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
+  stopifnot(is.ordered(thresholds), identical(levels(thresholds), expected))
+  case_i <- as.integer(cases)
+  ctrl_i <- as.integer(controls)
+  offset <- as.integer(direction == ">")
   n <- length(thresholds)
   se <- numeric(n)
   sp <- numeric(n)
   for (i in seq_len(n)) {
-    p <- roc_utils_perfs(thresholds[i], controls, cases, direction)
+    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
     sp[i] <- unname(p["sp"])
     se[i] <- unname(p["se"])
   }
@@ -171,8 +191,7 @@ roc_utils_fun_sesp <- function(...) {
 # se <- roc_utils_perfs(...)[2,]
 roc_utils_perfs <- function(threshold, controls, cases, direction) {
   if (is.ordered(cases) || is.ordered(controls) || is.ordered(threshold)) {
-    user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
-    return(roc_utils_perfs_ordered(threshold, controls, cases, direction, user_levels))
+    return(roc_utils_perfs_ordered(threshold, controls, cases, direction))
   }
   if (direction == ">") {
     tp <- sum(cases <= threshold)
@@ -185,21 +204,18 @@ roc_utils_perfs <- function(threshold, controls, cases, direction) {
   return(c(sp = tn / length(controls), se = tp / length(cases)))
 }
 
-roc_utils_perfs_ordered <- function(threshold, controls, cases, direction, user_levels) {
-  case_i <- roc_utils_level_index(cases, user_levels)
-  ctrl_i <- roc_utils_level_index(controls, user_levels)
-  thr_i <- roc_utils_level_index(threshold, user_levels)
-  if (length(thr_i) != 1L || is.na(thr_i)) {
+roc_utils_perfs_ordered <- function(threshold, controls, cases, direction) {
+  user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
+  expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
+  if (!is.ordered(threshold) || !identical(levels(threshold), expected) || length(threshold) != 1L) {
     stop("Invalid ordered threshold.")
   }
-  if (direction == ">") {
-    tp <- sum(case_i <= thr_i, na.rm = TRUE)
-    tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
-  } else if (direction == "<") {
-    tp <- sum(case_i >= thr_i, na.rm = TRUE)
-    tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
-  }
-  return(c(sp = tn / length(controls), se = tp / length(cases)))
+  roc_utils_sesp_from_ranks(
+    roc_utils_threshold_rank(threshold, direction),
+    as.integer(controls),
+    as.integer(cases),
+    direction
+  )
 }
 
 # Evaluate roc_utils_perfs at each threshold without dropping ordered class.
@@ -207,8 +223,20 @@ roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
   nthr <- length(thresholds)
   out <- matrix(NA_real_, nrow = 2L, ncol = nthr)
   rownames(out) <- c("sp", "se")
-  for (i in seq_len(nthr)) {
-    out[, i] <- roc_utils_perfs(thresholds[i], controls = controls, cases = cases, direction = direction)
+  if (is.ordered(cases) || is.ordered(controls) || is.ordered(thresholds)) {
+    user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
+    expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
+    stopifnot(is.ordered(thresholds), identical(levels(thresholds), expected))
+    case_i <- as.integer(cases)
+    ctrl_i <- as.integer(controls)
+    offset <- as.integer(direction == ">")
+    for (i in seq_len(nthr)) {
+      out[, i] <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
+    }
+  } else {
+    for (i in seq_len(nthr)) {
+      out[, i] <- roc_utils_perfs(thresholds[i], controls = controls, cases = cases, direction = direction)
+    }
   }
   out
 }
@@ -291,8 +319,14 @@ roc_utils_thresholds <- function(predictor, direction) {
 roc_utils_thresholds_ordered <- function(predictor, direction) {
   user_levels <- levels(predictor)
   if (direction == "<") {
+    if ("Inf" %in% user_levels || "+Inf" %in% user_levels) {
+      stop("Predictor level 'Inf' collides with the Inf sentinel used for direction \"<\". Rename the level.")
+    }
     thr_levels <- c(user_levels, "Inf")
   } else {
+    if ("-Inf" %in% user_levels) {
+      stop("Predictor level '-Inf' collides with the -Inf sentinel used for direction \">\". Rename the level.")
+    }
     thr_levels <- c("-Inf", user_levels)
   }
   ordered(thr_levels, levels = thr_levels)
@@ -564,7 +598,7 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
 roc_utils_thr_idx <- function(roc, x) {
-  if (is.ordered(roc$predictor) || is.ordered(roc$thresholds)) {
+  if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
   }
   cut_points <- sort(unique(roc$predictor))
@@ -596,17 +630,27 @@ roc_utils_thr_idx <- function(roc, x) {
 }
 
 roc_utils_thr_idx_ordered <- function(roc, x) {
-  user_levels <- levels(roc$predictor)
-  x_idx <- roc_utils_level_index(x, user_levels)
-  if (anyNA(x_idx)) {
-    unknown <- unique(as.character(x)[is.na(x_idx)])
-    stop(sprintf("Unknown threshold level(s): %s", paste(unknown, collapse = ", ")))
+  ch <- as.character(x)
+  if (anyNA(ch)) {
+    stop("Missing values are not allowed in 'x'.")
   }
-  thr_idx_vals <- roc_utils_level_index(roc$thresholds, user_levels)
-  matched <- match(x_idx, thr_idx_vals)
+  x_pos <- match(ch, levels(roc$thresholds))
+  if (anyNA(x_pos)) {
+    unknown <- unique(ch[is.na(x_pos)])
+    extra <- ""
+    if (identical(unknown, "-Inf") && roc$direction == "<") {
+      extra <- " Direction \"<\" uses the \"Inf\" sentinel."
+    } else if (identical(unknown, "Inf") && roc$direction == ">") {
+      extra <- " Direction \">\" uses the \"-Inf\" sentinel."
+    }
+    stop(sprintf("Unknown threshold level(s): %s.%s", paste(unknown, collapse = ", "), extra))
+  }
+  x_ranks <- x_pos - (roc$direction == ">")
+  thr_ranks <- roc_utils_threshold_rank(roc$thresholds, roc$direction)
+  matched <- match(x_ranks, thr_ranks)
   if (anyNA(matched)) {
-    unknown <- unique(as.character(x)[is.na(matched)])
-    stop(sprintf("Unknown threshold level(s): %s", paste(unknown, collapse = ", ")))
+    unknown <- unique(ch[is.na(matched)])
+    stop(sprintf("Unknown threshold level(s): %s.", paste(unknown, collapse = ", ")))
   }
   return(matched)
 }

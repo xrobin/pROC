@@ -91,10 +91,11 @@ progress = NULL, ...)
   resampling.
 
   On an ordered ROC curve, \code{x} with \code{input="threshold"} must be
-  a level label (character or ordered), not a number. Confidence intervals
-  of the threshold itself are not defined for ordered labels and are
-  returned as \code{NA}; intervals of the other \code{ret} coordinates
-  are still computed.
+  a level label (character or ordered), not a number. A confidence interval
+  of the threshold itself is not available: \code{threshold} is dropped from
+  the default \code{ret}, and a warning is issued if it is requested
+  explicitly (the returned interval is \code{NA}). Intervals of the other
+  \code{ret} coordinates are still computed.
 
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.

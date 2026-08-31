@@ -71,7 +71,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   input <- roc_utils_match_coords_input_args(input)
   ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
-  special <- coords_special_x(x)
+  special <- coords_special_x(x, roc = smooth.roc)
   if (!is.na(special)) {
     x <- special
     if (x == "all" || x == "local maximas") {
@@ -147,15 +147,19 @@ ci.coords.roc <- function(roc,
 
   input <- roc_utils_match_coords_input_args(input)
 
-  if (missing(ret) && input != "threshold") {
-    # Don't show NA thresholds by default
+  if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
+    # Don't show NA thresholds by default (including ordered curves, where
+    # a threshold interval cannot be computed).
     ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
   } else {
     ret <- roc_utils_match_coords_ret_args(ret)
+    if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
+      warning("A confidence interval for 'threshold' is not available for ordered ROC curves.")
+    }
   }
 
   best.policy <- match.arg(best.policy)
-  special <- coords_special_x(x)
+  special <- coords_special_x(x, roc = roc)
   if (!is.na(special)) {
     x <- special
     if (x == "all" || x == "local maximas") {
@@ -221,7 +225,7 @@ enforce.best.policy <- function(res, best.policy) {
     stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
   } else if (best.policy == "omit") {
     res[1, ] <- NA
-    return(res[1, drop = FALSE])
+    return(res[1, , drop = FALSE])
   } else {
     return(res[sample(seq_len(nrow(res)), size = 1), , drop = FALSE])
   }

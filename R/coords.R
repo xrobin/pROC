@@ -21,15 +21,32 @@ coords <- function(...) {
   UseMethod("coords")
 }
 
-coords_special_x <- function(x) {
+coords_special_x <- function(x, roc = NULL, keywords = c("all", "local maximas", "best")) {
   if (!is.character(x) || length(x) != 1) {
     return(NA_character_)
   }
-  matched <- pmatch(x, c("all", "local maximas", "best"))
-  if (length(matched) != 1 || is.na(matched)) {
+  ordered_roc <- !is.null(roc) && roc_utils_is_ordered_roc(roc)
+  if (!ordered_roc) {
+    return(match.arg(x, keywords))
+  }
+  # Ordered curve: exact keyword > exact level > unique keyword prefix > fall through.
+  if (x %in% keywords) {
+    if (x %in% levels(roc$thresholds)) {
+      warning(sprintf(
+        "'%s' is both a keyword and a threshold level; treating it as the keyword. Pass ordered(\"%s\", levels = levels(roc$predictor)) to select the level.",
+        x, x
+      ))
+    }
+    return(x)
+  }
+  if (x %in% levels(roc$thresholds)) {
     return(NA_character_)
   }
-  c("all", "local maximas", "best")[matched]
+  matched <- pmatch(x, keywords)
+  if (length(matched) == 1 && !is.na(matched)) {
+    return(keywords[matched])
+  }
+  NA_character_
 }
 
 
@@ -177,24 +194,24 @@ coords.smooth.roc <- function(smooth.roc,
 
     if (as.list) {
       warning("'as.list' is deprecated and will be removed in a future version.")
-      list <- apply(t(res)[ret, , drop = FALSE], 2, as.list)
+      list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
       if (drop == TRUE && length(x) == 1) {
         return(list[[1]])
       }
       return(list)
     } else if (transpose) {
       rownames(res) <- NULL
-      return(t(res)[ret, , drop = drop])
+      return(t(res[, ret, drop = FALSE])[, , drop = drop])
     } else {
       if (missing(drop)) {
         drop <- FALSE
       }
       if (as.matrix) {
-        res <- as.matrix(res)
+        res <- as.matrix(res[, ret, drop = FALSE])
       } else {
-        res <- as.data.frame(res)
+        res <- as.data.frame(res[, ret, drop = FALSE])
       }
-      return(res[, ret, drop = drop])
+      return(res[, , drop = drop])
     }
   }
 
@@ -256,7 +273,7 @@ coords.roc <- function(roc,
   # make sure the sort of roc is correct
   roc <- sort_roc(roc)
 
-  special <- coords_special_x(x)
+  special <- coords_special_x(x, roc = roc)
   if (!is.na(special)) {
     x <- special
     partial.auc <- attr(roc$auc, "partial.auc")
@@ -369,17 +386,18 @@ coords.roc <- function(roc,
       res <- roc_utils_coords_basic(thres, sp, se, extra = extra)
     }
   } else if (input == "threshold") {
-    if (is.character(x) && !(is.ordered(roc$thresholds) || is.ordered(roc$predictor))) {
+    if (is.character(x) && !roc_utils_is_ordered_roc(roc)) {
       stop("'x' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
     }
-    if (is.numeric(x) && (is.ordered(roc$thresholds) || is.ordered(roc$predictor))) {
+    if (is.numeric(x) && roc_utils_is_ordered_roc(roc)) {
       stop("Numeric 'x' is not supported for ordered ROC thresholds. Pass the level as character or ordered.")
     }
     if (!(is.numeric(x) || is.character(x) || is.ordered(x))) {
-      stop("'x' must be a numeric, character or ordered vector.")
+      stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
     }
     thr_idx <- roc_utils_thr_idx(roc, x)
-    res <- roc_utils_coords_basic(x, roc$specificities[thr_idx], roc$sensitivities[thr_idx])
+    thr_col <- if (roc_utils_is_ordered_roc(roc)) roc$thresholds[thr_idx] else x
+    res <- roc_utils_coords_basic(thr_col, roc$specificities[thr_idx], roc$sensitivities[thr_idx])
   } else if (is.numeric(x)) {
     # Arbitrary coord given in input.
     # We could be tempted to use all_coords directly.
@@ -456,7 +474,7 @@ coords.roc <- function(roc,
       }
     }
   } else {
-    stop("'x' must be a numeric, character or ordered vector.")
+    stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
   }
 
   if (any(!ret %in% colnames(res))) {
@@ -465,14 +483,14 @@ coords.roc <- function(roc,
   }
 
   if (as.list) {
-    list <- apply(t(res)[ret, , drop = FALSE], 2, as.list)
+    list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
     if (drop == TRUE && length(x) == 1) {
       return(list[[1]])
     }
     return(list)
   } else if (transpose) {
     rownames(res) <- NULL
-    return(t(res)[ret, , drop = drop])
+    return(t(res[, ret, drop = FALSE])[, , drop = drop])
   } else {
     # HACK:
     # We need an exception for r4lineups that will keep the old drop = TRUE
@@ -493,10 +511,10 @@ coords.roc <- function(roc,
       }
     }
     if (as.matrix) {
-      res <- as.matrix(res)
+      res <- as.matrix(res[, ret, drop = FALSE])
     } else {
-      res <- as.data.frame(res)
+      res <- as.data.frame(res[, ret, drop = FALSE])
     }
-    return(res[, ret, drop = drop])
+    return(res[, , drop = drop])
   }
 }
