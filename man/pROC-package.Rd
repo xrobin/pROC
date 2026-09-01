@@ -101,21 +101,8 @@
   }
 }
 
-\section{Experimental: pipelines}{
-	Since version 1.15.0, the \code{\link{roc}} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}. This is still a highly experimental feature and will change significantly in future versions  (see \href{https://github.com/xrobin/pROC/issues/54}{issue 54}).
-	The \code{\link{roc.data.frame}} method supports both standard and non-standard evaluation (NSE), and the \code{\link{roc_}}
-	function supports standard evaluation only.
-	
-    \preformatted{
-library(dplyr)
-aSAH \%>\% 
-    filter(gender == "Female") \%>\%
-    roc(outcome, s100b)
-	}
-	
-	By default it returns the \code{\link{roc}} object, which can then be piped to
-	the \code{\link{coords}} function to extract coordinates that can be used
-	in further pipelines.
+\section{Pipelines}{
+	Since version 1.15.0, \pkg{pROC} can be used in \pkg{dplyr} or \pkg{magrittr} pipelines.
 	
 	\preformatted{
 aSAH \%>\% 
