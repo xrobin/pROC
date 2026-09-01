@@ -3,6 +3,7 @@
   * Fixed error when 'ggroc' received a mixed list of empirical and smoothed ROC curves
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
   * Added 'geom_roc_identity' to draw the identity line on a 'ggroc' plot
+  * Added 'geom_polygon_max_auc' to draw the maximal AUC rectangle on a 'ggroc' plot
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
