@@ -1,3 +1,6 @@
+1.19.9999
+  * Added experimental 'geom_polygon_auc' to fill the AUC polygon on a 'ggroc' plot (issue #129)
+
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
   * Removed unused 'tcltk' from Suggests
