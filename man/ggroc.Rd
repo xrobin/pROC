@@ -30,8 +30,7 @@
     (\code{TRUE}) as in most legacy software.
   }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
-    to set: \code{alpha}, \code{colour}, \code{linetype}, \code{linewidth} 
-    (new in ggplot2 3.4.0), and \code{size} (before ggplot2 3.4.0).
+    to set: \code{alpha}, \code{colour}, \code{linetype} and \code{linewidth}.
     The \code{group} aesthetic is always active since version 1.18.5 and is
     kept for backwards compatibility.
   }

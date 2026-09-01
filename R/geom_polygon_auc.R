@@ -32,8 +32,11 @@ geom_polygon_auc.auc <- function(data, legacy.axes = FALSE, ...) {
   # Prepare the aesthetics
   aes <- get.aes.for.ggplot(attr(data, "roc"), legacy.axes)
 
-  # Do the plotting
-  ggplot2::geom_polygon(aes$aes, data = df, ...)
+  # Wrap so ggplot_add can insert the polygon behind existing layers
+  structure(
+    list(layer = ggplot2::geom_polygon(aes$aes, data = df, ...)),
+    class = "geom_polygon_auc_layer"
+  )
 }
 
 geom_polygon_auc.roc <- function(data, ...) {
@@ -41,3 +44,14 @@ geom_polygon_auc.roc <- function(data, ...) {
 }
 
 geom_polygon_auc.smooth.roc <- geom_polygon_auc.roc
+
+# ggplot2 has no z-index: later layers paint over earlier ones. Prepend so the
+# fill sits under the ROC curve, matching plot.roc(auc.polygon = TRUE).
+ggplot_add.geom_polygon_auc_layer <- function(object, plot, ...) {
+  plot <- ggplot2::ggplot_add(object$layer, plot, ...)
+  n <- length(plot@layers)
+  if (n > 1L) {
+    plot@layers <- plot@layers[c(n, seq_len(n - 1L))]
+  }
+  plot
+}

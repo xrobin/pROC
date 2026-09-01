@@ -6,6 +6,6 @@ expect_doppelganger <- function(title, fig, ...) {
 
 # expect_doppelganger for ggroc
 expect_ggroc_doppelganger <- function(title, fig, ...) {
-  testthat::skip_if_not_installed("ggplot2")
+  testthat::skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   expect_doppelganger(title, fig, ...)
 }

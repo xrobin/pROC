@@ -17,6 +17,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+.register_ggplot_add_geom_polygon_auc <- function(...) {
+  registerS3method(
+    "ggplot_add",
+    "geom_polygon_auc_layer",
+    ggplot_add.geom_polygon_auc_layer,
+    envir = asNamespace("ggplot2")
+  )
+}
+
+.onLoad <- function(lib, pkg) {
+  # ggplot2 is in Suggests; register ggplot_add only when that namespace exists.
+  if (isNamespaceLoaded("ggplot2")) {
+    .register_ggplot_add_geom_polygon_auc()
+  }
+  setHook(packageEvent("ggplot2", "onLoad"), .register_ggplot_add_geom_polygon_auc)
+}
+
 .onAttach <- function(lib, pkg) {
   # Remove deprecated pROCProgress option
   if (!is.null(getOption("pROCProgress")) && getOption("pROCProgress")$name != "none") {

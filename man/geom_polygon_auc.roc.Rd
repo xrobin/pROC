@@ -4,6 +4,7 @@
 \alias{geom_polygon_auc.roc}
 \alias{geom_polygon_auc.smooth.roc}
 \alias{geom_polygon_auc}
+\alias{ggplot_add.geom_polygon_auc_layer}
 
 \title{
   Add an AUC polygon to a ggroc plot
@@ -30,11 +31,14 @@
 
 \details{
   This is highly experimental and may change in the future.
+
+  The polygon is inserted behind existing geoms so the ROC curve remains
+  visible, matching \code{\link{plot.roc}(auc.polygon = TRUE)}.
 }
 
 
 \seealso{
-\code{\link{ggroc}}
+\code{\link{ggroc}}, \code{\link{plot.roc}}
 }
 \examples{
 
