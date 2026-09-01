@@ -58,7 +58,7 @@
 \section{Functions}{
   \tabular{ll}{
     \code{\link{roc}} \tab Build a ROC curve\cr
-    \code{\link{are.paired}} \tab Dertermine if two ROC curves are paired \cr
+    \code{\link{are.paired}} \tab Determine if two ROC curves are paired \cr
     \code{\link{auc}} \tab Compute the area under the ROC curve \cr
     \code{\link{ci}} \tab Compute confidence intervals of a ROC curve \cr
     \code{\link{ci.auc}} \tab Compute the CI of the AUC \cr
@@ -66,12 +66,12 @@
     \code{\link{ci.se}} \tab Compute the CI of sensitivities at given specificities \cr
     \code{\link{ci.sp}} \tab Compute the CI of specificities at given sensitivities \cr
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
-    \code{\link{ci.coords}} \tab Compute the CI of arbitrary coordinates \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
     \code{\link{ggroc}} \tab Plot a ROC curve with \pkg{ggplot2}\cr
-    \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
+    \code{\link{has.partial.auc}} \tab Determine if the ROC curve has a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
+    \code{\link{multiclass.roc}} \tab Build a multi-class ROC / AUC \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
     \code{\link{power.roc.test}} \tab Sample size and power computation \cr
