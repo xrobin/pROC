@@ -108,7 +108,7 @@
 aSAH \%>\% 
     filter(gender == "Female") \%>\%
     roc(outcome, s100b) \%>\%
-    coords(transpose=FALSE) \%>\%
+    coords() \%>\%
     filter(sensitivity > 0.6, 
            specificity > 0.6)
 	}
@@ -139,12 +139,12 @@ aSAH \%>\%
 	\subsection{Algorithms}{
 	Over the years, a significant amount of time has been invested in making pROC run faster and faster.
 	From the naive algorithm iterating over all thresholds implemented in the first version, we went to a
-	C++ implementation (with \pkg{Rcpp}), and a different algorithm using cummulative sum of responses sorted 
-	by the predictor, which scales only with the number of data points, independently on the number of thresholds (\code{algorithm = 2}).
+	C++ implementation (with \pkg{Rcpp}), and a different algorithm using cumulative sum of responses sorted
+	by the predictor, which scales only with the number of data points, independently of the number of thresholds.
 	The curves themselves are identical, but computation time has been decreased massively.
 	
-	Earlier versions of \pkg{pROC} allowed choosing the optimal algorithm. Since pROC 1.19, only a single
-	algorithm (previously \code{algorithm = 2}) is available. This allowed us to remove legacy code
+	Earlier versions of \pkg{pROC} allowed choosing among several algorithms. Since pROC 1.19, only the
+	cumulative-sum algorithm is available. This allowed us to remove legacy code
 	and dependencies, and make \pkg{pROC} more maintainable and future proof.
 	}
 	
@@ -153,15 +153,7 @@ aSAH \%>\%
     
     Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
     
-    A naive way to speed-up the boostrap is by removing the progress bar:
-    
-    \preformatted{
-rocobj <- roc(response, round(predictor))
-system.time(ci(rocobj))
-system.time(ci(rocobj, progress = "none"))
-    }
-    
-    It is of course possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
+    To speed up computations it is possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
 
     \subsection{Parallel processing}{
 	    Parallel processing is no longer supported in pROC 1.19. The use of the
@@ -175,7 +167,7 @@ system.time(ci(rocobj, progress = "none"))
     DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)). Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is always faster than bootstrapping. By default, pROC will choose the DeLong method whenever possible.
   
         \preformatted{
-rocobj <- roc(response, round(predictor), algorithm=3)
+rocobj <- roc(response, round(predictor))
 system.time(ci(rocobj, method="delong"))
     }
   }
