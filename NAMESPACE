@@ -175,6 +175,15 @@ S3method("geom_text_auc", "smooth.roc")
 export(geom_roc_threshold)
 S3method("geom_roc_threshold", "roc")
 S3method("geom_roc_threshold", "smooth.roc")
+
+export(geom_polygon_ci)
+S3method("geom_polygon_ci", "ci.se")
+S3method("geom_polygon_ci", "ci.sp")
+
+export(geom_errorbar_ci)
+S3method("geom_errorbar_ci", "ci.se")
+S3method("geom_errorbar_ci", "ci.sp")
+S3method("geom_errorbar_ci", "ci.thresholds")
 # Delayed registration: ggplot2 is in Suggests (R >= 3.6)
 S3method(ggplot2::ggplot_add, ggroc_layer)
 

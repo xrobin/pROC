@@ -75,6 +75,10 @@ ggroc_add_one_or_hundred <- function(df, percent) {
   df
 }
 
+ggroc_errorbar_width <- function(percent) {
+  0.02 * if (percent) 100 else 1
+}
+
 new_ggroc_layer <- function(make_layers, behind = FALSE) {
   structure(
     list(make_layers = make_layers, behind = behind),

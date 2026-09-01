@@ -6,6 +6,7 @@
   * Added 'geom_polygon_max_auc' to draw the maximal AUC rectangle on a 'ggroc' plot
   * Added 'geom_text_auc' to print the AUC on a 'ggroc' plot
   * Added 'geom_roc_threshold' to mark thresholds on a 'ggroc' plot
+  * Added 'geom_polygon_ci' and 'geom_errorbar_ci' to plot 'ci.se' / 'ci.sp' / 'ci.thresholds' on a 'ggroc' plot
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -47,6 +47,7 @@
 \code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
 \code{\link{geom_roc_identity}}, \code{\link{geom_polygon_max_auc}},
 \code{\link{geom_text_auc}}, \code{\link{geom_roc_threshold}},
+\code{\link{geom_polygon_ci}}, \code{\link{geom_errorbar_ci}},
 \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{
