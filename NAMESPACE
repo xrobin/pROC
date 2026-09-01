@@ -166,6 +166,11 @@ export(geom_polygon_max_auc)
 S3method("geom_polygon_max_auc", "auc")
 S3method("geom_polygon_max_auc", "roc")
 S3method("geom_polygon_max_auc", "smooth.roc")
+
+export(geom_text_auc)
+S3method("geom_text_auc", "auc")
+S3method("geom_text_auc", "roc")
+S3method("geom_text_auc", "smooth.roc")
 # Delayed registration: ggplot2 is in Suggests (R >= 3.6)
 S3method(ggplot2::ggplot_add, ggroc_layer)
 

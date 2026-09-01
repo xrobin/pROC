@@ -46,6 +46,7 @@
 \seealso{
 \code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
 \code{\link{geom_roc_identity}}, \code{\link{geom_polygon_max_auc}},
+\code{\link{geom_text_auc}},
 \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{

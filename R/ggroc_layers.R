@@ -107,3 +107,25 @@ ggroc_axis_labs <- function(roc, legacy.axes) {
   ylab <- if (percent) "Sensitivity (%)" else "Sensitivity"
   ggplot2::labs(x = xlab, y = ylab)
 }
+
+ggroc_auc_label <- function(auc, ci = NULL, pattern = NULL) {
+  percent <- attr(auc, "percent")
+  partial.auc <- attr(auc, "partial.auc")
+  has.ci <- !is.null(ci) && methods::is(ci, "ci.auc")
+  if (is.null(pattern)) {
+    pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
+    pattern <- paste0(pattern, ifelse(percent, "%.1f%%", "%.3f"))
+    if (has.ci) {
+      pattern <- paste0(
+        pattern, " (",
+        ifelse(percent, "%.1f%%", "%.3f"), "\u2013",
+        ifelse(percent, "%.1f%%", "%.3f"), ")"
+      )
+    }
+  }
+  if (has.ci) {
+    sprintf(pattern, auc, ci[1], ci[3])
+  } else {
+    sprintf(pattern, auc)
+  }
+}
