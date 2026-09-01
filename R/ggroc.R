@@ -73,7 +73,8 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
   # Do the plotting
   ggplot2::ggplot(df) +
     ggplot2::geom_line(aes$aes, ...) +
-    aes$xlims
+    aes$xlims +
+    ggroc_axis_labs(data, legacy.axes)
 }
 
 ggroc.smooth.roc <- ggroc.roc
@@ -126,5 +127,6 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
   # Do the plotting
   ggplot2::ggplot(coord.dfs, aes.ggplot$aes) +
     ggplot2::geom_line(...) +
-    aes.ggplot$xlims
+    aes.ggplot$xlims +
+    ggroc_axis_labs(data[[1]], legacy.axes)
 }

@@ -39,7 +39,7 @@
 }
 
 \details{
-  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer on it. You can print it directly or add your own layers and theme elements.
+  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer and axis labels matching \code{\link{plot.roc}}. You can print it directly or add your own layers and theme elements.
 }
 
 

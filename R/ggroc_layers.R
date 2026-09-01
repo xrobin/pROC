@@ -96,3 +96,14 @@ ggplot_add.ggroc_layer <- function(object, plot, ...) {
   }
   plot
 }
+
+ggroc_axis_labs <- function(roc, legacy.axes) {
+  percent <- roc$percent
+  xlab <- if (percent) {
+    if (legacy.axes) "100 - Specificity (%)" else "Specificity (%)"
+  } else {
+    if (legacy.axes) "1 - Specificity" else "Specificity"
+  }
+  ylab <- if (percent) "Sensitivity (%)" else "Sensitivity"
+  ggplot2::labs(x = xlab, y = ylab)
+}

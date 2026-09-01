@@ -1,5 +1,15 @@
 context("ggroc")
 
+test_that("ggroc sets plot.roc-style axis labels", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$labels$x, "Specificity")
+  expect_equal(ggroc(r.s100b)$labels$y, "Sensitivity")
+  expect_equal(ggroc(r.s100b, legacy.axes = TRUE)$labels$x, "1 - Specificity")
+  expect_equal(ggroc(r.s100b.percent)$labels$x, "Specificity (%)")
+  expect_equal(ggroc(r.s100b.percent)$labels$y, "Sensitivity (%)")
+  expect_equal(ggroc(r.s100b.percent, legacy.axes = TRUE)$labels$x, "100 - Specificity (%)")
+})
+
 
 
 test_that("Ggroc screenshot looks normal", {
