@@ -109,9 +109,11 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
   # Get the coords
   coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE, ignore.partial.auc = TRUE)
 
-  # Add a "name" colummn
+  # Add a "name" column and keep columns shared by roc and smooth.roc
+  shared.cols <- c("specificity", "sensitivity", "1-specificity", "name")
   for (i in seq_along(coord.dfs)) {
     coord.dfs[[i]]$name <- names(coord.dfs)[i]
+    coord.dfs[[i]] <- coord.dfs[[i]][, intersect(shared.cols, names(coord.dfs[[i]])), drop = FALSE]
   }
 
   # Make a big data.frame

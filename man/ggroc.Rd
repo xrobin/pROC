@@ -19,7 +19,9 @@
 }
 		   
 \arguments{
-  \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
+  \item{data}{
+    a roc object from the \link{roc} or \link{smooth.roc} function,
+    or a list of \code{roc} and/or \code{smooth.roc} objects.
   }
   \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2:geom_path]{geom_line}} 
     to map to the different ROC curves supplied.
@@ -69,6 +71,9 @@ gl + xlab("FPR") + ylab("TPR") +
 # Multiple curves:
 g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2, ndka=roc(aSAH$outcome, aSAH$ndka)))
 g2
+
+# Mixed empirical and smoothed curves:
+ggroc(list(empirical = rocobj, binormal = smooth(rocobj)))
 
 # This is equivalent to using roc.formula:
 roc.list <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
