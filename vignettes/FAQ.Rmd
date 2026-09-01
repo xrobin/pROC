@@ -16,8 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Frequently Asked Questions
-
 ## The X axis should be "1-Specificity" instead of "Specificity"!
 
 This is not a bug! 
