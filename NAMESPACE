@@ -157,6 +157,10 @@ export(geom_polygon_auc)
 S3method("geom_polygon_auc", "auc")
 S3method("geom_polygon_auc", "roc")
 S3method("geom_polygon_auc", "smooth.roc")
+
+export(geom_roc_identity)
+S3method("geom_roc_identity", "roc")
+S3method("geom_roc_identity", "smooth.roc")
 # Delayed registration: ggplot2 is in Suggests (R >= 3.6)
 S3method(ggplot2::ggplot_add, ggroc_layer)
 

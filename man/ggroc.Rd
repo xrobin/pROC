@@ -44,7 +44,9 @@
 
 
 \seealso{
-\code{\link{roc}}, \code{\link{plot.roc}}, \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
+\code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
+\code{\link{geom_roc_identity}},
+\pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{
 # Create a basic roc object

@@ -2,6 +2,7 @@
   * Added experimental 'geom_polygon_auc' to fill the AUC polygon on a 'ggroc' plot (issue #129)
   * Fixed error when 'ggroc' received a mixed list of empirical and smoothed ROC curves
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
+  * Added 'geom_roc_identity' to draw the identity line on a 'ggroc' plot
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
