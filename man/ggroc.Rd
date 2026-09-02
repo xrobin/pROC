@@ -39,7 +39,16 @@
 }
 
 \details{
-  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer and axis labels matching \code{\link{plot.roc}}. You can print it directly or add your own layers and theme elements.
+  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed).
+  
+  It returns the ggplot with a line layer and axis labels.
+  You can print it directly or add your own layers and theme elements.
+
+  It also sets \code{\link[ggplot2:coord_fixed]{coord_fixed()}}, so one
+  unit of specificity equals one unit of sensitivity and distances to
+  the identity line stay meaningful.
+  Add another coordinate system to replace it (eg.
+  (\code{\link[ggplot2:coord_cartesian]{coord_cartesian()}).
 }
 
 

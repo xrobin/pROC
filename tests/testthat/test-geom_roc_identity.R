@@ -27,7 +27,7 @@ test_that("geom_roc_identity colour can be set with color=", {
 test_that("geom_roc_identity screenshot looks normal", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_screenshot <- function() {
-    print(ggroc(r.s100b) + geom_roc_identity(r.s100b) + ggplot2::coord_fixed())
+    print(ggroc(r.s100b) + geom_roc_identity(r.s100b))
   }
   expect_ggroc_doppelganger("geom_roc_identity.screenshot", test_screenshot)
 })

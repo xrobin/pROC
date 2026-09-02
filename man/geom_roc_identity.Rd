@@ -40,6 +40,6 @@
 data(aSAH)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
 if (require(ggplot2)) {
-  ggroc(rocobj) + geom_roc_identity(rocobj) + coord_fixed()
+  ggroc(rocobj) + geom_roc_identity(rocobj)
 }
 }

@@ -1,5 +1,11 @@
 context("ggroc")
 
+test_that("ggroc sets coord_fixed like plot.roc asp=1", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$coordinates$ratio, 1)
+  expect_equal(ggroc(list(a = r.s100b, b = r.wfns))$coordinates$ratio, 1)
+})
+
 test_that("ggroc sets plot.roc-style axis labels", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   expect_equal(ggroc(r.s100b)$labels$x, "Specificity")
