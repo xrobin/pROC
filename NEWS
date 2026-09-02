@@ -7,6 +7,15 @@
   * ci.coords() with best.policy="omit" now drops a bootstrap replicate
     that has several "best" points, instead of returning the first
     column of the coords data.frame.
+  * Added ggplot2 layers for 'plot.roc' features on a 'ggroc' plot:
+    'geom_polygon_auc', 'geom_polygon_max_auc', 'geom_roc_identity',
+    'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and
+    'geom_errorbar_ci' (issue #129)
+  * Fixed error when 'ggroc' received a mixed list of empirical and smoothed ROC curves
+  * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
+  * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another
+    coordinate system (for example 'coord_cartesian()') to replace it.
+  * Added a ggplot2 screenshot gallery vignette
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

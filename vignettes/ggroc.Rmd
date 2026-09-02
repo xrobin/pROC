@@ -1,0 +1,239 @@
+---
+title: "Plotting ROC curves with ggplot2"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Plotting ROC curves with ggplot2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 5,
+  fig.height = 5,
+  fig.align = "center",
+  dpi = 120
+)
+```
+
+This vignette recreates the six classic `plot.roc` figures from the
+[pROC screenshots gallery](https://xrobin.github.io/pROC/screenshots.html)
+using `ggroc` and the ggplot2 layers introduced in pROC 1.20.0.
+
+Bootstrap confidence intervals use `boot.n = 100` here so the vignette
+stays fast. The gallery uses the default `boot.n = 2000`.
+
+```{r setup}
+library(pROC)
+library(ggplot2)
+data(aSAH)
+
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+roc_ndka <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE)
+
+set.seed(42)
+rocobj_ci <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, ci = TRUE, boot.n = 100)
+ci_se <- ci.se(rocobj_ci, specificities = seq(0, 100, 5), boot.n = 100)
+ci_sp <- ci.sp(rocobj_ci, sensitivities = seq(0, 100, 5), boot.n = 100)
+ci_th <- ci.thresholds(rocobj_ci, thresholds = "best", boot.n = 100)
+```
+
+```{r helpers}
+theme_ggroc_screenshot <- function(roc, legend.position = "none") {
+  list(
+    geom_roc_identity(roc),
+    theme_bw(),
+    theme(
+      legend.position = legend.position,
+      legend.justification = if (identical(legend.position, c(1, 0))) c(1, 0) else "center",
+      legend.background = element_rect(fill = "white", colour = NA),
+      panel.grid.minor = element_blank()
+    )
+  )
+}
+```
+
+## 1. Partial AUC (pAUC)
+
+```{r screenshot-1-classic}
+plot.roc(aSAH$outcome, aSAH$s100b,
+  percent = TRUE,
+  partial.auc = c(100, 90), partial.auc.correct = TRUE,
+  print.auc = TRUE,
+  print.auc.pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%",
+  print.auc.col = "#1c61b6",
+  auc.polygon = TRUE, auc.polygon.col = "#1c61b6",
+  max.auc.polygon = TRUE, max.auc.polygon.col = "#1c61b622",
+  main = "Partial AUC (pAUC)"
+)
+plot.roc(aSAH$outcome, aSAH$s100b,
+  percent = TRUE, add = TRUE, type = "n",
+  partial.auc = c(100, 90), partial.auc.correct = TRUE,
+  partial.auc.focus = "se",
+  print.auc = TRUE,
+  print.auc.pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%",
+  print.auc.col = "#008600",
+  print.auc.y = 40,
+  auc.polygon = TRUE, auc.polygon.col = "#008600",
+  max.auc.polygon = TRUE, max.auc.polygon.col = "#00860022"
+)
+```
+
+```{r screenshot-1-ggroc}
+auc_sp <- auc(rocobj, partial.auc = c(100, 90), partial.auc.correct = TRUE)
+auc_se <- auc(rocobj,
+  partial.auc = c(100, 90), partial.auc.correct = TRUE,
+  partial.auc.focus = "se"
+)
+
+ggroc(rocobj) +
+  geom_polygon_max_auc(auc_se, fill = "#008600", alpha = 0x22 / 255) +
+  geom_polygon_max_auc(auc_sp, fill = "#1c61b6", alpha = 0x22 / 255) +
+  geom_polygon_auc(auc_se, fill = "#008600", colour = NA) +
+  geom_polygon_auc(auc_sp, fill = "#1c61b6", colour = NA) +
+  geom_text_auc(auc_sp,
+    pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%",
+    colour = "#1c61b6"
+  ) +
+  geom_text_auc(auc_se,
+    y = 40,
+    pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%",
+    colour = "#008600"
+  ) +
+  ggtitle("Partial AUC (pAUC)") +
+  theme_ggroc_screenshot(rocobj)
+```
+
+## 2. Confidence intervals
+
+```{r screenshot-2-classic}
+plot(rocobj_ci,
+  main = "Confidence intervals", percent = TRUE,
+  print.auc = TRUE
+)
+plot(ci_se, type = "shape", col = "#1c61b6AA")
+plot(ci_th)
+```
+
+```{r screenshot-2-ggroc}
+ggroc(rocobj_ci) +
+  geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0xAA / 255) +
+  geom_errorbar_ci(ci_th) +
+  geom_text_auc(rocobj_ci) +
+  ggtitle("Confidence intervals") +
+  theme_ggroc_screenshot(rocobj)
+```
+
+## 3. Smoothing
+
+```{r screenshot-3-classic}
+plot.roc(aSAH$outcome, aSAH$s100b, percent = TRUE, main = "Smoothing")
+lines(smooth(rocobj), col = "#1c61b6")
+lines(smooth(rocobj, method = "density"), col = "#008600")
+lines(smooth(rocobj, method = "fitdistr", density = "lognormal"), col = "#840000")
+legend("bottomright",
+  legend = c("Empirical", "Binormal", "Density", "Fitdistr\n(Log-normal)"),
+  col = c("black", "#1c61b6", "#008600", "#840000"), lwd = 2
+)
+```
+
+```{r screenshot-3-ggroc}
+smoothed <- list(
+  Empirical = rocobj,
+  Binormal = smooth(rocobj),
+  Density = smooth(rocobj, method = "density"),
+  `Fitdistr (Log-normal)` = smooth(rocobj, method = "fitdistr", density = "lognormal")
+)
+
+ggroc(smoothed) +
+  geom_roc_identity(rocobj) +
+  scale_colour_manual(values = c(
+    Empirical = "black",
+    Binormal = "#1c61b6",
+    Density = "#008600",
+    `Fitdistr (Log-normal)` = "#840000"
+  )) +
+  ggtitle("Smoothing") +
+  theme_bw() +
+  theme(
+    legend.position = c(1, 0),
+    legend.justification = c(1, 0),
+    legend.background = element_rect(fill = "white", colour = NA),
+    legend.title = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```
+
+## 4. Confidence intervals of specificity / sensitivity
+
+```{r screenshot-4-classic}
+plot(rocobj,
+  main = "Confidence intervals of specificity/sensitivity",
+  percent = TRUE
+)
+plot(ci_se, type = "shape", col = "#1c61b6AA")
+plot(ci_sp, type = "bars")
+```
+
+```{r screenshot-4-ggroc}
+ggroc(rocobj) +
+  geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0xAA / 255) +
+  geom_errorbar_ci(ci_sp) +
+  ggtitle("Confidence intervals of specificity/sensitivity") +
+  theme_ggroc_screenshot(rocobj)
+```
+
+## 5. Confidence interval of a threshold
+
+```{r screenshot-5-classic}
+plot(rocobj,
+  main = "Confidence interval of a threshold", percent = TRUE,
+  print.thres = "best"
+)
+plot(ci_th)
+```
+
+```{r screenshot-5-ggroc}
+ggroc(rocobj) +
+  geom_errorbar_ci(ci_th) +
+  geom_roc_threshold(rocobj, thresholds = "best") +
+  ggtitle("Confidence interval of a threshold") +
+  theme_ggroc_screenshot(rocobj)
+```
+
+## 6. Comparison
+
+```{r screenshot-6-classic}
+rocobj1 <- plot.roc(aSAH$outcome, aSAH$s100b,
+  main = "Statistical comparison", percent = TRUE, col = "#1c61b6"
+)
+rocobj2 <- lines.roc(aSAH$outcome, aSAH$ndka, percent = TRUE, col = "#008600")
+testobj <- roc.test(rocobj1, rocobj2)
+text(50, 50, labels = paste("p-value =", format.pval(testobj$p.value)), adj = c(0, .5))
+legend("bottomright", legend = c("S100B", "NDKA"),
+       col = c("#1c61b6", "#008600"), lwd = 2)
+```
+
+```{r screenshot-6-ggroc}
+testobj <- roc.test(rocobj, roc_ndka)
+
+ggroc(list(S100B = rocobj, NDKA = roc_ndka)) +
+  geom_roc_identity(rocobj) +
+  annotate("text", x = 50, y = 50,
+           label = paste("p-value =", format.pval(testobj$p.value)),
+           hjust = 0, vjust = 0.5) +
+  scale_colour_manual(values = c(S100B = "#1c61b6", NDKA = "#008600")) +
+  ggtitle("Statistical comparison") +
+  theme_bw() +
+  theme(
+    legend.position = c(1, 0),
+    legend.justification = c(1, 0),
+    legend.background = element_rect(fill = "white", colour = NA),
+    legend.title = element_blank(),
+    panel.grid.minor = element_blank()
+  )
+```

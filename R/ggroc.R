@@ -73,7 +73,9 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
   # Do the plotting
   ggplot2::ggplot(df) +
     ggplot2::geom_line(aes$aes, ...) +
-    aes$xlims
+    aes$xlims +
+    ggroc_axis_labs(data, legacy.axes) +
+    ggplot2::coord_fixed()
 }
 
 ggroc.smooth.roc <- ggroc.roc
@@ -109,9 +111,11 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
   # Get the coords
   coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE, ignore.partial.auc = TRUE)
 
-  # Add a "name" colummn
+  # Add a "name" column and keep columns shared by roc and smooth.roc
+  shared.cols <- c("specificity", "sensitivity", "1-specificity", "name")
   for (i in seq_along(coord.dfs)) {
     coord.dfs[[i]]$name <- names(coord.dfs)[i]
+    coord.dfs[[i]] <- coord.dfs[[i]][, intersect(shared.cols, names(coord.dfs[[i]])), drop = FALSE]
   }
 
   # Make a big data.frame
@@ -124,5 +128,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
   # Do the plotting
   ggplot2::ggplot(coord.dfs, aes.ggplot$aes) +
     ggplot2::geom_line(...) +
-    aes.ggplot$xlims
+    aes.ggplot$xlims +
+    ggroc_axis_labs(data[[1]], legacy.axes) +
+    ggplot2::coord_fixed()
 }

@@ -58,7 +58,7 @@
 \section{Functions}{
   \tabular{ll}{
     \code{\link{roc}} \tab Build a ROC curve\cr
-    \code{\link{are.paired}} \tab Dertermine if two ROC curves are paired \cr
+    \code{\link{are.paired}} \tab Determine if two ROC curves are paired \cr
     \code{\link{auc}} \tab Compute the area under the ROC curve \cr
     \code{\link{ci}} \tab Compute confidence intervals of a ROC curve \cr
     \code{\link{ci.auc}} \tab Compute the CI of the AUC \cr
@@ -66,12 +66,12 @@
     \code{\link{ci.se}} \tab Compute the CI of sensitivities at given specificities \cr
     \code{\link{ci.sp}} \tab Compute the CI of specificities at given sensitivities \cr
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
-    \code{\link{ci.coords}} \tab Compute the CI of arbitrary coordinates \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
     \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
     \code{\link{ggroc}} \tab Plot a ROC curve with \pkg{ggplot2}\cr
-    \code{\link{has.partial.auc}} \tab Determine if the ROC curve have a partial AUC\cr
+    \code{\link{has.partial.auc}} \tab Determine if the ROC curve has a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
+    \code{\link{multiclass.roc}} \tab Build a multi-class ROC / AUC \cr
     \code{\link{plot.ci}} \tab Plot CIs \cr
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
     \code{\link{power.roc.test}} \tab Sample size and power computation \cr
@@ -101,27 +101,14 @@
   }
 }
 
-\section{Experimental: pipelines}{
-	Since version 1.15.0, the \code{\link{roc}} function can be used in pipelines, for instance with \pkg{dplyr} or \pkg{magrittr}. This is still a highly experimental feature and will change significantly in future versions  (see \href{https://github.com/xrobin/pROC/issues/54}{issue 54}).
-	The \code{\link{roc.data.frame}} method supports both standard and non-standard evaluation (NSE), and the \code{\link{roc_}}
-	function supports standard evaluation only.
-	
-    \preformatted{
-library(dplyr)
-aSAH \%>\% 
-    filter(gender == "Female") \%>\%
-    roc(outcome, s100b)
-	}
-	
-	By default it returns the \code{\link{roc}} object, which can then be piped to
-	the \code{\link{coords}} function to extract coordinates that can be used
-	in further pipelines.
+\section{Pipelines}{
+	Since version 1.15.0, \pkg{pROC} can be used in \pkg{dplyr} or \pkg{magrittr} pipelines.
 	
 	\preformatted{
 aSAH \%>\% 
     filter(gender == "Female") \%>\%
     roc(outcome, s100b) \%>\%
-    coords(transpose=FALSE) \%>\%
+    coords() \%>\%
     filter(sensitivity > 0.6, 
            specificity > 0.6)
 	}
@@ -152,12 +139,12 @@ aSAH \%>\%
 	\subsection{Algorithms}{
 	Over the years, a significant amount of time has been invested in making pROC run faster and faster.
 	From the naive algorithm iterating over all thresholds implemented in the first version, we went to a
-	C++ implementation (with \pkg{Rcpp}), and a different algorithm using cummulative sum of responses sorted 
-	by the predictor, which scales only with the number of data points, independently on the number of thresholds (\code{algorithm = 2}).
+	C++ implementation (with \pkg{Rcpp}), and a different algorithm using cumulative sum of responses sorted
+	by the predictor, which scales only with the number of data points, independently of the number of thresholds.
 	The curves themselves are identical, but computation time has been decreased massively.
 	
-	Earlier versions of \pkg{pROC} allowed choosing the optimal algorithm. Since pROC 1.19, only a single
-	algorithm (previously \code{algorithm = 2}) is available. This allowed us to remove legacy code
+	Earlier versions of \pkg{pROC} allowed choosing among several algorithms. Since pROC 1.19, only the
+	cumulative-sum algorithm is available. This allowed us to remove legacy code
 	and dependencies, and make \pkg{pROC} more maintainable and future proof.
 	}
 	
@@ -166,15 +153,7 @@ aSAH \%>\%
     
     Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
     
-    A naive way to speed-up the boostrap is by removing the progress bar:
-    
-    \preformatted{
-rocobj <- roc(response, round(predictor))
-system.time(ci(rocobj))
-system.time(ci(rocobj, progress = "none"))
-    }
-    
-    It is of course possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
+    To speed up computations it is possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
 
     \subsection{Parallel processing}{
 	    Parallel processing is no longer supported in pROC 1.19. The use of the
@@ -188,7 +167,7 @@ system.time(ci(rocobj, progress = "none"))
     DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)). Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is always faster than bootstrapping. By default, pROC will choose the DeLong method whenever possible.
   
         \preformatted{
-rocobj <- roc(response, round(predictor), algorithm=3)
+rocobj <- roc(response, round(predictor))
 system.time(ci(rocobj, method="delong"))
     }
   }
@@ -235,7 +214,8 @@ for ROC curves.
 
 CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this package.
 
-See \code{vignette("FAQ", package = "pROC")} for frequently asked questions.
+See \code{vignette("FAQ", package = "pROC")} for frequently asked questions
+and \code{vignette("ggroc", package = "pROC")} for ggplot2 plots.
 }
 \examples{
 data(aSAH)

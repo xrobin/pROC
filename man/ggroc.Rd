@@ -19,7 +19,9 @@
 }
 		   
 \arguments{
-  \item{data}{a roc object from the \link{roc} function, or a list of roc objects.
+  \item{data}{
+    a roc object from the \link{roc} or \link{smooth.roc} function,
+    or a list of \code{roc} and/or \code{smooth.roc} objects.
   }
   \item{aes}{the name(s) of the aesthetics for \code{\link[ggplot2:geom_path]{geom_line}} 
     to map to the different ROC curves supplied.
@@ -30,20 +32,32 @@
     (\code{TRUE}) as in most legacy software.
   }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
-    to set: \code{alpha}, \code{colour}, \code{linetype}, \code{linewidth} 
-    (new in ggplot2 3.4.0), and \code{size} (before ggplot2 3.4.0).
+    to set: \code{alpha}, \code{colour}, \code{linetype} and \code{linewidth}.
     The \code{group} aesthetic is always active since version 1.18.5 and is
     kept for backwards compatibility.
   }
 }
 
 \details{
-  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed). It returns the ggplot with a line layer on it. You can print it directly or add your own layers and theme elements.
+  This function initializes a ggplot object from a ROC curve (or multiple if a list is passed).
+  
+  It returns the ggplot with a line layer and axis labels.
+  You can print it directly or add your own layers and theme elements.
+
+  It also sets \code{\link[ggplot2:coord_fixed]{coord_fixed}()}, so one
+  unit of specificity equals one unit of sensitivity and distances to
+  the identity line stay meaningful.
+  Add another coordinate system to replace it (e.g.
+  \code{\link[ggplot2:coord_cartesian]{coord_cartesian}()}).
 }
 
 
 \seealso{
-\code{\link{roc}}, \code{\link{plot.roc}}, \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
+\code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
+\code{\link{geom_roc_identity}}, \code{\link{geom_polygon_max_auc}},
+\code{\link{geom_text_auc}}, \code{\link{geom_roc_threshold}},
+\code{\link{geom_polygon_ci}}, \code{\link{geom_errorbar_ci}},
+\pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{
 # Create a basic roc object
@@ -70,6 +84,9 @@ gl + xlab("FPR") + ylab("TPR") +
 # Multiple curves:
 g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2, ndka=roc(aSAH$outcome, aSAH$ndka)))
 g2
+
+# Mixed empirical and smoothed curves:
+ggroc(list(empirical = rocobj, binormal = smooth(rocobj)))
 
 # This is equivalent to using roc.formula:
 roc.list <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)

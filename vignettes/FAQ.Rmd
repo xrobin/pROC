@@ -16,8 +16,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Frequently Asked Questions
-
 ## The X axis should be "1-Specificity" instead of "Specificity"!
 
 This is not a bug! 
@@ -134,7 +132,9 @@ plot(rocobj, main = "ROC curve with free aspect ratio", asp = NA)
 
 **Note:** Having a squared ROC curve is important for visual interpretation, as it
 allows you to compare distances to the diagonal accurately. The default `asp = 1`
-ensures both axes have the same scale.
+in `plot.roc()` (and `coord_fixed()` in `ggroc()`) enforces this. To drop the
+fixed aspect ratio on a ggplot, replace the coord:
+`ggroc(rocobj) + coord_cartesian()`.
 
 ## When I resample or randomize my dataset I get an biased AUC > 0.5. How come?
 

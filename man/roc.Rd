@@ -290,14 +290,14 @@ aSAH \%>\%
 # Returns thresholds, sensitivities and specificities:
 aSAH  \%>\%
     roc(outcome, s100b) \%>\%
-    coords(transpose = FALSE) \%>\%
+    coords() \%>\%
     filter(sensitivity > 0.6, 
            specificity > 0.6)
 
 # Returns all existing coordinates, then select precision and recall:
 aSAH  \%>\%
     roc(outcome, s100b) \%>\%
-    coords(ret = "all", transpose = FALSE) \%>\%
+    coords(ret = "all") \%>\%
     select(precision, recall)
     }
 }

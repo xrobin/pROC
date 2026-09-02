@@ -1,9 +1,25 @@
 context("ggroc")
 
+test_that("ggroc sets coord_fixed like plot.roc asp=1", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$coordinates$ratio, 1)
+  expect_equal(ggroc(list(a = r.s100b, b = r.wfns))$coordinates$ratio, 1)
+})
+
+test_that("ggroc sets plot.roc-style axis labels", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$labels$x, "Specificity")
+  expect_equal(ggroc(r.s100b)$labels$y, "Sensitivity")
+  expect_equal(ggroc(r.s100b, legacy.axes = TRUE)$labels$x, "1 - Specificity")
+  expect_equal(ggroc(r.s100b.percent)$labels$x, "Specificity (%)")
+  expect_equal(ggroc(r.s100b.percent)$labels$y, "Sensitivity (%)")
+  expect_equal(ggroc(r.s100b.percent, legacy.axes = TRUE)$labels$x, "100 - Specificity (%)")
+})
+
 
 
 test_that("Ggroc screenshot looks normal", {
-  skip_if_not_installed("ggplot2", minimum_version = "2.4")
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_screenshot <- function() {
     print(ggroc(r.s100b.percent, alpha = 0.5, colour = "red", linetype = 2, linewidth = 2))
   }
@@ -11,7 +27,7 @@ test_that("Ggroc screenshot looks normal", {
 })
 
 test_that("Ggroc works with legacy.axis and percent", {
-  skip_if_not_installed("ggplot2", minimum_version = "2.4")
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
 
   # nothing
   test_ggplot_screenshot <- function() {
@@ -39,7 +55,7 @@ test_that("Ggroc works with legacy.axis and percent", {
 })
 
 test_that("Ggroc list screenshot looks normal", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_screenshot <- function() {
     print(ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)))
   }
@@ -47,7 +63,7 @@ test_that("Ggroc list screenshot looks normal", {
 })
 
 test_that("Ggroc list can take multiple aes", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_screenshot <- function() {
     print(ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka), aes = c("c", "linetype")))
   }
@@ -55,7 +71,7 @@ test_that("Ggroc list can take multiple aes", {
 })
 
 test_that("Ggroc list doesn't get merged with set colour", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_screenshot <- function() {
     print(ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka), colour = "red"))
   }
@@ -63,7 +79,7 @@ test_that("Ggroc list doesn't get merged with set colour", {
 })
 
 test_that("Ggroc list extra aestetics screenshot looks normal", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_extra_aes_screenshot <- function() {
     print(ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka), aes = "linetype", color = "red"))
   }
@@ -71,7 +87,7 @@ test_that("Ggroc list extra aestetics screenshot looks normal", {
 })
 
 test_that("Ggroc list with group facet screenshot looks normal", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_group_facet_screenshot <- function() {
     library(ggplot2)
     g <- ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka), aes = "group") + facet_grid(. ~ name)
@@ -81,7 +97,7 @@ test_that("Ggroc list with group facet screenshot looks normal", {
 })
 
 test_that("Ggroc aesthetics can be modified with scale_colour_manual", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_list_screenshot <- function() {
     print(ggroc(list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka), aes = c("c", "linetype")) +
       scale_colour_manual(values = c("purple", "yellow", "purple")))
@@ -91,7 +107,7 @@ test_that("Ggroc aesthetics can be modified with scale_colour_manual", {
 
 
 test_that("Ggroc screenshot looks normal with a single smooth.roc", {
-  skip_if_not_installed("ggplot2", minimum_version = "2.4")
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_screenshot <- function() {
     print(ggroc(smooth(r.s100b), , alpha = 0.5, colour = "red", linetype = 2, linewidth = 2))
   }
@@ -99,9 +115,22 @@ test_that("Ggroc screenshot looks normal with a single smooth.roc", {
 })
 
 test_that("Ggroc screenshot looks normal with a list of smooth.roc", {
-  skip_if_not_installed("ggplot2") 
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_ggplot_screenshot <- function() {
     print(ggroc(list(s100b = smooth(r.s100b), wfns = smooth(r.wfns), ndka = smooth(r.ndka))))
   }
   expect_ggroc_doppelganger("ggroc.smooth.list.screenshot", test_ggplot_screenshot)
+})
+
+test_that("ggroc.list binds mixed roc and smooth.roc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_error(ggroc(list(empirical = r.s100b, binormal = smooth(r.s100b))), NA)
+})
+
+test_that("Ggroc mixed empirical and smooth list screenshot looks normal", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  test_ggplot_screenshot <- function() {
+    print(ggroc(list(empirical = r.s100b, binormal = smooth(r.s100b))))
+  }
+  expect_ggroc_doppelganger("ggroc.mixed.list.screenshot", test_ggplot_screenshot)
 })
