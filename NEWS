@@ -7,6 +7,7 @@
   * Added 'geom_text_auc' to print the AUC on a 'ggroc' plot
   * Added 'geom_roc_threshold' to mark thresholds on a 'ggroc' plot
   * Added 'geom_polygon_ci' and 'geom_errorbar_ci' to plot 'ci.se' / 'ci.sp' / 'ci.thresholds' on a 'ggroc' plot
+  * Added a ggplot2 screenshot gallery vignette
   * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another
     coordinate system (for example 'coord_cartesian()') to replace it.
 

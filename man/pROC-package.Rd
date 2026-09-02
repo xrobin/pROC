@@ -214,7 +214,8 @@ for ROC curves.
 
 CRAN packages \pkg{MASS} and \pkg{logcondens} employed in this package.
 
-See \code{vignette("FAQ", package = "pROC")} for frequently asked questions.
+See \code{vignette("FAQ", package = "pROC")} for frequently asked questions
+and \code{vignette("ggroc", package = "pROC")} for ggplot2 plots.
 }
 \examples{
 data(aSAH)
