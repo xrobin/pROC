@@ -19,12 +19,18 @@ geom_roc_identity.roc <- function(data, colour = "darkgrey", ...) {
       } else {
         df <- data.frame(x = one, xend = 0, y = 0, yend = one)
       }
+      .data <- rlang::.data
       list(do.call(
         ggplot2::geom_segment,
         c(
           list(
             data = df,
-            mapping = ggplot2::aes(x = x, y = y, xend = xend, yend = yend),
+            mapping = ggplot2::aes(
+              x = .data$x,
+              y = .data$y,
+              xend = .data$xend,
+              yend = .data$yend
+            ),
             inherit.aes = FALSE
           ),
           extras
