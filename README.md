@@ -143,6 +143,7 @@ The HTML output will be in `inst/doc/` after building. After installing the pack
 browseVignettes("pROC")
 # Or directly:
 vignette("FAQ", package = "pROC")
+vignette("ggroc", package = "pROC")
 ```
 
 ### Installing the development version

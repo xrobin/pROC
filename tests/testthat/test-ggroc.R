@@ -1,5 +1,21 @@
 context("ggroc")
 
+test_that("ggroc sets coord_fixed like plot.roc asp=1", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$coordinates$ratio, 1)
+  expect_equal(ggroc(list(a = r.s100b, b = r.wfns))$coordinates$ratio, 1)
+})
+
+test_that("ggroc sets plot.roc-style axis labels", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_equal(ggroc(r.s100b)$labels$x, "Specificity")
+  expect_equal(ggroc(r.s100b)$labels$y, "Sensitivity")
+  expect_equal(ggroc(r.s100b, legacy.axes = TRUE)$labels$x, "1 - Specificity")
+  expect_equal(ggroc(r.s100b.percent)$labels$x, "Specificity (%)")
+  expect_equal(ggroc(r.s100b.percent)$labels$y, "Sensitivity (%)")
+  expect_equal(ggroc(r.s100b.percent, legacy.axes = TRUE)$labels$x, "100 - Specificity (%)")
+})
+
 
 
 test_that("Ggroc screenshot looks normal", {
@@ -104,4 +120,17 @@ test_that("Ggroc screenshot looks normal with a list of smooth.roc", {
     print(ggroc(list(s100b = smooth(r.s100b), wfns = smooth(r.wfns), ndka = smooth(r.ndka))))
   }
   expect_ggroc_doppelganger("ggroc.smooth.list.screenshot", test_ggplot_screenshot)
+})
+
+test_that("ggroc.list binds mixed roc and smooth.roc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  expect_error(ggroc(list(empirical = r.s100b, binormal = smooth(r.s100b))), NA)
+})
+
+test_that("Ggroc mixed empirical and smooth list screenshot looks normal", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  test_ggplot_screenshot <- function() {
+    print(ggroc(list(empirical = r.s100b, binormal = smooth(r.s100b))))
+  }
+  expect_ggroc_doppelganger("ggroc.mixed.list.screenshot", test_ggplot_screenshot)
 })
