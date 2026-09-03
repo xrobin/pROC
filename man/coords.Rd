@@ -33,11 +33,15 @@ transpose = FALSE, as.matrix=FALSE, ...)
   }
   \item{x}{
 		the coordinates to look for. Numeric (if so, their meaning is
-		defined by the \code{input} argument) or one of \dQuote{all} (all
+		defined by the \code{input} argument), character or ordered (level
+		labels when \code{input="threshold"} on an ordered ROC curve),
+		or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
 		maximas of the ROC curve) or \dQuote{best} (see \code{best.method}
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
-  }
+		Numeric \code{x} is not allowed with \code{input="threshold"} on
+		an ordered ROC curve; pass the level as character or ordered.
+    }
   \item{input}{
   	If \code{x} is numeric, the kind of input coordinate (x).
   	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
@@ -102,6 +106,21 @@ transpose = FALSE, as.matrix=FALSE, ...)
   \code{ignore.partial.auc=TRUE}, the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
   necessarily to the whole curve.
+
+  On an ordered ROC curve a character \code{x} is resolved in this order:
+  an exact keyword (\dQuote{all}, \dQuote{local maximas}, \dQuote{best}),
+  then an exact threshold level, then a unique keyword prefix. If a
+  string is both a keyword and a level, the keyword wins and a warning
+  is issued. Pass an ordered value such as
+  \code{ordered("best", levels = levels(roc$predictor))} to select the
+  level unambiguously. On a numeric ROC curve, a character \code{x} is
+  still matched with \code{\link{match.arg}} as in pROC 1.19.1.
+
+  When the ROC was built from an ordered predictor and
+  \code{input="threshold"}, the \code{threshold} column is taken from
+  \code{roc$thresholds} so it is always ordered on the threshold levels
+  (including the Inf sentinel), regardless of whether \code{x} was
+  passed as character or ordered.
   
   For \code{input="specificity"} and \code{input="sensitivity"},
   the function checks if the specificity or sensitivity is one of the
@@ -226,7 +245,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
 \value{
 
   A \code{data.frame} with \code{ret} as columns and as many rows as
-  given by \code{x}.
+  given by \code{x}. When the ROC was built from an ordered predictor,
+  the \code{threshold} column is ordered (levels plus the Inf sentinel).
   
   In all cases where \code{input="specificity"} or \code{input="sensitivity"}
   and interpolation was required, threshold is returned as \code{NA}.
@@ -264,6 +284,13 @@ roc.s100b <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
 # Get the coordinates of S100B threshold 0.55
 coords(roc.s100b, 0.55)
+
+# Ordered predictors keep their levels as thresholds:
+roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
+coords(roc.wfns, "3")
+# Numeric x is rejected on an ordered ROC:
+# coords(roc.wfns, 3)  # error
+coords(roc.wfns, "Inf")
 
 # Get the coordinates at 50\% sensitivity
 coords(roc=roc.s100b, x=50, input="sensitivity")

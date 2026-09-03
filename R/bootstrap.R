@@ -274,7 +274,7 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, ...) {
 stratified.ci.auc <- function(n, roc) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se
@@ -290,7 +290,7 @@ nonstratified.ci.auc <- function(n, roc) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se
@@ -306,7 +306,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
   # need to rebuild a ROC and smooth it
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -315,7 +315,7 @@ stratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   roc$specificities <- perfs$sp
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -336,7 +336,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -363,7 +363,7 @@ nonstratified.ci.smooth.auc <- function(n, roc, smooth.roc.call, auc.call) {
 stratified.ci.se <- function(n, roc, sp) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -380,7 +380,7 @@ nonstratified.ci.se <- function(n, roc, sp) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -395,7 +395,7 @@ nonstratified.ci.se <- function(n, roc, sp) {
 stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -404,7 +404,7 @@ stratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -424,7 +424,7 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -451,7 +451,7 @@ nonstratified.ci.smooth.se <- function(n, roc, sp, smooth.roc.call) {
 stratified.ci.sp <- function(n, roc, se) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -468,7 +468,7 @@ nonstratified.ci.sp <- function(n, roc, se) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
   roc$sensitivities <- perfs$se * ifelse(roc$percent, 100, 1)
@@ -483,7 +483,7 @@ nonstratified.ci.sp <- function(n, roc, se) {
 stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -492,7 +492,7 @@ stratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -512,7 +512,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -539,8 +539,7 @@ nonstratified.ci.smooth.sp <- function(n, roc, se, smooth.roc.call) {
 stratified.ci.thresholds <- function(n, roc, thresholds) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-
-  return(sapply(thresholds, roc_utils_perfs, controls = controls, cases = cases, direction = roc$direction))
+  roc_utils_perfs_each(thresholds, controls, cases, roc$direction)
 }
 
 # Returns an auc in a non stratified manner
@@ -551,8 +550,7 @@ nonstratified.ci.thresholds <- function(n, roc, thresholds) {
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-
-  return(sapply(thresholds, roc_utils_perfs, controls = controls, cases = cases, direction = roc$direction))
+  roc_utils_perfs_each(thresholds, controls, cases, roc$direction)
 }
 
 
@@ -560,7 +558,7 @@ nonstratified.ci.thresholds <- function(n, roc, thresholds) {
 stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, best.policy) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 
@@ -569,7 +567,7 @@ stratified.ci.coords <- function(roc, x, input, ret, best.method, best.weights, 
   roc$specificities <- perfs$sp
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -592,7 +590,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(controls, cases), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), roc$direction)
 
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
@@ -602,7 +600,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
   roc$specificities <- perfs$sp
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -623,7 +621,7 @@ nonstratified.ci.coords <- function(roc, x, input, ret, best.method, best.weight
 stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy) {
   controls <- sample(roc$controls, replace = TRUE)
   cases <- sample(roc$cases, replace = TRUE)
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
@@ -633,7 +631,7 @@ stratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best.we
   roc$specificities <- perfs$sp * ifelse(roc$percent, 100, 1)
   roc$cases <- cases
   roc$controls <- controls
-  roc$predictor <- c(controls, cases)
+  roc$predictor <- roc_utils_combine_predictor(controls, cases)
   roc$response <- c(rep(roc$levels[1], length(controls)), rep(roc$levels[2], length(cases)))
   roc$thresholds <- thresholds
 
@@ -662,7 +660,7 @@ nonstratified.ci.smooth.coords <- function(roc, x, input, ret, best.method, best
   splitted <- split(predictor, response)
   controls <- splitted[[as.character(roc$levels[1])]]
   cases <- splitted[[as.character(roc$levels[2])]]
-  thresholds <- roc_utils_thresholds(c(cases, controls), roc$direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(cases, controls), roc$direction)
 
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = roc$direction)
 

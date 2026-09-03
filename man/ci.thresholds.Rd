@@ -44,10 +44,12 @@ progress = NULL, parallel=FALSE, ...)
 	not.
   }
   \item{thresholds}{on which thresholds to evaluate the CI. Either the
-	numeric values of the thresholds, a logical vector (as index of
+	numeric values of the thresholds, level labels as character or
+	ordered (for ordered ROC curves), a logical vector (as index of
 	\code{roc$thresholds}) or a character \dQuote{all}, \dQuote{local
 	  maximas} or \dQuote{best} that will be used to determine the threshold(s) 
 	  on the supplied curve with \code{\link{coords}} (not on the resampled curves).
+	  Numeric values are not allowed for ordered ROC curves.
   }
   \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
     a warning. The argument will be removed in a future version.}
@@ -74,8 +76,11 @@ progress = NULL, parallel=FALSE, ...)
   given by the \code{thresholds} argument. Then it computes the
   confidence interval as the percentiles given by \code{conf.level}.
   
-  A threshold given as a \code{logical} vector or \code{character} is converted to the corresponding numeric vector once
-  \emph{using the supplied ROC curve}, and not at each bootstrap iteration. See \code{\link{ci.coords}} for the latter behaviour.
+  A threshold given as a \code{logical} vector or \code{character} is converted
+  to the corresponding threshold(s) of the supplied ROC curve once,
+  and not at each bootstrap iteration. See \code{\link{ci.coords}} for the latter behaviour.
+  On an ordered ROC curve, pass level labels as character or ordered;
+  numeric values are rejected.
 
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
