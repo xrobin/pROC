@@ -255,5 +255,5 @@ hide pROC's functions if the package is loaded after pROC:
 | StatMeasures | | [Not Generic](http://finzi.psych.upenn.edu/R/library/StatMeasures/html/auc.html) | |
 | survMisc | | | [Generic](http://finzi.psych.upenn.edu/R/library/survMisc/html/ci.html) |
 
-To get an updated list, run `inst/extra/sos_clashes.R`. It may be needed to
+To get an updated list, run `tools/sos_clashes.R` from the pROC source repository. It may be needed to
 start R with `export R_MAX_NUM_DLLS=1000` to be able to run the script.
