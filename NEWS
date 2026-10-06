@@ -1,4 +1,12 @@
-1.19.9999
+1.19.9999 (development)
+  * Ordered predictors are no longer converted to numeric (issue #63).
+    Thresholds are the levels plus an Inf sentinel; pass those labels
+    (not numbers) to coords(), ci.thresholds(), ci.coords() and
+    plot.roc(print.thres). ci.coords() omits the threshold interval by
+    default on ordered curves.
+  * ci.coords() with best.policy="omit" now drops a bootstrap replicate
+    that has several "best" points, instead of returning the first
+    column of the coords data.frame.
   * Added ggplot2 layers for 'plot.roc' features on a 'ggroc' plot:
     'geom_polygon_auc', 'geom_polygon_max_auc', 'geom_roc_identity',
     'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and

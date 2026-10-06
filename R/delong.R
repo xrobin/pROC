@@ -139,6 +139,10 @@ delong.paired.calculations <- function(roc1, roc2) {
 # Calls delongPlacementsCpp safely
 # Ensures that the theta value calculated is correct
 delongPlacements <- function(roc) {
+  if (roc_utils_is_ordered_roc(roc)) {
+    roc$cases <- as.numeric(roc$cases)
+    roc$controls <- as.numeric(roc$controls)
+  }
   placements <- delongPlacementsCpp(roc)
 
   # Ensure theta equals auc

@@ -13,11 +13,12 @@ geom_roc_threshold.roc <- function(data,
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
+  ordered_roc <- !methods::is(data, "smooth.roc") && roc_utils_is_ordered_roc(data)
   if (is.null(pattern)) {
-    pattern <- if (percent) {
-      "%.1f (%.1f%%, %.1f%%)"
+    pattern <- if (ordered_roc) {
+      ifelse(percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
     } else {
-      "%.3f (%.3f, %.3f)"
+      ifelse(percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
     }
   }
   co <- coords(data, thresholds)
@@ -25,7 +26,13 @@ geom_roc_threshold.roc <- function(data,
   if (is.null(co$threshold)) {
     co$threshold <- NA_real_
   }
-  co$label <- sprintf(pattern, co$threshold, co$specificity, co$sensitivity)
+  thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) {
+    # Defensive conversion to avoid users passing %f on ordered rocs
+    as.character(co$threshold)
+  } else {
+    co$threshold
+  }
+  co$label <- sprintf(pattern, thres.lab, co$specificity, co$sensitivity)
   new_ggroc_layer(
     behind = FALSE,
     make_layers = function(plot) {

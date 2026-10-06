@@ -165,8 +165,8 @@ roc.default <- function(response, predictor,
       stop("'density.*' arguments incompatible with 'response/predictor'.")
     }
 
-    original.predictor <- predictor # store a copy of the original predictor (before converting ordered to numeric and removing NA)
-    original.response <- response # store a copy of the original predictor (before converting ordered to numeric)
+    original.predictor <- predictor # store a copy of the original predictor (before removing NA)
+    original.response <- response # store a copy of the original response (before removing NAs / unused levels)
 
     # Validate levels
     if (missing(levels)) {
@@ -182,20 +182,8 @@ roc.default <- function(response, predictor,
     }
 
     # ensure predictor is numeric or ordered
-    if (!is.numeric(predictor)) {
-      if (is.ordered(predictor)) {
-        predictor <- tryCatch(
-          {
-            as.numeric(as.character(predictor))
-          },
-          warning = function(warn) {
-            warning("Ordered predictor converted to numeric vector. Threshold values will not correspond to values in predictor.")
-            return(as.numeric(predictor))
-          }
-        )
-      } else {
-        stop("Predictor must be numeric or ordered.")
-      }
+    if (!is.numeric(predictor) && !is.ordered(predictor)) {
+      stop("Predictor must be numeric or ordered.")
     }
     if (is.matrix(predictor)) {
       warning("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
@@ -218,7 +206,9 @@ roc.default <- function(response, predictor,
         predictor <- predictor[!nas]
         attr(predictor, "na.action") <- na.action
       }
-    } else if (any(is.na(c(predictor[response == levels[1]], predictor[response == levels[2]], response)))) { # Unable to compute anything if there is any NA in the response or in the predictor data we want to consider !
+    } else if (any(is.na(predictor[response == levels[1]])) ||
+      any(is.na(predictor[response == levels[2]])) ||
+      any(is.na(response))) { # Unable to compute anything if there is any NA in the response or in the predictor data we want to consider !
       return(NA)
     }
     splitted <- split(predictor, response)
@@ -239,7 +229,7 @@ roc.default <- function(response, predictor,
     }
 
     # Check infinities
-    if (any(which <- is.infinite(predictor))) {
+    if (!is.ordered(predictor) && any(is.infinite(predictor))) {
       warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
       return(NaN)
     }
@@ -259,7 +249,7 @@ roc.default <- function(response, predictor,
       if (any(is.na(cases))) {
         cases <- na.omit(cases)
       }
-    } else if (any(is.na(c(controls, cases)))) { # Unable to compute anything if there is any NA in the data we want to consider !
+    } else if (any(is.na(controls)) || any(is.na(cases))) { # Unable to compute anything if there is any NA in the data we want to consider !
       return(NA)
     }
     # are there empty cats?
@@ -271,35 +261,15 @@ roc.default <- function(response, predictor,
     }
 
     # check data consistency
-    if (is.ordered(cases)) {
-      if (is.ordered(controls)) {
-        if (identical(attr(cases, "levels"), attr(controls, "levels"))) {
-          # merge
-          original.predictor <- ordered(c(as.character(cases), as.character(controls)), levels = attr(controls, "levels"))
-          # Predictor, control and cases must be numeric from now on
-          predictor <- as.numeric(original.predictor)
-          controls <- as.numeric(controls)
-          cases <- as.numeric(cases)
-        } else {
-          stop("Levels of cases and controls differ.")
-        }
-      } else {
-        stop("Cases are of ordered type but controls are not.")
-      }
-    } else if (is.numeric(cases)) {
-      if (is.numeric(controls)) {
-        # build response/predictor
-        predictor <- c(controls, cases)
-        original.predictor <- predictor
-      } else {
-        stop("Cases are of numeric type but controls are not.")
-      }
-    } else {
-      stop("Cases and controls must be numeric or ordered.")
+    if (!((is.ordered(cases) && is.ordered(controls)) ||
+      (is.numeric(cases) && is.numeric(controls)))) {
+      stop("Cases and controls must both be numeric or both be ordered.")
     }
+    predictor <- roc_utils_combine_predictor(controls, cases)
+    original.predictor <- predictor
 
     # Check infinities
-    if (any(which <- is.infinite(predictor))) {
+    if (!is.ordered(predictor) && any(is.infinite(predictor))) {
       warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
       return(NaN)
     }
@@ -347,12 +317,9 @@ roc.default <- function(response, predictor,
     stop("No valid data provided.")
   }
 
-  if (direction == "auto" && median(controls) <= median(cases)) {
-    direction <- "<"
-    ifelse(quiet, invisible, message)("Setting direction: controls < cases")
-  } else if (direction == "auto" && median(controls) > median(cases)) {
-    direction <- ">"
-    ifelse(quiet, invisible, message)("Setting direction: controls > cases")
+  if (direction == "auto") {
+    direction <- roc_utils_auto_direction(controls, cases)
+    ifelse(quiet, invisible, message)(sprintf("Setting direction: controls %s cases", direction))
   }
 
   # smooth with densities, but only density was provided, not density.controls/cases
@@ -431,7 +398,7 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
   roc$percent <- percent
 
   # compute SE / SP
-  thresholds <- roc_utils_thresholds(c(controls, cases), direction)
+  thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), direction)
   perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction)
 
   se <- perfs$se

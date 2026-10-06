@@ -21,6 +21,34 @@ coords <- function(...) {
   UseMethod("coords")
 }
 
+coords_special_x <- function(x, roc = NULL, keywords = c("all", "local maximas", "best")) {
+  if (!is.character(x) || length(x) != 1) {
+    return(NA_character_)
+  }
+  ordered_roc <- !is.null(roc) && roc_utils_is_ordered_roc(roc)
+  if (!ordered_roc) {
+    return(match.arg(x, keywords))
+  }
+  # Ordered curve: exact keyword > exact level > unique keyword prefix > fall through.
+  if (x %in% keywords) {
+    if (x %in% levels(roc$thresholds)) {
+      warning(sprintf(
+        "'%s' is both a keyword and a threshold level; treating it as the keyword. Pass ordered(\"%s\", levels = levels(roc$predictor)) to select the level.",
+        x, x
+      ))
+    }
+    return(x)
+  }
+  if (x %in% levels(roc$thresholds)) {
+    return(NA_character_)
+  }
+  matched <- pmatch(x, keywords)
+  if (length(matched) == 1 && !is.na(matched)) {
+    return(keywords[matched])
+  }
+  NA_character_
+}
+
 
 coords.auc <- function(auc,
                        ...) {
@@ -113,9 +141,10 @@ coords.smooth.roc <- function(smooth.roc,
         # Deduce additional tn, tp, fn, fp, npv, ppv
         res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
       } else {
-        res <- cbind(
-          specificity = sp,
-          sensitivity = se
+        res <- data.frame(
+          specificity = as.vector(sp),
+          sensitivity = as.vector(se),
+          stringsAsFactors = FALSE
         )
       }
     } else {
@@ -152,33 +181,37 @@ coords.smooth.roc <- function(smooth.roc,
         # Deduce additional tn, tp, fn, fp, npv, ppv
         res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
       } else {
-        res <- cbind(
-          specificity = sp,
-          sensitivity = se,
-          best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
+        extra <- list()
+        extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
+        res <- data.frame(
+          specificity = as.vector(sp),
+          sensitivity = as.vector(se),
+          stringsAsFactors = FALSE
         )
-        colnames(res)[3] <- best.method
+        res[[best.method]] <- extra[[best.method]]
       }
     }
 
     if (as.list) {
       warning("'as.list' is deprecated and will be removed in a future version.")
-      list <- apply(t(res)[ret, , drop = FALSE], 2, as.list)
+      list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
       if (drop == TRUE && length(x) == 1) {
         return(list[[1]])
       }
       return(list)
     } else if (transpose) {
       rownames(res) <- NULL
-      return(t(res)[ret, , drop = drop])
+      return(t(res[, ret, drop = FALSE])[, , drop = drop])
     } else {
       if (missing(drop)) {
         drop <- FALSE
       }
-      if (!as.matrix) {
-        res <- as.data.frame(res)
+      if (as.matrix) {
+        res <- as.matrix(res[, ret, drop = FALSE])
+      } else {
+        res <- as.data.frame(res[, ret, drop = FALSE])
       }
-      return(res[, ret, drop = drop])
+      return(res[, , drop = drop])
     }
   }
 
@@ -240,8 +273,9 @@ coords.roc <- function(roc,
   # make sure the sort of roc is correct
   roc <- sort_roc(roc)
 
-  if (is.character(x)) {
-    x <- match.arg(x, c("all", "local maximas", "best"))
+  special <- coords_special_x(x, roc = roc)
+  if (!is.na(special)) {
+    x <- special
     partial.auc <- attr(roc$auc, "partial.auc")
     if (x == "all") {
       # Pre-filter thresholds based on partial.auc
@@ -258,12 +292,12 @@ coords.roc <- function(roc,
           if (!partial.auc.limits[1] %in% se) {
             se <- c(partial.auc.limits[1], se)
             sp <- c(coords(roc, x = partial.auc.limits[1], input = "sensitivity", ret = "specificity")[1, 1], sp)
-            thres <- c(NA, thres)
+            thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
           }
           if (!partial.auc.limits[2] %in% se) {
             se <- c(se, partial.auc.limits[2])
             sp <- c(sp, coords(roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
-            thres <- c(thres, NA)
+            thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
         } else {
           se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
@@ -273,12 +307,12 @@ coords.roc <- function(roc,
           if (!partial.auc.limits[1] %in% sp) {
             se <- c(se, coords(roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
             sp <- c(sp, partial.auc.limits[1])
-            thres <- c(thres, NA)
+            thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
           if (!partial.auc.limits[2] %in% sp) {
             se <- c(coords(roc, x = partial.auc.limits[2], input = "specificity", ret = "sensitivity")[1, 1], se)
             sp <- c(partial.auc.limits[2], sp)
-            thres <- c(NA, thres)
+            thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
           }
         }
       }
@@ -286,11 +320,7 @@ coords.roc <- function(roc,
         warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
         return(NULL)
       }
-      res <- cbind(
-        threshold = thres,
-        specificity = sp,
-        sensitivity = se
-      )
+      res <- roc_utils_coords_basic(thres, sp, se)
     } else if (x == "local maximas") {
       # Pre-filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
@@ -313,11 +343,7 @@ coords.roc <- function(roc,
         return(NULL)
       }
       lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se)
-      res <- cbind(
-        threshold = thres[lm.idx],
-        specificity = sp[lm.idx],
-        sensitivity = se[lm.idx]
-      )
+      res <- roc_utils_coords_basic(thres[lm.idx], sp[lm.idx], se[lm.idx])
     } else { # x == "best"
       # cheat: allow the user to pass "topleft"
       best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
@@ -355,92 +381,100 @@ coords.roc <- function(roc,
         warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
         return(NULL)
       }
-      res <- cbind(
-        threshold = thres,
-        specificity = sp,
-        sensitivity = se,
-        best.method = ifelse(best.method == "youden", 1, -1) * optim.crit
-      )
-      colnames(res)[4] <- best.method
+      extra <- list()
+      extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
+      res <- roc_utils_coords_basic(thres, sp, se, extra = extra)
     }
+  } else if (input == "threshold") {
+    if (is.character(x) && !roc_utils_is_ordered_roc(roc)) {
+      stop("'x' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
+    }
+    if (is.numeric(x) && roc_utils_is_ordered_roc(roc)) {
+      stop("Numeric 'x' is not supported for ordered ROC thresholds. Pass the level as character or ordered.")
+    }
+    if (!(is.numeric(x) || is.character(x) || is.ordered(x))) {
+      stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
+    }
+    thr_idx <- roc_utils_thr_idx(roc, x)
+    thr_col <- if (roc_utils_is_ordered_roc(roc)) roc$thresholds[thr_idx] else x
+    res <- roc_utils_coords_basic(thr_col, roc$specificities[thr_idx], roc$sensitivities[thr_idx])
   } else if (is.numeric(x)) {
-    if (input == "threshold") {
-      thr_idx <- roc_utils_thr_idx(roc, x)
-      res <- cbind(
-        threshold = x, # roc$thresholds[thr_idx], # user-supplied vs ours.
-        specificity = roc$specificities[thr_idx],
-        sensitivity = roc$sensitivities[thr_idx]
-      )
+    # Arbitrary coord given in input.
+    # We could be tempted to use all_coords directly.
+    # However any non monotone coordinate in ret will be inaccurate
+    # when interpolated. Therefore it is safer to only interpolate
+    # se and sp and re-calculate the remaining coords later.
+    if (methods::is(roc, "smooth.roc")) {
+      thr_template <- NA_real_
     } else {
-      # Arbitrary coord given in input.
-      # We could be tempted to use all_coords directly.
-      # However any non monotone coordinate in ret will be inaccurate
-      # when interpolated. Therefore it is safer to only interpolate
-      # se and sp and re-calculate the remaining coords later.
-      res <- cbind(
-        threshold = rep(NA, length(x)),
-        sensitivity = rep(NA, length(x)),
-        specificity = rep(NA, length(x))
-      )
-      if (input %in% c("sensitivity", "specificity")) {
-        # Shortcut slow roc_utils_calc_coords
-        se <- roc$sensitivities
-        sp <- roc$specificities
-        if (methods::is(roc, "smooth.roc")) {
-          thr <- rep(NA, length(roc$sensitivities))
-        } else {
-          thr <- roc$thresholds
-        }
-        if (input == "sensitivity") {
-          input_values <- se
-        } else {
-          input_values <- sp
-        }
+      thr_template <- roc$thresholds
+    }
+    res <- roc_utils_coords_basic(
+      roc_utils_na_thresholds(length(x), thr_template),
+      rep(NA_real_, length(x)),
+      rep(NA_real_, length(x))
+    )
+    if (input %in% c("sensitivity", "specificity")) {
+      # Shortcut slow roc_utils_calc_coords
+      se <- roc$sensitivities
+      sp <- roc$specificities
+      if (methods::is(roc, "smooth.roc")) {
+        thr <- roc_utils_na_thresholds(length(roc$sensitivities), NA_real_)
       } else {
-        all_coords <- roc_utils_calc_coords(roc, rep(NA, length(roc$sensitivities)), roc$sensitivities, roc$specificities, best.weights)
-        input_values <- all_coords[, input]
-        se <- all_coords[, "sensitivity"]
-        sp <- all_coords[, "specificity"]
-        thr <- all_coords[, "threshold"]
+        thr <- roc$thresholds
       }
-      for (i in seq_along(x)) {
-        value <- x[i]
-        if (value < min(input_values) || value > max(input_values)) {
-          stop(sprintf(
-            "Input %s (%s) not in range (%s-%s)", input, value,
-            min(input_values), max(input_values)
-          ))
-        }
+      if (input == "sensitivity") {
+        input_values <- se
+      } else {
+        input_values <- sp
+      }
+    } else {
+      all_coords <- roc_utils_calc_coords(roc, roc_utils_na_thresholds(length(roc$sensitivities), thr_template), roc$sensitivities, roc$specificities, best.weights)
+      input_values <- all_coords[, input]
+      se <- all_coords[, "sensitivity"]
+      sp <- all_coords[, "specificity"]
+      thr <- all_coords[, "threshold"]
+    }
+    for (i in seq_along(x)) {
+      value <- x[i]
+      if (value < min(input_values) || value > max(input_values)) {
+        stop(sprintf(
+          "Input %s (%s) not in range (%s-%s)", input, value,
+          min(input_values), max(input_values)
+        ))
+      }
 
-        idx <- which(input_values == value)
-        if (length(idx) > 1) {
-          # More than one to pick from. Need to take best
-          # according to sorting
-          if (coord.is.decreasing[input]) {
-            idx <- idx[length(idx)] # last
-          } else {
-            idx <- idx[1] # first
-          }
-        }
-        if (length(idx) == 1) {
-          # Exactly one to pick from
-          res[i, ] <- c(thr[idx], se[idx], sp[idx])
+      idx <- which(input_values == value)
+      if (length(idx) > 1) {
+        # More than one to pick from. Need to take best
+        # according to sorting
+        if (coord.is.decreasing[input]) {
+          idx <- idx[length(idx)] # last
         } else {
-          # Need to interpolate
-          if (coord.is.decreasing[input]) {
-            idx.next <- match(TRUE, input_values < value)
-          } else {
-            idx.next <- match(TRUE, input_values > value)
-          }
-          proportion <- (value - input_values[idx.next]) / (input_values[idx.next - 1] - input_values[idx.next])
-          int.se <- se[idx.next] + proportion * (se[idx.next - 1] - se[idx.next])
-          int.sp <- sp[idx.next] + proportion * (sp[idx.next - 1] - sp[idx.next])
-          res[i, 2:3] <- c(int.se, int.sp)
+          idx <- idx[1] # first
         }
+      }
+      if (length(idx) == 1) {
+        # Exactly one to pick from
+        res$threshold[i] <- thr[idx]
+        res$sensitivity[i] <- se[idx]
+        res$specificity[i] <- sp[idx]
+      } else {
+        # Need to interpolate
+        if (coord.is.decreasing[input]) {
+          idx.next <- match(TRUE, input_values < value)
+        } else {
+          idx.next <- match(TRUE, input_values > value)
+        }
+        proportion <- (value - input_values[idx.next]) / (input_values[idx.next - 1] - input_values[idx.next])
+        int.se <- se[idx.next] + proportion * (se[idx.next - 1] - se[idx.next])
+        int.sp <- sp[idx.next] + proportion * (sp[idx.next - 1] - sp[idx.next])
+        res$sensitivity[i] <- int.se
+        res$specificity[i] <- int.sp
       }
     }
   } else {
-    stop("'x' must be a numeric or character vector.")
+    stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
   }
 
   if (any(!ret %in% colnames(res))) {
@@ -449,14 +483,14 @@ coords.roc <- function(roc,
   }
 
   if (as.list) {
-    list <- apply(t(res)[ret, , drop = FALSE], 2, as.list)
+    list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
     if (drop == TRUE && length(x) == 1) {
       return(list[[1]])
     }
     return(list)
   } else if (transpose) {
     rownames(res) <- NULL
-    return(t(res)[ret, , drop = drop])
+    return(t(res[, ret, drop = FALSE])[, , drop = drop])
   } else {
     # HACK:
     # We need an exception for r4lineups that will keep the old drop = TRUE
@@ -476,9 +510,11 @@ coords.roc <- function(roc,
         drop <- FALSE
       }
     }
-    if (!as.matrix) {
-      res <- as.data.frame(res)
+    if (as.matrix) {
+      res <- as.matrix(res[, ret, drop = FALSE])
+    } else {
+      res <- as.data.frame(res[, ret, drop = FALSE])
     }
-    return(res[, ret, drop = drop])
+    return(res[, , drop = drop])
   }
 }

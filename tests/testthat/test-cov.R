@@ -108,7 +108,7 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
 
   set.seed(42) # For reproducible CI
   expected_cov <- cov(roc1, roc2, boot.n = 100)
-  expect_equal(expected_cov, -0.0000030024)
+  expect_equal(expected_cov, -3.033016e-06)
 
   # Now with reuse.auc
   set.seed(42) # For reproducible CI

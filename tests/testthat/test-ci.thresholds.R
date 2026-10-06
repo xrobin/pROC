@@ -64,3 +64,14 @@ for (stratified in c(TRUE, FALSE)) {
     expect_equal(attr(obtained, "boot.stratified"), stratified)
   })
 }
+
+test_that("ci.thresholds rejects character thresholds on a numeric ROC", {
+  expect_error(
+    ci.thresholds(r.ndka, thresholds = "10", boot.n = 3),
+    "arg"
+  )
+  expect_error(
+    ci.thresholds(r.ndka, thresholds = c("9", "10"), boot.n = 3),
+    "'thresholds' of class character must be of length 1"
+  )
+})

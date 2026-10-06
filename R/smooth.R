@@ -40,7 +40,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
                        ...) {
   method <- match.arg(method)
 
-  if (is.ordered(roc$original.predictor) && (method == "density" || method == "fitidstr")) {
+  if (roc_utils_is_ordered_roc(roc) && method != "binormal") {
     stop("ROC curves of ordered predictors can be smoothed only with binormal smoothing.")
   }
 

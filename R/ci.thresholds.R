@@ -66,20 +66,34 @@ ci.thresholds.roc <- function(roc,
   }
 
   # Check and prepare thresholds
-  if (is.character(thresholds)) {
-    if (length(thresholds) != 1) {
-      stop("'thresholds' of class character must be of length 1.")
-    }
-    thresholds <- match.arg(thresholds, c("all", "best", "local maximas"))
+  special <- coords_special_x(thresholds, roc = roc, keywords = c("all", "best", "local maximas"))
+  if (!is.na(special)) {
+    thresholds <- special
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
-  } else if (!is.numeric(thresholds)) {
-    stop("'thresholds' is not character, logical or numeric.")
-  } else {
+  } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
+    ordered_roc <- roc_utils_is_ordered_roc(roc)
+    if (is.numeric(thresholds) && ordered_roc) {
+      stop("Numeric 'thresholds' is not supported for ordered ROC curves. Pass level labels as character or ordered.")
+    }
+    if ((is.character(thresholds) || is.ordered(thresholds)) && !ordered_roc) {
+      if (is.character(thresholds) && length(thresholds) != 1) {
+        stop("'thresholds' of class character must be of length 1.")
+      }
+      stop("'thresholds' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
+    }
     thresholds.num <- thresholds
+    if (ordered_roc) {
+      # Resolve to a T-scale ordered vector so the bootstrap loop can rank
+      # by as.integer() rather than by label.
+      thr_idx <- roc_utils_thr_idx(roc, thresholds.num)
+      thresholds.num <- roc$thresholds[thr_idx]
+    }
+  } else {
+    stop("'thresholds' is not character, logical, ordered or numeric.")
   }
 
   perfs_shape <- matrix(NA_real_, nrow = 2L, ncol = length(thresholds.num))
@@ -93,7 +107,7 @@ ci.thresholds.roc <- function(roc,
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])
 
-  rownames(se) <- rownames(sp) <- thresholds.num
+  rownames(se) <- rownames(sp) <- as.character(thresholds.num)
 
   if (roc$percent) {
     se <- se * 100

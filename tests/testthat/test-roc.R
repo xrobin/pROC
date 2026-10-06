@@ -353,14 +353,17 @@ test_that("roc reject requires cases & controls", {
 test_that("roc works with ordered predictor", {
   wfns2 <- ordered(as.numeric(aSAH$wfns) + 2)
   r <- roc(aSAH$outcome, wfns2)
-  expect_equal(r$thresholds, c(-Inf, 3.5, 4.5, 5.5, 6.5, Inf))
+  expect_equal(
+    r$thresholds,
+    ordered(c("3", "4", "5", "6", "7", "Inf"), levels = c("3", "4", "5", "6", "7", "Inf"))
+  )
 
   levels(wfns2) <- letters[1:5]
-  # TODO: this behavior should be fixed, see issue #63.
-  # For now ensure basic behavior with warning is at least consistent.
-  expect_warning(r <- roc(aSAH$outcome, wfns2))
-  expect_equal(r$thresholds, c(-Inf, 1.5, 2.5, 3.5, 4.5, Inf))
-  # In reality we want to say something like  c(-Inf, "a", "b", "c", "d", "e", Inf)
+  r <- roc(aSAH$outcome, wfns2)
+  expect_equal(
+    r$thresholds,
+    ordered(c("a", "b", "c", "d", "e", "Inf"), levels = c("a", "b", "c", "d", "e", "Inf"))
+  )
 })
 
 
