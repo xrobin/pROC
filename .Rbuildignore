@@ -14,3 +14,6 @@ codecov.yml
 ^doc$
 ^Meta$
 ^docs$
+^last\.dump\.rda$
+^bin$
+^tools$
