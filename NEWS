@@ -3,7 +3,9 @@
     Thresholds are the levels plus an Inf sentinel; pass those labels
     (not numbers) to coords(), ci.thresholds(), ci.coords() and
     plot.roc(print.thres). ci.coords() omits the threshold interval by
-    default on ordered curves.
+    default on ordered curves. Its new default best.policy="unique.stop"
+    merges "best" thresholds that are identical in all the returned
+    values (such as empty levels) before stopping.
   * ci.coords() with best.policy="omit" now drops a bootstrap replicate
     that has several "best" points, instead of returning the first
     column of the coords data.frame.

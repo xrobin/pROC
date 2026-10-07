@@ -21,7 +21,7 @@
 input="threshold",
 ret=c("threshold", "specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
-best.policy = c("stop", "omit", "random"),
+best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress = NULL, ...) 
@@ -29,7 +29,7 @@ progress = NULL, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
-best.policy = c("stop", "omit", "random"),
+best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress = NULL, ...)
@@ -50,8 +50,13 @@ progress = NULL, ...)
     \dQuote{all} or \dQuote{local maximas}.
   }
   \item{best.policy}{The policy follow when multiple \dQuote{best} thresholds are returned by \code{\link{coords}}.
-  	\dQuote{stop} will abort the processing with \code{\link{stop}} (default),
-  	\dQuote{omit} will ignore the sample (as in \code{\link{NA}}) 
+  	\dQuote{unique.stop} (default) will first merge the thresholds that
+  	are identical in all the values returned by \code{ret} (as happens
+  	with empty levels of an ordered predictor, whose thresholds are not
+  	part of the confidence interval), and abort the processing with
+  	\code{\link{stop}} if more than one distinct threshold remains,
+  	\dQuote{stop} will abort the processing with \code{\link{stop}},
+  	\dQuote{omit} will ignore the sample (as in \code{\link{NA}})
   	and \dQuote{random} will select one of the threshold randomly.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never

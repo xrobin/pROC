@@ -51,7 +51,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
                                  x,
                                  input = c("specificity", "sensitivity"), ret = c("specificity", "sensitivity"),
                                  best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
-                                 best.policy = c("stop", "omit", "random"),
+                                 best.policy = c("unique.stop", "stop", "omit", "random"),
                                  conf.level = 0.95,
                                  boot.n = 2000,
                                  boot.stratified = TRUE,
@@ -128,7 +128,7 @@ ci.coords.roc <- function(roc,
                           x,
                           input = "threshold", ret = c("threshold", "specificity", "sensitivity"),
                           best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
-                          best.policy = c("stop", "omit", "random"),
+                          best.policy = c("unique.stop", "stop", "omit", "random"),
                           conf.level = 0.95,
                           boot.n = 2000,
                           boot.stratified = TRUE,
@@ -174,16 +174,7 @@ ci.coords.roc <- function(roc,
   coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
   # Replicate with simplify=FALSE returns a list of length boot.n
   perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy), simplify = FALSE)
-  perfs <- lapply(perfs, function(df) {
-    df[] <- lapply(df, function(col) {
-      if (is.numeric(col)) {
-        col
-      } else {
-        rep(NA_real_, length(col))
-      }
-    })
-    df
-  })
+  perfs <- lapply(perfs, ci.coords.numeric.columns)
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),
     dim = c(length(x), length(ret), boot.n),
@@ -221,7 +212,15 @@ ci.coords.roc <- function(roc,
 # return(enforce.best.policy(res, best.policy))
 # }
 enforce.best.policy <- function(res, best.policy) {
-  if (best.policy == "stop") {
+  if (best.policy == "unique.stop") {
+    # Rows that are identical in all the values summarized into the CI are the
+    # same point (ie. thresholds at empty levels of an ordered predictor).
+    distinct <- !duplicated(ci.coords.numeric.columns(res))
+    if (sum(distinct) == 1) {
+      return(res[distinct, , drop = FALSE])
+    }
+    stop("More than one distinct \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
+  } else if (best.policy == "stop") {
     stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
   } else if (best.policy == "omit") {
     res[1, ] <- NA
@@ -229,4 +228,17 @@ enforce.best.policy <- function(res, best.policy) {
   } else {
     return(res[sample(seq_len(nrow(res)), size = 1), , drop = FALSE])
   }
+}
+
+# Replace non-numeric columns (ie. ordered thresholds) with NA, as they
+# cannot be summarized into a CI.
+ci.coords.numeric.columns <- function(df) {
+  df[] <- lapply(df, function(col) {
+    if (is.numeric(col)) {
+      col
+    } else {
+      rep(NA_real_, length(col))
+    }
+  })
+  df
 }

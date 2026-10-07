@@ -25,6 +25,28 @@ test_that("ci.coords accepts threshold output with x=best or if input was thresh
   )
 })
 
+test_that("ci.coords merges identical best points from empty ordered levels", {
+  # Level 3 is unused: thresholds 3 and 4 are the same point in every replicate
+  wfns.no3 <- aSAH$wfns
+  wfns.no3[wfns.no3 == "3"] <- "2"
+  r <- roc(aSAH$outcome, wfns.no3, quiet = TRUE)
+  expect_s3_class(ci.coords(r, x = "best", boot.n = 3), "ci.coords")
+  expect_warning(
+    expect_s3_class(ci.coords(r, x = "best", ret = c("threshold", "specificity", "sensitivity"), boot.n = 3), "ci.coords"),
+    "not available for ordered"
+  )
+  expect_error(ci.coords(r, x = "best", boot.n = 3, best.policy = "stop"), "More than one")
+})
+
+test_that("best.policy unique.stop still stops on distinct best points", {
+  res <- data.frame(threshold = c(1.5, 2.5), specificity = c(0.5, 0.5), sensitivity = c(0.8, 0.8))
+  expect_error(enforce.best.policy(res, "unique.stop"), "More than one distinct")
+  res <- data.frame(specificity = c(0.5, 0.6), sensitivity = c(0.8, 0.7))
+  expect_error(enforce.best.policy(res, "unique.stop"), "More than one distinct")
+  res <- data.frame(specificity = c(0.5, 0.5), sensitivity = c(0.8, 0.8))
+  expect_equal(enforce.best.policy(res, "unique.stop"), res[1, , drop = FALSE])
+})
+
 # Only test whether ci.coords runs and returns without error.
 # Uses a very small number of iterations for speed
 # Doesn't test whether the results are correct.
