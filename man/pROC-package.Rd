@@ -116,13 +116,25 @@ aSAH \%>\%
 }
 
 \section{Bootstrap}{
-  All the bootstrap operations for \link[=roc.test]{significance testing}, \link[=ci]{confidence interval}, \link[=var]{variance} and \link[=cov]{covariance} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
+  All the bootstrap operations for \link[=roc.test]{significance testing}, \link[=ci]{confidence interval}, \link[=var]{variance} and \link[=cov]{covariance} computation are performed with non-parametric stratified or non-stratified resampling (according to the \code{boot.stratified} argument) and with the percentile method, as described in Carpenter and Bithell (2000) sections 2.1 and 3.3.
 
   Stratification of bootstrap can be controlled
   with \code{boot.stratified}. In stratified bootstrap (the default), each replicate
-  contains the same number of cases and controls than the original
-  sample. Stratification is especially useful if one group has only
-  little observations, or if groups are not balanced.
+  contains the same number of cases and controls as the original
+  sample. This is the two-sample bootstrap described by Efron and Tibshirani
+  (1993, section 8.3): cases and controls are treated as two independent
+  samples, and each is resampled separately with its original size.
+  This reflects studies where the numbers of cases and controls are fixed by
+  design, such as case-control studies, and is consistent with the DeLong
+  method, whose variance is also conditional on the group sizes.
+  If subjects were enrolled without regard to their outcome (cohort design),
+  non-stratified resampling from the entire dataset may better reflect the
+  study design (Pepe \emph{et al.}, 2009, section 3).
+  
+  Stratification is especially useful if one group has only
+  few observations (because the sample is small or the groups are
+  unbalanced), as non-stratified replicates may then contain few or no
+  cases or controls.
 
   The number of bootstrap replicates is controlled by \code{boot.n}. Higher numbers will give a more precise estimate of the significance tests and confidence intervals
   but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
@@ -190,9 +202,16 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
 
+  Bradley Efron and Robert J. Tibshirani (1993) \emph{An Introduction to
+  the Bootstrap}. Chapman & Hall, New York.
+
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
   \doi{10.1016/j.patrec.2005.10.010}.
+
+  Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
+  Comparison of Receiver Operating Characteristic Curves''. \emph{The
+  Stata journal} \bold{9}, 1--16. DOI: \doi{10.1177/1536867X0900900101}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
@@ -260,7 +279,7 @@ roc4 <- roc(aSAH$outcome,
             partial.auc=c(100, 90), partial.auc.correct=TRUE,
             partial.auc.focus="sens",
             # arguments for ci
-            ci=TRUE, boot.n=100, ci.alpha=0.9, stratified=FALSE,
+            ci=TRUE, boot.n=100, ci.alpha=0.9, boot.stratified=FALSE,
             # arguments for plot
             plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
             print.auc=TRUE, show.thres=TRUE)

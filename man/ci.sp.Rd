@@ -153,8 +153,8 @@ ci.sp(roc1)}\dontshow{ci.sp(roc1, boot.n = 10)}
 ## More options ##
 # Customized bootstrap and sensitivities:
 \dontrun{
-ci.sp(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, stratified=FALSE)}\dontshow{
-ci.sp(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, stratified=FALSE)}
+ci.sp(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, boot.stratified=FALSE)}\dontshow{
+ci.sp(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, boot.stratified=FALSE)}
 
 
 ## Plotting the CI ##

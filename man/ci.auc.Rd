@@ -218,11 +218,11 @@ ci(auc(roc1))
 ci.auc(roc1,
        conf.level=0.9,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
-       boot.n=10000, stratified=FALSE)}\dontshow{
+       boot.n=10000, boot.stratified=FALSE)}\dontshow{
 ci.auc(roc1,
        conf.level=0.9,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
-       boot.n=10, stratified=FALSE)}
+       boot.n=10, boot.stratified=FALSE)}
 
 # Note that the following will NOT give a CI of the partial AUC:
 \dontrun{

@@ -157,10 +157,10 @@ ci.thresholds(roc1)}\dontshow{ci.thresholds(roc1, boot.n = 10)}
 \dontrun{
 ci.thresholds(roc1,
 			  thresholds=c(0.5, 1, 2),
-              boot.n=10000, conf.level=0.9, stratified=FALSE)}\dontshow{
+              boot.n=10000, conf.level=0.9, boot.stratified=FALSE)}\dontshow{
 ci.thresholds(roc1,
 			  thresholds=c(0.5, 1, 2),
-              boot.n=10, conf.level=0.9, stratified=FALSE)}
+              boot.n=10, conf.level=0.9, boot.stratified=FALSE)}
 
 
 ## Plotting the CI ##

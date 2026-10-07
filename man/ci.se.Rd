@@ -154,8 +154,8 @@ ci.se(roc1)}\dontshow{ci.se(roc1, boot.n = 10)}
 ## More options ##
 # Customized bootstrap and specificities:
 \dontrun{
-ci.se(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, stratified=FALSE)}\dontshow{
-ci.se(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, stratified=FALSE)}
+ci.se(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, boot.stratified=FALSE)}\dontshow{
+ci.se(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, boot.stratified=FALSE)}
 
 
 ## Plotting the CI ##
