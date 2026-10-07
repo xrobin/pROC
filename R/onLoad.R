@@ -40,6 +40,7 @@
     packageStartupMessage("Progress bars are deprecated in pROC 1.19. Removing pROCProgress option.")
   }
   options("pROCProgress" = NULL)
+  packageStartupMessage("Type 'citation(\"pROC\")' for a citation.")
 }
 
 .parseRcppVersion <- function(rcpp.version) {
@@ -64,8 +65,4 @@
       build_version, runtime_version
     ))
   }
-}
-
-.onAttach <- function(lib, pkg) {
-  packageStartupMessage("Type 'citation(\"pROC\")' for a citation.")
 }
