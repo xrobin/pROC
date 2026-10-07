@@ -136,11 +136,13 @@ test_that("Ggroc mixed empirical and smooth list screenshot looks normal", {
 })
 
 test_that("Ggroc converts size to linewidth", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   expect_warning(g <- ggroc(r.s100b, size = 2), "linewidth")
   expect_equal(g$layers[[1]]$aes_params, list(linewidth = 2))
 })
 
 test_that("Ggroc list converts size aes to linewidth", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   expect_warning(g <- ggroc(list(s100b = r.s100b, wfns = r.wfns), aes = "size"), "linewidth")
   expect_true("linewidth" %in% names(g$mapping))
   expect_false("size" %in% names(g$mapping))
