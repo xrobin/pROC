@@ -174,7 +174,7 @@ ci.coords.roc <- function(roc,
   coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
   # Replicate with simplify=FALSE returns a list of length boot.n
   perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy), simplify = FALSE)
-  perfs <- lapply(perfs, ci.coords.numeric.columns)
+  perfs <- lapply(perfs, ci_coords_numeric_columns)
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),
     dim = c(length(x), length(ret), boot.n),
@@ -215,7 +215,7 @@ enforce.best.policy <- function(res, best.policy) {
   if (best.policy == "unique.stop") {
     # Rows that are identical in all the values summarized into the CI are the
     # same point (ie. thresholds at empty levels of an ordered predictor).
-    distinct <- !duplicated(ci.coords.numeric.columns(res))
+    distinct <- !duplicated(ci_coords_numeric_columns(res))
     if (sum(distinct) == 1) {
       return(res[distinct, , drop = FALSE])
     }
@@ -232,7 +232,7 @@ enforce.best.policy <- function(res, best.policy) {
 
 # Replace non-numeric columns (ie. ordered thresholds) with NA, as they
 # cannot be summarized into a CI.
-ci.coords.numeric.columns <- function(df) {
+ci_coords_numeric_columns <- function(df) {
   df[] <- lapply(df, function(col) {
     if (is.numeric(col)) {
       col
