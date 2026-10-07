@@ -51,6 +51,16 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
   return(list(aes = aes, xlims = xlims))
 }
 
+# 'size' was replaced by 'linewidth' in ggplot2 3.4.0. Rename it here so the
+# deprecation warning isn't attributed to pROC.
+size.to.linewidth <- function(args) {
+  if ("size" %in% names(args)) {
+    warning("'size' is deprecated, use 'linewidth' instead.", call. = FALSE)
+    names(args)[names(args) == "size"] <- "linewidth"
+  }
+  return(args)
+}
+
 load.ggplot2 <- function() {
   if (!isNamespaceLoaded("ggplot2")) {
     message("You may need to call library(ggplot2) if you want to add layers, etc.")
@@ -69,10 +79,11 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 
   # Prepare the aesthetics
   aes <- get.aes.for.ggplot(data, legacy.axes)
+  geom_args <- size.to.linewidth(list(...))
 
   # Do the plotting
   ggplot2::ggplot(df) +
-    ggplot2::geom_line(aes$aes, ...) +
+    do.call(ggplot2::geom_line, c(list(aes$aes), geom_args)) +
     aes$xlims +
     ggroc_axis_labs(data, legacy.axes) +
     ggplot2::coord_fixed()
@@ -80,13 +91,18 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 
 ggroc.smooth.roc <- ggroc.roc
 
-ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth", "size", "group"), legacy.axes = FALSE, ...) {
+ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth", "group"), legacy.axes = FALSE, ...) {
   load.ggplot2()
   if (missing(aes)) {
     aes <- "colour"
   }
   aes <- sub("color", "colour", aes)
+  if ("size" %in% aes) {
+    warning("'size' is deprecated, use 'linewidth' instead.", call. = FALSE)
+    aes <- sub("size", "linewidth", aes)
+  }
   aes <- match.arg(aes, several.ok = TRUE)
+  geom_args <- size.to.linewidth(list(...))
 
   # Make sure data is a list and every element is a roc object
   if (!all(sapply(data, methods::is, "roc") | sapply(data, methods::is, "smooth.roc"))) {
@@ -127,7 +143,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
 
   # Do the plotting
   ggplot2::ggplot(coord.dfs, aes.ggplot$aes) +
-    ggplot2::geom_line(...) +
+    do.call(ggplot2::geom_line, geom_args) +
     aes.ggplot$xlims +
     ggroc_axis_labs(data[[1]], legacy.axes) +
     ggplot2::coord_fixed()

@@ -4,7 +4,7 @@ geom_roc_identity <- function(data, ...) {
 
 geom_roc_identity.roc <- function(data, colour = "darkgrey", ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$colour)) {
     extras$colour <- colour

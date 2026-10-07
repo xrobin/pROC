@@ -4,7 +4,7 @@ geom_errorbar_ci <- function(data, ...) {
 
 geom_errorbar_ci.ci.se <- function(data, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent
@@ -42,7 +42,7 @@ geom_errorbar_ci.ci.se <- function(data, ...) {
 
 geom_errorbar_ci.ci.sp <- function(data, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent
@@ -85,7 +85,7 @@ geom_errorbar_ci.ci.sp <- function(data, ...) {
 
 geom_errorbar_ci.ci.thresholds <- function(data, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent

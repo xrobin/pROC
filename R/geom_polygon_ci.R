@@ -4,7 +4,7 @@ geom_polygon_ci <- function(data, ...) {
 
 geom_polygon_ci.ci.se <- function(data, fill = "gainsboro", colour = NA, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill
@@ -42,7 +42,7 @@ geom_polygon_ci.ci.se <- function(data, fill = "gainsboro", colour = NA, ...) {
 
 geom_polygon_ci.ci.sp <- function(data, fill = "gainsboro", colour = NA, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill

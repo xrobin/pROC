@@ -14,7 +14,7 @@
 \usage{
 \S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
 \S3method{ggroc}{smooth.roc}(data, legacy.axes = FALSE, ...)
-\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "linewidth", "size", "group"),
+\S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "linewidth", "group"),
       legacy.axes = FALSE, ...)
 }
 		   
@@ -33,6 +33,7 @@
   }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_path]{geom_line}}
     to set: \code{alpha}, \code{colour}, \code{linetype} and \code{linewidth}.
+    \code{size} is deprecated and converted to \code{linewidth} with a warning.
     The \code{group} aesthetic is always active since version 1.18.5 and is
     kept for backwards compatibility.
   }
@@ -69,7 +70,7 @@ if (require(ggplot2)) {
 g <- ggroc(rocobj)
 g
 # with additional aesthetics:
-ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, size = 2)
+ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, linewidth = 2)
 
 # You can then your own theme, etc.
 g + theme_minimal() + ggtitle("My ROC curve") + 

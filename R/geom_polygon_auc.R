@@ -14,7 +14,7 @@ ggroc_auc_polygon_close <- function(df, specificity, sensitivity, one) {
 
 geom_polygon_auc.auc <- function(data, ...) {
   load.ggplot2()
-  extras <- list(...)
+  extras <- size.to.linewidth(list(...))
   roc <- attr(data, "roc")
   roc$auc <- data
   new_ggroc_layer(
