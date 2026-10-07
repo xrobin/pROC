@@ -279,10 +279,10 @@ roc4 <- roc(aSAH$outcome,
             partial.auc=c(100, 90), partial.auc.correct=TRUE,
             partial.auc.focus="sens",
             # arguments for ci
-            ci=TRUE, boot.n=100, ci.alpha=0.9, boot.stratified=FALSE,
+            ci=TRUE, boot.n=100, conf.level=0.9, boot.stratified=FALSE,
             # arguments for plot
             plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
-            print.auc=TRUE, show.thres=TRUE)
+            print.auc=TRUE, print.thres=TRUE)
 
 # Add to an existing plot. Beware of 'percent' specification!
 roc5 <- roc(aSAH$outcome, aSAH$wfns,
@@ -309,16 +309,16 @@ ci(roc2)
 
 \dontrun{
 # CI of the curve
-sens.ci <- ci.se(roc1, specificities=seq(0, 100, 5))
+plot(roc1)
+sens.ci <- ci.se(roc1, specificities=seq(0, 1, .05))
 plot(sens.ci, type="shape", col="lightblue")
-plot(sens.ci, type="bars")}
+plot(sens.ci, type="bars")
 
-# need to re-add roc2 over the shape
-plot(roc2, add=TRUE)
+# need to re-add roc1 over the shape
+plot(roc1, add=TRUE)
 
-\dontrun{
 # CI of thresholds
-plot(ci.thresholds(roc2))}
+plot(ci.thresholds(roc1))}
 
 ## Comparisons ##
 
@@ -327,11 +327,11 @@ roc.test(roc1, roc2, reuse.auc=FALSE)
 
 \dontrun{
 # Test on a portion of the whole AUC
-roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
+roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9),
          partial.auc.focus="se", partial.auc.correct=TRUE)
 
 # With modified bootstrap parameters
-roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
+roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9),
          partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)}
 
 

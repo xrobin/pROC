@@ -52,10 +52,10 @@ roc1 <- roc(aSAH$outcome,
             partial.auc=c(100, 90), partial.auc.correct=TRUE,
             partial.auc.focus="sens",
             # arguments for ci
-            ci=TRUE, boot.n=100, ci.alpha=0.9, stratified=FALSE,
+            ci=TRUE, boot.n=100, conf.level=0.9, boot.stratified=FALSE,
             # arguments for plot
             plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
-            print.auc=TRUE, show.thres=TRUE)
+            print.auc=TRUE, print.thres=TRUE)
 
     # Add to an existing plot. Beware of 'percent' specification!
     roc2 <- roc(aSAH$outcome, aSAH$wfns,
