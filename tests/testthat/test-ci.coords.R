@@ -26,10 +26,11 @@ test_that("ci.coords accepts threshold output with x=best or if input was thresh
 })
 
 test_that("ci.coords merges identical best points from empty ordered levels", {
-  # Level 3 is unused: thresholds 3 and 4 are the same point in every replicate
-  wfns.no3 <- aSAH$wfns
-  wfns.no3[wfns.no3 == "3"] <- "2"
-  r <- roc(aSAH$outcome, wfns.no3, quiet = TRUE)
+  # Level 2 is unused: thresholds 2 and 3 are the same point in every replicate,
+  # and clearly the best one, so that "stop" fails deterministically
+  predictor <- ordered(c(rep("1", 20), rep("4", 2), rep("3", 20), rep("1", 2)), levels = c("1", "2", "3", "4"))
+  response <- rep(c(0, 1), each = 22)
+  r <- roc(response, predictor, quiet = TRUE)
   expect_s3_class(ci.coords(r, x = "best", boot.n = 3), "ci.coords")
   expect_warning(
     expect_s3_class(ci.coords(r, x = "best", ret = c("threshold", "specificity", "sensitivity"), boot.n = 3), "ci.coords"),
