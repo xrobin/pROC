@@ -144,12 +144,34 @@ test_that("power.roc.test sig.level can take 2 ROC curves with Obuchowski varian
   expect_equal(res$alternative, "two.sided")
 })
 
-test_that("power.roc.test works with partial AUC", {
-  skip_slow()
-  skip("Bootstrap cannot be tested yet")
-  r.wfns.partial <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE, partial.auc = c(1, 0.9))
-  r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, 0.9))
-  power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9)
+test_that("power.roc.test defaults to bootstrap with partial AUC", {
+  set.seed(42)
+  res.default <- power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, boot.n = 100)
+  set.seed(42)
+  res.bootstrap <- power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, boot.n = 100, method = "bootstrap")
+  expect_equal(res.default, res.bootstrap)
+  expect_true(is.finite(res.default$ncases))
+  expect_equal(as.numeric(res.default$auc1), as.numeric(r.wfns.partial$auc))
+
+  # All three modes
+  set.seed(42)
+  expect_true(is.finite(power.roc.test(r.wfns.partial, r.ndka.partial, boot.n = 100)$power))
+  set.seed(42)
+  expect_true(is.finite(power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, sig.level = NULL, boot.n = 100)$sig.level))
+})
+
+test_that("power.roc.test refuses explicit DeLong with partial AUC", {
+  expect_error(
+    power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, method = "delong"),
+    "DeLong method is not supported for partial AUC"
+  )
+})
+
+test_that("power.roc.test still defaults to DeLong with full AUC", {
+  expect_equal(
+    power.roc.test(r.ndka, r.wfns, power = 0.9),
+    power.roc.test(r.ndka, r.wfns, power = 0.9, method = "delong")
+  )
 })
 
 

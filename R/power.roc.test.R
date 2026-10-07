@@ -32,6 +32,12 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
   if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
     stop("'sig.level' must range from 0 to 1")
   }
+  # Let cov and var choose the method if missing (ie bootstrap for partial AUC)
+  if (missing(method) || is.null(method)) {
+    method <- NULL
+  } else {
+    method <- match.arg(method)
+  }
 
   # check that the AUC of roc1 was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {

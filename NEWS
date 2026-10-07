@@ -14,6 +14,9 @@
     'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and
     'geom_errorbar_ci' (issue #129)
   * Documented the justification of the stratified bootstrap (issue #131).
+  * Fixed 'power.roc.test' with two partial AUC curves failing with
+    "DeLong method is not supported for partial AUC" instead of
+    defaulting to bootstrap when 'method' was not given.
   * Fixed error when 'ggroc' received a mixed list of empirical and smoothed ROC curves
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
   * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another
