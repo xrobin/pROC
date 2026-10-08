@@ -52,7 +52,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
                              conf.level = 0.95,
                              boot.n = 2000,
                              boot.stratified = TRUE,
-                             progress = NULL,
+                             progress = getOption("pROCProgress", interactive()),
                              parallel = FALSE,
                              ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -62,9 +62,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.sp() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
   # Check if called with density.cases or density.controls
@@ -79,16 +77,12 @@ ci.sp.smooth.roc <- function(smooth.roc,
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
-  if (boot.stratified) {
-    perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.smooth.sp, roc = roc, se = sensitivities, smooth.roc.call = smooth.roc.call))
-  } else {
-    perfs <- do.call(rbind, lapply(seq_len(boot.n), nonstratified.ci.smooth.sp, roc = roc, se = sensitivities, smooth.roc.call = smooth.roc.call))
-  }
+  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.sp,
+    roc = roc, stratified = boot.stratified, se = sensitivities,
+    smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress
+  )
 
-  if (any(is.na(perfs))) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))), ]
-  }
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
 
   ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")
@@ -107,7 +101,7 @@ ci.sp.roc <- function(roc,
                       conf.level = 0.95,
                       boot.n = 2000,
                       boot.stratified = TRUE,
-                      progress = NULL,
+                      progress = getOption("pROCProgress", interactive()),
                       parallel = FALSE,
                       ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -117,21 +111,14 @@ ci.sp.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.sp() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
-  if (boot.stratified) {
-    perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.sp, roc = roc, se = sensitivities))
-  } else {
-    perfs <- do.call(rbind, lapply(seq_len(boot.n), nonstratified.ci.sp, roc = roc, se = sensitivities))
-  }
+  perfs <- bootstrap.replicates(boot.n, bootstrap.sp,
+    roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress
+  )
 
-  if (any(is.na(perfs))) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    perfs <- perfs[!apply(perfs, 1, function(x) any(is.na(x))), ]
-  }
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
 
   ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")

@@ -35,11 +35,6 @@
 }
 
 .onAttach <- function(lib, pkg) {
-  # Remove deprecated pROCProgress option
-  if (!is.null(getOption("pROCProgress")) && getOption("pROCProgress")$name != "none") {
-    packageStartupMessage("Progress bars are deprecated in pROC 1.19. Removing pROCProgress option.")
-  }
-  options("pROCProgress" = NULL)
   packageStartupMessage("Type 'citation(\"pROC\")' for a citation.")
 }
 

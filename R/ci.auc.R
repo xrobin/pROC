@@ -55,7 +55,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               boot.n = 2000,
                               boot.stratified = TRUE,
                               reuse.auc = TRUE,
-                              progress = NULL,
+                              progress = getOption("pROCProgress", interactive()),
                               parallel = FALSE,
                               ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -66,9 +66,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
     warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
 
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
   # We need an auc
@@ -103,16 +101,12 @@ ci.auc.smooth.roc <- function(smooth.roc,
   auc.args$allow.invalid.partial.auc.correct <- TRUE
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
-  if (boot.stratified) {
-    aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.smooth.auc, roc = roc, smooth.roc.call = smooth.roc.call, auc.call = auc.call))
-  } else {
-    aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.smooth.auc, roc = roc, smooth.roc.call = smooth.roc.call, auc.call = auc.call))
-  }
-
-  if (sum(is.na(aucs)) > 0) {
-    warning("NA value(s) produced during bootstrap were ignored.")
-    aucs <- aucs[!is.na(aucs)]
-  }
+  aucs <- roc_utils_drop_na_replicates(
+    bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+      roc = roc, stratified = boot.stratified,
+      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress
+    )
+  )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
   # Prepare the return value
   ci <- quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
@@ -135,7 +129,7 @@ ci.auc.roc <- function(roc,
                        boot.n = 2000,
                        boot.stratified = TRUE,
                        reuse.auc = TRUE,
-                       progress = NULL,
+                       progress = getOption("pROCProgress", interactive()),
                        parallel = FALSE,
                        ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -145,9 +139,7 @@ ci.auc.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
   # We need an auc
@@ -187,7 +179,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong") {
     ci <- ci_auc_delong(roc, conf.level)
   } else {
-    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, ...)
   }
 
   if (percent) {

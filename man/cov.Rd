@@ -20,7 +20,7 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress=NULL, parallel=FALSE, ...)
+  progress = getOption("pROCProgress", interactive()), parallel=FALSE, ...)
 }
 
 \arguments{
@@ -51,8 +51,12 @@ cov(...)
     bootstrapped values. See the \dQuote{Value} section for
     more details.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,

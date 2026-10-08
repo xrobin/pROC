@@ -44,7 +44,7 @@ var.roc <- function(roc,
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc = TRUE,
-                    progress = NULL,
+                    progress = getOption("pROCProgress", interactive()),
                     parallel = FALSE,
                     ...) {
   # We need an auc
@@ -55,9 +55,7 @@ var.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
     warning("var() of a ROC curve with AUC == 1 is always 0 and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
   # do all the computations in fraction, re-transform in percent later
@@ -105,7 +103,7 @@ var.roc <- function(roc,
   } else if (method == "obuchowski") {
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   } else {
-    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, ...)
+    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, ...)
   }
 
   if (percent) {
@@ -114,7 +112,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var_roc_bootstrap <- function(roc, boot.n, boot.stratified, ...) {
+var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
     smoothing.args <- roc$smoothing.args
@@ -126,24 +124,17 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, ...) {
     auc.args$allow.invalid.partial.auc.correct <- TRUE
     auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
-    if (boot.stratified) {
-      aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.smooth.auc, roc = non.smoothed.roc, smooth.roc.call = smooth.roc.call, auc.call = auc.call))
-    } else {
-      aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.smooth.auc, roc = non.smoothed.roc, smooth.roc.call = smooth.roc.call, auc.call = auc.call))
-    }
+    aucs <- bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+      roc = non.smoothed.roc, stratified = boot.stratified,
+      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress
+    )
   }
   ## Non smoothed ROC curves variance
   else {
-    if (boot.stratified) {
-      aucs <- unlist(lapply(seq_len(boot.n), stratified.ci.auc, roc = roc)) # ci.auc: returns aucs just as we need for var, so re-use it!
-    } else {
-      aucs <- unlist(lapply(seq_len(boot.n), nonstratified.ci.auc, roc = roc))
-    }
+    aucs <- bootstrap.replicates(boot.n, bootstrap.auc,
+      roc = roc, stratified = boot.stratified, simplify = "vector", progress = progress
+    )
   }
 
-  if ((num.NAs <- sum(is.na(aucs))) > 0) {
-    warning(sprintf("%i NA value(s) produced during bootstrap were ignored.", num.NAs))
-    aucs <- aucs[!is.na(aucs)]
-  }
-  return(var(aucs))
+  var(roc_utils_drop_na_replicates(aucs))
 }

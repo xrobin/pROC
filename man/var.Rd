@@ -17,7 +17,7 @@ var(...)
 \S3method{var}{auc}(auc, ...)
 \S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
-progress = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
 }
 
@@ -44,8 +44,12 @@ progress = NULL, parallel=FALSE, ...)
     of cases/controls in each replicate than in the original sample) or
     not. Default: \var{TRUE}.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,

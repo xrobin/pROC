@@ -19,10 +19,10 @@
 # ci.se(...)
 \S3method{ci.se}{roc}(roc, specificities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress = NULL, parallel=FALSE, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, ...) 
 \S3method{ci.se}{smooth.roc}(smooth.roc, specificities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
-boot.stratified=TRUE, progress = NULL,
+boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
 parallel=FALSE, ...)
 \S3method{ci.se}{formula}(formula, data, ...)
 \S3method{ci.se}{default}(response, predictor, ...)
@@ -47,8 +47,12 @@ parallel=FALSE, ...)
 	of cases/controls in each replicate than in the original sample) or
 	not.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,

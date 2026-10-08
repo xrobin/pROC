@@ -55,7 +55,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
                                  conf.level = 0.95,
                                  boot.n = 2000,
                                  boot.stratified = TRUE,
-                                 progress = NULL,
+                                 progress = getOption("pROCProgress", interactive()),
                                  ...) {
   if (conf.level > 1 | conf.level < 0) {
     stop("'conf.level' must be within the interval [0,1].")
@@ -64,9 +64,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
 
   input <- roc_utils_match_coords_input_args(input)
   ret <- roc_utils_match_coords_ret_args(ret)
@@ -91,9 +89,12 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
 
-  smooth_coords_fun <- if (boot.stratified) stratified.ci.smooth.coords else nonstratified.ci.smooth.coords
-  # Replicate with simplify=FALSE returns a list of length boot.n
-  perfs <- replicate(boot.n, smooth_coords_fun(roc, x, input, ret, best.method, best.weights, smooth.roc.call, best.policy), simplify = FALSE)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
+    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights,
+    smooth.roc.call = smooth.roc.call, best.policy = best.policy,
+    simplify = "list", progress = progress
+  )
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),
     dim = c(length(x), length(ret), boot.n),
@@ -132,7 +133,7 @@ ci.coords.roc <- function(roc,
                           conf.level = 0.95,
                           boot.n = 2000,
                           boot.stratified = TRUE,
-                          progress = NULL,
+                          progress = getOption("pROCProgress", interactive()),
                           ...) {
   if (conf.level > 1 | conf.level < 0) {
     stop("'conf.level' must be within the interval [0,1].")
@@ -141,9 +142,7 @@ ci.coords.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
 
   input <- roc_utils_match_coords_input_args(input)
 
@@ -171,9 +170,11 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
-  coords_fun <- if (boot.stratified) stratified.ci.coords else nonstratified.ci.coords
-  # Replicate with simplify=FALSE returns a list of length boot.n
-  perfs <- replicate(boot.n, coords_fun(roc, x, input, ret, best.method, best.weights, best.policy), simplify = FALSE)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
+    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights,
+    best.policy = best.policy, simplify = "list", progress = progress
+  )
   perfs <- lapply(perfs, ci_coords_numeric_columns)
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),

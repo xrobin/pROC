@@ -133,3 +133,72 @@ test_that("var and cov agree with their bootstrap definitions", {
   cv <- cov(r.s100b, r.ndka, method = "bootstrap", boot.n = 1000)
   expect_true(is.finite(cv))
 })
+
+
+# ---------------------------------------------------------------------------
+# Regressions fixed while unifying the bootstrap internals.
+# ---------------------------------------------------------------------------
+
+test_that("ci.coords works on a percent curve", {
+  # The non-smoothed ci.coords worker was the only one that did not scale
+  # sensitivities/specificities by 100 for a percent curve, so coords() was
+  # handed fraction-scale values on a curve flagged as percent and rejected
+  # the percent-scale x: "Input specificity (50) not in range (0-1)".
+  set.seed(42)
+  frac <- ci.coords(r.s100b, x = 0.5, input = "specificity",
+                    ret = "sensitivity", boot.n = 10)
+  set.seed(42)
+  pct <- ci.coords(r.s100b.percent, x = 50, input = "specificity",
+                   ret = "sensitivity", boot.n = 10)
+  expect_equal(as.numeric(unlist(pct)), as.numeric(unlist(frac)) * 100)
+})
+
+
+test_that("ci.coords works on a percent curve with x = 'best'", {
+  set.seed(42)
+  expect_no_error(ci.coords(r.s100b.percent, x = "best",
+                            ret = c("sensitivity", "specificity"), boot.n = 10))
+})
+
+
+test_that("NA replicates are dropped whole, keeping paired statistics aligned", {
+  # A 2 x boot.n matrix holds one column per replicate and one row per curve.
+  # The old filter used margin 1, so a single NA discarded an entire curve's
+  # values and left the matrix with one row: cov() then read the wrong row, or
+  # failed with "incorrect number of dimensions".
+  m <- rbind(c(0.70, NA, 0.72), c(0.60, 0.61, 0.62))
+  kept <- expect_warning(roc_utils_drop_na_replicates(m, margin = 2L),
+                         "1 NA value")
+  expect_equal(dim(kept), c(2L, 2L))
+  expect_equal(kept[1, ], c(0.70, 0.72))
+  expect_equal(kept[2, ], c(0.60, 0.62))
+
+  # Rows-as-replicates (ci.se, ci.sp) still filters the other way.
+  kept.rows <- expect_warning(roc_utils_drop_na_replicates(t(m), margin = 1L),
+                              "1 NA value")
+  expect_equal(dim(kept.rows), c(2L, 2L))
+
+  # A plain vector needs no margin.
+  expect_equal(expect_warning(roc_utils_drop_na_replicates(c(1, NA, 3)), "1 NA value"),
+               c(1, 3))
+  expect_no_warning(roc_utils_drop_na_replicates(c(1, 2, 3)))
+})
+
+
+test_that("stratified and non-stratified resampling keep their shapes", {
+  # roc_utils_resample() replaced sixteen near-identical preambles; this pins
+  # the contract they shared.
+  set.seed(42)
+  strat <- roc_utils_resample(r.s100b, stratified = TRUE)
+  expect_length(strat$controls, length(r.s100b$controls))
+  expect_length(strat$cases, length(r.s100b$cases))
+  expect_length(strat$predictor, length(r.s100b$predictor))
+  expect_length(strat$response, length(r.s100b$response))
+
+  set.seed(42)
+  nonstrat <- roc_utils_resample(r.s100b, stratified = FALSE)
+  # Non-stratified keeps the total but lets the class sizes vary.
+  expect_length(nonstrat$predictor, length(r.s100b$predictor))
+  expect_equal(length(nonstrat$controls) + length(nonstrat$cases),
+               length(r.s100b$predictor))
+})

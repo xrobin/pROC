@@ -167,6 +167,16 @@ aSAH \%>\%
     
     To speed up computations it is possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
 
+    \subsection{Progress bar}{
+	    Bootstrap operations display a text progress bar in interactive
+	    sessions, so a long computation does not look like a hung one. Control
+	    it with the \code{progress} argument of \code{\link{ci}} and the other
+	    bootstrap functions, or set the default for the session with
+	    \code{options(pROCProgress = FALSE)}. The cost of the bar itself is
+	    negligible: it is drawn about a hundred times over the whole bootstrap,
+	    not once per iteration.
+  	}
+
     \subsection{Parallel processing}{
 	    Parallel processing is no longer supported in pROC 1.19. The use of the
 	    \code{parallel} argument is deprecated, and any value other than

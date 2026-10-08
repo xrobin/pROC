@@ -24,7 +24,7 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = NULL, ...) 
+progress = getOption("pROCProgress", interactive()), ...) 
 \S3method{ci.coords}{formula}(formula, data, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
@@ -32,7 +32,7 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = NULL, ...)
+progress = getOption("pROCProgress", interactive()), ...)
 \S3method{ci.coords}{default}(response, predictor, ...)
 }
 		   
@@ -67,8 +67,12 @@ progress = NULL, ...)
 	of cases/controls in each replicate than in the original sample) or
 	not.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.
