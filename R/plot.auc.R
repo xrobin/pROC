@@ -43,29 +43,19 @@ roc_utils_draw_auc_polygon <- function(roc, auc, col = "gainsboro", lty = par("l
     y.all <- se
   }
   # find the SEs and SPs in the interval
-  x.int <- x.all[x.all <= partial.auc[1] & x.all >= partial.auc[2]]
-  y.int <- y.all[x.all <= partial.auc[1] & x.all >= partial.auc[2]]
-  # if the upper limit is not exactly present in SPs, interpolate
-  if (!(partial.auc[1] %in% x.int)) {
-    x.int <- c(x.int, partial.auc[1])
-    # find the limit indices
-    idx.out <- match(FALSE, x.all < partial.auc[1])
-    idx.in <- idx.out - 1
-    # interpolate y
-    proportion.start <- (partial.auc[1] - x.all[idx.out]) / (x.all[idx.in] - x.all[idx.out])
-    y.start <- y.all[idx.out] - proportion.start * (y.all[idx.out] - y.all[idx.in])
-    y.int <- c(y.int, y.start)
+  in.window <- roc_utils_partial_auc_window(x.all, partial.auc)
+  x.int <- x.all[in.window]
+  y.int <- y.all[in.window]
+  # if a limit is not exactly present in the curve, interpolate it
+  upper <- roc_utils_interpolate_partial_auc_boundary(x.all, y.all, partial.auc[1])
+  if (!is.null(upper)) {
+    x.int <- c(x.int, upper$x)
+    y.int <- c(y.int, upper$y)
   }
-  # if the lower limit is not exactly present in SPs, interpolate
-  if (!(partial.auc[2] %in% x.int)) {
-    x.int <- c(partial.auc[2], x.int)
-    # find the limit indices
-    idx.out <- length(x.all) - match(TRUE, rev(x.all) < partial.auc[2]) + 1
-    idx.in <- idx.out + 1
-    # interpolate y
-    proportion.end <- (x.all[idx.in] - partial.auc[2]) / (x.all[idx.in] - x.all[idx.out])
-    y.end <- y.all[idx.in] + proportion.end * (y.all[idx.out] - y.all[idx.in])
-    y.int <- c(y.end, y.int)
+  lower <- roc_utils_interpolate_partial_auc_boundary(x.all, y.all, partial.auc[2])
+  if (!is.null(lower)) {
+    x.int <- c(lower$x, x.int)
+    y.int <- c(lower$y, y.int)
   }
   # anchor to baseline
   x.int <- c(partial.auc[2], x.int, partial.auc[1])
