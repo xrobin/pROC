@@ -1,4 +1,9 @@
 1.19.9999 (development)
+  * Internal: 'auc()', 'coords()' and the partial AUC polygon now share one
+    implementation for finding the window of a partial AUC and for
+    interpolating a window boundary that does not coincide with a point of
+    the curve, so they cannot disagree on where the partial AUC starts and
+    ends (issue #145). No change in results.
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
     'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
     'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc',
