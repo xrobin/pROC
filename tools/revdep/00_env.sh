@@ -7,10 +7,14 @@
 set +u
 module purge
 for m in R Pandoc Xvfb UDUNITS CMake ImageMagick MPFR NLopt protobuf \
-         GSL/2.8-GCC-15.2.0 Rust PostgreSQL libclc JAGS GDAL; do
+         GSL/2.8-GCC-15.2.0 Rust PostgreSQL libclc \
+         MariaDB/12.3.2-GCC-15.2.0 JAGS GDAL; do
   module load "$m" || echo "MODULE FAIL: $m" >&2
 done
 set -u
+# MariaDB must be the 12.3.2-GCC-15.2.0 build: every older one is on a
+# different GCC and Lmod would swap GCCcore out from under R. Without it
+# RMariaDB fails to configure with "mysql.h: No such file or directory".
 # GDAL must come after JAGS and must not be preceded by a visible PROJ:
 # it depends on a hidden PROJ and the autoswap is blocked.
 
