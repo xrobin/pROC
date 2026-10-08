@@ -162,7 +162,8 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 }
 
 \seealso{
-  \code{\link{roc}}, \code{\link{ci.auc}}
+  \code{\link{roc}}, \code{\link{ci.auc}}, \code{\link{plot.roc}},
+  \code{\link{polygon_auc}}, \code{\link[=text.auc]{text}}
 }
 \examples{
 

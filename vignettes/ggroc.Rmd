@@ -60,26 +60,27 @@ theme_ggroc_screenshot <- function(roc, legend.position = "none") {
 ## 1. Partial AUC (pAUC)
 
 ```{r screenshot-1-classic}
-plot.roc(aSAH$outcome, aSAH$s100b,
-  percent = TRUE,
+auc_sp <- auc(rocobj, partial.auc = c(100, 90), partial.auc.correct = TRUE)
+auc_se <- auc(rocobj,
   partial.auc = c(100, 90), partial.auc.correct = TRUE,
-  print.auc = TRUE,
-  print.auc.pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%",
-  print.auc.col = "#1c61b6",
-  auc.polygon = TRUE, auc.polygon.col = "#1c61b6",
-  max.auc.polygon = TRUE, max.auc.polygon.col = "#1c61b622",
-  main = "Partial AUC (pAUC)"
+  partial.auc.focus = "se"
 )
-plot.roc(aSAH$outcome, aSAH$s100b,
-  percent = TRUE, add = TRUE, type = "n",
-  partial.auc = c(100, 90), partial.auc.correct = TRUE,
-  partial.auc.focus = "se",
-  print.auc = TRUE,
-  print.auc.pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%",
-  print.auc.col = "#008600",
-  print.auc.y = 40,
-  auc.polygon = TRUE, auc.polygon.col = "#008600",
-  max.auc.polygon = TRUE, max.auc.polygon.col = "#00860022"
+plot(rocobj,
+  main = "Partial AUC (pAUC)",
+  panel.first = {
+    polygon_max_auc(auc_se, col = "#00860022")
+    polygon_max_auc(auc_sp, col = "#1c61b622")
+    polygon_auc(auc_se, col = "#008600")
+    polygon_auc(auc_sp, col = "#1c61b6")
+  }
+)
+text(auc_sp,
+  xy = c(50, 50), col = "#1c61b6",
+  pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%"
+)
+text(auc_se,
+  xy = c(50, 40), col = "#008600",
+  pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%"
 )
 ```
 
@@ -111,10 +112,8 @@ ggroc(rocobj) +
 ## 2. Confidence intervals
 
 ```{r screenshot-2-classic}
-plot(rocobj_ci,
-  main = "Confidence intervals", percent = TRUE,
-  print.auc = TRUE
-)
+plot(rocobj_ci, main = "Confidence intervals", percent = TRUE)
+text(rocobj_ci)
 plot(ci_se, type = "shape", col = "#1c61b6AA")
 plot(ci_th)
 ```

@@ -80,7 +80,8 @@ This function returns the confidence interval object invisibly.
 }
 
 \seealso{
-\code{\link{plot.roc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}}
+\code{\link{plot.roc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}},
+\code{\link[=text.auc]{text}} for \code{\link{ci.auc}}
 }
 \examples{
 data(aSAH)

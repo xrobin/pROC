@@ -1,4 +1,11 @@
 1.19.9999 (development)
+  * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc'
+    and 'text' methods for 'auc', 'ci.auc', 'roc' and 'smooth.roc', and
+    'panel.first'/'panel.last' arguments to 'plot.roc', so the
+    auc.polygon/max.auc.polygon/print.auc appearance of 'plot.roc' can be
+    built from separate roc(), auc() and ci() calls instead of one-shot
+    arguments (issue #70). Also fixes 'plot.roc' drawing the AUC/CI label
+    twice when both 'ci=TRUE' and 'print.auc=TRUE' were used.
   * Ordered predictors are no longer converted to numeric (issue #63).
     Thresholds are the levels plus an Inf sentinel; pass those labels
     (not numbers) to coords(), ci.thresholds(), ci.coords() and

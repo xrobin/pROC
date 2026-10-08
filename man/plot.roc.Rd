@@ -91,6 +91,9 @@ max.auc.polygon.border=NULL,
 ci=!is.null(x$ci),
 ci.type=c("bars", "shape", "no"),
 ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
+# Hooks to draw add-ons underneath (panel.first) or on top of (panel.last)
+panel.first=NULL,
+panel.last=NULL,
 ...)
 \S3method{plot.roc}{formula}(x, data, subset, na.action, ...)
 \S3method{plot.roc}{default}(x, predictor, ...)
@@ -220,6 +223,22 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
+  \item{panel.first}{an expression to be evaluated after the grid is
+    drawn and before the max-AUC polygon, identity line and curve, as in
+    \code{\link{plot.default}}. This is where \code{\link{polygon_auc}}
+    and \code{\link{polygon_max_auc}} calls belong if you want them drawn
+    \emph{underneath} the curve (see \sQuote{Examples}); calling them
+    after \code{plot.roc} instead draws them on top. Only evaluated when
+    \code{add=FALSE}: on \code{add=TRUE} it would redraw a new
+    background over a previously-added curve.
+  }
+  \item{panel.last}{an expression to be evaluated at the very end, after
+    everything else \code{plot.roc} draws (including \code{print.auc}),
+    as in \code{\link{plot.default}}. Evaluated on every call, including
+    \code{add=TRUE}. Rarely needed: simply calling code after
+    \code{plot.roc} already achieves the same effect, for example
+    \code{\link[=text.auc]{text}(ci4)}.
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{plot.roc.roc} when calling
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
@@ -243,6 +262,7 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
   \enumerate{
     \item A new plot is created if \code{add=FALSE}.
     \item The grid is added if \code{grid.v} and \code{grid.h} are not NULL.
+    \item \code{panel.first} is evaluated, if \code{add=FALSE}.
     \item The maximal AUC polygon is added if \code{max.auc.polygon=TRUE}.
 	\item The CI shape is added if \code{ci=TRUE}, \code{ci.type="shape"} and \code{x$ci} isn't a \dQuote{ci.auc}.
     \item The AUC polygon is added if \code{auc.polygon=TRUE}.
@@ -251,9 +271,18 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 	\item The CI bars are added if \code{ci=TRUE}, \code{ci.type="bars"} and \code{x$ci} isn't a \dQuote{ci.auc}.
     \item The selected thresholds are printed if \code{print.thres} is \code{TRUE} or numeric.
     \item The AUC is printed if \code{print.auc=TRUE}.
+    \item \code{panel.last} is evaluated.
   }
 
   Graphical functions are called with \link{suppressWarnings}.
+
+  \code{auc.polygon}, \code{max.auc.polygon} and \code{print.auc} are a
+  convenience for the common case. The same polygons and label can be
+  drawn from separately-built \code{\link{roc}}, \code{\link{auc}} and
+  \code{\link{ci.auc}} objects with \code{\link{polygon_auc}},
+  \code{\link{polygon_max_auc}} and \code{\link[=text.auc]{text}}, using
+  \code{panel.first} to keep them underneath the curve. See
+  \sQuote{Examples}.
 }
 
 \section{AUC specification}{
@@ -299,7 +328,8 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 }
 
 \seealso{
-\code{\link{roc}}, \code{\link{auc}}, \code{\link{ci}}
+\code{\link{roc}}, \code{\link{auc}}, \code{\link{ci}},
+\code{\link{polygon_auc}}, \code{\link[=text.auc]{text}}
 }
 \examples{
 
@@ -341,6 +371,15 @@ plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
                                    print.thres.best.weights=c(50, 0.2),
                                    print.thres.adj = c(1.1, 1.25),
                                    add = TRUE)
+
+# The same auc.polygon/max.auc.polygon/print.auc appearance, built from
+# separate roc(), auc() and ci() calls instead of one-shot plot.roc arguments:
+roc4 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
+auc4 <- auc(roc4, partial.auc=c(100, 90), partial.auc.correct=TRUE, partial.auc.focus="sens")
+ci4  <- ci(auc4, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
+plot(roc4, grid=TRUE, print.thres=TRUE,
+     panel.first = {polygon_max_auc(auc4); polygon_auc(auc4)})
+text(ci4)
 }
 
 \keyword{univar}
