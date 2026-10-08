@@ -49,7 +49,7 @@ ci.coords.default <- function(response, predictor, ...) {
 
 ci.coords.smooth.roc <- function(smooth.roc,
                                  x,
-                                 input = c("specificity", "sensitivity"), ret = c("specificity", "sensitivity"),
+                                 input = "specificity", ret = c("specificity", "sensitivity"),
                                  best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
                                  best.policy = c("unique.stop", "stop", "omit", "random"),
                                  conf.level = 0.95,
@@ -67,7 +67,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   }
   progress <- roc_utils_normalise_progress(progress)
 
-  input <- roc_utils_match_coords_input_args(input)
+  # A smoothed curve has no thresholds, hence threshold = FALSE, as in
+  # coords.smooth.roc().
+  input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
   ret <- roc_utils_match_coords_ret_args(ret)
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = smooth.roc)

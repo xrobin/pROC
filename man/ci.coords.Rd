@@ -27,7 +27,7 @@ boot.stratified=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
 \S3method{ci.coords}{formula}(formula, data, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
-input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
+input="specificity", ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,

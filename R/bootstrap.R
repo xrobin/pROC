@@ -604,7 +604,11 @@ bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
   if (methods::is(smooth.roc, "try-error")) {
     return(NA)
   }
-  res <- coords.roc(smooth.roc,
+  # coords.smooth.roc(), not coords.roc(): a smoothed curve has no thresholds,
+  # and the smooth method is what fills them with NA and resolves x = "best"
+  # before delegating. Calling coords.roc() directly left the "best" search
+  # comparing against absent thresholds.
+  res <- coords.smooth.roc(smooth.roc,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
   )

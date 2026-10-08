@@ -4,6 +4,8 @@
   * The deprecated 'parallel' argument now warns as the documentation stated
   * Fixed 'ci.coords' returning fractions instead of percentages on 'percent=TRUE' curves
   * Fixed 'cov' and 'roc.test' dropping a whole curve instead of the replicate on NA bootstrap values
+  * Fixed 'ci.coords' on smoothed curves, which failed unless 'input' was given explicitly
+  * 'ci.coords' now rejects input="threshold" on smoothed curves, as 'coords' does
   * Added tests for bootstrap operations (issue #28)
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
     'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
