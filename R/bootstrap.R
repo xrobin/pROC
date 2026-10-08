@@ -183,9 +183,9 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
 # The one place bootstrap replicates are iterated.
 #
 # Calls FUN(i, ...) for i in 1:boot.n and assembles the results. Every
-# bootstrap in pROC goes through here, so anything that applies to all of them
-# -- progress reporting, and in future parallel execution -- has a single home
-# instead of being repeated at two dozen call sites.
+# bootstrap in pROC goes through here, so what applies to all of them --
+# progress reporting and parallel execution -- has a single home instead of
+# being repeated at two dozen call sites.
 #
 # 'simplify' says how the replicates are assembled, because the callers
 # genuinely need different shapes:
