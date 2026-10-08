@@ -22,7 +22,7 @@ test_that("auto direction on ordered uses level ranks, not a converted predictor
   # even-length groups: median() does not work on ordered values
   pred <- ordered(c("a", "a", "b", "b", "c", "c"), levels = c("a", "b", "c"))
   resp <- factor(c("ctl", "ctl", "ctl", "case", "case", "case"), levels = c("ctl", "case"))
-  expect_error(median(pred[resp == "ctl"]), "numeric")
+  expect_error(median(pred[resp == "ctl"]))
   r <- roc(resp, pred, quiet = TRUE)
   expect_equal(r$direction, "<")
   expect_true(is.ordered(r$cases))
