@@ -271,22 +271,21 @@ cov(roc1, roc3)
 ## Plot the curve ##
 plot(roc1)
 
-#  More plotting options, CI and plotting
-# with all-in-one syntax:
-roc4 <- roc(aSAH$outcome,
-            aSAH$s100b, percent=TRUE,
-            # arguments for auc
-            partial.auc=c(100, 90), partial.auc.correct=TRUE,
-            partial.auc.focus="sens",
-            # arguments for ci
-            ci=TRUE, boot.n=100, conf.level=0.9, boot.stratified=FALSE,
-            # arguments for plot
-            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
-            print.auc=TRUE, print.thres=TRUE)
+#  More plotting options, partial AUC, CI, built from separate calls:
+roc4 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
+auc4 <- auc(roc4, partial.auc=c(100, 90), partial.auc.correct=TRUE,
+            partial.auc.focus="sens")
+ci4  <- ci(auc4, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
+plot(roc4, grid=TRUE, print.thres=TRUE,
+     panel.first = {
+       polygon_max_auc(auc4)
+       polygon_auc(auc4)
+     },
+     panel.last = text(ci4))
 
 # Add to an existing plot. Beware of 'percent' specification!
-roc5 <- roc(aSAH$outcome, aSAH$wfns,
-            plot=TRUE, add=TRUE, percent=roc4$percent)
+roc5 <- roc(aSAH$outcome, aSAH$wfns, percent=roc4$percent)
+plot(roc5, add=TRUE)
 
 
 ## With ggplot2 ##

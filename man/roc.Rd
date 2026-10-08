@@ -392,8 +392,9 @@ roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 
 # Plot and CI (see plot.roc and ci for more options):
-roc(aSAH$outcome, aSAH$s100b,
-    percent=TRUE, plot=TRUE, ci=TRUE)
+rocobj <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
+ci(rocobj)
+plot(rocobj)
 
 # Smoothed ROC curve
 roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)

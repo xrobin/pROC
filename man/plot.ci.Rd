@@ -55,7 +55,10 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   bars or as a confidence shape, depending on the state of the
   \code{type} argument. The shape is plotted over the ROC curve, so that
   the curve is re-plotted unless \code{no.roc=TRUE}.
-  
+
+  These functions must be called on an existing plot
+  (\code{\link{dev.cur}() == 1} is an error).
+
   Graphical functions are called with \link{suppressWarnings}.
 }
 
@@ -80,13 +83,14 @@ This function returns the confidence interval object invisibly.
 }
 
 \seealso{
-\code{\link{plot.roc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}}
+\code{\link{plot.roc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}},
+\code{\link[=text.auc]{text}} for \code{\link{ci.auc}}, \code{\link{polygon_ci}}
 }
 \examples{
 data(aSAH)
 \dontrun{
 # Start a ROC plot
-rocobj <- plot.roc(aSAH$outcome, aSAH$s100b)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
 plot(rocobj)
 # Thresholds
 ci.thresolds.obj <- ci.thresholds(rocobj)
@@ -105,9 +109,11 @@ ci.sp.obj <- ci.sp(rocobj, sensitivities=seq(0, 1, .01), boot.n=100)
 plot(rocobj) # restart a new plot
 plot(ci.sp.obj, type="shape", col="blue")
 
-# Direct syntax (response, predictor):
-plot.roc(aSAH$outcome, aSAH$s100b,
-         ci=TRUE, of="thresholds")
+# Direct syntax (response, predictor): ci() (like auc(), roc() and plot())
+# accepts a response/predictor pair directly, with no roc object needed:
+ci.thresh.obj <- ci(aSAH$outcome, aSAH$s100b, of="thresholds")
+plot(rocobj) # restart a new plot
+plot(ci.thresh.obj)
 
 # CI of a PR curve
 co <- coords(rocobj, x = "all", input="recall", ret=c("recall", "precision"))

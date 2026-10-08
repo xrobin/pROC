@@ -33,23 +33,37 @@ test_that("Advanced screenshot 1 works correctly", {
   skip_if_not_installed("vdiffr")
   skip_if(getRversion() < "4.1")
   test_advanced_screenshot_1 <- function() {
-    plot(r.s100b.percent,
-      reuse.auc = FALSE, partial.auc = c(100, 90), partial.auc.correct = TRUE, # define a partial AUC (pAUC)
-      print.auc = TRUE, # display pAUC value on the plot with following options:
-      print.auc.pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%", print.auc.col = "#1c61b6",
-      auc.polygon = TRUE, auc.polygon.col = "#1c61b6", # show pAUC as a polygon
-      max.auc.polygon = TRUE, max.auc.polygon.col = "#1c61b622", # also show the 100% polygon
-      main = "Partial AUC (pAUC)"
+    # Two partial-AUC regions (focus sp and focus se) on the same curve, built
+    # from separate auc() objects and drawn via panel.first instead of the old
+    # two-call plot.roc(..., add=TRUE, type="n") idiom. This changes the
+    # z-order versus the old idiom: the old two calls drew the identity line
+    # above the SP polygon but below the SE polygon (inconsistently, since the
+    # second call's output always lands on top of the first call's entire
+    # output, curve included); panel.first draws all polygons once, under a
+    # single curve draw, so the identity line now sits consistently above
+    # both. Reviewed side-by-side via vdiffr::snapshot_review() and accepted
+    # as an improvement.
+    auc_sp <- auc(r.s100b.percent, partial.auc = c(100, 90), partial.auc.correct = TRUE)
+    auc_se <- auc(r.s100b.percent,
+      partial.auc = c(100, 90), partial.auc.correct = TRUE,
+      partial.auc.focus = "se"
     )
-
     plot(r.s100b.percent,
-      reuse.auc = FALSE, partial.auc = c(100, 90), partial.auc.correct = TRUE,
-      partial.auc.focus = "se", # focus pAUC on the sensitivity
-      add = TRUE, type = "n", # add to plot, but don't re-add the ROC itself (useless)
-      print.auc = TRUE, print.auc.pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%", print.auc.col = "#008600",
-      print.auc.y = 40, # do not print auc over the previous one
-      auc.polygon = TRUE, auc.polygon.col = "#008600",
-      max.auc.polygon = TRUE, max.auc.polygon.col = "#00860022"
+      main = "Partial AUC (pAUC)",
+      panel.first = {
+        polygon_max_auc(auc_se, col = "#00860022")
+        polygon_max_auc(auc_sp, col = "#1c61b622")
+        polygon_auc(auc_se, col = "#008600")
+        polygon_auc(auc_sp, col = "#1c61b6")
+      }
+    )
+    text(auc_sp,
+      xy = c(50, 50), col = "#1c61b6",
+      pattern = "Corrected pAUC (100-90%% SP):\n%.1f%%"
+    )
+    text(auc_se,
+      xy = c(50, 40), col = "#008600",
+      pattern = "Corrected pAUC (100-90%% SE):\n%.1f%%"
     )
   }
   expect_doppelganger("advanced.screenshot.1", test_advanced_screenshot_1)
@@ -65,9 +79,9 @@ test_that("Advanced screenshot 2 works correctly", {
     set.seed(42) # For reproducible CI
     suppressMessages(rocobj <- plot.roc(aSAH$outcome, aSAH$s100b,
       main = "Confidence intervals", percent = TRUE,
-      ci = TRUE, # compute AUC (of AUC by default)
-      print.auc = TRUE
-    )) # print the AUC (will contain the CI)
+      ci = TRUE # compute AUC (of AUC by default)
+    ))
+    text(rocobj) # print the AUC (will contain the CI)
 
     ciobj <- ci.se(rocobj, # CI of sensitivity
       specificities = seq(0, 100, 5)

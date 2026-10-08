@@ -44,22 +44,19 @@ roc(outcome ~ s100b, aSAH)
 ```R
 roc(outcome ~ s100b, aSAH, smooth=TRUE) 
 ```
-### more options, CI and plotting
+### more options, partial AUC, CI, and plotting
 ```R
-roc1 <- roc(aSAH$outcome,
-            aSAH$s100b, percent=TRUE,
-            # arguments for auc
-            partial.auc=c(100, 90), partial.auc.correct=TRUE,
-            partial.auc.focus="sens",
-            # arguments for ci
-            ci=TRUE, boot.n=100, conf.level=0.9, boot.stratified=FALSE,
-            # arguments for plot
-            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
-            print.auc=TRUE, print.thres=TRUE)
+roc1 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
+auc1 <- auc(roc1, partial.auc=c(100, 90), partial.auc.correct=TRUE,
+            partial.auc.focus="sens")
+ci1  <- ci(auc1, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
+plot(roc1, grid=TRUE, print.thres=TRUE,
+     panel.first = {polygon_max_auc(auc1); polygon_auc(auc1)})
+text(ci1)
 
     # Add to an existing plot. Beware of 'percent' specification!
-    roc2 <- roc(aSAH$outcome, aSAH$wfns,
-            plot=TRUE, add=TRUE, percent=roc1$percent)        
+    roc2 <- roc(aSAH$outcome, aSAH$wfns, percent=roc1$percent)
+    plot(roc2, add=TRUE)
 ```
 ### Coordinates of the curve
 ```R

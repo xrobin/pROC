@@ -143,23 +143,16 @@ plot.roc.roc <- function(x,
                          ci = !is.null(x$ci),
                          ci.type = c("bars", "shape", "no"),
                          ci.col = ifelse(ci.type == "bars", par("fg"), "gainsboro"),
+                         # Hooks to draw add-ons underneath (panel.first) or
+                         # on top of (panel.last) everything plot.roc draws
+                         panel.first = NULL,
+                         panel.last = NULL,
                          ...) {
   percent <- x$percent
 
   if (max.auc.polygon | auc.polygon | print.auc) { # we need the auc here
     if (is.null(x$auc) | !reuse.auc) {
       x$auc <- auc(x, ...)
-    }
-    partial.auc <- attr(x$auc, "partial.auc")
-    partial.auc.focus <- attr(x$auc, "partial.auc.focus")
-  }
-
-  # compute a reasonable default for print.auc.pattern if required
-  if (print.auc & is.null(print.auc.pattern)) {
-    print.auc.pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
-    print.auc.pattern <- paste(print.auc.pattern, ifelse(percent, "%.1f%%", "%.3f"), sep = "")
-    if (ci && methods::is(x$ci, "ci.auc")) {
-      print.auc.pattern <- paste(print.auc.pattern, " (", ifelse(percent, "%.1f%%", "%.3f"), "\u2013", ifelse(percent, "%.1f%%", "%.3f"), ")", sep = "")
     }
   }
 
@@ -202,21 +195,21 @@ plot.roc.roc <- function(x,
     suppressWarnings(abline(h = grid.h, lty = grid.lty[2], col = grid.col[2], lwd = grid.lwd[2], ...))
   }
 
+  # panel.first: drawn here, after the grid and before the max-AUC polygon,
+  # so add-on polygons (polygon_auc, polygon_max_auc) land exactly where
+  # auc.polygon/max.auc.polygon draw them below. Only forced on a new plot:
+  # on add=TRUE it would redraw a previous curve's background a second time.
+  if (!add) {
+    panel.first
+  }
+
   # Plot the polygon displaying the maximal area
   if (max.auc.polygon) {
-    if (identical(partial.auc, FALSE)) {
-      map.y <- c(0, 1, 1, 0) * ifelse(percent, 100, 1)
-      map.x <- c(1, 1, 0, 0) * ifelse(percent, 100, 1)
-    } else {
-      if (partial.auc.focus == "sensitivity") {
-        map.y <- c(partial.auc[2], partial.auc[2], partial.auc[1], partial.auc[1])
-        map.x <- c(0, 1, 1, 0) * ifelse(percent, 100, 1)
-      } else {
-        map.y <- c(0, 1, 1, 0) * ifelse(percent, 100, 1)
-        map.x <- c(partial.auc[2], partial.auc[2], partial.auc[1], partial.auc[1])
-      }
-    }
-    suppressWarnings(polygon(map.x, map.y, col = max.auc.polygon.col, lty = max.auc.polygon.lty, border = max.auc.polygon.border, density = max.auc.polygon.density, angle = max.auc.polygon.angle, ...))
+    roc_utils_draw_max_auc_polygon(x$auc,
+      col = max.auc.polygon.col, lty = max.auc.polygon.lty,
+      density = max.auc.polygon.density, angle = max.auc.polygon.angle,
+      border = max.auc.polygon.border, ...
+    )
   }
   # Plot the ci shape
   if (ci && !methods::is(x$ci, "ci.auc")) {
@@ -227,51 +220,11 @@ plot.roc.roc <- function(x,
   }
   # Plot the polygon displaying the actual area
   if (auc.polygon) {
-    if (identical(partial.auc, FALSE)) {
-      suppressWarnings(polygon(c(sp, 0), c(se, 0), col = auc.polygon.col, lty = auc.polygon.lty, border = auc.polygon.border, density = auc.polygon.density, angle = auc.polygon.angle, ...))
-    } else {
-      if (partial.auc.focus == "sensitivity") {
-        x.all <- rev(se)
-        y.all <- rev(sp)
-      } else {
-        x.all <- sp
-        y.all <- se
-      }
-      # find the SEs and SPs in the interval
-      x.int <- x.all[x.all <= partial.auc[1] & x.all >= partial.auc[2]]
-      y.int <- y.all[x.all <= partial.auc[1] & x.all >= partial.auc[2]]
-      # if the upper limit is not exactly present in SPs, interpolate
-      if (!(partial.auc[1] %in% x.int)) {
-        x.int <- c(x.int, partial.auc[1])
-        # find the limit indices
-        idx.out <- match(FALSE, x.all < partial.auc[1])
-        idx.in <- idx.out - 1
-        # interpolate y
-        proportion.start <- (partial.auc[1] - x.all[idx.out]) / (x.all[idx.in] - x.all[idx.out])
-        y.start <- y.all[idx.out] - proportion.start * (y.all[idx.out] - y.all[idx.in])
-        y.int <- c(y.int, y.start)
-      }
-      # if the lower limit is not exactly present in SPs, interpolate
-      if (!(partial.auc[2] %in% x.int)) {
-        x.int <- c(partial.auc[2], x.int)
-        # find the limit indices
-        idx.out <- length(x.all) - match(TRUE, rev(x.all) < partial.auc[2]) + 1
-        idx.in <- idx.out + 1
-        # interpolate y
-        proportion.end <- (x.all[idx.in] - partial.auc[2]) / (x.all[idx.in] - x.all[idx.out])
-        y.end <- y.all[idx.in] + proportion.end * (y.all[idx.out] - y.all[idx.in])
-        y.int <- c(y.end, y.int)
-      }
-      # anchor to baseline
-      x.int <- c(partial.auc[2], x.int, partial.auc[1])
-      y.int <- c(0, y.int, 0)
-      if (partial.auc.focus == "sensitivity") {
-        # for SE, invert x and y again
-        suppressWarnings(polygon(y.int, x.int, col = auc.polygon.col, lty = auc.polygon.lty, border = auc.polygon.border, density = auc.polygon.density, angle = auc.polygon.angle, ...))
-      } else {
-        suppressWarnings(polygon(x.int, y.int, col = auc.polygon.col, lty = auc.polygon.lty, border = auc.polygon.border, density = auc.polygon.density, angle = auc.polygon.angle, ...))
-      }
-    }
+    roc_utils_draw_auc_polygon(x, x$auc,
+      col = auc.polygon.col, lty = auc.polygon.lty,
+      density = auc.polygon.density, angle = auc.polygon.angle,
+      border = auc.polygon.border, ...
+    )
   }
   # Identity line
   if (identity) suppressWarnings(abline(ifelse(percent, 100, 1), -1, col = identity.col, lwd = identity.lwd, lty = identity.lty, ...))
@@ -320,14 +273,19 @@ plot.roc.roc <- function(x,
 
   # Print the AUC on the plot
   if (print.auc) {
-    if (ci && methods::is(x$ci, "ci.auc")) {
-      labels <- sprintf(print.auc.pattern, x$auc, x$ci[1], x$ci[3])
-      suppressWarnings(text(print.auc.x, print.auc.y, labels, adj = print.auc.adj, cex = print.auc.cex, col = print.auc.col, ...))
-    } else {
-      labels <- sprintf(print.auc.pattern, x$auc)
-    }
-    suppressWarnings(text(print.auc.x, print.auc.y, labels, adj = print.auc.adj, cex = print.auc.cex, col = print.auc.col, ...))
+    ci.auc.obj <- if (ci && methods::is(x$ci, "ci.auc")) x$ci else NULL
+    roc_utils_draw_auc_text(x$auc,
+      ci = ci.auc.obj, pattern = print.auc.pattern,
+      xy = c(print.auc.x, print.auc.y), adj = print.auc.adj,
+      col = print.auc.col, cex = print.auc.cex, ...
+    )
   }
+
+  # panel.last: drawn on top of everything plot.roc draws, for symmetry with
+  # plot.default. Unlike panel.first, forced on every call (add=TRUE too):
+  # each call's own panel.last is independent per-curve annotation, not tied
+  # to the one underlying plot frame.
+  panel.last
 
   invisible(x)
 }
