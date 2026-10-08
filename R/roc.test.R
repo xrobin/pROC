@@ -116,6 +116,7 @@ roc.test.roc <- function(roc1, roc2,
                          boot.n = 2000, boot.stratified = TRUE,
                          ties.method = "first",
                          progress = getOption("pROCProgress", interactive()),
+                         cl = NULL,
                          parallel = FALSE,
                          conf.level = 0.95,
                          ...) {
@@ -382,7 +383,7 @@ roc.test.roc <- function(roc1, roc2,
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")
       }
       stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args,
-        progress = progress
+        progress = progress, cl = cl
       )
       if (paired) {
         htest$method <- "Specificity test for two correlated ROC curves"
@@ -398,7 +399,7 @@ roc.test.roc <- function(roc1, roc2,
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
       }
       stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args,
-        progress = progress
+        progress = progress, cl = cl
       )
       if (paired) {
         htest$method <- "Sensitivity test for two correlated ROC curves"
@@ -412,7 +413,7 @@ roc.test.roc <- function(roc1, roc2,
       )
     } else {
       stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
-        progress = progress
+        progress = progress, cl = cl
       )
       if (paired) {
         htest$method <- "Bootstrap test for two correlated ROC curves"

@@ -229,4 +229,7 @@ S3method("ci", "sp")
 S3method("ci", "thresholds")
 
 import(Rcpp, grDevices, graphics, stats)
+importFrom("parallel", "clusterApply", "getDefaultCluster",
+           "makeForkCluster", "makePSOCKcluster", "nextRNGStream",
+           "parLapply", "stopCluster")
 useDynLib(pROC, .registration = TRUE)

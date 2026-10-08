@@ -20,7 +20,7 @@
 ##########  AUC of two ROC curves (roc.test, cov)  ##########
 
 bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args,
-                          progress = FALSE) {
+                          progress = FALSE, cl = NULL) {
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
   smoothing.args$roc1$method <- NULL
@@ -74,7 +74,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
     roc1 = roc1, roc2 = roc2, stratified = boot.stratified, test = "boot",
     x = NULL, paired = TRUE,
     auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton,
-    simplify = "columns", progress = progress
+    simplify = "columns", progress = progress, cl = cl
   )
   resampled.values <- roc_utils_drop_na_replicates(resampled.values, margin = 2L)
 
@@ -87,7 +87,7 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
 
 # Bootstrap test, used by roc.test.roc
 bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args,
-                           progress = FALSE) {
+                           progress = FALSE, cl = NULL) {
   # rename method into smooth.method for roc
   smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
   smoothing.args$roc1$method <- NULL
@@ -142,7 +142,7 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
     roc1 = roc1, roc2 = roc2, stratified = boot.stratified, test = test,
     x = x, paired = paired,
     auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton,
-    simplify = "columns", progress = progress
+    simplify = "columns", progress = progress, cl = cl
   )
 
   # compute the statistics
@@ -195,10 +195,22 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
 #   "rows"    a matrix with one ROW per replicate (ci.se, ci.sp)
 bootstrap.replicates <- function(boot.n, FUN, ...,
                                  simplify = c("list", "vector", "columns", "rows"),
-                                 progress = FALSE) {
+                                 progress = FALSE, cl = NULL) {
   simplify <- match.arg(simplify)
   force(FUN)
-  if (isTRUE(progress)) {
+  cluster <- roc_utils_resolve_cluster(cl)
+  if (!is.null(cluster$cluster)) {
+    if (cluster$owned) {
+      on.exit(stopCluster(cluster$cluster))
+    }
+    if (isTRUE(progress)) {
+      message(sprintf(
+        "Bootstrapping %i replicates on %i workers...",
+        boot.n, length(cluster$cluster)
+      ))
+    }
+    replicates <- bootstrap.replicates.parallel(cluster$cluster, boot.n, FUN, ...)
+  } else if (isTRUE(progress)) {
     replicates <- bootstrap.replicates.with.progress(boot.n, FUN, ...)
   } else {
     replicates <- lapply(seq_len(boot.n), FUN, ...)
@@ -232,6 +244,103 @@ bootstrap.replicates.with.progress <- function(boot.n, FUN, ...) {
     }
   }
   replicates
+}
+
+# Run the replicates on a cluster.
+#
+# Each replicate gets its own L'Ecuyer-CMRG stream, so which worker happens to
+# run it, and how many workers there are, make no difference to the result.
+# The worker closure is built in an empty environment and given only what it
+# needs: a closure defined here would otherwise drag this frame -- including
+# the cluster object itself -- to every worker.
+bootstrap.replicates.parallel <- function(cluster, boot.n, FUN, ...) {
+  force(FUN)
+  streams <- roc_utils_rng_streams(boot.n)
+  # The extra arguments ride in the worker's environment rather than through
+  # parLapply's '...': parLapply forwards those into clusterApply(x = , fun = )
+  # and ci.coords() passes an argument called 'x', which would collide.
+  #
+  # quote = TRUE matters. Some of these arguments are unevaluated calls -- the
+  # smoothing call each replicate has to make -- and do.call() would otherwise
+  # evaluate them here instead of passing them on.
+  worker <- function(i) {
+    assign(".Random.seed", rng.streams[[i]], envir = globalenv())
+    do.call(fun, c(list(i), fun.args), quote = TRUE)
+  }
+  environment(worker) <- list2env(
+    list(fun = FUN, fun.args = list(...), rng.streams = streams),
+    parent = globalenv()
+  )
+  parLapply(cluster, seq_len(boot.n), worker)
+}
+
+# One independent random number stream per replicate.
+#
+# L'Ecuyer-CMRG lets a single seed be split into sub-sequences far enough apart
+# that they never overlap. Giving one to each replicate -- rather than one to
+# each worker, as parallel::clusterSetRNGStream does -- means a replicate's
+# numbers depend only on the seed and its index, so the same seed gives the
+# same answer whatever the number of workers.
+#
+# The seed is drawn from the caller's own stream, so set.seed() still governs
+# the result; the caller's generator is then restored exactly as it was.
+roc_utils_rng_streams <- function(boot.n) {
+  if (!exists(".Random.seed", envir = globalenv())) {
+    set.seed(NULL)
+  }
+  seed <- sample.int(.Machine$integer.max, 1L)
+  caller.seed <- get(".Random.seed", envir = globalenv())
+  caller.kind <- RNGkind()
+  on.exit({
+    RNGkind(caller.kind[1], caller.kind[2], caller.kind[3])
+    assign(".Random.seed", caller.seed, envir = globalenv())
+  })
+  set.seed(seed, kind = "L'Ecuyer-CMRG")
+  streams <- vector("list", boot.n)
+  stream <- get(".Random.seed", envir = globalenv())
+  for (i in seq_len(boot.n)) {
+    streams[[i]] <- stream
+    stream <- nextRNGStream(stream)
+  }
+  streams
+}
+
+# What to run the bootstrap on.
+#
+# Returns the cluster and whether pROC created it, since a cluster pROC made
+# must also be stopped by pROC. See ?ci for the accepted values.
+roc_utils_resolve_cluster <- function(cl) {
+  none <- list(cluster = NULL, owned = FALSE)
+  if (is.null(cl) || isFALSE(cl)) {
+    return(none)
+  }
+  if (isTRUE(cl)) {
+    cluster <- getDefaultCluster()
+    if (is.null(cluster)) {
+      stop("'cl = TRUE' needs a default cluster: register one with parallel::setDefaultCluster(), pass a cluster object, or give the number of workers.")
+    }
+    return(list(cluster = cluster, owned = FALSE))
+  }
+  # Covers PSOCK, FORK, MPI and mirai clusters alike: they all extend
+  # "cluster", so parLapply() works on any of them.
+  if (inherits(cl, "cluster")) {
+    return(list(cluster = cl, owned = FALSE))
+  }
+  if (is.numeric(cl) && length(cl) == 1L && !is.na(cl) && cl >= 1) {
+    if (cl == 1) {
+      return(none)
+    }
+    # Forking is nearly free to start, so creating the cluster for the
+    # duration of one call costs little; Windows has no fork and pays the
+    # socket cluster's startup instead.
+    cluster <- if (.Platform$OS.type == "unix") {
+      makeForkCluster(as.integer(cl))
+    } else {
+      makePSOCKcluster(as.integer(cl))
+    }
+    return(list(cluster = cluster, owned = TRUE))
+  }
+  stop("'cl' must be NULL or FALSE for a sequential bootstrap, a cluster from parallel::makeCluster(), TRUE to use parallel::getDefaultCluster(), or the number of workers.")
 }
 
 # Which progress bar, if any, the user asked for.
@@ -399,11 +508,12 @@ bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
 
 ##########  AUC of one ROC curve (ci.auc, var)  ##########
 
-ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress = FALSE, ...) {
+ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress = FALSE,
+                             cl = NULL, ...) {
   aucs <- roc_utils_drop_na_replicates(
     bootstrap.replicates(boot.n, bootstrap.auc,
       roc = roc, stratified = boot.stratified, simplify = "vector",
-      progress = progress
+      progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?

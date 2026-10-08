@@ -56,6 +56,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
                                  boot.n = 2000,
                                  boot.stratified = TRUE,
                                  progress = getOption("pROCProgress", interactive()),
+                                 cl = NULL,
                                  ...) {
   if (conf.level > 1 | conf.level < 0) {
     stop("'conf.level' must be within the interval [0,1].")
@@ -93,7 +94,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
     smooth.roc.call = smooth.roc.call, best.policy = best.policy,
-    simplify = "list", progress = progress
+    simplify = "list", progress = progress, cl = cl
   )
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
   perfs_array <- array(unlist(perfs),
@@ -134,6 +135,7 @@ ci.coords.roc <- function(roc,
                           boot.n = 2000,
                           boot.stratified = TRUE,
                           progress = getOption("pROCProgress", interactive()),
+                          cl = NULL,
                           ...) {
   if (conf.level > 1 | conf.level < 0) {
     stop("'conf.level' must be within the interval [0,1].")
@@ -173,7 +175,7 @@ ci.coords.roc <- function(roc,
   perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    best.policy = best.policy, simplify = "list", progress = progress
+    best.policy = best.policy, simplify = "list", progress = progress, cl = cl
   )
   perfs <- lapply(perfs, ci_coords_numeric_columns)
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary

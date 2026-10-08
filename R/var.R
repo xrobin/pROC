@@ -45,6 +45,7 @@ var.roc <- function(roc,
                     boot.stratified = TRUE,
                     reuse.auc = TRUE,
                     progress = getOption("pROCProgress", interactive()),
+                    cl = NULL,
                     parallel = FALSE,
                     ...) {
   # We need an auc
@@ -103,7 +104,7 @@ var.roc <- function(roc,
   } else if (method == "obuchowski") {
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   } else {
-    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, ...)
+    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }
 
   if (percent) {
@@ -112,7 +113,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, ...) {
+var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl = NULL, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
     smoothing.args <- roc$smoothing.args
@@ -126,13 +127,13 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, ..
 
     aucs <- bootstrap.replicates(boot.n, bootstrap.smooth.auc,
       roc = non.smoothed.roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress
+      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
     )
   }
   ## Non smoothed ROC curves variance
   else {
     aucs <- bootstrap.replicates(boot.n, bootstrap.auc,
-      roc = roc, stratified = boot.stratified, simplify = "vector", progress = progress
+      roc = roc, stratified = boot.stratified, simplify = "vector", progress = progress, cl = cl
     )
   }
 

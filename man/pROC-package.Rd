@@ -178,10 +178,37 @@ aSAH \%>\%
   	}
 
     \subsection{Parallel processing}{
-	    Parallel processing is no longer supported in pROC 1.19. The use of the
-	    \code{parallel} argument is deprecated, and any value other than
-	    \code{FALSE} will produce a warning. The argument will be removed in a
-	    future version.
+	    Bootstrap operations can run on several processes with the \code{cl}
+	    argument. \pkg{pROC} never takes a core on its own: pass a cluster, or
+	    ask for a number of workers explicitly.
+
+        \preformatted{
+library(parallel)
+cl <- makeCluster(2)            # or type = "FORK", "MPI", "MIRAI"...
+ci(rocobj, method = "bootstrap", cl = cl)
+stopCluster(cl)
+
+ci(rocobj, method = "bootstrap", cl = 2)    # pROC creates and stops it
+
+setDefaultCluster(makeCluster(2))
+ci(rocobj, method = "bootstrap", cl = TRUE) # use the registered cluster
+        }
+
+	    Each replicate draws from its own L'Ecuyer-CMRG random number stream,
+	    chosen by the replicate's index rather than by the worker that happens
+	    to run it. A seeded parallel bootstrap therefore gives the same answer
+	    whatever the number of workers, which is not the case for a bootstrap
+	    whose streams are assigned per worker. It does differ from a sequential
+	    run with the same seed: sequential results are unchanged from earlier
+	    versions of \pkg{pROC}.
+
+	    How much this helps depends on how much work a replicate does and how
+	    much data has to reach the workers; a bootstrap of a few seconds or
+	    more generally gains, a very short one may not.
+
+	    The older \code{parallel} argument is a different thing and remains
+	    deprecated: any value other than \code{FALSE} produces a warning, and
+	    the argument will be removed in a future version.
   	}
   }
   

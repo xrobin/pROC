@@ -52,6 +52,7 @@ ci.thresholds.roc <- function(roc,
                               boot.stratified = TRUE,
                               thresholds = "local maximas",
                               progress = getOption("pROCProgress", interactive()),
+                              cl = NULL,
                               parallel = FALSE,
                               ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -99,7 +100,7 @@ ci.thresholds.roc <- function(roc,
   # 2 x length(thresholds) x boot.n array.
   perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
     roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
-    simplify = "columns", progress = progress
+    simplify = "columns", progress = progress, cl = cl
   )
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)

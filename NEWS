@@ -1,4 +1,16 @@
 1.19.9999 (development)
+  * Bootstrap operations can run in parallel again (issue #46), through a new
+    'cl' argument: a cluster from parallel::makeCluster(), TRUE to use the
+    cluster registered with setDefaultCluster(), or a number of workers for
+    pROC to create and stop itself. Any cluster type works, including FORK,
+    PSOCK, MPI and MIRAI. pROC never takes a core on its own.
+    This needs no new dependency: 'parallel' ships with R, and the
+    reproducible random streams are built on it rather than on 'doRNG'.
+    Each replicate draws from its own L'Ecuyer-CMRG stream, chosen by the
+    replicate's index and not by the worker that runs it, so a seeded
+    parallel bootstrap gives the same answer whatever the number of workers.
+    It does differ from a sequential run with the same seed; sequential
+    results are unchanged.
   * Progress bars are back for bootstrap operations, without the 'plyr'
     dependency whose removal in 1.19 had taken them away. The 'progress'
     argument is no longer deprecated: it takes TRUE or FALSE and defaults to

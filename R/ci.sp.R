@@ -53,6 +53,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
                              boot.n = 2000,
                              boot.stratified = TRUE,
                              progress = getOption("pROCProgress", interactive()),
+                             cl = NULL,
                              parallel = FALSE,
                              ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -79,7 +80,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
 
   perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.sp,
     roc = roc, stratified = boot.stratified, se = sensitivities,
-    smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress
+    smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
@@ -102,6 +103,7 @@ ci.sp.roc <- function(roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress", interactive()),
+                      cl = NULL,
                       parallel = FALSE,
                       ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -115,7 +117,7 @@ ci.sp.roc <- function(roc,
   roc_utils_warn_deprecated_parallel(parallel)
 
   perfs <- bootstrap.replicates(boot.n, bootstrap.sp,
-    roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress
+    roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)

@@ -56,6 +56,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               boot.stratified = TRUE,
                               reuse.auc = TRUE,
                               progress = getOption("pROCProgress", interactive()),
+                              cl = NULL,
                               parallel = FALSE,
                               ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -104,7 +105,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   aucs <- roc_utils_drop_na_replicates(
     bootstrap.replicates(boot.n, bootstrap.smooth.auc,
       roc = roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress
+      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
@@ -130,6 +131,7 @@ ci.auc.roc <- function(roc,
                        boot.stratified = TRUE,
                        reuse.auc = TRUE,
                        progress = getOption("pROCProgress", interactive()),
+                       cl = NULL,
                        parallel = FALSE,
                        ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -179,7 +181,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong") {
     ci <- ci_auc_delong(roc, conf.level)
   } else {
-    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }
 
   if (percent) {
