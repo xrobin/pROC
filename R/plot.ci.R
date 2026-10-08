@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 plot.ci.thresholds <- function(x, length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = par("fg"), ...) {
+  roc_utils_stop_if_no_device("plot.ci.thresholds")
   bounds <- cbind(x$sp, x$se)
   apply(bounds, 1, function(x, ...) {
     suppressWarnings(segments(x[2], x[4], x[2], x[6], col = col, ...))
@@ -31,6 +32,7 @@ plot.ci.thresholds <- function(x, length = .01 * ifelse(attr(x, "roc")$percent, 
 }
 
 plot.ci.sp <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = ifelse(type == "bars", par("fg"), "gainsboro"), no.roc = FALSE, ...) {
+  roc_utils_stop_if_no_device("plot.ci.sp")
   type <- match.arg(type)
   if (type == "bars") {
     sapply(1:dim(x)[1], function(n, ...) {
@@ -53,6 +55,7 @@ plot.ci.sp <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
 
 
 plot.ci.se <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = ifelse(type == "bars", par("fg"), "gainsboro"), no.roc = FALSE, ...) {
+  roc_utils_stop_if_no_device("plot.ci.se")
   type <- match.arg(type)
   if (type == "bars") {
     sapply(1:dim(x)[1], function(n, ...) {
@@ -96,6 +99,7 @@ polygon_ci.ci.sp <- function(x, col = "gainsboro", ...) {
 }
 
 plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = ifelse(type == "bars", par("fg"), "gainsboro"), ...) {
+  roc_utils_stop_if_no_device("plot.ci.coords")
   type <- match.arg(type)
   if (length(x) > 1) {
     warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))

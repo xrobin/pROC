@@ -829,3 +829,21 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
     predictors = m[-1]
   ))
 }
+
+# Shared preconditions for the base-graphics add-on functions in
+# R/plot.auc.R and R/plot.ci.R (polygon_auc, polygon_max_auc, polygon_ci,
+# text.auc and friends, plus the pre-existing plot.ci.se/plot.ci.sp/
+# plot.ci.thresholds), so they fail with a clear message instead of a
+# low-level graphics error.
+
+roc_utils_stop_if_no_device <- function(fun.name) {
+  if (dev.cur() == 1) {
+    stop(sprintf("'%s' needs an open plot. Call plot() first, or pass it to plot.roc(panel.first = ...).", fun.name))
+  }
+}
+
+roc_utils_stop_if_no_auc <- function(x) {
+  if (is.null(x$auc)) {
+    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
+  }
+}

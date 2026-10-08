@@ -90,18 +90,6 @@ roc_utils_draw_auc_text <- function(auc, ci = NULL, pattern = NULL, xy = NULL,
   invisible(label)
 }
 
-roc_utils_stop_if_no_device <- function(fun.name) {
-  if (dev.cur() == 1) {
-    stop(sprintf("'%s' needs an open plot. Call plot() first, or pass it to plot.roc(panel.first = ...).", fun.name))
-  }
-}
-
-roc_utils_stop_if_no_auc <- function(x) {
-  if (is.null(x$auc)) {
-    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
-  }
-}
-
 # polygon_auc(): the AUC (or partial AUC) area, matching
 # plot.roc(auc.polygon = TRUE).
 
@@ -176,3 +164,9 @@ text.roc <- function(x, ...) {
 }
 
 text.smooth.roc <- text.roc
+
+text.multiclass.auc <- function(x, ...) {
+  stop("text() does not support 'multiclass.auc' objects.")
+}
+
+text.mv.multiclass.auc <- text.multiclass.auc

@@ -55,7 +55,10 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   bars or as a confidence shape, depending on the state of the
   \code{type} argument. The shape is plotted over the ROC curve, so that
   the curve is re-plotted unless \code{no.roc=TRUE}.
-  
+
+  These functions must be called on an existing plot
+  (\code{\link{dev.cur}() == 1} is an error).
+
   Graphical functions are called with \link{suppressWarnings}.
 }
 

@@ -179,6 +179,7 @@ test_that("polygon_auc/polygon_max_auc/text error on a 'multiclass.auc'", {
   plot(r.s100b)
   expect_error(polygon_auc(m.auc), "multiclass.auc")
   expect_error(polygon_max_auc(m.auc), "multiclass.auc")
+  expect_error(text(m.auc), "multiclass.auc")
 })
 
 test_that("polygon_auc/polygon_max_auc/text error when no device is open", {
@@ -297,6 +298,18 @@ test_that("polygon_ci errors when no device is open", {
   skip_if(dev.cur() != 1, "a device is already open outside this test")
   ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
   expect_error(polygon_ci(ci_se), "plot")
+})
+
+test_that("plot.ci.se/plot.ci.sp/plot.ci.thresholds/plot.ci.coords error clearly when no device is open", {
+  skip_if(dev.cur() != 1, "a device is already open outside this test")
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
+  ci_sp <- ci.sp(r.s100b, sensitivities = seq(0, 1, .05), boot.n = 20)
+  ci_th <- ci.thresholds(r.s100b, thresholds = "best", boot.n = 20)
+  ci_co <- ci.coords(r.s100b, x = seq(0, 1, .2), input = "recall", ret = "precision", boot.n = 20)
+  expect_error(plot(ci_se, type = "shape"), "plot")
+  expect_error(plot(ci_sp, type = "bars"), "plot")
+  expect_error(plot(ci_th), "plot")
+  expect_error(plot(ci_co, type = "bars"), "plot")
 })
 
 test_that("polygon_ci via panel.first draws the curve once, unlike plot.ci(type='shape') drawn after", {
