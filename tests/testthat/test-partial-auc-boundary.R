@@ -211,3 +211,76 @@ test_that("recorded coords() and polygon vertices are unchanged by the refactor"
     expect_equal(lapply(res$polygon, unname), expected$polygon, info = id)
   }
 })
+
+test_that("roc_utils_partial_auc_window() selects the points in the window, bounds included", {
+  x <- c(0, 0.25, 0.5, 0.5, 0.75, 1)
+  expect_identical(roc_utils_partial_auc_window(x, c(0.75, 0.25)), c(FALSE, TRUE, TRUE, TRUE, TRUE, FALSE))
+  expect_identical(roc_utils_partial_auc_window(x, c(1, 0)), rep(TRUE, 6))
+  expect_identical(roc_utils_partial_auc_window(x, c(0.6, 0.55)), rep(FALSE, 6))
+  expect_identical(roc_utils_partial_auc_window(numeric(), c(1, 0)), logical())
+  # exact comparison, no tolerance
+  expect_identical(roc_utils_partial_auc_window(0.5, c(0.5, 0.5)), TRUE)
+  expect_identical(roc_utils_partial_auc_window(0.5, c(0.5 - .Machine$double.eps / 2, 0)), FALSE)
+  expect_identical(roc_utils_partial_auc_window(0.5, c(1, 0.5 + .Machine$double.eps)), FALSE)
+})
+
+test_that("roc_utils_interpolate_partial_auc_boundary() interpolates between straddling points", {
+  x <- c(0, 0.5, 1)
+  y <- c(1, 0.5, 0)
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(x, y, 0.25), list(x = 0.25, y = 0.75))
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(x, y, 0.75), list(x = 0.75, y = 0.25))
+  # arbitrary (non-dyadic) values
+  res <- roc_utils_interpolate_partial_auc_boundary(c(0.1, 0.4), c(0.2, 0.9), 0.3)
+  expect_equal(res$y, 0.2 + (0.3 - 0.1) / 0.3 * 0.7)
+})
+
+test_that("roc_utils_interpolate_partial_auc_boundary() returns NULL when the bound is an existing point", {
+  x <- c(0, 0.25, 0.5, 1)
+  y <- c(1, 0.9, 0.5, 0)
+  for (bound in x) {
+    expect_null(roc_utils_interpolate_partial_auc_boundary(x, y, bound))
+  }
+  # exact equality: a near-miss is interpolated
+  near <- roc_utils_interpolate_partial_auc_boundary(x, y, 0.25 + .Machine$double.eps)
+  expect_false(is.null(near))
+  expect_equal(near$y, 0.9, tolerance = 1e-10)
+})
+
+test_that("roc_utils_interpolate_partial_auc_boundary() uses the segment pROC walks on ties", {
+  # vertical run at x = 0.5 (se: 1 -> 0.5), as in a ROC curve with tied sp
+  x <- c(0, 0.5, 0.5, 1)
+  y <- c(1, 1, 0.5, 0)
+  expect_equal(roc_utils_interpolate_partial_auc_boundary(x, y, 0.25)$y, 1)
+  expect_equal(roc_utils_interpolate_partial_auc_boundary(x, y, 0.75)$y, 0.25)
+  # horizontal run at y = 1
+  x <- c(0, 0.25, 0.5, 1)
+  y <- c(1, 1, 1, 0)
+  expect_equal(roc_utils_interpolate_partial_auc_boundary(x, y, 0.1)$y, 1)
+  expect_equal(roc_utils_interpolate_partial_auc_boundary(x, y, 0.75)$y, 0.5)
+})
+
+test_that("roc_utils_interpolate_partial_auc_boundary() gives NA outside the curve or on an empty curve", {
+  x <- c(0.2, 0.5, 0.9)
+  y <- c(1, 0.5, 0)
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(x, y, 0.1), list(x = 0.1, y = NA_real_))
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(x, y, 0.95), list(x = 0.95, y = NA_real_))
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(numeric(), numeric(), 0.5), list(x = 0.5, y = NA_real_))
+  # a single point can only be matched exactly
+  expect_null(roc_utils_interpolate_partial_auc_boundary(0.5, 1, 0.5))
+  expect_identical(roc_utils_interpolate_partial_auc_boundary(0.5, 1, 0.4), list(x = 0.4, y = NA_real_))
+})
+
+test_that("roc_utils_interpolate_partial_auc_boundary() agrees with the reference on real curves", {
+  for (curve.name in c("s100b", "ties", "wfns.ordered")) {
+    for (focus in foci) {
+      roc <- curves[[curve.name]]
+      o <- partial_auc_orient(roc$specificities, roc$sensitivities, focus)
+      for (bound in c(0.05, 0.3, 0.55, 0.8, 0.97)) {
+        got <- roc_utils_interpolate_partial_auc_boundary(o$x, o$y, bound)
+        # reference: the interpolated vertex of a window that ends at `bound`
+        ref <- partial_auc_oracle(o$x, o$y, min(o$x), bound)
+        expect_equal(got$y, ref$y[length(ref$y)], info = paste(curve.name, focus, bound))
+      }
+    }
+  }
+})
