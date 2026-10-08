@@ -23,10 +23,15 @@
     iteration point, and the stratified and non-stratified resampling of each
     statistic, which differed only in their first few lines, are one function
     each instead of two. No change to any result.
-  * Fixed 'ci.coords' on a curve built with percent=TRUE, which failed with
-    "Input specificity (50) not in range (0-1)". The non-smoothed bootstrap
-    worker was the only one that did not scale sensitivities and
-    specificities by 100 for a percent curve.
+  * Fixed 'ci.coords' returning fractions instead of percentages on a curve
+    built with percent=TRUE: it reported a sensitivity of 0.6341 where
+    'coords' reported 63.41 on the same curve, with no warning. Giving a
+    percent-scale 'x' instead failed outright with "Input specificity (50)
+    not in range (0-1)". The non-smoothed bootstrap worker was the only one
+    that did not scale sensitivities and specificities by 100 for a percent
+    curve; the smoothed one was unaffected. Confidence intervals reported by
+    'ci.coords' for percent curves in 1.19.1 and earlier should be
+    recomputed.
   * Fixed the bootstrap of 'cov' and 'roc.test' discarding an entire curve's
     replicates, instead of the affected replicate, when any replicate
     produced NA. Depending on the data this gave the covariance of the wrong

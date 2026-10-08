@@ -154,10 +154,30 @@ test_that("ci.coords works on a percent curve", {
 })
 
 
-test_that("ci.coords works on a percent curve with x = 'best'", {
+test_that("ci.coords returns percent-scale values on a percent curve", {
+  # The x = "best" path did not error on the broken version, it silently
+  # returned fractions: ci.coords() reported 0.8194 where coords() reported
+  # 80.56 on the same curve. Checking that it runs is therefore not enough,
+  # the values have to be on the curve's own scale.
   set.seed(42)
-  expect_no_error(ci.coords(r.s100b.percent, x = "best",
-                            ret = c("sensitivity", "specificity"), boot.n = 10))
+  pct <- ci.coords(r.s100b.percent, x = "best",
+                   ret = c("sensitivity", "specificity"), boot.n = 10)
+  point <- coords(r.s100b.percent, "best", ret = c("sensitivity", "specificity"))
+
+  for (what in c("sensitivity", "specificity")) {
+    interval <- as.numeric(pct[[what]])
+    expect_true(all(interval >= 0 & interval <= 100))
+    # The bootstrap median sits near the point estimate, and both are on the
+    # percent scale: a fraction-scale interval would be ~100x smaller.
+    expect_equal(interval[2], as.numeric(point[[what]]), tolerance = 0.25)
+  }
+
+  # And the same curve as fractions gives the same numbers divided by 100.
+  set.seed(42)
+  frac <- ci.coords(r.s100b, x = "best",
+                    ret = c("sensitivity", "specificity"), boot.n = 10)
+  expect_equal(as.numeric(unlist(pct[c("sensitivity", "specificity")])),
+               as.numeric(unlist(frac[c("sensitivity", "specificity")])) * 100)
 })
 
 
