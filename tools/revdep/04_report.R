@@ -141,10 +141,11 @@ if (length(req$unavailable))
   md <- c(md, sprintf("Suggested but not installable on either side: %s",
                       paste(req$unavailable, collapse = ", ")), "")
 md <- c(md, "",
-  "Environment note: this node has no TeX Live module, so PDF manual checks are",
-  "disabled and `.Rnw` vignettes cannot be rebuilt. Both sides are affected",
-  "identically, so this cannot produce a false regression, but it does mean",
-  "`.Rnw` vignette code paths are not exercised.", "")
+  "Environment note: LaTeX comes from TinyTeX under $REVDEP_WORK, so vignettes",
+  "build normally. PDF manual checks are still skipped (--no-manual): they test",
+  "the formatting of each package's own Rd files and cannot be affected by this",
+  "one. If a vignette fails on a missing .sty or font, run",
+  "tools/revdep/install_missing_tex.R and check again.", "")
 
 writeLines(md, file.path(run_dir, "revdep_report.md"))
 message(sprintf("\n%d worse, %d same, %d better",

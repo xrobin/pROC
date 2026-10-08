@@ -51,8 +51,23 @@ fi
 BOOST=/scicore/soft/easybuild/apps/Boost/1.90.0-GCCcore-15.2.0/lib
 [[ -d "$BOOST" ]] && export LD_LIBRARY_PATH="$BOOST${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+# TeX. This cluster has no TeX Live module, and the system pdflatex lacks the
+# style files R needs, so .Rnw vignettes and PDF manuals cannot build. TinyTeX
+# fixes it with no root. Install it once:
+#   Rscript -e 'tinytex::install_tinytex(dir = file.path(Sys.getenv("REVDEP_WORK"), "tinytex"))'
+TINYTEX="$REVDEP_WORK/tinytex/bin/x86_64-linux"
+if [[ -d "$TINYTEX" ]]; then
+  export PATH="$TINYTEX:$PATH"
+  HAVE_TINYTEX=1
+else
+  HAVE_TINYTEX=0
+fi
+
+# Fallback only: style files extracted from Ubuntu packages by an earlier
+# attempt. Skipped when TinyTeX is present, because its TEXMFHOME would
+# shadow TinyTeX's own tree.
 TEXROOT="$REVDEP_WORK/texroot/usr/share/texlive/texmf-dist"
-if [[ -d "$TEXROOT" ]]; then
+if [[ "$HAVE_TINYTEX" == "0" && -d "$TEXROOT" ]]; then
   export TEXMFHOME="$TEXROOT"
   export TEXINPUTS="$TEXROOT//:${TEXINPUTS:-}"
   export TFMFONTS="$TEXROOT/fonts/tfm//:${TFMFONTS:-}"

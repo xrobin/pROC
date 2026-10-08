@@ -115,15 +115,11 @@ check_env <- c(
 ## [[2]] for its reverse dependencies. --as-cran on the revdeps would add
 ## policy NOTEs unrelated to pROC; they would cancel in the diff but cost time.
 ##
-## --no-manual on the reverse dependencies: this node has only the system
-## pdflatex, with none of the style files R needs, and there is no TeX Live
-## module to load. Every package therefore fails "checking PDF version of
-## manual", which tests the formatting of the package's OWN Rd files and cannot
-## be affected by anything in pROC. Dropping it removes that noise. Vignettes
-## are still built, because .Rmd vignettes run fine through Pandoc and are a
-## place reverse dependencies really do exercise pROC. (.Rnw vignettes need
-## LaTeX and so fail identically on both sides -- a coverage limit, not a
-## source of false regressions.)
+## --no-manual on the reverse dependencies: "checking PDF version of manual"
+## tests the formatting of each package's OWN Rd files, which nothing in pROC
+## can affect, so it is pure cost. Vignettes ARE built: that is where reverse
+## dependencies actually exercise pROC. LaTeX for them comes from TinyTeX (see
+## 00_env.sh); without it, 11 of 213 packages failed on vignettes alone.
 check_args <- list("--as-cran", "--no-manual")
 
 ## ---- X display -------------------------------------------------------

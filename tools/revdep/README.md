@@ -53,6 +53,52 @@ checks all reverse dependencies against each.
 `revdep_summary.csv` into the run directory. The report lists every package
 whose status got worse, with the specific check items that degraded.
 
+## LaTeX
+
+Vignettes need LaTeX, and this cluster has no TeX Live module. Install TinyTeX
+once, as a normal user, into the work directory:
+
+```r
+tinytex::install_tinytex(dir = file.path(Sys.getenv("REVDEP_WORK"), "tinytex"))
+```
+
+`00_env.sh` puts it on `PATH` automatically when it is there. Without it, 11 of
+213 reverse dependencies failed on vignettes alone; with it, 10 of those 11 check
+clean.
+
+TinyTeX is deliberately minimal, so vignettes then fail one missing file at a
+time. After a run:
+
+```sh
+tools/revdep/install_missing_tex.R   # scan the run, map, install
+tools/revdep/run_revdep.sh 3         # check again
+```
+
+Repeat until it reports nothing missing; two or three rounds is normal, because
+LaTeX packages pull in each other (`xltabular` needs `ltablex`, and so on).
+`tlmgr install scheme-medium` reduces the rounds but does not remove them.
+
+Note that a missing style file and a missing font are reported differently:
+
+    ! LaTeX Error: File `bbm.sty' not found.
+    ! Font U/bbm/m/n/10.95=bbm10 ... Metric (TFM) file not found.
+
+and they are often separate TeX Live packages (`bbm-macros` vs `bbm`). The
+helper handles both; if you are diagnosing by hand, do not assume the first
+message is the only problem.
+
+## Re-running later
+
+Always re-run step 1 rather than reusing an old package list: the set drifts.
+It went from 206 to 213 reverse dependencies in the three weeks of the
+September 2026 run.
+
+`$REVDEP_WORK` is scratch and may be purged, but nothing there is
+irreplaceable. Step 1 recomputes the lists and step 2 rebuilds the library,
+which takes a couple of hours against roughly three for the checks themselves.
+If the cluster's modules have moved, `env_snapshot.sh` regenerates the
+environment.
+
 ## Things that will silently corrupt a run
 
 These are not hypothetical; each one invalidated an earlier attempt.
