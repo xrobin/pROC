@@ -285,33 +285,39 @@ coords.roc <- function(roc,
         thres <- roc$thresholds
       } else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          partial.auc.limits <- attr(roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% se) {
-            se <- c(partial.auc.limits[1], se)
-            sp <- c(coords(roc, x = partial.auc.limits[1], input = "sensitivity", ret = "specificity")[1, 1], sp)
+          in.window <- roc_utils_partial_auc_window(roc$sensitivities, partial.auc)
+          se <- roc$sensitivities[in.window]
+          sp <- roc$specificities[in.window]
+          thres <- roc$thresholds[in.window]
+          # if a limit is not exactly present in the curve, interpolate it
+          upper <- roc_utils_interpolate_partial_auc_boundary(rev(roc$sensitivities), rev(roc$specificities), partial.auc[1])
+          if (!is.null(upper)) {
+            se <- c(upper$x, se)
+            sp <- c(upper$y, sp)
             thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
           }
-          if (!partial.auc.limits[2] %in% se) {
-            se <- c(se, partial.auc.limits[2])
-            sp <- c(sp, coords(roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
+          lower <- roc_utils_interpolate_partial_auc_boundary(rev(roc$sensitivities), rev(roc$specificities), partial.auc[2])
+          if (!is.null(lower)) {
+            se <- c(se, lower$x)
+            sp <- c(sp, lower$y)
             thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
         } else {
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          partial.auc.limits <- attr(roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% sp) {
-            se <- c(se, coords(roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
-            sp <- c(sp, partial.auc.limits[1])
+          in.window <- roc_utils_partial_auc_window(roc$specificities, partial.auc)
+          se <- roc$sensitivities[in.window]
+          sp <- roc$specificities[in.window]
+          thres <- roc$thresholds[in.window]
+          # if a limit is not exactly present in the curve, interpolate it
+          upper <- roc_utils_interpolate_partial_auc_boundary(roc$specificities, roc$sensitivities, partial.auc[1])
+          if (!is.null(upper)) {
+            se <- c(se, upper$y)
+            sp <- c(sp, upper$x)
             thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
-          if (!partial.auc.limits[2] %in% sp) {
-            se <- c(coords(roc, x = partial.auc.limits[2], input = "specificity", ret = "sensitivity")[1, 1], se)
-            sp <- c(partial.auc.limits[2], sp)
+          lower <- roc_utils_interpolate_partial_auc_boundary(roc$specificities, roc$sensitivities, partial.auc[2])
+          if (!is.null(lower)) {
+            se <- c(lower$y, se)
+            sp <- c(lower$x, sp)
             thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
           }
         }
