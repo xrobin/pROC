@@ -769,7 +769,7 @@ roc_utils_in_partial_auc <- function(roc, ignore = FALSE) {
     return(rep(TRUE, length(roc$sensitivities)))
   }
   values <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") roc$sensitivities else roc$specificities
-  values <= partial.auc[1] & values >= partial.auc[2]
+  roc_utils_partial_auc_window(values, partial.auc)
 }
 
 # The criterion of roc_utils_optim_crit computed from the counts of an

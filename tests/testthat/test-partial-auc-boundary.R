@@ -284,3 +284,13 @@ test_that("roc_utils_interpolate_partial_auc_boundary() agrees with the referenc
     }
   }
 })
+
+test_that("coords() special values restricted to a partial AUC are unchanged by the refactor", {
+  actual <- partial_auc_coords_snapshot()
+  expect_identical(names(actual), names(partial_auc_coords_expected))
+  for (id in names(partial_auc_coords_expected)) {
+    expect_equal(actual[[id]], partial_auc_coords_expected[[id]], info = id)
+  }
+  # some windows legitimately contain no point at all
+  expect_true(any(vapply(partial_auc_coords_expected, is.null, NA)))
+})
