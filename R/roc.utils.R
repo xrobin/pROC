@@ -494,6 +494,33 @@ roc_utils_max_partial_auc <- function(partial.auc, percent) {
   return(max)
 }
 
+# Partial AUC window: which points of `x` lie in [partial.auc[2], partial.auc[1]].
+# `x` is the coordinate along the partial.auc focus (specificities, or
+# sensitivities if the focus is sensitivity). Exact comparison, no tolerance.
+roc_utils_partial_auc_window <- function(x, partial.auc) {
+  x <= partial.auc[1] & x >= partial.auc[2]
+}
+
+# Boundary point of a partial AUC window.
+# Input: x, y: the curve, with x increasing (ties in x kept in the order pROC
+#        walks the curve), already oriented for the partial.auc focus;
+#        bound: one of the partial.auc limits.
+# Output: NULL if `bound` is exactly the x of an existing point (nothing to
+#         interpolate), otherwise list(x = bound, y = ...) where y is the
+#         linear interpolation of the two points straddling `bound`
+#         (NA if `bound` is outside the range of x).
+roc_utils_interpolate_partial_auc_boundary <- function(x, y, bound) {
+  if (bound %in% x) {
+    return(NULL)
+  }
+  idx <- match(TRUE, x > bound)
+  if (is.na(idx) || idx == 1L) {
+    return(list(x = bound, y = NA_real_))
+  }
+  proportion <- (bound - x[idx - 1L]) / (x[idx] - x[idx - 1L])
+  list(x = bound, y = y[idx - 1L] + proportion * (y[idx] - y[idx - 1L]))
+}
+
 # Checks if the
 # Input: roc object
 # Output: boolean, true the curve reaches 100%/100%, false otherwise
