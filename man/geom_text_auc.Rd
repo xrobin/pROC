@@ -42,7 +42,8 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+rocobj$ci <- ci(rocobj)
 if (require(ggplot2)) {
   ggroc(rocobj) + geom_text_auc(rocobj)
 }

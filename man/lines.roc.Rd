@@ -64,7 +64,8 @@ lines(roc.wfns, type="o", pch=19, col="red")
 
 
 # Without using 'lines':
-rocobj <- plot.roc(aSAH$outcome, aSAH$s100b, type="b", pch=21, col="blue", bg="grey")
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+plot(rocobj, type="b", pch=21, col="blue", bg="grey")
 
 }
 

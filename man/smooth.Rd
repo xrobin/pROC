@@ -316,7 +316,8 @@ rand.norm <-
 rnorm(1000)
 
 # two normals
-roc.norm <- roc(controls=rnorm(1000), cases=rnorm(1000)+1, plot=TRUE)
+roc.norm <- roc(controls=rnorm(1000), cases=rnorm(1000)+1)
+plot(roc.norm)
 plot(smooth(roc.norm), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm, method="density"), col="red", lwd=1, add=TRUE)
 if (requireNamespace("MASS")) {
@@ -331,7 +332,8 @@ legend("bottomright", legend=c("empirical", "binormal", "density", "fitdistr",
        col=c(par("fg"), "green", "red", "blue", "brown", "orange"), lwd=c(2, 1, 1, 1))
        
 # deviation from the normality
-roc.norm.exp <- roc(controls=rnorm(1000), cases=rexp(1000), plot=TRUE)
+roc.norm.exp <- roc(controls=rnorm(1000), cases=rexp(1000))
+plot(roc.norm.exp)
 plot(smooth(roc.norm.exp), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.norm.exp, method="density"), col="red", lwd=1, add=TRUE)
 if (requireNamespace("MASS")) {
@@ -351,7 +353,8 @@ legend("bottomright", legend=c("empirical", "binormal", "density",
        col=c(par("fg"), "green", "red", "blue", "purple", "brown", "orange"), lwd=c(2, 1, 1, 1, 1))
 
 # large deviation from the normality
-roc.unif.exp <- roc(controls=runif(1000, 2, 3), cases=rexp(1000)+2, plot=TRUE)
+roc.unif.exp <- roc(controls=runif(1000, 2, 3), cases=rexp(1000)+2)
+plot(roc.unif.exp)
 plot(smooth(roc.unif.exp), col="green", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density"), col="red", lwd=1, add=TRUE)
 plot(smooth(roc.unif.exp, method="density", bw="ucv"), col="magenta", lwd=1, add=TRUE)
@@ -375,7 +378,7 @@ unif.density <- function(x, n, from, to, bw, kernel, ...) {
   smooth.y <- dunif(smooth.x, min=min(x), max=max(x))
   return(smooth.y)
 }
-roc.unif <- roc(controls=runif(1000, -1, 1), cases=runif(1000, 0, 2), plot=TRUE)
+roc.unif <- roc(controls=runif(1000, -1, 1), cases=runif(1000, 0, 2))
 s <- smooth(roc.unif, method="density", density=unif.density)
 plot(roc.unif)
 plot(s, add=TRUE, col="grey")

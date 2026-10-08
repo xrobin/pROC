@@ -36,7 +36,8 @@ rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 roc_ndka <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE)
 
 set.seed(42)
-rocobj_ci <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, ci = TRUE, boot.n = 100)
+rocobj_ci <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+rocobj_ci$ci <- ci(rocobj_ci, boot.n = 100)
 ci_se <- ci.se(rocobj_ci, specificities = seq(0, 100, 5), boot.n = 100)
 ci_sp <- ci.sp(rocobj_ci, sensitivities = seq(0, 100, 5), boot.n = 100)
 ci_th <- ci.thresholds(rocobj_ci, thresholds = "best", boot.n = 100)
@@ -112,7 +113,7 @@ ggroc(rocobj) +
 ## 2. Confidence intervals
 
 ```{r screenshot-2-classic}
-plot(rocobj_ci, main = "Confidence intervals", percent = TRUE)
+plot(rocobj_ci, main = "Confidence intervals")
 text(rocobj_ci)
 plot(ci_se, type = "shape", col = "#1c61b6AA")
 plot(ci_th)
@@ -130,7 +131,7 @@ ggroc(rocobj_ci) +
 ## 3. Smoothing
 
 ```{r screenshot-3-classic}
-plot.roc(aSAH$outcome, aSAH$s100b, percent = TRUE, main = "Smoothing")
+plot(rocobj, main = "Smoothing")
 lines(smooth(rocobj), col = "#1c61b6")
 lines(smooth(rocobj, method = "density"), col = "#008600")
 lines(smooth(rocobj, method = "fitdistr", density = "lognormal"), col = "#840000")
@@ -170,10 +171,7 @@ ggroc(smoothed) +
 ## 4. Confidence intervals of specificity / sensitivity
 
 ```{r screenshot-4-classic}
-plot(rocobj,
-  main = "Confidence intervals of specificity/sensitivity",
-  percent = TRUE
-)
+plot(rocobj, main = "Confidence intervals of specificity/sensitivity")
 plot(ci_se, type = "shape", col = "#1c61b6AA")
 plot(ci_sp, type = "bars")
 ```
@@ -189,10 +187,7 @@ ggroc(rocobj) +
 ## 5. Confidence interval of a threshold
 
 ```{r screenshot-5-classic}
-plot(rocobj,
-  main = "Confidence interval of a threshold", percent = TRUE,
-  print.thres = "best"
-)
+plot(rocobj, main = "Confidence interval of a threshold", print.thres = "best")
 plot(ci_th)
 ```
 
@@ -207,11 +202,9 @@ ggroc(rocobj) +
 ## 6. Comparison
 
 ```{r screenshot-6-classic}
-rocobj1 <- plot.roc(aSAH$outcome, aSAH$s100b,
-  main = "Statistical comparison", percent = TRUE, col = "#1c61b6"
-)
-rocobj2 <- lines.roc(aSAH$outcome, aSAH$ndka, percent = TRUE, col = "#008600")
-testobj <- roc.test(rocobj1, rocobj2)
+plot(rocobj, main = "Statistical comparison", col = "#1c61b6")
+lines(roc_ndka, col = "#008600")
+testobj <- roc.test(rocobj, roc_ndka)
 text(50, 50, labels = paste("p-value =", format.pval(testobj$p.value)), adj = c(0, .5))
 legend("bottomright", legend = c("S100B", "NDKA"),
        col = c("#1c61b6", "#008600"), lwd = 2)
