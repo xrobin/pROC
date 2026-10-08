@@ -64,6 +64,7 @@ ci.thresholds.roc <- function(roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # Check and prepare thresholds
   special <- coords_special_x(thresholds, roc = roc, keywords = c("all", "best", "local maximas"))

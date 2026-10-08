@@ -1,4 +1,8 @@
 1.19.9999 (development)
+  * The deprecated 'parallel' argument now warns when given a value other
+    than FALSE, as the documentation already stated. It was previously
+    accepted and silently ignored, so a script asking for parallel
+    bootstrapping ran sequentially with no indication.
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
     'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
     'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc',

@@ -135,6 +135,7 @@ roc.test.roc <- function(roc1, roc2,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # store which objects are smoothed, and how
   smoothing.args <- list()

@@ -58,6 +58,7 @@ var.roc <- function(roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # do all the computations in fraction, re-transform in percent later
   percent <- roc$percent
@@ -104,7 +105,7 @@ var.roc <- function(roc,
   } else if (method == "obuchowski") {
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   } else {
-    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, parallel, ...)
+    var <- var_roc_bootstrap(roc, boot.n, boot.stratified, ...)
   }
 
   if (percent) {
@@ -113,7 +114,7 @@ var.roc <- function(roc,
   return(var)
 }
 
-var_roc_bootstrap <- function(roc, boot.n, boot.stratified, parallel, ...) {
+var_roc_bootstrap <- function(roc, boot.n, boot.stratified, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
     smoothing.args <- roc$smoothing.args

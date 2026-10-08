@@ -69,6 +69,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # We need an auc
   if (is.null(smooth.roc$auc) | !reuse.auc) {
@@ -147,6 +148,7 @@ ci.auc.roc <- function(roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # We need an auc
   if (is.null(roc$auc) | !reuse.auc) {

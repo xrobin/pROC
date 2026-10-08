@@ -847,3 +847,12 @@ roc_utils_stop_if_no_auc <- function(x) {
     stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
   }
 }
+
+# 'parallel' was deprecated in 1.19 when the bootstrap became sequential. The
+# argument is still accepted so that old scripts keep running, but it has no
+# effect: warn rather than silently ignoring a request to go parallel.
+roc_utils_warn_deprecated_parallel <- function(parallel) {
+  if (!identical(parallel, FALSE)) {
+    warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
+  }
+}

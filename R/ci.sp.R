@@ -65,6 +65,7 @@ ci.sp.smooth.roc <- function(smooth.roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # Check if called with density.cases or density.controls
   if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls)) {
@@ -119,6 +120,7 @@ ci.sp.roc <- function(roc,
   if (!is.null(progress)) {
     warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
   }
+  roc_utils_warn_deprecated_parallel(parallel)
 
   if (boot.stratified) {
     perfs <- do.call(rbind, lapply(seq_len(boot.n), stratified.ci.sp, roc = roc, se = sensitivities))
