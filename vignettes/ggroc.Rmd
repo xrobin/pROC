@@ -113,10 +113,14 @@ ggroc(rocobj) +
 ## 2. Confidence intervals
 
 ```{r screenshot-2-classic}
-plot(rocobj_ci, main = "Confidence intervals")
-text(rocobj_ci)
-plot(ci_se, type = "shape", col = "#1c61b6AA")
-plot(ci_th)
+plot(rocobj_ci,
+  main = "Confidence intervals",
+  panel.first = polygon_ci(ci_se, col = "#1c61b6AA"),
+  panel.last = {
+    text(rocobj_ci)
+    plot(ci_th)
+  }
+)
 ```
 
 ```{r screenshot-2-ggroc}
@@ -171,8 +175,10 @@ ggroc(smoothed) +
 ## 4. Confidence intervals of specificity / sensitivity
 
 ```{r screenshot-4-classic}
-plot(rocobj, main = "Confidence intervals of specificity/sensitivity")
-plot(ci_se, type = "shape", col = "#1c61b6AA")
+plot(rocobj,
+  main = "Confidence intervals of specificity/sensitivity",
+  panel.first = polygon_ci(ci_se, col = "#1c61b6AA")
+)
 plot(ci_sp, type = "bars")
 ```
 

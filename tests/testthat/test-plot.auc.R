@@ -235,3 +235,90 @@ test_that("the target documentation example renders without error", {
   }
   expect_doppelganger("plot.auc.target.example", test_target_example)
 })
+
+test_that("polygon_ci() never redraws the curve, unlike plot.ci(type='shape', no.roc=FALSE)", {
+  pdf(NULL)
+  on.exit(dev.off())
+
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
+
+  assign(".test_call_count", 0L, envir = globalenv())
+  trace(pROC:::plot.roc.roc,
+    tracer = quote(assign(".test_call_count", get(".test_call_count", envir = globalenv()) + 1L, envir = globalenv())),
+    print = FALSE
+  )
+  on.exit({
+    suppressMessages(try(untrace(pROC:::plot.roc.roc), silent = TRUE))
+    rm(".test_call_count", envir = globalenv())
+  })
+
+  plot(r.s100b) # counts too, since the trace is already active; reset after
+  assign(".test_call_count", 0L, envir = globalenv())
+  plot(ci_se, type = "shape")
+  expect_equal(get(".test_call_count", envir = globalenv()), 1) # default (no.roc=FALSE) redraws the curve once
+
+  plot(r.s100b)
+  assign(".test_call_count", 0L, envir = globalenv())
+  polygon_ci(ci_se)
+  expect_equal(get(".test_call_count", envir = globalenv()), 0) # polygon_ci() never redraws
+})
+
+test_that("polygon_ci() preserves custom curve styling when used via panel.first", {
+  skip_if_not_installed("vdiffr")
+  skip_if(getRversion() < "4.1")
+
+  # Tracing graphics::lines.default does not actually intercept lines()
+  # calls (confirmed even for a plain, non-pROC lines() call) -- some base
+  # generics dispatch in a way R-level trace() can't see. Inspect the
+  # rendered SVG instead: a single <polyline> in the curve's own color
+  # means it was drawn exactly once, with no default-styled redraw.
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
+  f <- tempfile(fileext = ".svg")
+  vdiffr:::write_svg(function() {
+    plot(r.s100b, col = "red", lwd = 4, panel.first = polygon_ci(ci_se))
+  }, f, title = "t")
+  polylines <- grep("<polyline", readLines(f), value = TRUE, fixed = TRUE)
+  expect_length(polylines, 1)
+  expect_match(polylines, "#FF0000", fixed = TRUE) # red, preserved
+})
+
+test_that("polygon_ci works on ci.se and ci.sp", {
+  pdf(NULL)
+  on.exit(dev.off())
+
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
+  ci_sp <- ci.sp(r.s100b, sensitivities = seq(0, 1, .05), boot.n = 20)
+  plot(r.s100b)
+  expect_identical(polygon_ci(ci_se), ci_se)
+  expect_identical(polygon_ci(ci_sp), ci_sp)
+})
+
+test_that("polygon_ci errors when no device is open", {
+  skip_if(dev.cur() != 1, "a device is already open outside this test")
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
+  expect_error(polygon_ci(ci_se), "plot")
+})
+
+test_that("polygon_ci via panel.first draws the curve once, unlike plot.ci(type='shape') drawn after", {
+  skip_if_not_installed("vdiffr")
+  skip_if(getRversion() < "4.1")
+
+  ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .1), boot.n = 20)
+
+  after <- function() {
+    plot(r.s100b)
+    suppressWarnings(plot(ci_se, type = "shape", col = "gainsboro"))
+  }
+  panel_first <- function() {
+    plot(r.s100b, panel.first = suppressWarnings(polygon_ci(ci_se, col = "gainsboro")))
+  }
+
+  f1 <- tempfile(fileext = ".svg")
+  f2 <- tempfile(fileext = ".svg")
+  vdiffr:::write_svg(after, f1, title = "after")
+  vdiffr:::write_svg(panel_first, f2, title = "panel_first")
+  count_polylines <- function(f) sum(grepl("<polyline", readLines(f), fixed = TRUE))
+  # "after" redraws the curve on top of the shape (one extra <polyline>);
+  # panel_first draws it exactly once. Everything else is identical.
+  expect_equal(count_polylines(f1), count_polylines(f2) + 1)
+})

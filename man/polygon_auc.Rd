@@ -77,7 +77,8 @@
 
 \seealso{
   \code{\link{plot.roc}}, \code{\link{auc}}, \code{\link[=text.auc]{text}},
-  \code{\link{geom_polygon_auc}}, \code{\link{geom_polygon_max_auc}}
+  \code{\link{polygon_ci}}, \code{\link{geom_polygon_auc}},
+  \code{\link{geom_polygon_max_auc}}
 }
 \examples{
 data(aSAH)

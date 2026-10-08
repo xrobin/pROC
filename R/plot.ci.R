@@ -73,6 +73,28 @@ plot.ci.se <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
   invisible(x)
 }
 
+# polygon_ci(): the ci.se/ci.sp band, matching plot.ci(type = "shape"),
+# always drawn with no.roc = TRUE so it never redraws the curve (and so
+# never loses a custom col/lwd) -- the panel.first-safe counterpart to
+# polygon_auc()/polygon_max_auc(). ci.thresholds has no band to draw, as
+# in geom_polygon_ci().
+
+polygon_ci <- function(x, ...) {
+  UseMethod("polygon_ci")
+}
+
+polygon_ci.ci.se <- function(x, col = "gainsboro", ...) {
+  roc_utils_stop_if_no_device("polygon_ci")
+  plot.ci.se(x, type = "shape", col = col, no.roc = TRUE, ...)
+  invisible(x)
+}
+
+polygon_ci.ci.sp <- function(x, col = "gainsboro", ...) {
+  roc_utils_stop_if_no_device("polygon_ci")
+  plot.ci.sp(x, type = "shape", col = col, no.roc = TRUE, ...)
+  invisible(x)
+}
+
 plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = ifelse(type == "bars", par("fg"), "gainsboro"), ...) {
   type <- match.arg(type)
   if (length(x) > 1) {

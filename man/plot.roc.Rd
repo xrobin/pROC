@@ -329,7 +329,7 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 
 \seealso{
 \code{\link{roc}}, \code{\link{auc}}, \code{\link{ci}},
-\code{\link{polygon_auc}}, \code{\link[=text.auc]{text}}
+\code{\link{polygon_auc}}, \code{\link{polygon_ci}}, \code{\link[=text.auc]{text}}
 }
 \examples{
 
@@ -378,8 +378,14 @@ roc4 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 auc4 <- auc(roc4, partial.auc=c(100, 90), partial.auc.correct=TRUE, partial.auc.focus="sens")
 ci4  <- ci(auc4, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
 plot(roc4, grid=TRUE, print.thres=TRUE,
-     panel.first = {polygon_max_auc(auc4); polygon_auc(auc4)})
-text(ci4)
+     panel.first = {
+       polygon_max_auc(auc4)
+       polygon_auc(auc4)
+     },
+     # panel.last works the same way, for code to draw on top of
+     # everything plot.roc draws: this is equivalent to calling
+     # text(ci4) after plot() returns:
+     panel.last = text(ci4))
 }
 
 \keyword{univar}

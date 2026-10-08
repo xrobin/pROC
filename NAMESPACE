@@ -167,6 +167,10 @@ S3method("text", "ci.auc")
 S3method("text", "roc")
 S3method("text", "smooth.roc")
 
+export(polygon_ci)
+S3method("polygon_ci", "ci.se")
+S3method("polygon_ci", "ci.sp")
+
 export(ggroc)
 S3method("ggroc", "roc")
 S3method("ggroc", "smooth.roc")
