@@ -35,9 +35,14 @@ test_that("Advanced screenshot 1 works correctly", {
   test_advanced_screenshot_1 <- function() {
     # Two partial-AUC regions (focus sp and focus se) on the same curve, built
     # from separate auc() objects and drawn via panel.first instead of the old
-    # two-call plot.roc(..., add=TRUE, type="n") idiom. NB: this changes the
-    # z-order versus the old idiom -- see PLAN-base-graphics-auc-ci-addons.md,
-    # "Decisions to confirm at review" #4.
+    # two-call plot.roc(..., add=TRUE, type="n") idiom. This changes the
+    # z-order versus the old idiom: the old two calls drew the identity line
+    # above the SP polygon but below the SE polygon (inconsistently, since the
+    # second call's output always lands on top of the first call's entire
+    # output, curve included); panel.first draws all polygons once, under a
+    # single curve draw, so the identity line now sits consistently above
+    # both. Reviewed side-by-side via vdiffr::snapshot_review() and accepted
+    # as an improvement.
     auc_sp <- auc(r.s100b.percent, partial.auc = c(100, 90), partial.auc.correct = TRUE)
     auc_se <- auc(r.s100b.percent,
       partial.auc = c(100, 90), partial.auc.correct = TRUE,
