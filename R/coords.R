@@ -107,8 +107,9 @@ coords.smooth.roc <- function(smooth.roc,
         sp <- smooth.roc$specificities
       } else {
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+          in.window <- roc_utils_partial_auc_window(smooth.roc$sensitivities, partial.auc)
+          se <- smooth.roc$sensitivities[in.window]
+          sp <- smooth.roc$specificities[in.window]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
           if (!partial.auc.limits[1] %in% se) {
             se <- c(partial.auc.limits[1], se)
@@ -119,8 +120,9 @@ coords.smooth.roc <- function(smooth.roc,
             sp <- c(sp, coords(smooth.roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
           }
         } else {
-          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+          in.window <- roc_utils_partial_auc_window(smooth.roc$specificities, partial.auc)
+          se <- smooth.roc$sensitivities[in.window]
+          sp <- smooth.roc$specificities[in.window]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
           if (!partial.auc.limits[1] %in% sp) {
             se <- c(se, coords(smooth.roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
@@ -165,15 +167,17 @@ coords.smooth.roc <- function(smooth.roc,
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
+          in.window <- roc_utils_partial_auc_window(smooth.roc$sensitivities, partial.auc)
+          optim.crit.partial <- (optim.crit)[in.window]
+          se <- smooth.roc$sensitivities[in.window][optim.crit.partial == max(optim.crit.partial)]
+          sp <- smooth.roc$specificities[in.window][optim.crit.partial == max(optim.crit.partial)]
+          optim.crit <- optim.crit[in.window][optim.crit.partial == max(optim.crit.partial)]
         } else {
-          optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
+          in.window <- roc_utils_partial_auc_window(smooth.roc$specificities, partial.auc)
+          optim.crit.partial <- (optim.crit)[in.window]
+          se <- smooth.roc$sensitivities[in.window][optim.crit.partial == max(optim.crit.partial)]
+          sp <- smooth.roc$specificities[in.window][optim.crit.partial == max(optim.crit.partial)]
+          optim.crit <- optim.crit[in.window][optim.crit.partial == max(optim.crit.partial)]
         }
       }
 
@@ -335,13 +339,15 @@ coords.roc <- function(roc,
         thres <- roc$thresholds
       } else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
+          in.window <- roc_utils_partial_auc_window(roc$sensitivities, partial.auc)
+          se <- roc$sensitivities[in.window]
+          sp <- roc$specificities[in.window]
+          thres <- roc$thresholds[in.window]
         } else {
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
+          in.window <- roc_utils_partial_auc_window(roc$specificities, partial.auc)
+          se <- roc$sensitivities[in.window]
+          sp <- roc$specificities[in.window]
+          thres <- roc$thresholds[in.window]
         }
       }
       if (length(thres) == 0) {
@@ -370,17 +376,19 @@ coords.roc <- function(roc,
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          optim.crit <- (optim.crit)[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
+          in.window <- roc_utils_partial_auc_window(roc$sensitivities, partial.auc)
+          optim.crit <- (optim.crit)[in.window]
+          se <- roc$sensitivities[in.window][optim.crit == max(optim.crit)]
+          sp <- roc$specificities[in.window][optim.crit == max(optim.crit)]
+          thres <- roc$thresholds[in.window][optim.crit == max(optim.crit)]
+          optim.crit <- optim.crit[in.window][optim.crit == max(optim.crit)]
         } else {
-          optim.crit <- (optim.crit)[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
+          in.window <- roc_utils_partial_auc_window(roc$specificities, partial.auc)
+          optim.crit <- (optim.crit)[in.window]
+          se <- roc$sensitivities[in.window][optim.crit == max(optim.crit)]
+          sp <- roc$specificities[in.window][optim.crit == max(optim.crit)]
+          thres <- roc$thresholds[in.window][optim.crit == max(optim.crit)]
+          optim.crit <- optim.crit[in.window][optim.crit == max(optim.crit)]
         }
       }
       if (length(thres) == 0) {

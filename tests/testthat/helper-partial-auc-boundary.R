@@ -156,3 +156,44 @@ partial_auc_windows <- function(roc, focus) {
   }
   windows
 }
+
+# coords() results restricted to a partial AUC window for the "best",
+# "local maximas" (and, for smooth curves, "all") special values. Only the
+# specificity, sensitivity and threshold columns are recorded.
+partial_auc_coords_snapshot <- function() {
+  curves <- partial_auc_curves()
+  coords_matrix <- function(roc, x, ...) {
+    res <- tryCatch(
+      suppressWarnings(coords(roc, x, ret = c("specificity", "sensitivity", "threshold"), transpose = FALSE, ...)),
+      error = function(e) NULL
+    )
+    if (is.null(res)) NULL else unname(as.matrix(res))
+  }
+  out <- list()
+  for (curve.name in c("s100b", "s100b.percent", "ties", "wfns.ordered")) {
+    for (focus in c("specificity", "sensitivity")) {
+      roc <- curves[[curve.name]]
+      windows <- partial_auc_windows(roc, focus)
+      for (window.name in intersect(names(windows), c("between", "on.points", "same.segment", "hi.on.point"))) {
+        roc.partial <- roc
+        roc.partial$auc <- auc(roc, partial.auc = windows[[window.name]], partial.auc.focus = focus, partial.auc.correct = FALSE)
+        id <- paste(curve.name, focus, window.name, sep = "/")
+        out[paste(id, "local maximas", sep = "/")] <- list(coords_matrix(roc.partial, "local maximas"))
+        out[paste(id, "best youden", sep = "/")] <- list(coords_matrix(roc.partial, "best", best.method = "youden"))
+        out[paste(id, "best closest.topleft", sep = "/")] <- list(coords_matrix(roc.partial, "best", best.method = "closest.topleft"))
+      }
+    }
+  }
+  smooth.roc <- smooth(curves$s100b, n = 20)
+  for (focus in c("specificity", "sensitivity")) {
+    for (bounds in list(c(0.99, 0.9), c(0.93, 0.91))) {
+      smooth.partial <- smooth.roc
+      smooth.partial$auc <- auc(smooth.roc, partial.auc = bounds, partial.auc.focus = focus, partial.auc.correct = FALSE)
+      id <- paste("smooth", focus, paste(bounds, collapse = "-"), sep = "/")
+      out[paste(id, "all", sep = "/")] <- list(coords_matrix(smooth.partial, "all"))
+      out[paste(id, "best youden", sep = "/")] <- list(coords_matrix(smooth.partial, "best", best.method = "youden"))
+      out[paste(id, "best closest.topleft", sep = "/")] <- list(coords_matrix(smooth.partial, "best", best.method = "closest.topleft"))
+    }
+  }
+  out
+}
