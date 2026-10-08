@@ -136,50 +136,19 @@ auc.roc <- function(roc,
     }
 
     # find the SEs and SPs in the interval
-    x.inc <- x[x <= partial.auc[1] & x >= partial.auc[2]]
-    y.inc <- y[x <= partial.auc[1] & x >= partial.auc[2]]
-    # compute the AUC strictly in the interval
-    diffs.x <- x.inc[-1] - x.inc[-length(x.inc)]
-    means.vert <- (y.inc[-1] + y.inc[-length(y.inc)]) / 2
+    in.window <- roc_utils_partial_auc_window(x, partial.auc)
+    x.inc <- x[in.window]
+    y.inc <- y[in.window]
+    # if a limit is not exactly present in SPs, interpolate it
+    # (both limits when the whole partial AUC is between 2 se/sp points)
+    lower <- roc_utils_interpolate_partial_auc_boundary(x, y, partial.auc[2])
+    upper <- roc_utils_interpolate_partial_auc_boundary(x, y, partial.auc[1])
+    x.part <- c(lower$x, x.inc, upper$x)
+    y.part <- c(lower$y, y.inc, upper$y)
+    # compute the AUC with the trapezoidal rule
+    diffs.x <- x.part[-1] - x.part[-length(x.part)]
+    means.vert <- (y.part[-1] + y.part[-length(y.part)]) / 2
     auc <- sum(means.vert * diffs.x)
-    # add the borders:
-    if (length(x.inc) == 0) { # special case: the whole AUC is between 2 se/sp points. Need to interpolate from both
-      diff.horiz <- partial.auc[1] - partial.auc[2]
-      # determine indices
-      idx.hi <- match(FALSE, x < partial.auc[1])
-      idx.lo <- idx.hi - 1
-      # proportions
-      proportion.hi <- (x[idx.hi] - partial.auc[1]) / (x[idx.hi] - x[idx.lo])
-      proportion.lo <- (partial.auc[2] - x[idx.lo]) / (x[idx.hi] - x[idx.lo])
-      # interpolated y's
-      y.hi <- y[idx.hi] + proportion.hi * (y[idx.lo] - y[idx.hi])
-      y.lo <- y[idx.lo] - proportion.lo * (y[idx.lo] - y[idx.hi])
-      # compute AUC
-      mean.vert <- (y.hi + y.lo) / 2
-      auc <- mean.vert * diff.horiz
-    } else { # if the upper limit is not exactly present in SPs, interpolate
-      if (!(partial.auc[1] %in% x.inc)) {
-        # find the limit indices
-        idx.out <- match(FALSE, x < partial.auc[1])
-        idx.in <- idx.out - 1
-        # interpolate y
-        proportion <- (partial.auc[1] - x[idx.out]) / (x[idx.in] - x[idx.out])
-        y.interpolated <- y[idx.out] + proportion * (y[idx.in] - y[idx.out])
-        # add to AUC
-        auc <- auc + (partial.auc[1] - x[idx.in]) * (y[idx.in] + y.interpolated) / 2
-      }
-      if (!(partial.auc[2] %in% x.inc)) { # if the lower limit is not exactly present in SPs, interpolate
-        # find the limit indices in and out
-        # idx.out <- length(x) - match(TRUE, rev(x) < partial.auc[2]) + 1
-        idx.out <- match(TRUE, x > partial.auc[2]) - 1
-        idx.in <- idx.out + 1
-        # interpolate y
-        proportion <- (x[idx.in] - partial.auc[2]) / (x[idx.in] - x[idx.out])
-        y.interpolated <- y[idx.in] + proportion * (y[idx.out] - y[idx.in])
-        # add to AUC
-        auc <- auc + (x[idx.in] - partial.auc[2]) * (y[idx.in] + y.interpolated) / 2
-      }
-    }
   }
 
   # In percent, we have 100*100 = 10,000 as maximum area, so we need to divide by a factor 100
