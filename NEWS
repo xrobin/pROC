@@ -1,45 +1,10 @@
 1.19.9999 (development)
-  * Bootstrap operations can run in parallel again (issue #46), through a new
-    'cl' argument: a cluster from parallel::makeCluster(), TRUE to use the
-    cluster registered with setDefaultCluster(), or a number of workers for
-    pROC to create and stop itself. Any cluster type works, including FORK,
-    PSOCK, MPI and MIRAI. pROC never takes a core on its own.
-    This needs no new dependency: 'parallel' ships with R, and the
-    reproducible random streams are built on it rather than on 'doRNG'.
-    Each replicate draws from its own L'Ecuyer-CMRG stream, chosen by the
-    replicate's index and not by the worker that runs it, so a seeded
-    parallel bootstrap gives the same answer whatever the number of workers.
-    It does differ from a sequential run with the same seed; sequential
-    results are unchanged.
-  * Progress bars are back for bootstrap operations, without the 'plyr'
-    dependency whose removal in 1.19 had taken them away. The 'progress'
-    argument is no longer deprecated: it takes TRUE or FALSE and defaults to
-    getOption("pROCProgress", interactive()), so bootstraps show a text bar
-    in interactive sessions and stay quiet elsewhere. The names used by the
-    old plyr interface ("none", "text", "win", "tk") and the list form of the
-    pROCProgress option are still accepted, but only a text bar is drawn, and
-    attaching pROC no longer deletes the option.
-  * Bootstrap internals refactored. Every bootstrap now goes through a single
-    iteration point, and the stratified and non-stratified resampling of each
-    statistic, which differed only in their first few lines, are one function
-    each instead of two. No change to any result.
-  * Fixed 'ci.coords' returning fractions instead of percentages on a curve
-    built with percent=TRUE: it reported a sensitivity of 0.6341 where
-    'coords' reported 63.41 on the same curve, with no warning. Giving a
-    percent-scale 'x' instead failed outright with "Input specificity (50)
-    not in range (0-1)". The non-smoothed bootstrap worker was the only one
-    that did not scale sensitivities and specificities by 100 for a percent
-    curve; the smoothed one was unaffected. Confidence intervals reported by
-    'ci.coords' for percent curves in 1.19.1 and earlier should be
-    recomputed.
-  * Fixed the bootstrap of 'cov' and 'roc.test' discarding an entire curve's
-    replicates, instead of the affected replicate, when any replicate
-    produced NA. Depending on the data this gave the covariance of the wrong
-    values or failed with "incorrect number of dimensions".
-  * The deprecated 'parallel' argument now warns when given a value other
-    than FALSE, as the documentation already stated. It was previously
-    accepted and silently ignored, so a script asking for parallel
-    bootstrapping ran sequentially with no indication.
+  * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
+  * Restored progress bars in bootstrap operations; 'progress' is no longer deprecated
+  * The deprecated 'parallel' argument now warns as the documentation stated
+  * Fixed 'ci.coords' returning fractions instead of percentages on 'percent=TRUE' curves
+  * Fixed 'cov' and 'roc.test' dropping a whole curve instead of the replicate on NA bootstrap values
+  * Added tests for bootstrap operations (issue #28)
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
     'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
     'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc',
