@@ -145,3 +145,20 @@ test_that("formula and default interfaces give paired curves", {
   rownames(d2) <- letters[1:10]
   expect_true(are.paired(ra, roc(y ~ b, d2, quiet = TRUE)))
 })
+
+test_that("are.paired doesn't use objects named oroc1/oroc2 from the user's workspace", {
+  oroc1 <- oroc2 <- smooth(r.ndka)
+  assign("oroc1", oroc1, envir = globalenv())
+  assign("oroc2", oroc2, envir = globalenv())
+  on.exit(rm("oroc1", "oroc2", envir = globalenv()))
+  r1 <- roc(aSAH$outcome, c(NA, aSAH$s100b[-1]), quiet = TRUE)
+  pair <- are.paired(r1, r.wfns, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_s3_class(attr(pair, "roc1"), "roc")
+  expect_false(inherits(attr(pair, "roc1"), "smooth.roc"))
+  expect_false(inherits(attr(pair, "roc2"), "smooth.roc"))
+  expect_equal(
+    roc.test(r1, r.wfns)$p.value,
+    roc.test(roc(aSAH$outcome[-1], aSAH$s100b[-1], quiet = TRUE), roc(aSAH$outcome[-1], aSAH$wfns[-1], quiet = TRUE))$p.value
+  )
+})
