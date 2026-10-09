@@ -75,3 +75,14 @@ for (stratified in c(TRUE, FALSE)) {
     })
   }
 }
+
+test_that("ci.auc of a smoothed percent curve with a corrected partial AUC is 100x the fraction one", {
+  s <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(1, 0.8), partial.auc.correct = TRUE, quiet = TRUE))
+  s.percent <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(100, 80), partial.auc.correct = TRUE, percent = TRUE, quiet = TRUE))
+  set.seed(42)
+  ci.fraction <- ci.auc(s, boot.n = 10)
+  set.seed(42)
+  ci.percent <- ci.auc(s.percent, boot.n = 10)
+  expect_false(anyNA(ci.percent))
+  expect_equal(as.numeric(ci.percent), 100 * as.numeric(ci.fraction))
+})
