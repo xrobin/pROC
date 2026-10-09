@@ -48,6 +48,7 @@
   * 'roc.test' now checks 'conf.level' also when the method is selected automatically
   * Fixed 'roc.test' and 'cov' ignoring the partial AUC of 'auc' objects of smoothed curves
   * 'roc.test', 'cov' and 'var' now give the documented error on curves smoothed with numeric 'density.controls' and 'density.cases' instead of D=Inf or 0
+  * Fixed the mixing proportion of the unpaired Venkatraman test when the two curves have different numbers of observations
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
