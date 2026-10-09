@@ -58,7 +58,6 @@ test_that("every bootstrap entry point accepts progress", {
 
 
 test_that("smoothed bootstraps accept progress too", {
-  skip_if_not_installed("MASS")
   s <- smooth(r.ndka)
   expect_match(progress_output(ci.auc(s, boot.n = B, progress = TRUE)), "100%")
   expect_match(progress_output(ci.se(s, boot.n = B, progress = TRUE)), "100%")
@@ -122,6 +121,6 @@ test_that("attaching pROC no longer removes the pROCProgress option", {
   old <- getOption("pROCProgress")
   on.exit(options(pROCProgress = old))
   options(pROCProgress = TRUE)
-  pROC:::.onAttach(NULL, "pROC")
+  suppressMessages(pROC:::.onAttach(NULL, "pROC"))
   expect_true(getOption("pROCProgress"))
 })

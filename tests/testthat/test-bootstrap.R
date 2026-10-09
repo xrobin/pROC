@@ -23,18 +23,27 @@ for (case.name in names(bootstrap.cases)) {
   local({
     nm <- case.name
     test_that(paste("bootstrap unchanged:", nm), {
-      if (grepl("smooth", nm)) {
-        skip_if_not_installed("MASS")
-      }
       expected <- expected.bootstrap[[nm]]
       actual <- bootstrap.run(nm)
+      values <- bootstrap.sig(actual)
 
+      # Always checked, on every platform: the path runs at all, and returns
+      # the class and shape its callers index into. None of this depends on
+      # floating point.
       expect_identical(class(actual), expected$class)
       expect_identical(bootstrap.shape(actual), expected$shape)
-      # expect_equal, never expect_identical, on the values: smoothed results
-      # carry an lm fit whose terms hold an environment pointer, and numeric
-      # comparison is the point here anyway.
-      expect_equal(bootstrap.sig(actual), expected$values, tolerance = 1e-8)
+      expect_length(values, length(expected$values))
+      expect_true(all(is.finite(values) | is.na(values)))
+
+      # The recorded values are one machine's arithmetic down to the last bit.
+      # They are what pins the RNG draw order and the aggregation through a
+      # refactor, and they are checked on every machine we control -- but not
+      # on CRAN's dozen platforms and BLAS implementations, where a last-bit
+      # difference in a smoothed fit would be a failed submission rather than
+      # a bug. expect_equal, never expect_identical: smoothed results carry an
+      # lm fit whose terms hold an environment pointer.
+      skip_slow()
+      expect_equal(values, expected$values, tolerance = 1e-8)
     })
   })
 }

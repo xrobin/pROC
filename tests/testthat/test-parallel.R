@@ -76,7 +76,6 @@ test_that("every bootstrap entry point accepts a cluster", {
 
 test_that("smoothed bootstraps run on a cluster", {
   skip_if_no_cluster()
-  skip_if_not_installed("MASS")
   s <- smooth(r.ndka)
   with_cluster(2, function(cl) {
     expect_s3_class(ci.auc(s, boot.n = B, cl = cl), "ci.auc")

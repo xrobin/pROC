@@ -132,7 +132,6 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
   # and once past that, x = "best" hit a second problem: the bootstrap worker
   # called coords.roc() on a smooth.roc, bypassing the smooth method that
   # fills the absent thresholds with NA.
-  skip_if_not_installed("MASS")
   s <- smooth(r.s100b)
 
   set.seed(1)
@@ -153,7 +152,6 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
 
 test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
   # As coords() does: a smoothed curve has no thresholds.
-  skip_if_not_installed("MASS")
   s <- smooth(r.s100b)
   expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
   expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))

@@ -292,7 +292,10 @@ roc_utils_rng_streams <- function(boot.n) {
   caller.seed <- get(".Random.seed", envir = globalenv())
   caller.kind <- RNGkind()
   on.exit({
-    RNGkind(caller.kind[1], caller.kind[2], caller.kind[3])
+    # suppressWarnings: restoring sample.kind = "Rounding" re-emits R's
+    # "non-uniform 'Rounding' sampler used" warning, which the caller already
+    # chose and does not need pROC to repeat on every bootstrap.
+    suppressWarnings(RNGkind(caller.kind[1], caller.kind[2], caller.kind[3]))
     assign(".Random.seed", caller.seed, envir = globalenv())
   })
   set.seed(seed, kind = "L'Ecuyer-CMRG")

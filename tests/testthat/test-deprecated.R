@@ -28,7 +28,6 @@ test_that("'parallel' warns and is ignored", {
 
 
 test_that("'parallel' on a smoothed curve warns too", {
-  skip_if_not_installed("MASS")
   s.wfns <- smooth(r.ndka)
   expect_warning(ci.auc(s.wfns, boot.n = B, parallel = TRUE),
                  "Parallel processing is deprecated")
