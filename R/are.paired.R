@@ -44,6 +44,7 @@ are.paired.roc <- function(roc1, roc2,
   if ("auc" %in% class(roc2)) {
     roc2 <- attr(roc2, "roc")
   }
+  oroc1 <- oroc2 <- NULL # the original smoothed curves, if any
   if ("smooth.roc" %in% class(roc1)) {
     oroc1 <- roc1
     roc1 <- attr(roc1, "roc")
@@ -77,7 +78,7 @@ are.paired.roc <- function(roc1, roc2,
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
       # Re-use auc/ci/smooth for roc1
-      if (exists("oroc1") && reuse.smooth) {
+      if (!is.null(oroc1) && reuse.smooth) {
         args <- oroc1$smoothing.args
         args$roc <- roc1.paired
         roc1.paired <- do.call("smooth.roc", args)
@@ -94,7 +95,7 @@ are.paired.roc <- function(roc1, roc2,
         roc1.paired$ci <- do.call(class(roc1$ci)[1], c(roc = list(roc1.paired), args))
       }
       # Re-use auc/ci/smooth for roc2
-      if (exists("oroc2") && reuse.smooth) {
+      if (!is.null(oroc2) && reuse.smooth) {
         args <- oroc2$smoothing.args
         args$roc <- roc2.paired
         roc2.paired <- do.call("smooth.roc", args)
