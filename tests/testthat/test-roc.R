@@ -483,3 +483,15 @@ test_that("formulas without response or with unsupported terms give a clear erro
   expect_error(roc(y ~ x:z, d), "only formulas of type response~predictor")
   expect_named(roc(y ~ ., d, quiet = TRUE), c("x", "z"))
 })
+
+test_that("na.action attribute is kept when responses outside levels are removed", {
+  r <- roc(c(0, 0, 1, 1, 2, NA, 0, 1), c(1, 2, 3, 4, 5, 6, 7, NA), levels = c(0, 1), quiet = TRUE)
+  expected <- structure(c(6L, 8L), class = "omit")
+  expect_identical(attr(r$response, "na.action"), expected)
+  expect_identical(attr(r$predictor, "na.action"), expected)
+  r <- roc(factor(c("a", "a", "b", "b", "c", NA, "a", "b")), c(1, 2, 3, 4, 5, 6, 7, NA), levels = c("a", "b"), quiet = TRUE)
+  expect_identical(attr(r$response, "na.action"), expected)
+  # No NA: no attribute
+  r <- roc(c(0, 0, 1, 1, 2), c(1, 2, 3, 4, 5), levels = c(0, 1), quiet = TRUE)
+  expect_null(attr(r$response, "na.action"))
+})
