@@ -200,3 +200,13 @@ test_that("auc.formula behaves", {
   auc2 <- auc(aSAH[21:113, ]$outcome[aSAH[21:113, ]$gender == "Female"], aSAH[21:113, ]$ndka[aSAH[21:113, ]$gender == "Female"])
   expect_equal(as.numeric(auc1), as.numeric(auc2))
 })
+
+test_that("has.partial.auc requires a partial.auc of length 2", {
+  a <- auc(r.s100b)
+  expect_false(has.partial.auc(a))
+  expect_true(has.partial.auc(auc(r.s100b, partial.auc = c(1, 0.8))))
+  attr(a, "partial.auc") <- 0.8
+  expect_false(has.partial.auc(a))
+  attr(a, "partial.auc") <- c(1, 0.9, 0.8)
+  expect_false(has.partial.auc(a))
+})
