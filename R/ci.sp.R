@@ -32,7 +32,12 @@ ci.sp.formula <- function(formula, data, ...) {
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.sp(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.sp(smooth.roc = roc, ...))
+  } else {
+    return(ci.sp(roc = roc, ...))
+  }
 }
 
 ci.sp.default <- function(response, predictor, ...) {
