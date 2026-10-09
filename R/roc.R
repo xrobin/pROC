@@ -44,6 +44,8 @@ roc.formula <- function(formula, data, ...) {
     roc$response.name <- roc.data$response.name
     if (!is.null(roc$smooth)) {
       attr(roc, "roc")$call <- roc$call
+      attr(roc, "roc")$predictor.name <- roc$predictor.name
+      attr(roc, "roc")$response.name <- roc$response.name
     }
     return(roc)
   } else if (ncol(predictors) > 1) {
@@ -59,6 +61,11 @@ roc.formula <- function(formula, data, ...) {
       roc$call <- call
       roc$predictor.name <- predictor
       roc$response.name <- roc.data$response.name
+      if (methods::is(roc, "smooth.roc")) {
+        attr(roc, "roc")$call <- roc$call
+        attr(roc, "roc")$predictor.name <- roc$predictor.name
+        attr(roc, "roc")$response.name <- roc$response.name
+      }
       return(roc)
     }, formula = formula, m.data = predictors, call = match.call(), ...)
     # Set the list names
@@ -95,6 +102,9 @@ roc.data.frame <- function(data, response, predictor,
 
   if (ret == "roc" && inherits(r, c("roc", "smooth.roc"))) {
     r$call <- match.call()
+    if (methods::is(r, "smooth.roc")) {
+      attr(r, "roc")$call <- r$call
+    }
   }
   return(r)
 }
@@ -125,6 +135,9 @@ roc_ <- function(data, response, predictor,
     return(r) # NA or NaN: no curve, no coordinates
   } else if (ret == "roc") {
     r$call <- match.call()
+    if (methods::is(r, "smooth.roc")) {
+      attr(r, "roc")$call <- r$call
+    }
     return(r)
   } else if (ret == "coords") {
     co <- coords(r, x = "all", transpose = FALSE)
