@@ -856,3 +856,20 @@ roc_utils_warn_deprecated_parallel <- function(parallel) {
     warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
   }
 }
+
+# Returns the empirical ROC curve a smooth.roc was built from, with the AUC
+# specification of the smoothed curve (partial.auc etc.) rather than the one
+# of the empirical curve, so that the smoothed curve can be rebuilt as it was.
+roc_utils_unsmooth <- function(smooth.roc) {
+  roc <- attr(smooth.roc, "roc")
+  if (!is.null(smooth.roc$auc)) {
+    # Only the specification matters: the (corrected) partial AUC of the
+    # empirical curve may not be defined, and is never reported
+    roc$auc <- suppressWarnings(auc(roc,
+      partial.auc = attr(smooth.roc$auc, "partial.auc"),
+      partial.auc.focus = attr(smooth.roc$auc, "partial.auc.focus"),
+      partial.auc.correct = attr(smooth.roc$auc, "partial.auc.correct")
+    ))
+  }
+  return(roc)
+}

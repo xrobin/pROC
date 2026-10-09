@@ -321,3 +321,31 @@ test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  t.auc <- roc.test(a1, a2, boot.n = 10)
+  set.seed(42)
+  t.smooth <- roc.test(s1, s2, boot.n = 10)
+  expect_equal(unname(t.auc$estimate), c(as.numeric(a1), as.numeric(a2)))
+  expect_equal(t.auc$estimate, t.smooth$estimate)
+  expect_equal(t.auc$statistic, t.smooth$statistic)
+})
+
+test_that("roc.test on smoothed curves with a corrected partial AUC does not warn about the empirical curves", {
+  # the empirical curves are below the diagonal at high specificity, the smoothed curves are not
+  controls <- c(qnorm(ppoints(36)), 10, 11, 12, 13)
+  cases <- qnorm(ppoints(40)) + 1.5
+  resp <- c(rep(0, 40), rep(1, 40))
+  x2 <- c(controls + rep(c(-0.2, 0.2), 20), cases + rep(c(0.2, -0.2), 20))
+  p1 <- suppressWarnings(roc(resp, c(controls, cases), quiet = TRUE, partial.auc = c(1, .9), partial.auc.correct = TRUE))
+  p2 <- suppressWarnings(roc(resp, x2, quiet = TRUE, partial.auc = c(1, .9), partial.auc.correct = TRUE))
+  s1 <- smooth(p1)
+  s2 <- smooth(p2)
+  expect_false(is.na(s1$auc))
+  expect_warning(roc.test(s1, s2, boot.n = 2), NA)
+})

@@ -46,6 +46,7 @@
   * 'size' is deprecated in 'ggroc' and the ggplot2 line and polygon layers in favour of 'linewidth'
   * Fixed the confidence interval of the paired DeLong 'roc.test' being on the 0-1 scale for 'percent=TRUE' curves
   * 'roc.test' now checks 'conf.level' also when the method is selected automatically
+  * Fixed 'roc.test' and 'cov' ignoring the partial AUC of 'auc' objects of smoothed curves
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
