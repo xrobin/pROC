@@ -39,6 +39,8 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
   roc <- roc(response, predictor, plot = TRUE, ...)
   if (inherits(roc, c("roc", "smooth.roc"))) {
     roc$call <- match.call()
+    roc$predictor.name <- roc.data$predictor.names
+    roc$response.name <- roc.data$response.name
   }
   invisible(roc)
 }

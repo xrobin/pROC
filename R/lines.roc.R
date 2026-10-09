@@ -38,6 +38,8 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
   roc <- roc(response, predictor, ...)
   lines.roc.roc(roc, ...)
   roc$call <- match.call()
+  roc$predictor.name <- roc.data$predictor.names
+  roc$response.name <- roc.data$response.name
   invisible(roc)
 }
 
