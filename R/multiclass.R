@@ -122,17 +122,9 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
     stop("The column names of 'predictor' could not be matched to the levels of 'response'.")
   }
   if (length(missing.classes) != 0) {
+    # some decision values not found (none found is an error above)
     out.classes <- paste0(missing.classes, collapse = ",")
-    if (length(missing.classes) == length(levels)) {
-      # no decision values found
-      stop(paste0(
-        "Could not find any decision values in 'predictor' matching the 'response' levels.",
-        " Could not find the following classes: ", out.classes, ". Check your column names!"
-      ))
-    } else {
-      # some decision values not found
-      warning("You did not provide decision values for the following classes: ", out.classes, ".")
-    }
+    warning("You did not provide decision values for the following classes: ", out.classes, ".")
   }
   additional.classes <- colnames(predictor)[which(is.na(m))]
   if (length(additional.classes) != 0) {
