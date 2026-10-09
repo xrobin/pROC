@@ -28,7 +28,7 @@
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
-ties.method="first", progress = getOption("pROCProgress", interactive()),
+ties.method="random", progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
@@ -91,7 +91,11 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{ties.method}{for \code{method="venkatraman"} only: argument for
     \code{\link{rank}} specifying how ties are handled. Defaults to
-    \dQuote{first} as described in the paper.
+    \dQuote{random}, so that the result does not depend on the order of
+    the observations in the data (with \dQuote{first}, tied observations
+    are ranked by position, and the same data sorted differently can
+    give very different p-values). Set the seed with
+    \code{\link{set.seed}} for reproducible results.
   }
   \item{progress}{whether to display a text progress bar during the
     bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
