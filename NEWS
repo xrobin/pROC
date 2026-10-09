@@ -83,6 +83,7 @@
   * Fixed 'ci', 'ci.auc', 'ci.se', 'ci.sp' and 'ci.coords' failing with 'smooth=TRUE' in the formula interface, and 'ci' in the default interface
   * Fixed 'ci.se', 'ci.sp', 'ci.coords' and 'ci.thresholds' failing with 'boot.stratified=FALSE' when a resample had no case or no control, instead of ignoring it as documented
   * Fixed 'power.roc.test' returning NaN with the 'auc' of a percent ROC curve
+  * 'power.roc.test' with one ROC curve now stops for a partial AUC, given as a curve or as an 'auc' object. It used the full AUC of the curve, or read the partial AUC value as a full AUC
   * 'power.roc.test' with a list of binormal parameters now accepts the partial AUC bounds in any order, and requires all four of them
   * `plot.roc()` and `lines.roc()` with a formula return a curve that prints the predictor and response names instead of "(unknown)" (same fix as issue #101 for `roc()`).
   * 'geom_polygon_auc' gives a clear error on a curve without AUC (instead of "no applicable method")
