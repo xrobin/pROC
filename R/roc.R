@@ -117,7 +117,7 @@ roc_ <- function(data, response, predictor,
   # Ensure the data contains the columns we need
   # In case of an error we want to show the name of the data. If the function
   # was called from roc.data.frame we want to deparse in that environment instead
-  if (sys.nframe() > 1 && deparse(sys.calls()[[sys.nframe() - 1]][[1]]) == "roc.data.frame") {
+  if (sys.nframe() > 1 && identical(sys.calls()[[sys.nframe() - 1]][[1]], as.name("roc.data.frame"))) {
     data_name <- deparse(substitute(data, parent.frame(n = 1)))
   } else {
     data_name <- deparse(substitute(data))
