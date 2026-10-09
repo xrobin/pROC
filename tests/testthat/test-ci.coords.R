@@ -192,3 +192,23 @@ test_that("ci.coords on a smoothed curve keeps replicates aligned when smoothing
     expect_equal(as.numeric(ci$specificity[, i]), c(0.5, 0.9))
   }
 })
+
+test_that("ci.coords 'best' ignores resamples with no point in the partial AUC range", {
+  set.seed(42)
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  # With 5 controls the only specificity in the range is 0.8, missing in many resamples
+  r <- roc(resp, pred, partial.auc = c(0.9, 0.7), quiet = TRUE)
+  expect_warning(
+    ci <- ci.coords(r, "best", ret = c("specificity", "sensitivity"), boot.n = 50),
+    "NA value\\(s\\) produced during bootstrap were ignored"
+  )
+  expect_s3_class(ci, "ci.coords")
+  expect_equal(as.numeric(ci$specificity), c(0.8, 0.8, 0.8))
+})
+
+test_that("ci.coords 'best' on smoothed curves ignores resamples with no point in the partial AUC range", {
+  set.seed(42)
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.899)))
+  expect_s3_class(suppressWarnings(ci.coords(s, "best", boot.n = 30, progress = "none")), "ci.coords")
+})
