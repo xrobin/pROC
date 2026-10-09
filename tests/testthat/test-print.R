@@ -163,3 +163,12 @@ test_that("print works with a formula with data attached with 'with'", {
   expect_known_output(with(aSAH, print(roc(x))), "print_output/ndka_formula_var_attached")
   expect_known_output(with(aSAH, print(roc(outcome ~ ndka))), "print_output/ndka_formula_attached")
 })
+
+test_that("smoothed curves from the formula and data.frame interfaces print the data names", {
+  d <- data.frame(y = c(0, 0, 0, 0, 1, 1, 1, 1), x = c(1, 3, 5, 7, 2, 4, 6, 8), z = c(2, 1, 4, 3, 6, 5, 8, 7))
+  dataline <- "Data: x in 4 controls (y 0) < 4 cases (y 1)."
+  expect_output(print(roc(y ~ x, d, smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+  expect_output(print(roc(y ~ x + z, d, smooth = TRUE, smooth.method = "density", quiet = TRUE)$x), dataline, fixed = TRUE)
+  expect_output(print(roc(d, y, x, smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+  expect_output(print(roc_(d, "y", "x", smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+})
