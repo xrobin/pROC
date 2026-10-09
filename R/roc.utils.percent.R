@@ -37,7 +37,11 @@ roc_utils_unpercent.roc <- function(x) {
     if (!is.null(x$call)) {
       x$call$percent <- FALSE
     }
-    if (!is.null(x$ci)) {
+    if (methods::is(x$ci, "ci.coords")) {
+      # A ci.coords cannot be converted: drop it (it is not used by the
+      # callers, which compute on the curve)
+      x$ci <- NULL
+    } else if (!is.null(x$ci)) {
       x$ci <- roc_utils_unpercent(x$ci)
     }
   }
