@@ -601,6 +601,9 @@ roc_utils_thr_idx <- function(roc, x) {
   if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
   }
+  if (anyNA(x)) {
+    stop("Missing values are not allowed in 'x'.")
+  }
   cut_points <- sort(unique(roc$predictor))
   thr_idx <- rep(NA_integer_, length(x))
   if (roc$direction == "<") {
