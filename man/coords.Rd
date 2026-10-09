@@ -106,7 +106,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   ROC curve), or only the threshold(s) corresponding to the best sum of
   sensitivity + specificity respectively. Note that \dQuote{best} can
   return more than one threshold. If \code{x} is a character, and
-  \code{ignore.partial.auc=TRUE}, the coordinates are limited to the
+  \code{ignore.partial.auc=FALSE} (the default), the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
   necessarily to the whole curve.
 
