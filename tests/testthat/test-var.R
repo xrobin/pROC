@@ -67,3 +67,8 @@ test_that("var errors on curves built from numeric densities", {
   d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
   expect_error(suppressWarnings(var(d1, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
 })
+
+test_that("var with unsupported obuchowski cases errors without claiming to use bootstrap", {
+  expect_error(var(smooth(r.s100b), method = "obuchowski"), "Use method=\"bootstrap\" instead")
+  expect_error(var(r.s100b.partial2, method = "obuchowski"), "Use method=\"bootstrap\" instead")
+})
