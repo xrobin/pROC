@@ -69,6 +69,7 @@
   * Formula methods now give clear error messages for formulas without a response or with unsupported terms (such as `. - z` or interactions) instead of an internal `stopifnot` error.
   * `coords` with missing values in `x` and `input = "threshold"` now fails with a clear error message for numeric predictors too.
   * The `na.action` attribute of `response` and `predictor` in `roc` objects is no longer lost when some responses are not in `levels`.
+  * The error for `density.controls`/`density.cases` combined with `controls`/`cases` in `roc` now names the right arguments.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

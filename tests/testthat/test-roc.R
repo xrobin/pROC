@@ -495,3 +495,11 @@ test_that("na.action attribute is kept when responses outside levels are removed
   r <- roc(c(0, 0, 1, 1, 2), c(1, 2, 3, 4, 5), levels = c(0, 1), quiet = TRUE)
   expect_null(attr(r$response, "na.action"))
 })
+
+test_that("density with cases/controls error names the right arguments", {
+  x <- seq(0, 1, length.out = 10)
+  expect_error(
+    roc(controls = 1:2, cases = 3:4, density.controls = x, density.cases = rev(x)),
+    "'density.*' arguments incompatible with 'cases/controls'.", fixed = TRUE
+  )
+})
