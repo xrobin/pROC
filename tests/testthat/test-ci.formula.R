@@ -52,3 +52,30 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
     expect_equivalent(obs.default, obs.formula)
   }
 })
+
+test_that("ci formula and default methods work with smooth = TRUE", {
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE))
+  for (pair in list(
+    list(ci, list(), "ci.auc"),
+    list(ci, list(of = "se", specificities = 0.5), "ci.se"),
+    list(ci, list(of = "coords", x = 0.5), "ci.coords"),
+    list(ci.auc, list(), "ci.auc"),
+    list(ci.se, list(specificities = 0.5), "ci.se"),
+    list(ci.sp, list(sensitivities = 0.5), "ci.sp"),
+    list(ci.coords, list(x = 0.5, input = "sp"), "ci.coords")
+  )) {
+    fun <- pair[[1]]
+    args <- c(list(smooth = TRUE, boot.n = 5, quiet = TRUE), pair[[2]])
+    seed <- sample.int(1e6, 1)
+    set.seed(seed)
+    obs.smooth <- do.call(fun, c(list(s), args[!names(args) %in% c("smooth", "quiet")]))
+    set.seed(seed)
+    obs.default <- do.call(fun, c(list(response = aSAH$outcome, predictor = aSAH$s100b), args))
+    set.seed(seed)
+    obs.formula <- do.call(fun, c(list(formula = outcome ~ s100b, data = aSAH), args))
+    expect_s3_class(obs.default, pair[[3]])
+    expect_s3_class(obs.formula, pair[[3]])
+    expect_equal(as.numeric(unlist(unclass(obs.default))), as.numeric(unlist(unclass(obs.smooth))))
+    expect_equal(as.numeric(unlist(unclass(obs.formula))), as.numeric(unlist(unclass(obs.smooth))))
+  }
+})
