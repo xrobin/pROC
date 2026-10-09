@@ -172,6 +172,14 @@ test_that("cov re-pairs curves with NAs at different positions", {
   expect_equal(c.na, c.ok)
 })
 
+test_that("cov selects the bootstrap when only roc2 has a partial AUC", {
+  set.seed(42)
+  res.12 <- suppressWarnings(cov(r.ndka, r.s100b.partial1, boot.n = 10))
+  set.seed(42)
+  res.21 <- suppressWarnings(cov(r.s100b.partial1, r.ndka, boot.n = 10))
+  expect_equal(res.12, res.21)
+})
+
 test_that("cov works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
