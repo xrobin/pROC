@@ -111,6 +111,7 @@
   * The Venkatraman test now breaks ties at random by default ('ties.method="random"'), so that its result no longer depends on the order of the observations
   * 'roc.test(method="venkatraman")' now rejects a partial AUC on the second curve too, as it did on the first
   * Fixed 'ci.auc' and 'var' with a non-stratified bootstrap failing when a resample has no control
+  * 'roc.test' with 'method="sensitivity"' or 'method="specificity"' now reports the tested sensitivities or specificities as estimates instead of the AUCs
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

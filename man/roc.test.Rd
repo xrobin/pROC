@@ -336,7 +336,10 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{null.value}{the expected value of the statistic under the null
     hypothesis, that is 0.}
-  \item{estimate}{the AUC in the two ROC curves.}
+  \item{estimate}{the AUC in the two ROC curves, or with
+    \code{method="sensitivity"} and \code{method="specificity"}, the
+    specificity and sensitivity of the two curves at the given
+    sensitivity or specificity.}
   \item{data.name}{the names of the data that was used.}
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
