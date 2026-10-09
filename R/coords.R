@@ -448,9 +448,11 @@ coords.roc <- function(roc,
 
       idx <- which(input_values == value)
       if (length(idx) > 1) {
-        # More than one to pick from. Need to take best
-        # according to sorting
-        if (coord.is.decreasing[input]) {
+        # More than one to pick from. Need to take the upper-left-most point.
+        # The curve is sorted by increasing specificity: ties of a
+        # sensitivity-based input share se, take the last (highest sp);
+        # ties of a specificity-based input share sp, take the first (highest se).
+        if (input %in% c("sensitivity", "tp", "tpr", "recall", "fn", "fnr", "1-sensitivity")) {
           idx <- idx[length(idx)] # last
         } else {
           idx <- idx[1] # first
