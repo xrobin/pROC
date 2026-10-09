@@ -182,7 +182,8 @@ coords.smooth.roc <- function(smooth.roc,
         res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
       } else {
         extra <- list()
-        extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
+        # closest.topleft: optim.crit is on the squared percent scale, rescale as roc_utils_calc_coords does
+        extra[[best.method]] <- ifelse(best.method == "youden", 1, -1 / ifelse(smooth.roc$percent, 100, 1)) * optim.crit
         res <- data.frame(
           specificity = as.vector(sp),
           sensitivity = as.vector(se),
@@ -382,7 +383,8 @@ coords.roc <- function(roc,
         return(NULL)
       }
       extra <- list()
-      extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
+      # closest.topleft: optim.crit is on the squared percent scale, rescale as roc_utils_calc_coords does
+      extra[[best.method]] <- ifelse(best.method == "youden", 1, -1 / ifelse(roc$percent, 100, 1)) * optim.crit
       res <- roc_utils_coords_basic(thres, sp, se, extra = extra)
     }
   } else if (input == "threshold") {
