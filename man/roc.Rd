@@ -159,12 +159,12 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   inverted.
 	
   In some cases, it is more convenient to pass the data as
-  \code{controls, cases}, but both arguments are ignored if
-  \code{response, predictor} was specified to non-\code{NULL} values.
+  \code{controls, cases}, but they cannot be combined with
+  non-\code{NULL} \code{response, predictor} (an error is raised).
   It is also possible to pass density data with \code{density.controls,
   density.cases}, which will result in a smoothed ROC curve even if
-  \code{smooth=FALSE}, but are ignored if \code{response, predictor} or
-  \code{controls, cases} are provided.
+  \code{smooth=FALSE}, but they cannot be combined with
+  \code{response, predictor} or \code{controls, cases} either.
   
   Thresholds are selected as the means between any two consecutive values 
   observed in the data. This choice is aimed to facilitate their interpretation,
