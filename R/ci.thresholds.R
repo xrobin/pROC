@@ -102,6 +102,11 @@ ci.thresholds.roc <- function(roc,
     roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
     simplify = "columns", progress = progress, cl = cl
   )
+  # Drop the replicates with NA (a class can vanish from a non-stratified
+  # resample): one column per replicate, then back to the array
+  perfs.dim <- dim(perfs)
+  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L)
+  perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)

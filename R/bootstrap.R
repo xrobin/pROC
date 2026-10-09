@@ -550,11 +550,19 @@ bootstrap.smooth.auc <- function(n, roc, stratified, smooth.roc.call, auc.call) 
 
 bootstrap.se <- function(n, roc, stratified, sp) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(rep(NA_real_, length(sp)))
+  }
   coords.roc(resampled, sp, input = "specificity", ret = "sensitivity")[, 1]
 }
 
 bootstrap.sp <- function(n, roc, stratified, se) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(rep(NA_real_, length(se)))
+  }
   coords.roc(resampled, se, input = "sensitivity", ret = "specificity")[, 1]
 }
 
@@ -590,6 +598,10 @@ bootstrap.thresholds <- function(n, roc, stratified, thresholds) {
 bootstrap.coords <- function(n, roc, stratified, x, input, ret,
                              best.method, best.weights, best.policy) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
   # Silence the "No coordinates found" warnings of resamples with no point in
   # the partial AUC range: ci.coords reports the NA replicates once.
   res <- suppressWarnings(coords.roc(resampled,
