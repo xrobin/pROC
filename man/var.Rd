@@ -27,8 +27,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 	\code{\link[=smooth.roc]{smooth}} function or an \dQuote{auc} object from
 	the \code{\link{auc}} function.
   }
-  \item{method}{the method to use, either \dQuote{delong} or
-    \dQuote{bootstrap}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong},
+    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -75,8 +75,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 \details{
   The \code{var} function computes the variance of the AUC of a ROC
   curve. It is typically called with the \link{roc} object of
-  interest. Two methods are available: \dQuote{delong} and
-  \dQuote{bootstrap} (see \dQuote{Computational
+  interest. Three methods are available: \dQuote{delong},
+  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except for with
@@ -166,17 +166,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Warnings}{  
-  If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the warning \dQuote{Using DeLong for partial AUC is
-    not supported. Using bootstrap test instead.} is issued. The
-  \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
-
-  If \code{method="delong"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong for
-  smoothed ROCs is not supported. Using bootstrap test instead.} is
-  issued. The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
   contains no case or control observation, or that there are not enough
@@ -194,9 +183,23 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
 \section{Errors}{
   If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the covariance on ROC
-    curves smoothed with density.controls and density.cases.} is
+  for smoothing, the error \dQuote{Cannot compute the variance of ROC
+    curves smoothed with numeric density.controls and density.cases.} is
   issued.
+
+  If \code{method="delong"} and the AUC specification specifies a
+  partial AUC, or the ROC curve is smoothed, the error \dQuote{DeLong
+    method is not supported for partial AUC. Use method="bootstrap"
+    instead.} (or \dQuote{DeLong method is not supported for smoothed
+    ROCs. Use method="bootstrap" instead.}) is issued.
+
+  If \code{method="obuchowski"} and the ROC curve is smoothed, or the
+  AUC specification specifies a partial AUC with
+  \code{partial.auc.focus="sensitivity"}, the error
+  \dQuote{Obuchowski method is not supported for smoothed ROCs. Use
+    method="bootstrap" instead.} (or \dQuote{Obuchowski method is not
+    supported for partial AUC on sensitivity region. Use
+    method="bootstrap" instead.}) is issued.
 }
 
 \references{
