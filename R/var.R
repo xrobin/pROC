@@ -88,10 +88,10 @@ var.roc <- function(roc,
       }
     } else if (method == "obuchowski") {
       if ("smooth.roc" %in% class(roc)) {
-        stop("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
+        stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-        stop("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
+        stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
     }
   }
