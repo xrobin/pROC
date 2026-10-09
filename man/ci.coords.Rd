@@ -87,8 +87,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable.
   }
 }
 
