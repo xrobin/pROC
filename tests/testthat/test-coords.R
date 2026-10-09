@@ -659,3 +659,33 @@ test_that("coords 'best' closest.topleft is on the percent scale for percent cur
     100 * coords(r.s100b, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft
   )
 })
+
+test_that("Coords pick the upper-left end of flat bits with complementary inputs", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, quiet = TRUE)
+  for (inp in c("fpr", "1-specificity", "fp")) {
+    expect_equal(coords(r, 0, input = inp, ret = c("specificity", "sensitivity")), coords(r, 1, input = "specificity", ret = c("specificity", "sensitivity")), ignore_attr = TRUE, info = inp)
+  }
+  for (inp in c("fnr", "1-sensitivity", "fn")) {
+    expect_equal(coords(r, 0, input = inp, ret = c("specificity", "sensitivity")), coords(r, 1, input = "sensitivity", ret = c("specificity", "sensitivity")), ignore_attr = TRUE, info = inp)
+  }
+  expect_equal(coords(r, 0, input = "fpr", ret = "sensitivity")$sensitivity, 0.8)
+  expect_equal(coords(r, 0, input = "fnr", ret = "specificity")$specificity, 0.8)
+
+  # Every point of a curve with ties
+  for (sp in unique(r.wfns$specificities)) {
+    expect_equal(
+      coords(r.wfns, 1 - sp, input = "fpr", ret = c("specificity", "sensitivity")),
+      coords(r.wfns, sp, input = "specificity", ret = c("specificity", "sensitivity")),
+      ignore_attr = TRUE
+    )
+  }
+  for (se in unique(r.wfns$sensitivities)) {
+    expect_equal(
+      coords(r.wfns, 1 - se, input = "fnr", ret = c("specificity", "sensitivity")),
+      coords(r.wfns, se, input = "sensitivity", ret = c("specificity", "sensitivity")),
+      ignore_attr = TRUE
+    )
+  }
+})
