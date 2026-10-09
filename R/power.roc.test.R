@@ -535,8 +535,8 @@ solve.zalpha <- function(nd, zbeta, v0, va, delta) {
 covvar <- function(roc1, roc2, method, ...) {
   cov12 <- cov(roc1, roc2, boot.return = TRUE, method = method, ...)
   if (!is.null(attr(cov12, "resampled.values"))) {
-    var1 <- var(attr(cov12, "resampled.values")[, 1])
-    var2 <- var(attr(cov12, "resampled.values")[, 2])
+    var1 <- var(attr(cov12, "resampled.values")[1, ])
+    var2 <- var(attr(cov12, "resampled.values")[2, ])
     attr(cov12, "resampled.values") <- NULL
   } else {
     var1 <- var(roc1, method = method, ...)
