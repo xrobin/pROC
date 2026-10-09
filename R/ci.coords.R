@@ -32,7 +32,12 @@ ci.coords.formula <- function(formula, data, ...) {
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.coords(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.coords(smooth.roc = roc, ...))
+  } else {
+    return(ci.coords(roc = roc, ...))
+  }
 }
 
 ci.coords.default <- function(response, predictor, ...) {
