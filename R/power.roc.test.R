@@ -123,6 +123,10 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       stop("'roc2' must be an object of class 'roc'.")
     }
   } else {
+    # The one ROC curve formula (Obuchowski et al., 2004) is for the full AUC
+    if (has.partial.auc(roc1)) {
+      stop("Power calculation for one ROC curve is only available for the full AUC.")
+    }
     ncontrols <- length(roc1$controls)
     ncases <- length(roc1$cases)
     if (!is.null(sig.level) && !is.null(power)) {
