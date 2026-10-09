@@ -305,3 +305,12 @@ test_that("requested levels without observation are dropped whatever the respons
   expect_warning(mv <- multiclass.roc(resp, P, levels = c("a", "b", "c", "q")), "No observation for response level\\(s\\): q")
   expect_equal(mv$levels, c("a", "b", "c"))
 })
+
+test_that("multivariate with a subset of levels does not warn about columns present in response", {
+  response <- c("a", "a", "b", "b", "c", "c")
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_silent(mc <- multiclass.roc(response, P, levels = c("a", "b")))
+  expect_equal(mc$levels, c("a", "b"))
+  # A column really absent from response still warns
+  expect_warning(multiclass.roc(response[1:4], P[1:4, ], levels = c("a", "b")), "not found in 'response': c")
+})
