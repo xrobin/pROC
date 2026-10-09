@@ -59,6 +59,7 @@
   * Fixed 'cov' failing or returning a wrong value for paired curves with NA values at different positions
   * 'roc.test' now gives the 'Missing argument predictor2' error also when 'predictor2 = NULL' is passed explicitly
   * Fixed 'roc.test' and 'cov' selecting DeLong (and failing) when only the second curve had a partial AUC
+  * The Venkatraman test now breaks ties at random by default ('ties.method="random"'), so that its result no longer depends on the order of the observations
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

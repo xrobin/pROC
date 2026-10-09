@@ -60,3 +60,12 @@ test_that("unpaired venkatraman statistic is symmetric with curves of different 
   t21 <- roc.test(r2, r1, method = "venkatraman", paired = FALSE, boot.n = 2)
   expect_equal(t12$statistic, t21$statistic)
 })
+
+test_that("venkatraman breaks ties at random by default", {
+  set.seed(42)
+  t.default <- roc.test(r.wfns, r.s100b, method = "venkatraman", boot.n = 10)
+  set.seed(42)
+  t.random <- roc.test(r.wfns, r.s100b, method = "venkatraman", boot.n = 10, ties.method = "random")
+  expect_equal(t.default$statistic, t.random$statistic)
+  expect_equal(t.default$p.value, t.random$p.value)
+})
