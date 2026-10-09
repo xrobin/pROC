@@ -878,3 +878,11 @@ roc_utils_unsmooth <- function(smooth.roc) {
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+
+# Curves smoothed from numeric densities cannot be resampled
+roc_utils_stop_if_numeric_density <- function(smooth.roc, what) {
+  args <- smooth.roc$smoothing.args
+  if (is.null(args) || is.numeric(args$density.cases) || is.numeric(args$density.controls)) {
+    stop(sprintf("Cannot compute %s ROC curves smoothed with numeric density.controls and density.cases.", what))
+  }
+}

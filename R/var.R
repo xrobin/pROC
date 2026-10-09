@@ -116,6 +116,7 @@ var.roc <- function(roc,
 var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl = NULL, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
+    roc_utils_stop_if_numeric_density(roc, "the variance of")
     smoothing.args <- roc$smoothing.args
     smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")

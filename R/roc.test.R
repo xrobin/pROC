@@ -143,6 +143,7 @@ roc.test.roc <- function(roc1, roc2,
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc1$smooth <- TRUE
+    roc_utils_stop_if_numeric_density(roc1, "the statistic on")
     roc1 <- roc_utils_unsmooth(roc1)
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
@@ -152,6 +153,7 @@ roc.test.roc <- function(roc1, roc2,
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc2$smooth <- TRUE
+    roc_utils_stop_if_numeric_density(roc2, "the statistic on")
     roc2 <- roc_utils_unsmooth(roc2)
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
@@ -381,11 +383,6 @@ roc.test.roc <- function(roc1, roc2,
     names(htest$null.value) <- "difference in at least one ROC operating point"
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
-    # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
-      stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
-    }
-
     if (method == "specificity") {
       if (!is.numeric(specificity) || length(specificity) != 1) {
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")

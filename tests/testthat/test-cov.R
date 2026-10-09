@@ -132,6 +132,22 @@ test_that("cov keeps the partial AUC of auc objects of smoothed curves", {
   expect_equal(c.auc, c.smooth)
 })
 
+test_that("cov errors on curves smoothed with numeric densities", {
+  set.seed(42)
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(cov(s1, s2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("cov errors on curves built from numeric densities", {
+  set.seed(42)
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(cov(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
 test_that("cov works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)

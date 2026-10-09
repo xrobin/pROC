@@ -66,10 +66,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
-  # Check if called with density.cases or density.controls
-  if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls)) {
-    stop("Cannot compute CI of ROC curves smoothed with numeric density.controls and density.cases.")
-  }
+  roc_utils_stop_if_numeric_density(smooth.roc, "CI of")
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
