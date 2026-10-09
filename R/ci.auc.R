@@ -83,6 +83,9 @@ ci.auc.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate, with
+  # its partial AUC still in percent once roc$percent is set to FALSE below
+  roc$auc <- NULL
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- smooth.roc$percent
