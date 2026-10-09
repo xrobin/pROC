@@ -394,6 +394,21 @@ test_that("roc.test returns the documented data.name", {
   expect_warning(capture.output(print(t)), NA)
 })
 
+test_that("sensitivity and specificity tests report the tested values as estimates", {
+  set.seed(42)
+  t.sp <- roc.test(r.ndka, r.s100b, method = "specificity", specificity = 0.8, boot.n = 2)
+  expect_equal(unname(t.sp$estimate), c(
+    coords(r.ndka, 0.8, input = "specificity", ret = "sensitivity")[1, 1],
+    coords(r.s100b, 0.8, input = "specificity", ret = "sensitivity")[1, 1]
+  ))
+  expect_match(names(t.sp$estimate), "sensitivity of roc[12] at 0.8 specificity")
+  t.se <- roc.test(r.ndka, r.s100b, method = "sensitivity", sensitivity = 0.8, boot.n = 2)
+  expect_equal(unname(t.se$estimate), c(
+    coords(r.ndka, 0.8, input = "sensitivity", ret = "specificity")[1, 1],
+    coords(r.s100b, 0.8, input = "sensitivity", ret = "specificity")[1, 1]
+  ))
+})
+
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
