@@ -150,7 +150,12 @@ test_that("RNG streams are one per replicate, not one per worker", {
   set.seed(42)
   streams <- roc_utils_rng_streams(5)
   expect_length(streams, 5)
-  expect_true(all(vapply(streams, function(s) s[1] == 10407L, logical(1))))
+  # .Random.seed[1] is kind + 100 * normal.kind + 10000 * sample.kind. Only the
+  # kind is ours to assert: the other two are whatever the session happens to
+  # use, and other files in this suite change them.
+  expect_true(all(vapply(streams, function(s) s[1] %% 100L == 7L, logical(1)))) # L'Ecuyer-CMRG
+  # L'Ecuyer-CMRG state: the code plus six integers.
+  expect_true(all(vapply(streams, length, integer(1)) == 7L))
   expect_false(identical(streams[[1]], streams[[2]]))
   # Same seed, same streams.
   set.seed(42)
