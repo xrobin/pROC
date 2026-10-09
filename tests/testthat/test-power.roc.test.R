@@ -289,3 +289,23 @@ test_that("kappa works with two ROC curves", {
   expect_equal(res$ncases, 213.117677)
   # ...
 })
+
+test_that("power.roc.test with bootstrap uses the variance of each AUC", {
+  # The variances must be computed over the replicates (rows of
+  # resampled.values), not over the two curves of a single replicate.
+  zalpha <- qnorm(1 - 0.05 / 2)
+  zbeta <- qnorm(0.9)
+  delta <- as.numeric(r.s100b$auc - r.ndka$auc)
+  n <- length(r.s100b$cases)
+  set.seed(42)
+  res <- power.roc.test(r.s100b, r.ndka, power = 0.9, method = "bootstrap", boot.n = 100)
+  set.seed(42)
+  cv <- cov(r.s100b, r.ndka, method = "bootstrap", boot.n = 100, boot.return = TRUE)
+  rv <- attr(cv, "resampled.values")
+  var1 <- var(rv[1, ]) * n
+  var2 <- var(rv[2, ]) * n
+  cov12 <- as.numeric(cv) * n
+  v0 <- 2 * var1 - 2 * cov12
+  va <- var1 + var2 - 2 * cov12
+  expect_equal(res$ncases, (zalpha * sqrt(v0) + zbeta * sqrt(va))^2 / delta^2)
+})
