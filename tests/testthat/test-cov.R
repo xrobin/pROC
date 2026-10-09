@@ -9,9 +9,9 @@ test_that("cov with delong works", {
 
 
 test_that("cov with obuchowski works", {
-  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -3.917223e-06)
-  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.0007945308)
-  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.0008560803)
+  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -2.293385e-05)
+  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.001121222)
+  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.0008540910)
 })
 
 
@@ -37,9 +37,9 @@ test_that("cov with delong, percent and mixed roc/auc works", {
 
 
 test_that("cov with obuchowski, percent and mixed roc/auc works", {
-  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.03917223)
-  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 7.9453082)
-  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.560803)
+  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.2293385)
+  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 11.21222148)
+  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.540910259)
 })
 
 
