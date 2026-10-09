@@ -149,12 +149,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Warnings}{
-  If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the warning \dQuote{Using DeLong's test for partial AUC is
-    not supported. Using bootstrap test instead.} is issued. The
-  \code{method} argument is ignored and \dQuote{bootstrap} is used
-  instead.
-
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
   contains no case or control observation, or that there are not enough
@@ -166,9 +160,13 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Errors}{
+  If \code{method="delong"} and the AUC specification specifies a
+  partial AUC, the error \dQuote{DeLong method is not supported for
+  partial AUC. Use method="bootstrap" instead.} is issued.
+
   If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-  curves smoothed with density.controls and density.cases.} is issued.
+  for smoothing, the error \dQuote{Cannot compute CI of ROC curves
+  smoothed with numeric density.controls and density.cases.} is issued.
 }
 
 \value{
