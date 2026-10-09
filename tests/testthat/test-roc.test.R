@@ -352,6 +352,25 @@ test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
   expect_equal(t.auc$statistic, t.smooth$statistic)
 })
 
+test_that("roc.test errors on curves smoothed with numeric densities", {
+  set.seed(42)
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_warning(
+    expect_error(roc.test(s1, s2, boot.n = 2), "smoothed with numeric density.controls and density.cases"),
+    "Different smoothing parameters"
+  )
+})
+
+test_that("roc.test errors on curves built from numeric densities", {
+  set.seed(42)
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(roc.test(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
