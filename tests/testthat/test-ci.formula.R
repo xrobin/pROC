@@ -6,6 +6,10 @@ context("ci.formula")
 test_that("bootstrap cov works with smooth and !reuse.auc", {
   skip_slow()
   if (getRversion() > "3.6.0") {
+    # Restore it: leaving sample.kind set leaks into every test file that runs
+    # after this one, making their results depend on the order tests ran in.
+    previous.kind <- RNGkind()
+    on.exit(suppressWarnings(do.call(RNGkind, as.list(previous.kind))), add = TRUE)
     suppressWarnings(RNGkind(sample.kind = "Rounding"))
   }
 

@@ -51,7 +51,8 @@ ci.thresholds.roc <- function(roc,
                               boot.n = 2000,
                               boot.stratified = TRUE,
                               thresholds = "local maximas",
-                              progress = NULL,
+                              progress = getOption("pROCProgress", interactive()),
+                              cl = NULL,
                               parallel = FALSE,
                               ...) {
   if (conf.level > 1 | conf.level < 0) {
@@ -61,9 +62,8 @@ ci.thresholds.roc <- function(roc,
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.thresholds() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # Check and prepare thresholds
   special <- coords_special_x(thresholds, roc = roc, keywords = c("all", "best", "local maximas"))
@@ -96,9 +96,12 @@ ci.thresholds.roc <- function(roc,
     stop("'thresholds' is not character, logical, ordered or numeric.")
   }
 
-  perfs_shape <- matrix(NA_real_, nrow = 2L, ncol = length(thresholds.num))
-  bootstrap_fun <- if (boot.stratified) stratified.ci.thresholds else nonstratified.ci.thresholds
-  perfs <- vapply(seq_len(boot.n), bootstrap_fun, FUN.VALUE = perfs_shape, roc = roc, thresholds = thresholds.num)
+  # One 2 x length(thresholds) matrix per replicate, stacked into a
+  # 2 x length(thresholds) x boot.n array.
+  perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
+    roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
+    simplify = "columns", progress = progress, cl = cl
+  )
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)

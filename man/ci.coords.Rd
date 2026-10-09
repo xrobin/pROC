@@ -24,15 +24,15 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = NULL, ...) 
+progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
 \S3method{ci.coords}{formula}(formula, data, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
-input=c("specificity", "sensitivity"), ret=c("specificity", "sensitivity"),
+input="specificity", ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = NULL, ...)
+progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
 \S3method{ci.coords}{default}(response, predictor, ...)
 }
 		   
@@ -67,8 +67,23 @@ progress = NULL, ...)
 	of cases/controls in each replicate than in the original sample) or
 	not.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
+  \item{cl}{how to run the bootstrap in parallel. \code{NULL} (the default)
+    or \code{FALSE} runs it sequentially; a cluster object from
+    \code{\link[parallel]{makeCluster}} runs it on that cluster, which
+    \pkg{pROC} neither creates nor stops; \code{TRUE} uses the cluster
+    registered with \code{\link[parallel]{setDefaultCluster}}; and a number
+    creates a cluster of that many workers for the duration of the call.
+    Any cluster type works, including \code{"FORK"}, \code{"PSOCK"},
+    \code{"MPI"} and \code{"MIRAI"}. Results are reproducible from
+    \code{\link{set.seed}} whatever the number of workers, but differ from a
+    sequential run with the same seed. See the \dQuote{Parallel processing}
+    section of \link{pROC-package}.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.

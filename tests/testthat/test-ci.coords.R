@@ -58,6 +58,10 @@ valid_coords_input <- coord.is.monotone <- c(
 for (input in valid_coords_input) {
   for (stratified in c(TRUE, FALSE)) {
     for (test.roc in list(r.s100b, smooth(r.s100b))) {
+      # A smoothed curve has no thresholds, so "threshold" is not a valid
+      # input for it: coords() rejects that combination and ci.coords() now
+      # agrees instead of silently working from absent thresholds.
+      if (input == "threshold" && methods::is(test.roc, "smooth.roc")) next
       context(sprintf("input: %s, stratified: %s, class: %s", input, stratified, class(test.roc)))
       test_that("ci.coords accepts one x and one ret", {
         skip_slow()
@@ -117,3 +121,38 @@ for (input in valid_coords_input) {
     }
   }
 }
+
+
+test_that("ci.coords works on a smoothed curve with x = 'best'", {
+  # ci.coords() resolved 'input' from a two-element default through
+  # match.arg(several.ok = FALSE), so it failed for every x on a smoothed
+  # curve unless 'input' was given explicitly:
+  #   Error in match.arg(x, valid.args, several.ok = FALSE):
+  #     'arg' must be of length 1
+  # and once past that, x = "best" hit a second problem: the bootstrap worker
+  # called coords.roc() on a smooth.roc, bypassing the smooth method that
+  # fills the absent thresholds with NA.
+  s <- smooth(r.s100b)
+
+  set.seed(1)
+  best <- ci.coords(s, "best", ret = "sensitivity", boot.n = 20)
+  expect_s3_class(best, "ci.coords")
+  # The bootstrap median should sit near the point estimate.
+  point <- as.numeric(coords(s, "best", ret = "sensitivity"))
+  expect_equal(as.numeric(best$sensitivity)[2], point, tolerance = 0.05)
+
+  # A numeric x works without naming 'input', which defaults to specificity.
+  set.seed(1)
+  by.default <- ci.coords(s, 0.5, ret = "sensitivity", boot.n = 20)
+  set.seed(1)
+  explicit <- ci.coords(s, 0.5, input = "specificity", ret = "sensitivity", boot.n = 20)
+  expect_equal(as.numeric(unlist(by.default)), as.numeric(unlist(explicit)))
+})
+
+
+test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
+  # As coords() does: a smoothed curve has no thresholds.
+  s <- smooth(r.s100b)
+  expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
+  expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))
+})

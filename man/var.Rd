@@ -17,7 +17,7 @@ var(...)
 \S3method{var}{auc}(auc, ...)
 \S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
-progress = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
 }
 
@@ -44,8 +44,23 @@ progress = NULL, parallel=FALSE, ...)
     of cases/controls in each replicate than in the original sample) or
     not. Default: \var{TRUE}.
   }
-  \item{progress}{DEPRECATED. A value other than \code{NULL} will produce
-    a warning. The argument will be removed in a future version.}
+  \item{progress}{whether to display a text progress bar during the
+    bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
+    that is on in an interactive session and off otherwise. The names of the
+    progress bars of the pre-1.19 \pkg{plyr} interface (\code{"none"},
+    \code{"text"}, \code{"win"}, \code{"tk"}) are still accepted, but only a
+    text bar is drawn.}
+  \item{cl}{how to run the bootstrap in parallel. \code{NULL} (the default)
+    or \code{FALSE} runs it sequentially; a cluster object from
+    \code{\link[parallel]{makeCluster}} runs it on that cluster, which
+    \pkg{pROC} neither creates nor stops; \code{TRUE} uses the cluster
+    registered with \code{\link[parallel]{setDefaultCluster}}; and a number
+    creates a cluster of that many workers for the duration of the call.
+    Any cluster type works, including \code{"FORK"}, \code{"PSOCK"},
+    \code{"MPI"} and \code{"MIRAI"}. Results are reproducible from
+    \code{\link{set.seed}} whatever the number of workers, but differ from a
+    sequential run with the same seed. See the \dQuote{Parallel processing}
+    section of \link{pROC-package}.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,

@@ -43,7 +43,8 @@ cov.roc <- function(roc1, roc2,
                     method = c("delong", "bootstrap", "obuchowski"),
                     reuse.auc = TRUE,
                     boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
-                    progress = NULL,
+                    progress = getOption("pROCProgress", interactive()),
+                    cl = NULL,
                     parallel = FALSE,
                     ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
@@ -57,9 +58,8 @@ cov.roc <- function(roc1, roc2,
   if (roc_utils_is_perfect_curve(roc1) && roc_utils_is_perfect_curve(roc2)) {
     warning("cov() of two ROC curves with AUC == 1 is always 0 and can be misleading.")
   }
-  if (!is.null(progress)) {
-    warning("Progress bars are deprecated in pROC 1.19. Ignoring 'progress' argument")
-  }
+  progress <- roc_utils_normalise_progress(progress)
+  roc_utils_warn_deprecated_parallel(parallel)
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
@@ -195,7 +195,9 @@ cov.roc <- function(roc1, roc2,
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
 
-    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args)
+    cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args,
+      progress = progress, cl = cl
+    )
   }
 
   return(cov)

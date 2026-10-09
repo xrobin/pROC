@@ -140,50 +140,73 @@ aSAH \%>\%
   but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
+	\subsection{Speed}{
+	  Bootstrap is the slow way to quantify uncertainty, because it recomputes
+	  the ROC curve for every replicate. Where DeLong applies \pkg{pROC} uses it
+	  by default, with the O(N log N) algorithm of Sun and Xu (2014), and the
+	  difference is large: on 500,000 observations
+	  \code{\link{ci.auc}} takes about 0.07 s with DeLong against 27 s
+	  bootstrapping only 100 replicates.
+
+	  DeLong does not always apply. It covers the AUC of an empirical curve, so a
+	  smoothed curve, a partial AUC, or an interval of sensitivities,
+	  specificities, thresholds or coordinates is bootstrapped whatever you ask
+	  for. That is usually why a computation is slow.
+
+	  Within bootstrap, three things help. Prefer the specialised functions:
+	  \code{\link{ci.thresholds}} is the fastest and \code{\link{ci.coords}}
+	  the slowest, so use \code{\link{ci.coords}} only for intervals that
+	  \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}
+	  cannot give you. Lower \code{boot.n}, at the cost of precision. Or spread
+	  the replicates over several processes, as below.
+	}
+
 	\subsection{Progress bars}{
-	  Progress bars are no longer supported in pROC 1.19. The use of the
-	  \code{progress} argument is deprecated, and any value other than \code{NULL}
-	  will produce a warning. The argument will be removed in a future version.
+	  Bootstrap operations display a text progress bar in interactive sessions,
+	  so that a long computation does not look like a hung one. Control it with
+	  the \code{progress} argument of \code{\link{ci}} and the other bootstrap
+	  functions, or set the default for the session with
+	  \code{options(pROCProgress = FALSE)}. The bar costs essentially nothing:
+	  it is redrawn about a hundred times over the whole bootstrap, not once per
+	  replicate.
 	}
-}
 
-\section{Handling large datasets}{
-	\subsection{Algorithms}{
-	Over the years, a significant amount of time has been invested in making pROC run faster and faster.
-	From the naive algorithm iterating over all thresholds implemented in the first version, we went to a
-	C++ implementation (with \pkg{Rcpp}), and a different algorithm using cumulative sum of responses sorted
-	by the predictor, which scales only with the number of data points, independently of the number of thresholds.
-	The curves themselves are identical, but computation time has been decreased massively.
-	
-	Earlier versions of \pkg{pROC} allowed choosing among several algorithms. Since pROC 1.19, only the
-	cumulative-sum algorithm is available. This allowed us to remove legacy code
-	and dependencies, and make \pkg{pROC} more maintainable and future proof.
-	}
-	
-    \subsection{Boostrap}{
-    Bootstrap is typically slow because it involves repeatedly computing the ROC curve (or a part of it).
-    
-    Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
-    
-    To speed up computations it is possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
+	\subsection{Parallel processing}{
+	    Bootstrap operations can run on several processes with the \code{cl}
+	    argument. \pkg{pROC} never takes a core on its own: pass a cluster, or
+	    ask for a number of workers explicitly.
 
-    \subsection{Parallel processing}{
-	    Parallel processing is no longer supported in pROC 1.19. The use of the
-	    \code{parallel} argument is deprecated, and any value other than
-	    \code{FALSE} will produce a warning. The argument will be removed in a
-	    future version.
-  	}
-  }
-  
-  \subsection{Using DeLong instead of boostrap}{
-    DeLong is an asymptotically exact method to evaluate the uncertainty of an AUC (DeLong \emph{et al.} (1988)). Since version 1.9, pROC uses the algorithm proposed by Sun and Xu (2014) which has an O(N log N) complexity and is always faster than bootstrapping. By default, pROC will choose the DeLong method whenever possible.
-  
         \preformatted{
-rocobj <- roc(response, round(predictor))
-system.time(ci(rocobj, method="delong"))
-    }
-  }
+library(parallel)
+cl <- makeCluster(2)            # or type = "FORK", "MPI", "MIRAI"...
+ci(rocobj, method = "bootstrap", cl = cl)
+stopCluster(cl)
+
+ci(rocobj, method = "bootstrap", cl = 2)    # pROC creates and stops it
+
+setDefaultCluster(makeCluster(2))
+ci(rocobj, method = "bootstrap", cl = TRUE) # use the registered cluster
+        }
+
+	    Each replicate draws from its own L'Ecuyer-CMRG random number stream,
+	    chosen by the replicate's index rather than by the worker that happens
+	    to run it. A seeded parallel bootstrap therefore gives the same answer
+	    whatever the number of workers, which is not the case for a bootstrap
+	    whose streams are assigned per worker. It does differ from a sequential
+	    run with the same seed: sequential results are unchanged from earlier
+	    versions of \pkg{pROC}.
+
+	    How much this helps depends on how much work a replicate does and how
+	    much data has to reach the workers; a bootstrap of a few seconds or
+	    more generally gains, a very short one may not.
+
+	    The older \code{parallel} argument is a different thing and remains
+	    deprecated: any value other than \code{FALSE} produces a warning, and
+	    the argument will be removed in a future version.
+  	}
 }
+
+
 
 \author{
 Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
