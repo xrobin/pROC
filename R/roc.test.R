@@ -121,6 +121,13 @@ roc.test.roc <- function(roc1, roc2,
                          conf.level = 0.95,
                          ...) {
   alternative <- match.arg(alternative)
+  # Check if conf.level is specified correctly. This is currently
+  # only used for the delong paired method, but the method may not be known yet.
+  if (!is.numeric(conf.level)) {
+    stop("conf.level must be numeric between 0 and 1.")
+  } else if (0 > conf.level | 1 < conf.level) {
+    stop("conf.level must be between 0 and 1.")
+  }
   data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
@@ -251,14 +258,6 @@ roc.test.roc <- function(roc1, roc2,
         warning("DeLong's test should not be applied to ROC curves with a different direction.")
       }
 
-      # Check if conf.level is specified correctly. This is currently
-      # only used for the delong paired method, which is why it lives
-      # here for now.
-      if (!is.numeric(conf.level)) {
-        stop("conf.level must be numeric between 0 and 1.")
-      } else if (0 > conf.level | 1 < conf.level) {
-        stop("conf.level must be between 0 and 1.")
-      }
     } else if (method == "venkatraman") {
       if (has.partial.auc(roc1)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
