@@ -114,6 +114,7 @@
   * 'roc.test' with 'method="sensitivity"' or 'method="specificity"' now reports the tested sensitivities or specificities as estimates instead of the AUCs
   * Fixed non-stratified bootstraps of ordered predictors failing when a resample loses a class
   * Fixed binormal smoothing (and the Obuchowski variance) of ordered predictors depending on unused levels
+  * Fixed the binormal parameters used by 'var', 'cov' and 'power.roc.test' with 'method="obuchowski"', which gave biased variances (and near-zero variances for partial AUCs)
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
