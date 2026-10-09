@@ -65,6 +65,7 @@
   * `are.paired` and `roc.test` are no longer affected by objects named `oroc1` or `oroc2` in the user's workspace.
   * `are.paired(return.paired.rocs = TRUE)` now returns smoothed curves when given smoothed curves without missing values, and keeps the (partial) AUC and CI specification of smoothed curves.
   * `has.partial.auc` now checks that the `partial.auc` specification has length 2.
+  * The warning for a deprecated `algorithm` argument now shows the value given instead of a literal `%s`.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
