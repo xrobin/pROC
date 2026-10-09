@@ -176,6 +176,10 @@ coords.smooth.roc <- function(smooth.roc,
           optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
         }
       }
+      if (length(se) == 0) {
+        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        return(NULL)
+      }
 
       if (any(!ret %in% c("specificity", "sensitivity", best.method))) {
         # Deduce additional tn, tp, fn, fp, npv, ppv

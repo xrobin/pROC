@@ -79,6 +79,7 @@
   * Fixed 'coords' on an 'auc' object ignoring all its arguments and returning the whole curve
   * Fixed 'ci.auc' returning NA on smoothed 'percent=TRUE' curves with a corrected partial AUC
   * Fixed 'ci.coords' on smoothed curves mixing up the bootstrap values when some resamples could not be smoothed
+  * Fixed 'ci.coords(x="best")' on curves with a partial AUC failing when a resample had no point in the partial AUC range
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

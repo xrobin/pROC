@@ -590,10 +590,17 @@ bootstrap.thresholds <- function(n, roc, stratified, thresholds) {
 bootstrap.coords <- function(n, roc, stratified, x, input, ret,
                              best.method, best.weights, best.policy) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
-  res <- coords.roc(resampled,
+  # Silence the "No coordinates found" warnings of resamples with no point in
+  # the partial AUC range: ci.coords reports the NA replicates once.
+  res <- suppressWarnings(coords.roc(resampled,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
-  )
+  ))
+  if (is.null(res)) {
+    # x = "best" found no point in the partial AUC range of this resample:
+    # NA replicate, with the shape of a successful one
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
   enforce.best.policy.if.needed(res, x, best.policy)
 }
 
@@ -613,10 +620,15 @@ bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
   # and the smooth method is what fills them with NA and resolves x = "best"
   # before delegating. Calling coords.roc() directly left the "best" search
   # comparing against absent thresholds.
-  res <- coords.smooth.roc(smooth.roc,
+  res <- suppressWarnings(coords.smooth.roc(smooth.roc,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
-  )
+  ))
+  if (is.null(res)) {
+    # x = "best" found no point in the partial AUC range of this resample:
+    # NA replicate, with the shape of a successful one
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
   enforce.best.policy.if.needed(res, x, best.policy)
 }
 
