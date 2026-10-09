@@ -54,6 +54,7 @@ jobs:
           build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
 
   R-CMD-check-manual:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     name: ubuntu-latest (release, manual)
 
@@ -86,6 +87,7 @@ jobs:
           args: 'c("--as-cran")'
 
   R-CMD-check-depends-only:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     name: ubuntu-latest (release, depends-only)
 
