@@ -158,6 +158,25 @@ test_that("obuchowski cov of percent curves with partial AUC is the fraction cov
   )
 })
 
+test_that("cov re-pairs curves with NAs at different positions", {
+  x1 <- aSAH$s100b
+  x2 <- aSAH$ndka
+  x1[c(3, 50)] <- NA
+  x2[c(10, 90)] <- NA
+  r1 <- roc(aSAH$outcome, x1, quiet = TRUE)
+  r2 <- roc(aSAH$outcome, x2, quiet = TRUE)
+  ok <- !is.na(x1) & !is.na(x2)
+  q1 <- roc(aSAH$outcome[ok], x1[ok], quiet = TRUE)
+  q2 <- roc(aSAH$outcome[ok], x2[ok], quiet = TRUE)
+  expect_equal(cov(r1, r2), cov(q1, q2))
+  expect_equal(cov(r1, r2, method = "obuchowski"), cov(q1, q2, method = "obuchowski"))
+  set.seed(42)
+  c.na <- cov(r1, r2, method = "bootstrap", boot.n = 10)
+  set.seed(42)
+  c.ok <- cov(q1, q2, method = "bootstrap", boot.n = 10)
+  expect_equal(c.na, c.ok)
+})
+
 test_that("cov works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
