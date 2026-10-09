@@ -337,3 +337,39 @@ test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  t.auc <- roc.test(a1, a2, boot.n = 10)
+  set.seed(42)
+  t.smooth <- roc.test(s1, s2, boot.n = 10)
+  expect_equal(unname(t.auc$estimate), c(as.numeric(a1), as.numeric(a2)))
+  expect_equal(t.auc$estimate, t.smooth$estimate)
+  expect_equal(t.auc$statistic, t.smooth$statistic)
+})
+
+test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
+  r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
+  r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE))
+  set.seed(42)
+  expected <- roc.test(s1, s2, boot.n = 10)
+  set.seed(42)
+  t.roc <- roc.test(r1, r2, boot.n = 10)
+  set.seed(42)
+  t.mixed <- expect_warning(roc.test(r1, s2, boot.n = 10), NA)
+  set.seed(42)
+  t.default <- roc.test(aSAH$outcome, aSAH$s100b, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.formula <- roc.test(outcome ~ s100b + ndka, data = aSAH, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(unname(expected$estimate), c(as.numeric(r1$auc), as.numeric(r2$auc)))
+  for (t in list(t.roc, t.mixed, t.default, t.formula)) {
+    expect_equal(unname(t$estimate), unname(expected$estimate))
+    expect_equal(t$statistic, expected$statistic)
+  }
+})
