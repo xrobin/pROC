@@ -70,3 +70,15 @@ test_that("venkatraman breaks ties at random by default", {
   expect_equal(t.default$statistic, t.random$statistic)
   expect_equal(t.default$p.value, t.random$p.value)
 })
+
+test_that("venkatraman rejects a partial AUC on either curve", {
+  set.seed(42)
+  expect_warning(
+    expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported"),
+    "Different AUC specifications"
+  )
+  expect_warning(
+    expect_error(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2), "Partial AUC is not supported"),
+    "Different AUC specifications"
+  )
+})
