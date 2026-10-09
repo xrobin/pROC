@@ -73,8 +73,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.thresholds.roc}
     when calling \code{ci.thresholds.default} or \code{ci.thresholds.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable. 
     Arguments \code{best.method} and \code{best.weights} to \code{\link{coords}}.
   }
 }
