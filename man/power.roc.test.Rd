@@ -32,7 +32,7 @@ alternative = c("two.sided", "one.sided"), ...)
 	\code{\link{roc}} function.
   }
   \item{auc}{
-    expected AUC.
+    expected AUC: a number, or the \code{auc} object of a full AUC.
   }
   \item{parslist}{
     a \code{\link{list}} of parameters for the two ROC curves test with
@@ -104,7 +104,7 @@ alternative = c("two.sided", "one.sided"), ...)
 
   \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
   function, but the empirical ROC will not be used, only the number of
-  patients and the AUC.
+  patients and the AUC. Only the full AUC is supported.
 }
 
 \section{Two paired ROC curves power calculation}{
@@ -167,6 +167,9 @@ alternative = c("two.sided", "one.sided"), ...)
   Warning: if the roc object passed to roc.test contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
   arguments such as \code{partial.auc} are silently ignored.
+
+  Corrected partial AUCs (\code{partial.auc.correct=TRUE}) are not
+  supported.
 }
 
 \value{

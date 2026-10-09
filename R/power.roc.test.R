@@ -131,7 +131,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       }
       ncontrols <- ncases <- NULL
     }
-    auc <- auc(roc1)
+    auc <- roc1$auc
     # TODO: implement this with var() and cov() for the given ROC curve
     return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, kappa = kappa, ...))
   }
@@ -155,6 +155,10 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     stop("'sig.level' must range from 0 to 1")
   }
   if (!is.null(auc) && methods::is(auc, "auc")) {
+    # The one ROC curve formula (Obuchowski et al., 2004) is for the full AUC
+    if (has.partial.auc(auc)) {
+      stop("Power calculation for one ROC curve is only available for the full AUC.")
+    }
     # The auc of a percent curve is on the 0-100 scale
     auc <- roc_utils_unpercent(auc)
   }
