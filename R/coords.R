@@ -162,34 +162,19 @@ coords.smooth.roc <- function(smooth.roc,
       if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- smooth.roc$sensitivities[optim.crit == max(optim.crit)]
         sp <- smooth.roc$specificities[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
           se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
           sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
         } else {
           optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
           se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
           sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
         }
       }
 
-      if (any(!ret %in% c("specificity", "sensitivity", best.method))) {
-        # Deduce additional tn, tp, fn, fp, npv, ppv
-        res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
-      } else {
-        extra <- list()
-        extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
-        res <- data.frame(
-          specificity = as.vector(sp),
-          sensitivity = as.vector(se),
-          stringsAsFactors = FALSE
-        )
-        res[[best.method]] <- extra[[best.method]]
-      }
+      res <- roc_utils_calc_coords(smooth.roc, NA, se, sp, best.weights)
     }
 
     if (as.list) {
@@ -361,29 +346,24 @@ coords.roc <- function(roc,
         se <- roc$sensitivities[optim.crit == max(optim.crit)]
         sp <- roc$specificities[optim.crit == max(optim.crit)]
         thres <- roc$thresholds[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit <- (optim.crit)[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
           sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
           thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
         } else {
           optim.crit <- (optim.crit)[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
           sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
           thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
         }
       }
       if (length(thres) == 0) {
         warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
         return(NULL)
       }
-      extra <- list()
-      extra[[best.method]] <- ifelse(best.method == "youden", 1, -1) * optim.crit
-      res <- roc_utils_coords_basic(thres, sp, se, extra = extra)
+      res <- roc_utils_coords_basic(thres, sp, se)
     }
   } else if (input == "threshold") {
     if (is.character(x) && !roc_utils_is_ordered_roc(roc)) {

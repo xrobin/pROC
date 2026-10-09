@@ -110,19 +110,13 @@ roc_utils_na_thresholds <- function(n, template) {
   }
 }
 
-roc_utils_coords_basic <- function(threshold, specificity, sensitivity, extra = NULL) {
-  res <- data.frame(
+roc_utils_coords_basic <- function(threshold, specificity, sensitivity) {
+  data.frame(
     threshold = threshold,
     specificity = as.vector(specificity),
     sensitivity = as.vector(sensitivity),
     stringsAsFactors = FALSE
   )
-  if (!is.null(extra)) {
-    for (nm in names(extra)) {
-      res[[nm]] <- extra[[nm]]
-    }
-  }
-  res
 }
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
