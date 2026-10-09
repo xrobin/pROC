@@ -56,8 +56,11 @@ are.paired.roc <- function(roc1, roc2,
   if (!identical(roc1$levels, roc2$levels)) {
     return(FALSE)
   }
-  # check if responses of roc 1 and 2 are identical
-  if (identical(roc1$response, roc2$response)) {
+  # check if responses of roc 1 and 2 are identical. Ignore the names (a
+  # formula gives the row names, as model.response() does), but not the
+  # na.action attribute: two curves that lost different observations must be
+  # paired on the observations they share, below.
+  if (identical(unname(roc1$response), unname(roc2$response))) {
     retval <- TRUE
     if (return.paired.rocs) {
       attr(retval, "roc1") <- roc1
@@ -67,7 +70,7 @@ are.paired.roc <- function(roc1, roc2,
   } else {
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
-    if (identical(roc1$original.response, roc2$original.response)) {
+    if (identical(unname(roc1$original.response), unname(roc2$original.response))) {
       retval <- TRUE
       if (!return.paired.rocs) {
         return(retval)
