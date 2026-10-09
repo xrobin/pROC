@@ -21,7 +21,7 @@ auc <- function(...) {
   UseMethod("auc")
 }
 
-auc.formula <- function(formula, data, ...) {
+auc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,

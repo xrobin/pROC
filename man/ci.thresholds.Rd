@@ -20,7 +20,7 @@
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
 progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
-\S3method{ci.thresholds}{formula}(formula, data, ...)
+\S3method{ci.thresholds}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
 }
@@ -34,6 +34,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
   in percent. Default: 0.95, resulting in a 95\% CI.

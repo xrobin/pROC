@@ -21,7 +21,7 @@ ci.se <- function(...) {
   UseMethod("ci.se")
 }
 
-ci.se.formula <- function(formula, data, ...) {
+ci.se.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
