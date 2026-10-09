@@ -72,7 +72,7 @@ test_that("power.roc.test can take 2 ROC curves with DeLong variance", {
   expect_equal(res$ncontrols, 72)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
-  expect_equal(res$power, 0.7131594, tolerance = 0.000001)
+  expect_equal(res$power, 0.6872839, tolerance = 0.000001)
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$alternative, "two.sided")
 })
@@ -84,7 +84,7 @@ test_that("power.roc.test can take 2 percent ROC curves with DeLong variance", {
   expect_equal(res$ncontrols, 72)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
-  expect_equal(res$power, 0.7131594, tolerance = 0.000001)
+  expect_equal(res$power, 0.6872839, tolerance = 0.000001)
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$alternative, "two.sided")
 })
@@ -102,8 +102,8 @@ test_that("power.roc.test can take 2 ROC curves with Obuchowski variance", {
 
 test_that("power.roc.test ncases/ncontrols can take 2 ROC curves with DeLong variance", {
   res <- power.roc.test(r.ndka, r.wfns, power = 0.9)
-  expect_equal(res$ncases, 64.77777, tolerance = 0.000001)
-  expect_equal(res$ncontrols, 113.7561, tolerance = 0.000001)
+  expect_equal(res$ncases, 67.55038, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 118.6251, tolerance = 0.000001)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
@@ -129,7 +129,7 @@ test_that("power.roc.test sig.level can take 2 ROC curves with DeLong variance",
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
-  expect_equal(res$sig.level, 0.1836639, tolerance = 0.000001)
+  expect_equal(res$sig.level, 0.1982034, tolerance = 0.000001)
   expect_equal(res$alternative, "two.sided")
 })
 
@@ -280,13 +280,13 @@ test_that("kappa works with a single ROC curve", {
 test_that("kappa works with two ROC curves", {
   # kappa from data
   res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9)
-  expect_equal(res$ncases, 213.117677)
-  expect_equal(res$ncontrols, 374.255432)
+  expect_equal(res$ncases, 210.7168158)
+  expect_equal(res$ncontrols, 370.0392862)
   expect_equal(res$ncases / res$ncontrols, length(r.s100b$cases) / length(r.s100b$controls))
   # set kappa
   res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9, kappa = 1)
-  expect_equal(res$ncases, 213.117677)
-  expect_equal(res$ncases, 213.117677)
+  expect_equal(res$ncases, 210.7168158)
+  expect_equal(res$ncases, 210.7168158)
   # ...
 })
 
@@ -305,7 +305,8 @@ test_that("power.roc.test with bootstrap uses the variance of each AUC", {
   var1 <- var(rv[1, ]) * n
   var2 <- var(rv[2, ]) * n
   cov12 <- as.numeric(cv) * n
-  v0 <- 2 * var1 - 2 * cov12
+  cov0 <- cov12 * sqrt(var1 / var2)
+  v0 <- 2 * var1 - 2 * cov0
   va <- var1 + var2 - 2 * cov12
   expect_equal(res$ncases, (zalpha * sqrt(v0) + zbeta * sqrt(va))^2 / delta^2)
 })
@@ -433,5 +434,18 @@ test_that("power.roc.test uses the covariance under the null hypothesis with Obu
   v0 <- 2 * v1 - 2 * c0
   va <- v1 + v2 - 2 * ca
   delta <- as.numeric(r.ndka$auc - r.wfns$auc)
+  expect_equal(res$ncases, (qnorm(0.975) * sqrt(v0) + qnorm(0.9) * sqrt(va))^2 / delta^2)
+})
+
+test_that("power.roc.test with DeLong uses the AUC correlation under the null hypothesis", {
+  # V0 = 2 * var1 * (1 - cor12): both AUCs with the variance of roc1
+  res <- power.roc.test(r.s100b, r.ndka, power = 0.9)
+  n <- length(r.s100b$cases)
+  var1 <- var(r.s100b) * n
+  var2 <- var(r.ndka) * n
+  cov12 <- cov(r.s100b, r.ndka) * n
+  v0 <- 2 * var1 * (1 - cov12 / sqrt(var1 * var2))
+  va <- var1 + var2 - 2 * cov12
+  delta <- as.numeric(r.s100b$auc - r.ndka$auc)
   expect_equal(res$ncases, (qnorm(0.975) * sqrt(v0) + qnorm(0.9) * sqrt(va))^2 / delta^2)
 })
