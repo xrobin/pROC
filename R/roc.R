@@ -250,7 +250,7 @@ roc.default <- function(response, predictor,
   else if (!missing(cases) && !is.null(cases) && !missing(controls) && !is.null(controls)) {
     # Forbid density
     if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
-      stop("'density.*' arguments incompatible with 'response/predictor'.")
+      stop("'density.*' arguments incompatible with 'cases/controls'.")
     }
     # remove nas
     if (na.rm) {
