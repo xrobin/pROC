@@ -152,10 +152,10 @@ cov(...)
 
   With \code{method="obuchowski"}, the processing is done as described
   in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
-  computation of \eqn{g} for partial area under the ROC curve is
-  modified as: 
-
-  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
+  formulas of Table 1 are used as published. The binormal parameters
+  \eqn{A} and \eqn{B} are taken from pROC's binormal smoothing of the curve
+  (see \code{\link[=smooth.roc]{smooth}}), not from maximum-likelihood
+  estimates as in the paper.
 }
 
 \section{Binormality assumption}{
