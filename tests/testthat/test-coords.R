@@ -614,3 +614,46 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
     0.2926829268292683 # and not 0
   )
 })
+
+test_that("coords 'best' returns the right youden and closest.topleft with a specificity partial AUC", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, partial.auc = c(1, 0.5), quiet = TRUE)
+  best.y <- coords(r, "best", ret = c("threshold", "youden"))
+  expect_equal(best.y$threshold, c(4.5, 6.5))
+  expect_equal(best.y$youden, c(1.8, 1.8))
+  best.t <- coords(r, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best.t$threshold, c(4.5, 6.5))
+  expect_equal(best.t$closest.topleft, c(0.04, 0.04))
+
+  for (r in list(r.s100b.partial1, r.ndka.partial1, r.s100b.partial2)) {
+    for (bm in c("youden", "closest.topleft")) {
+      best <- coords(r, "best", ret = c("threshold", bm), best.method = bm)
+      expect_equal(best[[bm]], coords(r, best$threshold, ret = bm)[[bm]])
+    }
+  }
+})
+
+test_that("coords 'best' closest.topleft is on the percent scale for percent curves", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  rp <- roc(resp, pred, percent = TRUE, quiet = TRUE)
+  best <- coords(rp, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best$closest.topleft, c(4, 4))
+
+  for (r in list(r.s100b.percent, smooth(r.s100b.percent))) {
+    best <- coords(r, "best", ret = "closest.topleft", best.method = "closest.topleft")
+    # Requesting another column goes through roc_utils_calc_coords
+    best.acc <- coords(r, "best", ret = c("closest.topleft", "accuracy"), best.method = "closest.topleft")
+    expect_identical(best$closest.topleft, best.acc$closest.topleft)
+  }
+  # The same for youden on a partial AUC curve
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), quiet = TRUE)
+  best <- coords(r, "best", ret = "youden")
+  expect_identical(best$youden, coords(r, "best", ret = c("youden", "accuracy"))$youden)
+  expect_equal(best$youden, 1.299797, tolerance = 1e-6)
+  expect_equal(
+    coords(r.s100b.percent, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft,
+    100 * coords(r.s100b, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft
+  )
+})
