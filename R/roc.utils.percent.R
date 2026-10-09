@@ -98,8 +98,9 @@ roc_utils_unpercent.ci.se <- function(x) {
   return(x)
 }
 
+# A ci.coords cannot be converted: the callers compute on the curve, so drop it
 roc_utils_unpercent.ci.coords <- function(x) {
-  stop("Cannot convert ci.coords object to percent = FALSE")
+  NULL
 }
 
 # Returns a ROC curve with percent=TRUE
@@ -179,6 +180,7 @@ roc_utils_topercent.ci.se <- function(x) {
   return(x)
 }
 
+# A ci.coords cannot be converted: the callers compute on the curve, so drop it
 roc_utils_topercent.ci.coords <- function(x) {
-  stop("Cannot convert ci.coords object to percent = TRUE")
+  NULL
 }
