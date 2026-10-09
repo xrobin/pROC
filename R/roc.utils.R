@@ -824,7 +824,10 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
 
   return(list(
     response.name = names(m)[1],
-    response = model.response(m),
+    # model.response() names the response with the row names of the data:
+    # drop them so that formula and default interfaces give the same
+    # response, and are.paired can recognize the curves as paired
+    response = unname(model.response(m)),
     predictor.names = names(m)[-1],
     predictors = m[-1]
   ))
