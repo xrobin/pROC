@@ -60,6 +60,28 @@ test_that("paired DeLong conf.int is on the percent scale of percent curves", {
   expect_equal(t1p$statistic, t1$statistic)
 })
 
+test_that("roc.test checks conf.level when the method is selected automatically", {
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = "0.9"), "conf.level must be numeric")
+  expect_error(roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, method = "delong", conf.level = 2), "conf.level must be between 0 and 1")
+  # A logical is a number, as in t.test()
+  expect_identical(as.numeric(roc.test(r.wfns, r.s100b, conf.level = TRUE)$conf.int), as.numeric(roc.test(r.wfns, r.s100b, conf.level = 1)$conf.int))
+})
+
+test_that("roc.test does not check conf.level for the tests that do not use it", {
+  set.seed(42)
+  expect_warning(ref <- roc.test(r.wfns, r.s100b, paired = FALSE), "paired")
+  for (conf.level in list(2, NA, "0.9")) {
+    expect_warning(ht <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = conf.level), "paired")
+    expect_identical(ht$p.value, ref$p.value)
+    expect_warning(ht <- roc.test(r.wfns, r.s100b, method = "delong", paired = FALSE, conf.level = conf.level), "paired")
+    expect_identical(ht$p.value, ref$p.value)
+    expect_is(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = conf.level), "htest")
+    expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = conf.level), "htest")
+  }
+})
+
 test_that("two.sided roc.test produces identical p values when roc curves are reversed", {
   t1b <- roc.test(r.s100b, r.wfns)
   expect_equal(t1b$p.value, t1$p.value)
