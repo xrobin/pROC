@@ -124,7 +124,8 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
     out.classes <- paste0(missing.classes, collapse = ",")
     warning("You did not provide decision values for the following classes: ", out.classes, ".")
   }
-  additional.classes <- colnames(predictor)[which(is.na(m))]
+  # columns excluded by a user-supplied subset of levels are silently ignored
+  additional.classes <- colnames(predictor)[is.na(m) & !(colnames(predictor) %in% response)]
   if (length(additional.classes) != 0) {
     out.classes <- paste0(additional.classes, collapse = ",")
     warning("The following classes were not found in 'response': ", out.classes, ".")
