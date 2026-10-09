@@ -191,7 +191,8 @@ na.rm=TRUE, method=NULL, ...)
   field, the \code{\link{auc}} function will always be called with
   \code{\dots} to determine the specification.
 
-  The AUC specification is ignored in the Venkatraman test.
+  The Venkatraman test compares the whole curves: it fails with an error if
+  either curve has a partial AUC specification.
 
   Warning: if the roc object passed to roc.test contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
@@ -300,6 +301,10 @@ na.rm=TRUE, method=NULL, ...)
   If \code{method="venkatraman"} and one of the ROC curves is smoothed,
   the error \dQuote{Venkatraman's test is not supported for smoothed
     ROCs} is produced.
+
+  If \code{method="venkatraman"} and one of the ROC curves has a partial
+  AUC specification, the error \dQuote{Partial AUC is not supported for
+    Venkatraman's test.} is produced.
 
   If \code{method="venkatraman"}, and \code{alternative} is
   \dQuote{less} or \dQuote{greater}, the error \dQuote{Only two-sided
