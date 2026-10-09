@@ -907,3 +907,18 @@ roc_utils_stop_if_numeric_density <- function(smooth.roc, what) {
     stop(sprintf("Cannot compute %s ROC curves smoothed with numeric density.controls and density.cases.", what))
   }
 }
+
+# Set the call of a curve built by a wrapper (and the variable names, for the
+# formula methods), also on the curve a smoothed curve keeps in attr(x, "roc"),
+# from which print() takes the data names.
+roc_utils_set_call_names <- function(roc, call, predictor.name = NULL, response.name = NULL) {
+  roc$call <- call
+  if (!is.null(predictor.name)) {
+    roc$predictor.name <- predictor.name
+    roc$response.name <- response.name
+  }
+  if (!is.null(attr(roc, "roc"))) {
+    attr(roc, "roc") <- roc_utils_set_call_names(attr(roc, "roc"), call, predictor.name, response.name)
+  }
+  roc
+}

@@ -39,13 +39,7 @@ roc.formula <- function(formula, data, ...) {
     if (!roc_utils_is_curve(roc)) {
       return(roc) # NA or NaN: nothing to decorate
     }
-    roc$call <- match.call()
-    roc$predictor.name <- roc.data$predictor.names
-    roc$response.name <- roc.data$response.name
-    if (!is.null(roc$smooth)) {
-      attr(roc, "roc")$call <- roc$call
-    }
-    return(roc)
+    return(roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name))
   } else if (ncol(predictors) > 1) {
     roclist <- lapply(roc.data$predictor.names, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
@@ -56,10 +50,7 @@ roc.formula <- function(formula, data, ...) {
       # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
-      roc$call <- call
-      roc$predictor.name <- predictor
-      roc$response.name <- roc.data$response.name
-      return(roc)
+      return(roc_utils_set_call_names(roc, call, predictor, roc.data$response.name))
     }, formula = formula, m.data = predictors, call = match.call(), ...)
     # Set the list names
     names(roclist) <- roc.data$predictor.names
@@ -94,7 +85,7 @@ roc.data.frame <- function(data, response, predictor,
   r <- roc_(data, response_name, predictor_name, ret = ret, ...)
 
   if (ret == "roc" && roc_utils_is_curve(r)) {
-    r$call <- match.call()
+    r <- roc_utils_set_call_names(r, match.call())
   }
   return(r)
 }
@@ -124,8 +115,7 @@ roc_ <- function(data, response, predictor,
   if (!roc_utils_is_curve(r)) {
     return(r) # NA or NaN: no curve, no coordinates
   } else if (ret == "roc") {
-    r$call <- match.call()
-    return(r)
+    return(roc_utils_set_call_names(r, match.call()))
   } else if (ret == "coords") {
     co <- coords(r, x = "all", transpose = FALSE)
     rownames(co) <- NULL
