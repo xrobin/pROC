@@ -85,7 +85,10 @@ transpose = FALSE, as.matrix=FALSE, ...)
     setting this argument to \code{TRUE} if you are calling the function
     repeatedly.
   }
-  \item{\dots}{further arguments passed from other methods. Ignored.}
+  \item{\dots}{further arguments passed from other methods. For
+    \code{coords.auc}, the arguments of \code{coords.roc} or
+    \code{coords.smooth.roc}, passed on with the curve of the \code{auc}.
+    Ignored otherwise.}
 }
 
 \details{

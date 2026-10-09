@@ -54,7 +54,7 @@ coords.auc <- function(auc,
                        ...) {
   roc <- attr(auc, "roc")
   roc$auc <- auc
-  return(coords(roc))
+  return(coords(roc, ...))
 }
 
 coords.smooth.roc <- function(smooth.roc,

@@ -76,6 +76,7 @@
   * Fixed 'coords(x="best")' and 'ci.coords' returning a 'closest.topleft' 100 times too large on 'percent=TRUE' curves
   * Fixed 'coords' with input "fpr", "fp", "1-specificity", "fnr", "fn" or "1-sensitivity" returning the lower-right end of flat segments instead of the upper-left one
   * Fixed 'coords' returning an NA threshold for exact points of the curve with numeric inputs other than "sensitivity" and "specificity" ("tn", "fpr", ...)
+  * Fixed 'coords' on an 'auc' object ignoring all its arguments and returning the whole curve
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
