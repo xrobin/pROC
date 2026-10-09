@@ -281,3 +281,11 @@ test_that("Invalid CI functions fail cleanly", {
   expect_error(ci.thresholds(uv.mr), "not available for multiclass ROC curves")
   expect_error(ci.thresholds(uv.mr$auc), "not available for multiclass ROC curves")
 })
+
+test_that("multivariate with decision values for exactly half of the levels warns", {
+  response <- factor(c("a", "a", "b", "b", "c", "c", "d", "d"))
+  pred <- cbind(a = c(.9, .8, .1, .2, .1, .3, .2, .1), b = c(.1, .2, .7, .8, .2, .1, .3, .2))
+  expect_warning(mc <- multiclass.roc(response, pred), "following classes: c,d")
+  expect_equal(mc$levels, c("a", "b"))
+  expect_equal(as.numeric(mc$auc), 1)
+})
