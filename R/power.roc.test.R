@@ -65,10 +65,12 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       roc2 <- roc_utils_unpercent(roc2)
 
       # Make sure the ROC curves are paired
-      rocs.are.paired <- are.paired(roc1, roc2)
+      rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
       if (!rocs.are.paired) {
         stop("The sample size for a difference in AUC cannot be applied to unpaired ROC curves yet.")
       }
+      roc1 <- attr(rocs.are.paired, "roc1")
+      roc2 <- attr(rocs.are.paired, "roc2")
       # Make sure the AUC specifications are identical
       attr1 <- attributes(roc1$auc)
       attr1$roc <- NULL
