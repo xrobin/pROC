@@ -503,3 +503,16 @@ test_that("density with cases/controls error names the right arguments", {
     "'density.*' arguments incompatible with 'cases/controls'.", fixed = TRUE
   )
 })
+
+test_that("roc_ works when called from a function through Map", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, 3, 2, 4, 2.5, 6), z = c(2, 1, 3, 5, 4, 6))
+  f <- function(pred) {
+    a <- 1
+    roc_(d, "y", pred, quiet = TRUE)
+  }
+  rocs <- Map(f, c("x", "z"))
+  expect_s3_class(rocs$x, "roc")
+  expect_s3_class(rocs$z, "roc")
+  expect_error(roc_(d, "y", "w"), "Column 'w' not present in data d", fixed = TRUE)
+  expect_warning(expect_error(roc(d, y, w), "Column 'w' not present in data d", fixed = TRUE), "non-standard evaluation")
+})
