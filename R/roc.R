@@ -232,8 +232,11 @@ roc.default <- function(response, predictor,
     # Remove patients not in levels
     patients.in.levels <- response %in% levels
     if (!all(patients.in.levels)) {
+      na.action <- attr(response, "na.action") # dropped by [
       response <- response[patients.in.levels]
+      attr(response, "na.action") <- na.action
       predictor <- predictor[patients.in.levels]
+      attr(predictor, "na.action") <- na.action
     }
 
     # Check infinities
