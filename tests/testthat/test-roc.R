@@ -439,3 +439,21 @@ test_that("roc works with `with` and formula", {
 # 	}
 # }
 # save("expected.roc", system.file("extdata", "test-roc-expected.R", package="pROC"), file = "dump_roc_expected.R")
+
+test_that("formula and data.frame interfaces return NA and NaN like roc.default", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, NA, 3, 4, 5, 6))
+  expect_identical(roc(d$y, d$x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc(y ~ x, d, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc(d, y, x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc_(d, "y", "x", na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc_(d, "y", "x", ret = "coords", na.rm = FALSE, quiet = TRUE), NA)
+  d$z <- d$x + 1
+  expect_identical(roc(y ~ x + z, d, na.rm = FALSE, quiet = TRUE), list(x = NA, z = NA))
+  d2 <- data.frame(y = c(0, 0, 1, 1), x = c(1, 2, 3, Inf))
+  expect_warning(r <- roc(y ~ x, d2, quiet = TRUE), "Infinite")
+  expect_identical(r, NaN)
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_identical(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE), NA)
+})

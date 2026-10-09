@@ -36,6 +36,9 @@ roc.formula <- function(formula, data, ...) {
 
   if (ncol(predictors) == 1) {
     roc <- roc.default(response, predictors[, 1], ...)
+    if (!inherits(roc, c("roc", "smooth.roc"))) {
+      return(roc) # NA or NaN: nothing to decorate
+    }
     roc$call <- match.call()
     roc$predictor.name <- roc.data$predictor.names
     roc$response.name <- roc.data$response.name
@@ -47,6 +50,9 @@ roc.formula <- function(formula, data, ...) {
     roclist <- lapply(roc.data$predictor.names, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
       roc <- roc.default(response, m.data[[predictor]], ...)
+      if (!inherits(roc, c("roc", "smooth.roc"))) {
+        return(roc) # NA or NaN: nothing to decorate
+      }
       # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
@@ -87,7 +93,7 @@ roc.data.frame <- function(data, response, predictor,
 
   r <- roc_(data, response_name, predictor_name, ret = ret, ...)
 
-  if (ret == "roc") {
+  if (ret == "roc" && inherits(r, c("roc", "smooth.roc"))) {
     r$call <- match.call()
   }
   return(r)
@@ -115,7 +121,9 @@ roc_ <- function(data, response, predictor,
 
   r <- roc(data[[response]], data[[predictor]], ...)
 
-  if (ret == "roc") {
+  if (!inherits(r, c("roc", "smooth.roc"))) {
+    return(r) # NA or NaN: no curve, no coordinates
+  } else if (ret == "roc") {
     r$call <- match.call()
     return(r)
   } else if (ret == "coords") {
