@@ -50,6 +50,7 @@
   * 'roc.test', 'cov' and 'var' now give the documented error on curves smoothed with numeric 'density.controls' and 'density.cases' instead of D=Inf or 0
   * Fixed the mixing proportion of the unpaired Venkatraman test when the two curves have different numbers of observations
   * Fixed 'multiclass.roc' with a predictor matrix failing with 'Could not find any decision values' when exactly half of the response levels had no matching column
+  * Fixed 'multiclass.roc' failing with 'No case observation.' when 'levels' contained a level without observations in a non-factor response, or that was not a level of the factor; it is now dropped with a warning as for unused factor levels
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

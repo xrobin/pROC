@@ -289,3 +289,19 @@ test_that("multivariate with decision values for exactly half of the levels warn
   expect_equal(mc$levels, c("a", "b"))
   expect_equal(as.numeric(mc$auc), 1)
 })
+
+test_that("requested levels without observation are dropped whatever the response type", {
+  x <- c(1, 2, 3, 4, 5, 6)
+  resp <- c("a", "a", "b", "b", "c", "c")
+  ref <- suppressWarnings(multiclass.roc(factor(resp, levels = c("a", "b", "c", "q")), x, quiet = TRUE))
+  expect_warning(mc.chr <- multiclass.roc(resp, x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  expect_warning(mc.fac <- multiclass.roc(factor(resp), x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  for (mc in list(mc.chr, mc.fac)) {
+    expect_equal(mc$levels, c("a", "b", "c"))
+    expect_equal(as.numeric(mc$auc), as.numeric(ref$auc))
+  }
+
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_warning(mv <- multiclass.roc(resp, P, levels = c("a", "b", "c", "q")), "No observation for response level\\(s\\): q")
+  expect_equal(mv$levels, c("a", "b", "c"))
+})
