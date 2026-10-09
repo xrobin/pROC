@@ -45,6 +45,25 @@ roc_utils_unpercent.roc <- function(x) {
   return(x)
 }
 
+roc_utils_unpercent.smooth.roc <- function(x) {
+  if (x$percent) {
+    if (!is.null(x$auc)) {
+      x$auc <- roc_utils_unpercent(x$auc)
+    }
+    x$sensitivities <- x$sensitivities / 100
+    x$specificities <- x$specificities / 100
+    x$percent <- FALSE
+    if (!is.null(x$ci)) {
+      x$ci <- roc_utils_unpercent(x$ci)
+    }
+    if (!is.null(attr(x, "roc"))) {
+      attr(x, "roc") <- roc_utils_unpercent(attr(x, "roc"))
+    }
+  }
+
+  return(x)
+}
+
 roc_utils_unpercent.auc <- function(x) {
   if (attr(x, "percent")) {
     newx <- x / 100
@@ -120,6 +139,25 @@ roc_utils_topercent.roc <- function(x) {
     }
     if (!is.null(x$ci)) {
       x$ci <- roc_utils_topercent(x$ci)
+    }
+  }
+
+  return(x)
+}
+
+roc_utils_topercent.smooth.roc <- function(x) {
+  if (!x$percent) {
+    if (!is.null(x$auc)) {
+      x$auc <- roc_utils_topercent(x$auc)
+    }
+    x$sensitivities <- x$sensitivities * 100
+    x$specificities <- x$specificities * 100
+    x$percent <- TRUE
+    if (!is.null(x$ci)) {
+      x$ci <- roc_utils_topercent(x$ci)
+    }
+    if (!is.null(attr(x, "roc"))) {
+      attr(x, "roc") <- roc_utils_topercent(attr(x, "roc"))
     }
   }
 
