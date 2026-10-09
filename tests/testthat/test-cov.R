@@ -119,3 +119,26 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
   )
   expect_equal(expected_cov, obtained_cov)
 })
+
+test_that("cov keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  c.auc <- cov(a1, a2, boot.n = 10)
+  set.seed(42)
+  c.smooth <- cov(s1, s2, boot.n = 10)
+  expect_equal(c.auc, c.smooth)
+})
+
+test_that("cov works on curves smoothed in roc() with a partial AUC", {
+  r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
+  r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), quiet = TRUE)
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, .8), quiet = TRUE))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(1, .8), quiet = TRUE))
+  set.seed(42)
+  expected <- cov(s1, s2, boot.n = 10)
+  set.seed(42)
+  expect_equal(cov(r1, r2, boot.n = 10), expected)
+})
