@@ -58,6 +58,7 @@
   * `ci.auc()`, `var()`, `cov()` and `power.roc.test()` failed with "Cannot convert ci.coords object" on a percent curve built with `ci = TRUE, of = "coords"`.
   * The 'var(method="obuchowski")' errors no longer claim to use the bootstrap instead
   * Fixed 'cov' failing or returning a wrong value for paired curves with NA values at different positions
+  * 'roc.test' now gives the 'Missing argument predictor2' error also when 'predictor2 = NULL' is passed explicitly
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

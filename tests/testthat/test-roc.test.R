@@ -368,6 +368,11 @@ test_that("roc.test errors on curves built from numeric densities", {
   expect_error(roc.test(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
 })
 
+test_that("roc.test.default with predictor2 = NULL gives the missing predictor2 error", {
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, NULL), "Missing argument predictor2")
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, predictor2 = NULL), "Missing argument predictor2")
+})
+
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
