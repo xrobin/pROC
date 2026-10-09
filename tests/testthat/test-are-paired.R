@@ -166,3 +166,27 @@ test_that("curves that lost different observations to NA are paired on the commo
   expected <- roc.test(roc(y[-(1:2)], a[-(1:2)], quiet = TRUE), roc(y[-(1:2)], b[-(1:2)], quiet = TRUE))$p.value
   expect_equal(roc.test(ra, rb)$p.value, expected)
 })
+
+test_that("are.paired doesn't use objects named oroc1/oroc2 from the user's workspace", {
+  oroc1 <- oroc2 <- smooth(r.ndka)
+  # Save the user's objects of these names and restore them on exit
+  names <- c("oroc1", "oroc2")
+  existing <- names[vapply(names, exists, logical(1), envir = globalenv(), inherits = FALSE)]
+  saved <- mget(existing, envir = globalenv())
+  on.exit({
+    rm(list = names, envir = globalenv())
+    list2env(saved, envir = globalenv())
+  })
+  assign("oroc1", oroc1, envir = globalenv())
+  assign("oroc2", oroc2, envir = globalenv())
+  r1 <- roc(aSAH$outcome, c(NA, aSAH$s100b[-1]), quiet = TRUE)
+  pair <- are.paired(r1, r.wfns, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_s3_class(attr(pair, "roc1"), "roc")
+  expect_false(inherits(attr(pair, "roc1"), "smooth.roc"))
+  expect_false(inherits(attr(pair, "roc2"), "smooth.roc"))
+  expect_equal(
+    roc.test(r1, r.wfns)$p.value,
+    roc.test(roc(aSAH$outcome[-1], aSAH$s100b[-1], quiet = TRUE), roc(aSAH$outcome[-1], aSAH$wfns[-1], quiet = TRUE))$p.value
+  )
+})
