@@ -330,9 +330,6 @@ roc_utils_resolve_cluster <- function(cl) {
     return(list(cluster = cl, owned = FALSE))
   }
   if (is.numeric(cl) && length(cl) == 1L && !is.na(cl) && cl >= 1) {
-    if (cl == 1) {
-      return(none)
-    }
     # Forking is nearly free to start, so creating the cluster for the
     # duration of one call costs little; Windows has no fork and pays the
     # socket cluster's startup instead.
