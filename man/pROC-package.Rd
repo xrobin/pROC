@@ -141,9 +141,13 @@ aSAH \%>\%
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Progress bars}{
-	  Progress bars are no longer supported in pROC 1.19. The use of the
-	  \code{progress} argument is deprecated, and any value other than \code{NULL}
-	  will produce a warning. The argument will be removed in a future version.
+	  Bootstrap operations display a text progress bar in interactive sessions,
+	  so that a long computation does not look like a hung one. Control it with
+	  the \code{progress} argument of \code{\link{ci}} and the other bootstrap
+	  functions, or set the default for the session with
+	  \code{options(pROCProgress = FALSE)}. The bar costs essentially nothing:
+	  it is redrawn about a hundred times over the whole bootstrap, not once per
+	  replicate.
 	}
 }
 
@@ -166,16 +170,6 @@ aSAH \%>\%
     Some bootstrap functions are faster than others. Typically, \code{\link{ci.thresholds}} is the fastest, and \code{\link{ci.coords}} the slowest. Use \code{\link{ci.coords}} only if the CI you need cannot be computed by the specialized CI functions \code{\link{ci.thresholds}}, \code{\link{ci.se}} and \code{\link{ci.sp}}. Note that \code{\link{ci.auc}} cannot be replaced anyway.
     
     To speed up computations it is possible to reduce the number of boostrap iterations. See the \code{boot.n} argument to \code{\link{ci}}. This will reduce the precision of the bootstrap estimate.
-
-    \subsection{Progress bar}{
-	    Bootstrap operations display a text progress bar in interactive
-	    sessions, so a long computation does not look like a hung one. Control
-	    it with the \code{progress} argument of \code{\link{ci}} and the other
-	    bootstrap functions, or set the default for the session with
-	    \code{options(pROCProgress = FALSE)}. The cost of the bar itself is
-	    negligible: it is drawn about a hundred times over the whole bootstrap,
-	    not once per iteration.
-  	}
 
     \subsection{Parallel processing}{
 	    Bootstrap operations can run on several processes with the \code{cl}

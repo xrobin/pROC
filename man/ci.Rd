@@ -120,6 +120,22 @@ ci.se(roc1)
 ci(roc1, of = "coords", "best")
 ci.coords(roc1, 0.51, "threshold")}
 
+
+## Bootstrap options ##
+\dontrun{
+# A progress bar is shown in interactive sessions; control it with 'progress'
+ci(roc1, method = "bootstrap", progress = FALSE)
+
+# Run the bootstrap in parallel on a cluster you create and stop yourself
+library(parallel)
+cl <- makeCluster(2)
+ci(roc1, method = "bootstrap", cl = cl)
+ci(roc1, of = "se", cl = cl)
+stopCluster(cl)
+
+# Or give a number of workers and let pROC create the cluster for the call
+ci(roc1, method = "bootstrap", cl = 2)}
+
 }
 
 \keyword{univar}
