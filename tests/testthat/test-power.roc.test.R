@@ -389,3 +389,32 @@ test_that("power.roc.test with binormal parameters requires all four FPR bounds"
   expect_error(power.roc.test(c(base, list(FPR11 = 0.2, FPR12 = 0)), power = 0.8), "FPR21, FPR22")
   expect_error(power.roc.test(c(base, list(FPR11 = 0.2, FPR12 = 0, FPR21 = 0)), power = 0.8), "FPR22")
 })
+
+test_that("power.roc.test refuses a partial AUC with one ROC curve", {
+  expect_error(power.roc.test(r.s100b.partial), "only available for the full AUC")
+  expect_error(power.roc.test(r.s100b.partial, power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(r.s100b.percent.partial1), "only available for the full AUC")
+  expect_error(
+    power.roc.test(r.s100b, reuse.auc = FALSE, partial.auc = c(1, 0.8)),
+    "only available for the full AUC"
+  )
+  # The auc object of a partial AUC, also when given as 'auc'
+  expect_error(power.roc.test(auc = r.s100b.partial$auc, ncases = 41, ncontrols = 72), "only available for the full AUC")
+  expect_error(power.roc.test(r.s100b.partial$auc, power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(auc = r.s100b.percent.partial1$auc, power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(auc = auc(r.s100b, partial.auc = c(1, 0.8)), power = 0.9), "only available for the full AUC")
+  corrected <- auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)
+  expect_error(power.roc.test(auc = corrected, power = 0.9), "only available for the full AUC")
+  # Full AUC still works, also when recomputed
+  expect_equal(power.roc.test(r.s100b, reuse.auc = FALSE)$power, power.roc.test(r.s100b)$power)
+  # Plain numbers and full auc objects are unchanged
+  expect_equal(power.roc.test(auc = 0.16, power = 0.9)$ncases, 12.262971, tolerance = 1e-6)
+  expect_equal(
+    power.roc.test(auc = r.s100b$auc, power = 0.9)$ncases,
+    power.roc.test(auc = as.numeric(r.s100b$auc), power = 0.9)$ncases
+  )
+  expect_equal(
+    power.roc.test(r.s100b, power = 0.9)$ncases,
+    power.roc.test(auc = as.numeric(r.s100b$auc), power = 0.9, kappa = 72 / 41)$ncases
+  )
+})
