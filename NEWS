@@ -66,6 +66,7 @@
   * `are.paired(return.paired.rocs = TRUE)` now returns smoothed curves when given smoothed curves without missing values, and keeps the (partial) AUC and CI specification of smoothed curves.
   * `has.partial.auc` now checks that the `partial.auc` specification has length 2.
   * The warning for a deprecated `algorithm` argument now shows the value given instead of a literal `%s`.
+  * Formula methods now give clear error messages for formulas without a response or with unsupported terms (such as `. - z` or interactions) instead of an internal `stopifnot` error.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
