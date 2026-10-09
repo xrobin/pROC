@@ -72,23 +72,17 @@ is more subject to bugs. Please report them if you find one.
 }
 
 \value{
-  If \code{predictor} is a vector, a list of class \dQuote{multiclass.roc} 
-  (univariate) or \dQuote{mv.multiclass.roc} (multivariate), 
-  with the following fields: 
-  \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
-    defined in \code{\link{auc}}. Note that this is not the standard AUC
+  A list of class \dQuote{multiclass.roc} if \code{predictor} is a vector
+  (univariate), or \dQuote{mv.multiclass.roc} if it is a matrix or
+  data.frame (multivariate), with the following fields: 
+  \item{auc}{the multi-class AUC, always computed: a numeric of class
+    \dQuote{multiclass.auc} (univariate) or \dQuote{mv.multiclass.auc}
+    (multivariate). Note that this is not the standard AUC
     but the multi-class AUC as defined by Hand and Till.
   }
-  \item{ci}{if called with \code{ci=TRUE}, a numeric of class \dQuote{ci} as
-    defined in \code{\link{ci}}.
+  \item{response}{the response vector as passed in argument.
   }
-  \item{response}{the response vector as passed in argument. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
-  }
-  \item{predictor}{the predictor vector as passed in argument. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
+  \item{predictor}{the predictor vector, matrix or data.frame as passed in argument.
   }
   \item{levels}{the levels of the response as defined in argument.}
   \item{percent}{if the sensitivities, specificities and AUC are
@@ -100,9 +94,8 @@ is more subject to bugs. Please report them if you find one.
 }
 
 \section{Warnings}{
-  If \code{response} is an ordered factor and one of the levels
-  specified in \code{levels} is missing, a warning is issued and the
-  level is ignored.
+  If one of the levels specified in \code{levels} has no observation in
+  \code{response}, a warning is issued and the level is ignored.
 }
 
 \references{
