@@ -58,7 +58,9 @@ na.rm=TRUE, method=NULL, ...)
     will be removed.
   }
   \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{venkatraman}. The first letter is sufficient. If omitted, the
+    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity} or
+    \dQuote{specificity}. It can be abbreviated, as long as it is not
+    ambiguous (\dQuote{s} is not sufficient). If omitted, the
 	appropriate method is selected as explained in details.
   }
   \item{sensitivity, specificity}{if \code{method="sensitivity"} or
@@ -259,11 +261,6 @@ na.rm=TRUE, method=NULL, ...)
   functions (such as plot), or if you really want to compare two ROC
   curves smoothed differently.
 
-  If \code{method="venkatraman"}, and \code{alternative} is
-  \dQuote{less} or \dQuote{greater}, the warning \dQuote{Only two-sided
-    tests are available for Venkatraman. Performing two-sided test instead.}
-  is produced and a two tailed test is performed.
-
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
   ROC curves have a different differ in the value of
   \code{direction}, the warning \dQuote{(DeLong|Venkatraman)'s test should not be
@@ -294,12 +291,16 @@ na.rm=TRUE, method=NULL, ...)
   
   If \code{density.cases} and \code{density.controls} were provided
   for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-    curves smoothed with density.controls and density.cases.} is
+    curves smoothed with numeric density.controls and density.cases.} is
   issued.
 
   If \code{method="venkatraman"} and one of the ROC curves is smoothed,
-  the error \dQuote{Using Venkatraman's test for smoothed ROCs is not
-    supported.} is produced.
+  the error \dQuote{Venkatraman's test is not supported for smoothed
+    ROCs} is produced.
+
+  If \code{method="venkatraman"}, and \code{alternative} is
+  \dQuote{less} or \dQuote{greater}, the error \dQuote{Only two-sided
+    tests are available for Venkatraman.} is produced.
 
   With \code{method="specificity"}, the error \dQuote{Argument
     'specificity' must be numeric of length 1 for a specificity test.}
@@ -312,22 +313,28 @@ na.rm=TRUE, method=NULL, ...)
 \value{
   A list of class "htest" with following content:
   \item{p.value}{the p-value of the test.}
-  \item{statistic}{the value of the Z (\code{method="delong"}) or D
-    (\code{method="bootstrap"}) statistics.
+  \item{statistic}{the value of the Z (\code{method="delong"}, paired
+    curves), D (\code{method="delong"} with unpaired curves,
+    \code{method="bootstrap"}, \code{"sensitivity"} and
+    \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
   \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifiying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
-  \item{method}{the character string \dQuote{DeLong's test for two
-      correlated ROC curves} (if \code{method="delong"}) or
-    \dQuote{Bootstrap test for two correlated ROC curves} (if
-    \code{method="bootstrap"}).
+  \item{method}{a character string describing the test, such as
+    \dQuote{DeLong's test for two correlated ROC curves} (if
+    \code{method="delong"} with paired curves) or
+    \dQuote{Bootstrap test for two ROC curves} (if
+    \code{method="bootstrap"} with unpaired curves).
   }
   \item{null.value}{the expected value of the statistic under the null
     hypothesis, that is 0.}
   \item{estimate}{the AUC in the two ROC curves.}
   \item{data.name}{the names of the data that was used.}
-  \item{parameter}{for \code{method="bootstrap"} only: the values of the
-    \code{boot.n} and \code{boot.stratified} arguments.
+  \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
+    and \code{"specificity"}: the values of the \code{boot.n} and
+    \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
+    value of \code{boot.n}. For \code{method="delong"} with unpaired
+    curves: the degrees of freedom \code{df} of the t-test.
   }
 }
 
