@@ -689,3 +689,31 @@ test_that("Coords pick the upper-left end of flat bits with complementary inputs
     )
   }
 })
+
+test_that("coords returns the threshold of exact points with any numeric input", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, quiet = TRUE)
+  expect_equal(coords(r, 3, input = "tn")$threshold, 3.5)
+  expect_equal(coords(r, 0.4, input = "fpr")$threshold, 3.5)
+  expect_equal(coords(r, 2, input = "fp")$threshold, 3.5)
+  expect_equal(coords(r, 3, input = "tp")$threshold, 7.5)
+  expect_equal(coords(r, 0.4, input = "fnr")$threshold, 7.5)
+  # Interpolated: still NA
+  expect_true(is.na(coords(r, 2.5, input = "tn")$threshold))
+
+  # All the points of a curve
+  co <- coords(r.s100b, "all", ret = c("threshold", "tn", "tp"))
+  for (inp in c("tn", "tp")) {
+    for (i in seq_len(nrow(co))) {
+      res <- coords(r.s100b, co[[inp]][i], input = inp, ret = c("threshold", "tn", "tp"))
+      expect_equal(res[[inp]], co[[inp]][i])
+      # The point is either this one, or another one with the same value of 'inp'
+      expect_true(res$threshold %in% co$threshold[co[[inp]] == co[[inp]][i]])
+    }
+  }
+
+  # Ordered predictor
+  co <- coords(r.wfns, "all", ret = c("threshold", "tn"))
+  expect_equal(coords(r.wfns, co$tn[3], input = "tn", ret = "threshold")$threshold, co$threshold[3])
+})
