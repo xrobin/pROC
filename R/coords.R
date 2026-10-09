@@ -368,13 +368,13 @@ coords.roc <- function(roc,
           se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
           sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
           thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
+          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
         } else {
           optim.crit <- (optim.crit)[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
           sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
           thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
+          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
         }
       }
       if (length(thres) == 0) {
