@@ -24,7 +24,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, ...)
-\S3method{ci.sp}{formula}(formula, data, ...)
+\S3method{ci.sp}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }
 		   
@@ -36,6 +36,9 @@ cl = NULL, parallel=FALSE, ...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{sensitivities}{on which sensitivities to evaluate the CI.
   }
