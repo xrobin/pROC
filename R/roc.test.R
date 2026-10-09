@@ -238,7 +238,7 @@ roc.test.roc <- function(roc1, roc2,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (has.partial.auc(roc1)) {
+    if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {

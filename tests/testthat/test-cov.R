@@ -171,3 +171,11 @@ test_that("cov re-pairs curves with NAs at different positions", {
   c.ok <- cov(q1, q2, method = "bootstrap", boot.n = 10)
   expect_equal(c.na, c.ok)
 })
+
+test_that("cov selects the bootstrap when only roc2 has a partial AUC", {
+  set.seed(42)
+  res.12 <- suppressWarnings(cov(r.ndka, r.s100b.partial1, boot.n = 10))
+  set.seed(42)
+  res.21 <- suppressWarnings(cov(r.s100b.partial1, r.ndka, boot.n = 10))
+  expect_equal(res.12, res.21)
+})

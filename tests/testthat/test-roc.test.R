@@ -368,3 +368,12 @@ test_that("roc.test.default with predictor2 = NULL gives the missing predictor2 
   expect_error(roc.test(aSAH$outcome, aSAH$s100b, NULL), "Missing argument predictor2")
   expect_error(roc.test(aSAH$outcome, aSAH$s100b, predictor2 = NULL), "Missing argument predictor2")
 })
+
+test_that("roc.test selects the bootstrap when only roc2 has a partial AUC", {
+  set.seed(42)
+  res.12 <- suppressWarnings(roc.test(r.ndka, r.s100b.partial1, boot.n = 10))
+  set.seed(42)
+  res.21 <- suppressWarnings(roc.test(r.s100b.partial1, r.ndka, boot.n = 10))
+  expect_equal(res.12$method, res.21$method)
+  expect_equal(res.12$statistic, -res.21$statistic)
+})
