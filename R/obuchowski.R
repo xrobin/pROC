@@ -80,11 +80,22 @@ g.partial <- function(A, B, FPR1, FPR2) {
   expr1 * (2 * pi * expr2)^(-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3)^(-1 / 2) * expr3
 }
 
+# Binormal A and B parameters of Obuchowski & McClish (1997), with
+# qnorm(TPR) = A + B * qnorm(FPR), from the "binormal" smoothing model.
+# That model is lm(qnorm(sp) ~ qnorm(se)): qnorm(sp) = a + b * qnorm(se).
+# As qnorm(FPR) = -qnorm(sp), qnorm(sp) = A / B - qnorm(se) / B,
+# so a = A / B and b = -1 / B, i.e. A = -a / b and B = -1 / b.
+binormal_params_obuchowski <- function(binormal) {
+  co <- unname(coefficients(binormal))
+  c(A = -co[1] / co[2], B = -1 / co[2])
+}
+
 # Variance of a ROC curve given a 'roc' object
 var_roc_obuchowski <- function(roc) {
   binormal <- smooth(roc, method = "binormal")$model
-  A <- unname(coefficients(binormal)[1])
-  B <- unname(coefficients(binormal)[2])
+  params <- binormal_params_obuchowski(binormal)
+  A <- params[["A"]]
+  B <- params[["B"]]
   kappa <- length(roc$controls) / length(roc$cases)
 
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
@@ -113,11 +124,13 @@ var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
 cov_roc_obuchowski <- function(roc1, roc2) {
   binormal1 <- smooth(roc1, method = "binormal")$model
-  A1 <- unname(coefficients(binormal1)[1])
-  B1 <- unname(coefficients(binormal1)[2])
+  params1 <- binormal_params_obuchowski(binormal1)
+  A1 <- params1[["A"]]
+  B1 <- params1[["B"]]
   binormal2 <- smooth(roc2, method = "binormal")$model
-  A2 <- unname(coefficients(binormal2)[1])
-  B2 <- unname(coefficients(binormal2)[2])
+  params2 <- binormal_params_obuchowski(binormal2)
+  A2 <- params2[["A"]]
+  B2 <- params2[["B"]]
   kappa <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
   rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))

@@ -95,7 +95,7 @@ test_that("power.roc.test can take 2 ROC curves with Obuchowski variance", {
   expect_equal(res$ncontrols, 72)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
-  expect_equal(res$power, 0.8061004, tolerance = 0.000001)
+  expect_equal(res$power, 0.7842276, tolerance = 0.000001)
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$alternative, "two.sided")
 })
@@ -113,8 +113,8 @@ test_that("power.roc.test ncases/ncontrols can take 2 ROC curves with DeLong var
 
 test_that("power.roc.test ncases/ncontrols can take 2 ROC curves with Obuchowski variance", {
   res <- power.roc.test(r.ndka, r.wfns, power = 0.9, method = "obuchowski")
-  expect_equal(res$ncases, 53.23685, tolerance = 0.000001)
-  expect_equal(res$ncontrols, 93.48911, tolerance = 0.000001)
+  expect_equal(res$ncases, 56.10898, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 98.53285, tolerance = 0.000001)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
@@ -140,7 +140,7 @@ test_that("power.roc.test sig.level can take 2 ROC curves with Obuchowski varian
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
-  expect_equal(res$sig.level, 0.1150686, tolerance = 0.000001)
+  expect_equal(res$sig.level, 0.1325649, tolerance = 0.000001)
   expect_equal(res$alternative, "two.sided")
 })
 
@@ -180,8 +180,8 @@ test_that("power.roc.test works with partial AUC", {
   r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, 0.9))
   res <- power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, method = "obuchowski")
 
-  expect_equal(res$ncases, 0.5061498, tolerance = 0.000001)
-  expect_equal(res$ncontrols, 0.8888484, tolerance = 0.000001)
+  expect_equal(res$ncases, 227.0452, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 398.7134, tolerance = 0.000001)
   expect_equal(as.numeric(res$auc1), as.numeric(r.wfns.partial$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.ndka.partial$auc))
   expect_equal(res$power, 0.9)
@@ -396,4 +396,29 @@ test_that("power.roc.test refuses a partial AUC with one ROC curve", {
   )
   # Full AUC still works, also when recomputed
   expect_equal(power.roc.test(r.s100b, reuse.auc = FALSE)$power, power.roc.test(r.s100b)$power)
+})
+
+test_that("Obuchowski variance and covariance use the binormal A and B parameters", {
+  # Binormal data: controls ~ N(0, 1), cases ~ N(2, 2), so that
+  # qnorm(TPR) = A + B * qnorm(FPR) with A = 2 / 2 = 1 and B = 1 / 2.
+  controls <- qnorm(ppoints(60))
+  cases <- 2 + 2 * qnorm(ppoints(60))
+  r <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE)
+  rp <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE, partial.auc = c(1, 0.8))
+  # Ratios to the formulas with the true parameters (relative tolerance)
+  expect_equal(
+    var(r, method = "obuchowski") / (pROC:::var_params_obuchowski(1, 0.5, 1) / 60),
+    1,
+    tolerance = 0.05
+  )
+  expect_equal(
+    var(rp, method = "obuchowski") / (pROC:::var_params_obuchowski(1, 0.5, 1, 0.2, 0) / 60),
+    1,
+    tolerance = 0.05
+  )
+  expect_equal(
+    cov(rp, rp, method = "obuchowski") / (pROC:::cov_params_obuchowski(1, 0.5, 1, 0.5, 1, 1, 1, 0.2, 0, 0.2, 0) / 60),
+    1,
+    tolerance = 0.05
+  )
 })
