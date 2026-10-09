@@ -146,16 +146,20 @@ roc.test.roc <- function(roc1, roc2,
   # store which objects are smoothed, and how
   smoothing.args <- list()
   if (methods::is(roc1, "smooth.roc")) {
-    smoothing.args$roc1 <- roc1$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc1$smooth <- TRUE
-    roc1 <- attr(roc1, "roc")
+    roc1 <- roc_utils_unsmooth(roc1)
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
   }
   if (methods::is(roc2, "smooth.roc")) {
-    smoothing.args$roc2 <- roc2$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc2$smooth <- TRUE
-    roc2 <- attr(roc2, "roc")
+    roc2 <- roc_utils_unsmooth(roc2)
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
   }
