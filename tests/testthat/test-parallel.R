@@ -125,7 +125,7 @@ test_that("cl = TRUE without a default cluster is an informative error", {
 test_that("sequential values of cl stay sequential", {
   set.seed(42)
   plain <- ci.auc(r.s100b, method = "bootstrap", boot.n = B)
-  for (value in list(NULL, FALSE, 1)) {
+  for (value in list(NULL, FALSE)) {
     set.seed(42)
     expect_identical(
       ci.auc(r.s100b, method = "bootstrap", boot.n = B, cl = value),
@@ -170,4 +170,14 @@ test_that("generating streams leaves the caller's generator as it found it", {
   # The caller's stream advances by the single draw used to seed the streams,
   # and stays usable afterwards.
   expect_silent(runif(1))
+})
+
+
+test_that("cl = 1 gives the same answer as any other number of workers", {
+  skip_if_no_cluster()
+  set.seed(42)
+  by.one <- ci.auc(r.s100b, method = "bootstrap", boot.n = B, cl = 1)
+  set.seed(42)
+  by.two <- ci.auc(r.s100b, method = "bootstrap", boot.n = B, cl = 2)
+  expect_equal(as.numeric(by.one), as.numeric(by.two))
 })
