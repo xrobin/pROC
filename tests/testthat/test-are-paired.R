@@ -128,3 +128,20 @@ test_that("are.paired return.paired.rocs doesn't return when unpaired and smooth
   pair <- are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), smooth(r.ndka), return.paired.rocs = TRUE)
   expect_null(attributes(pair))
 })
+
+test_that("formula and default interfaces give paired curves", {
+  d <- data.frame(
+    y = c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+    a = c(1, 2, 3, 5, 7, 4, 6, 8, 9, 10),
+    b = c(6, 1, 4, 3, 8, 2, 5, 9, 7, 10)
+  )
+  ra <- roc(y ~ a, d, quiet = TRUE)
+  rb <- roc(d$y, d$b, quiet = TRUE)
+  expect_identical(ra$response, roc(d$y, d$a, quiet = TRUE)$response)
+  expect_true(are.paired(ra, rb))
+  expect_identical(roc.test(ra, rb)$p.value, roc.test(ra, roc(y ~ b, d, quiet = TRUE))$p.value)
+  # Same data with different row names
+  d2 <- d
+  rownames(d2) <- letters[1:10]
+  expect_true(are.paired(ra, roc(y ~ b, d2, quiet = TRUE)))
+})
