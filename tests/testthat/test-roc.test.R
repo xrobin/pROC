@@ -60,6 +60,12 @@ test_that("paired DeLong conf.int is on the percent scale of percent curves", {
   expect_equal(t1p$statistic, t1$statistic)
 })
 
+test_that("roc.test checks conf.level when the method is selected automatically", {
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = "0.9"), "conf.level must be numeric")
+  expect_error(roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b, conf.level = 2), "conf.level must be between 0 and 1")
+})
+
 test_that("two.sided roc.test produces identical p values when roc curves are reversed", {
   t1b <- roc.test(r.s100b, r.wfns)
   expect_equal(t1b$p.value, t1$p.value)
