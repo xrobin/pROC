@@ -138,3 +138,10 @@ test_that("cov errors on curves smoothed with numeric densities", {
   s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
   expect_error(suppressWarnings(cov(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
 })
+
+test_that("obuchowski cov of percent curves with partial AUC is the fraction cov times 100^2", {
+  expect_equal(
+    cov(r.s100b.percent.partial1, r.ndka.percent.partial1, method = "obuchowski"),
+    cov(r.s100b.partial1, r.ndka.partial1, method = "obuchowski") * 100^2
+  )
+})
