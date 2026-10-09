@@ -431,7 +431,12 @@ coords.roc <- function(roc,
         input_values <- sp
       }
     } else {
-      all_coords <- roc_utils_calc_coords(roc, roc_utils_na_thresholds(length(roc$sensitivities), thr_template), roc$sensitivities, roc$specificities, best.weights)
+      if (methods::is(roc, "smooth.roc")) {
+        all_thr <- roc_utils_na_thresholds(length(roc$sensitivities), thr_template)
+      } else {
+        all_thr <- roc$thresholds
+      }
+      all_coords <- roc_utils_calc_coords(roc, all_thr, roc$sensitivities, roc$specificities, best.weights)
       input_values <- all_coords[, input]
       se <- all_coords[, "sensitivity"]
       sp <- all_coords[, "specificity"]
