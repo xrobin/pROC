@@ -346,7 +346,7 @@ roc.default <- function(response, predictor,
 
   # Only support algorithm
   if (algorithm != 2) {
-    warning("Ignoring algorithm=%s argument: since pROC 1.19, only algorithm 2 is available.")
+    warning(sprintf("Ignoring algorithm=%s argument: since pROC 1.19, only algorithm 2 is available.", algorithm))
   }
 
   roc <- roc_cc_nochecks(controls, cases,
