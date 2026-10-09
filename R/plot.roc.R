@@ -37,13 +37,17 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
   predictor <- roc.data$predictors[, 1]
 
   roc <- roc(response, predictor, plot = TRUE, ...)
-  roc$call <- match.call()
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    roc$call <- match.call()
+  }
   invisible(roc)
 }
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
-  roc$call <- match.call()
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    roc$call <- match.call()
+  }
   invisible(roc)
 }
 
