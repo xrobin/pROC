@@ -84,9 +84,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
-    Arguments for \code{\link{auc}}
-    and \code{\link{txtProgressBar}} (only \code{char} and \code{style})
-    if applicable.
+    Arguments for \code{\link{auc}} if applicable.
   }
 }
 

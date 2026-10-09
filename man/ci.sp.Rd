@@ -69,8 +69,6 @@ cl = NULL, parallel=FALSE, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.sp.roc}
     when calling \code{ci.sp.default} or \code{ci.sp.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable.
   }
 }
 
