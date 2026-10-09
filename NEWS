@@ -54,6 +54,7 @@
   * Fixed a false 'The following classes were not found in 'response'' warning in 'multiclass.roc' with a predictor matrix and a subset of 'levels'
   * Fixed 'power.roc.test' with 'method="bootstrap"', which computed the variance of each AUC from the wrong margin of the bootstrap replicates, giving essentially random results
   * Fixed 'power.roc.test' with two paired ROC curves with NAs at different positions, which failed or computed the power on misaligned observations
+  * Fixed 'cov(method="obuchowski")' returning NaN for 'percent=TRUE' curves with a partial AUC
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
