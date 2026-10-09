@@ -156,3 +156,35 @@ test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
   expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
   expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))
 })
+
+test_that("ci.coords on a smoothed curve keeps replicates aligned when smoothing fails", {
+  # A replicate that fails to smooth has the shape of a successful one
+  failing.call <- as.call(list(function(roc) stop("cannot smooth")))
+  res <- pROC:::bootstrap.smooth.coords(1, attr(smooth(r.s100b), "roc"), TRUE,
+    x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"),
+    best.method = "youden", best.weights = c(1, 0.5), smooth.roc.call = failing.call,
+    best.policy = "stop"
+  )
+  expect_equal(dim(res), c(2, 2))
+  expect_named(res, c("sensitivity", "specificity"))
+  expect_true(all(is.na(res)))
+
+  # Every other replicate fails to smooth
+  n.calls <- 0
+  flaky.density <- function(x, ...) {
+    n.calls <<- n.calls + 1
+    if (n.calls %% 2 == 0) {
+      stop("flaky density")
+    }
+    density(x, ...)
+  }
+  s <- smooth(r.s100b, method = "density", density.controls = flaky.density)
+  ci <- suppressWarnings(ci.coords(s,
+    x = c(0.5, 0.9), input = "specificity",
+    ret = c("sensitivity", "specificity"), boot.n = 10
+  ))
+  # Every successful replicate returns the input specificity
+  for (i in 1:3) {
+    expect_equal(as.numeric(ci$specificity[, i]), c(0.5, 0.9))
+  }
+})
