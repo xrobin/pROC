@@ -196,7 +196,8 @@ na.rm=TRUE, method=NULL, ...)
   field, the \code{\link{auc}} function will always be called with
   \code{\dots} to determine the specification.
 
-  The AUC specification is ignored in the Venkatraman test.
+  The Venkatraman test compares the whole curves: it fails with an error if
+  either curve has a partial AUC specification.
 
   Warning: if the roc object passed to roc.test contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and

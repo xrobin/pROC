@@ -106,6 +106,7 @@
   * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
   * 'roc.test' now returns the documented 'data.name' element
   * The paired Venkatraman test now breaks ties at random by default ('ties.method="random"'), with one random order of the observations shared by both predictors, so that its result no longer depends on the order of the observations and identical predictors give p = 1. Its p-values change when the predictors have ties; without ties, no random number is drawn and the results are the same as before for a given seed
+  * 'roc.test(method="venkatraman")' now rejects a partial AUC on the second curve too, as it did on the first
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
