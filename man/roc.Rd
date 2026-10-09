@@ -18,7 +18,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, ...)
+\S3method{roc}{formula}(formula, data, subset, na.action, ...)
 \S3method{roc}{data.frame}(data, response, predictor,
 ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
@@ -63,6 +63,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
     \code{data} and \code{subset}, but not \code{na.action} are supported, see 
     \code{\link{model.frame}} for more details.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}}
+    with \code{formula} and \code{data} (see above).
   }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of

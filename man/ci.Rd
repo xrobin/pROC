@@ -21,7 +21,7 @@ ci(...)
 \S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
 \S3method{ci}{multiclass.roc}(multiclass.roc, of = "auc", ...)
 \S3method{ci}{multiclass.auc}(multiclass.auc, of = "auc", ...)
-\S3method{ci}{formula}(formula, data, ...)
+\S3method{ci}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci}{default}(response, predictor, ...)
 }
 		   
@@ -34,6 +34,9 @@ ci(...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{of}{The type of confidence interval. One of \dQuote{auc},
 	\dQuote{thresholds}, \dQuote{sp}, \dQuote{se} or \dQuote{coords}. Note that

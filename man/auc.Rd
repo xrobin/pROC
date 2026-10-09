@@ -25,7 +25,7 @@ auc(...)
 allow.invalid.partial.auc.correct = FALSE, ...)
 \S3method{auc}{smooth.roc}(smooth.roc, ...)
 \S3method{auc}{multiclass.roc}(multiclass.roc, ...)
-\S3method{auc}{formula}(formula, data, ...)
+\S3method{auc}{formula}(formula, data, subset, na.action, ...)
 \S3method{auc}{default}(response, predictor, ...)
 }
 
@@ -37,6 +37,9 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   }
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type response~predictor for the \code{\link{roc}} function.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
+  }
   \item{partial.auc}{either \code{FALSE} (default: consider total area) or a
     numeric vector of length 2: boundaries of the AUC to consider in
     [0,1] (or [0,100] if percent is \code{TRUE}).
