@@ -21,7 +21,7 @@ ci.thresholds <- function(...) {
   UseMethod("ci.thresholds")
 }
 
-ci.thresholds.formula <- function(formula, data, ...) {
+ci.thresholds.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,

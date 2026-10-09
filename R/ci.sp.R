@@ -21,7 +21,7 @@ ci.sp <- function(...) {
   UseMethod("ci.sp")
 }
 
-ci.sp.formula <- function(formula, data, ...) {
+ci.sp.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
