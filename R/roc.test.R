@@ -327,6 +327,10 @@ roc.test.roc <- function(roc1, roc2,
       htest$statistic <- stat
       htest$method <- "DeLong's test for two correlated ROC curves"
       htest$conf.int <- c(stat.ci$lower, stat.ci$upper)
+      if (roc1$percent) {
+        # the placements are on the 0-1 scale, the estimates on 0-100
+        htest$conf.int <- htest$conf.int * 100
+      }
       attr(htest$conf.int, "conf.level") <- stat.ci$level
 
       if (alternative == "two.sided") {

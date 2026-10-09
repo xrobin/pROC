@@ -53,6 +53,13 @@ test_that("roc.test statistic and p are as expected with defaults", {
   expect_identical(attr(t3$conf.int, "conf.level"), 0.95)
 })
 
+test_that("paired DeLong conf.int is on the percent scale of percent curves", {
+  t1p <- roc.test(r.wfns.percent, r.s100b.percent)
+  expect_equal(t1p$conf.int[1:2], t1$conf.int[1:2] * 100)
+  expect_identical(attr(t1p$conf.int, "conf.level"), 0.95)
+  expect_equal(t1p$statistic, t1$statistic)
+})
+
 test_that("two.sided roc.test produces identical p values when roc curves are reversed", {
   t1b <- roc.test(r.s100b, r.wfns)
   expect_equal(t1b$p.value, t1$p.value)
