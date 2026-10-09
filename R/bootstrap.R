@@ -605,7 +605,9 @@ bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
   smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
   smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
-    return(NA)
+    # Same shape as a successful replicate, so ci.coords can reshape all the
+    # replicates into an array without shifting the values
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
   }
   # coords.smooth.roc(), not coords.roc(): a smoothed curve has no thresholds,
   # and the smooth method is what fills them with NA and resolves x = "best"

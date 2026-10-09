@@ -78,6 +78,7 @@
   * Fixed 'coords' returning an NA threshold for exact points of the curve with numeric inputs other than "sensitivity" and "specificity" ("tn", "fpr", ...)
   * Fixed 'coords' on an 'auc' object ignoring all its arguments and returning the whole curve
   * Fixed 'ci.auc' returning NA on smoothed 'percent=TRUE' curves with a corrected partial AUC
+  * Fixed 'ci.coords' on smoothed curves mixing up the bootstrap values when some resamples could not be smoothed
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
