@@ -65,7 +65,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
       stop("Wrong dimension for predictor1 as a matrix or a data.frame.")
     }
   } else {
-    if (missing(predictor2)) {
+    if (is.null(predictor2)) {
       stop("Missing argument predictor2 with predictor1 as a vector.")
     }
     # Need to remove NAs

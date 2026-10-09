@@ -363,3 +363,8 @@ test_that("roc.test errors on curves built from numeric densities", {
   d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
   expect_error(suppressWarnings(roc.test(d1, d2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
 })
+
+test_that("roc.test.default with predictor2 = NULL gives the missing predictor2 error", {
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, NULL), "Missing argument predictor2")
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, predictor2 = NULL), "Missing argument predictor2")
+})
