@@ -426,13 +426,8 @@ coords.roc <- function(roc,
 
       idx <- which(input_values == value)
       if (length(idx) > 1) {
-        # More than one to pick from. Need to take best
-        # according to sorting
-        if (coord.is.decreasing[input]) {
-          idx <- idx[length(idx)] # last
-        } else {
-          idx <- idx[1] # first
-        }
+        # More than one to pick from. Need to take the upper-left-most point.
+        idx <- idx[which.max(se[idx] + sp[idx])]
       }
       if (length(idx) == 1) {
         # Exactly one to pick from
