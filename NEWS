@@ -63,6 +63,7 @@
   * `roc` with a formula or a data frame, `roc_` and `plot.roc` now return `NA` (or `NaN`) like the default interface when the data contains `NA` values with `na.rm = FALSE` (or infinite predictor values), instead of a malformed list.
   * `roc` with `density.controls` and `density.cases` now resolves `direction = "auto"` also when `auc = FALSE` (the curve could be inverted), and stores the resolved direction instead of `"auto"`.
   * `are.paired` and `roc.test` are no longer affected by objects named `oroc1` or `oroc2` in the user's workspace.
+  * `are.paired(return.paired.rocs = TRUE)` now returns smoothed curves when given smoothed curves without missing values, and keeps the (partial) AUC and CI specification of smoothed curves.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
