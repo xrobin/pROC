@@ -73,6 +73,7 @@
   * Smoothed curves built with `roc(..., smooth = TRUE)` from a formula or a data frame now print the names of the response and predictor (#101).
   * `roc_` no longer fails when called from a function invoked by `Map`/`mapply` or an anonymous function.
   * Fixed wrong 'youden' and 'closest.topleft' values returned by 'coords(x="best")' on curves with a specificity partial AUC
+  * Fixed 'coords(x="best")' and 'ci.coords' returning a 'closest.topleft' 100 times too large on 'percent=TRUE' curves
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -640,3 +640,22 @@ test_that("coords 'best' returns the right youden and closest.topleft with a spe
     }
   }
 })
+
+test_that("coords 'best' closest.topleft is on the percent scale for percent curves", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  rp <- roc(resp, pred, percent = TRUE, quiet = TRUE)
+  best <- coords(rp, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best$closest.topleft, c(4, 4))
+
+  for (r in list(r.s100b.percent, smooth(r.s100b.percent))) {
+    best <- coords(r, "best", ret = "closest.topleft", best.method = "closest.topleft")
+    # Requesting another column goes through roc_utils_calc_coords
+    best.acc <- coords(r, "best", ret = c("closest.topleft", "accuracy"), best.method = "closest.topleft")
+    expect_equal(best$closest.topleft, best.acc$closest.topleft)
+  }
+  expect_equal(
+    coords(r.s100b.percent, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft,
+    100 * coords(r.s100b, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft
+  )
+})
