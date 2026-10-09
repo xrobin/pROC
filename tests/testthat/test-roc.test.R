@@ -321,3 +321,17 @@ test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  t.auc <- roc.test(a1, a2, boot.n = 10)
+  set.seed(42)
+  t.smooth <- roc.test(s1, s2, boot.n = 10)
+  expect_equal(unname(t.auc$estimate), c(as.numeric(a1), as.numeric(a2)))
+  expect_equal(t.auc$estimate, t.smooth$estimate)
+  expect_equal(t.auc$statistic, t.smooth$statistic)
+})
