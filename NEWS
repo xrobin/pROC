@@ -71,6 +71,7 @@
   * The `na.action` attribute of `response` and `predictor` in `roc` objects is no longer lost when some responses are not in `levels`.
   * The error for `density.controls`/`density.cases` combined with `controls`/`cases` in `roc` now names the right arguments.
   * Smoothed curves built with `roc(..., smooth = TRUE)` from a formula or a data frame now print the names of the response and predictor (#101).
+  * `roc_` no longer fails when called from a function invoked by `Map`/`mapply` or an anonymous function.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
