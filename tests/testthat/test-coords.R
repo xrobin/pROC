@@ -614,3 +614,22 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
     0.2926829268292683 # and not 0
   )
 })
+
+test_that("coords 'best' returns the right youden and closest.topleft with a specificity partial AUC", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, partial.auc = c(1, 0.5), quiet = TRUE)
+  best.y <- coords(r, "best", ret = c("threshold", "youden"))
+  expect_equal(best.y$threshold, c(4.5, 6.5))
+  expect_equal(best.y$youden, c(1.8, 1.8))
+  best.t <- coords(r, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best.t$threshold, c(4.5, 6.5))
+  expect_equal(best.t$closest.topleft, c(0.04, 0.04))
+
+  for (r in list(r.s100b.partial1, r.ndka.partial1, r.s100b.partial2)) {
+    for (bm in c("youden", "closest.topleft")) {
+      best <- coords(r, "best", ret = c("threshold", bm), best.method = bm)
+      expect_equal(best[[bm]], coords(r, best$threshold, ret = bm)[[bm]])
+    }
+  }
+})
