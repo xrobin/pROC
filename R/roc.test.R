@@ -377,7 +377,7 @@ roc.test.roc <- function(roc1, roc2,
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
     }
 

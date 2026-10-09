@@ -335,3 +335,10 @@ test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
   expect_equal(t.auc$estimate, t.smooth$estimate)
   expect_equal(t.auc$statistic, t.smooth$statistic)
 })
+
+test_that("roc.test errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(roc.test(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})

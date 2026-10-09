@@ -191,7 +191,7 @@ cov.roc <- function(roc1, roc2,
     }
   } else { # method == "bootstrap"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
 
