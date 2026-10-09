@@ -717,3 +717,20 @@ test_that("coords returns the threshold of exact points with any numeric input",
   co <- coords(r.wfns, "all", ret = c("threshold", "tn"))
   expect_equal(coords(r.wfns, co$tn[3], input = "tn", ret = "threshold")$threshold, co$threshold[3])
 })
+
+test_that("coords.auc passes its arguments", {
+  a <- auc(r.s100b)
+  expect_equal(coords(a, "best", ret = "threshold"), coords(r.s100b, "best", ret = "threshold"))
+  expect_equal(
+    coords(a, x = 0.9, input = "specificity", ret = "sensitivity"),
+    coords(r.s100b, x = 0.9, input = "specificity", ret = "sensitivity")
+  )
+  # Partial AUC is taken into account
+  a.partial <- auc(r.s100b, partial.auc = c(1, 0.9))
+  expect_equal(coords(a.partial, "best", ret = "threshold"), coords(r.s100b.partial, "best", ret = "threshold"))
+  # Without arguments: unchanged
+  expect_equal(coords(a), coords(r.s100b))
+  # Smoothed curve
+  s <- smooth(r.s100b)
+  expect_equal(coords(auc(s), "best", ret = "specificity"), coords(s, "best", ret = "specificity"))
+})
