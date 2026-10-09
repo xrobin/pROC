@@ -131,3 +131,17 @@ test_that("cov keeps the partial AUC of auc objects of smoothed curves", {
   c.smooth <- cov(s1, s2, boot.n = 10)
   expect_equal(c.auc, c.smooth)
 })
+
+test_that("cov errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(cov(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("cov errors on curves built from numeric densities", {
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(suppressWarnings(cov(d1, d2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})

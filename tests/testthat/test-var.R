@@ -53,3 +53,17 @@ test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("var errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(var(s1, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("var errors on curves built from numeric densities", {
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(suppressWarnings(var(d1, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})

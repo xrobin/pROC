@@ -148,6 +148,9 @@ roc.test.roc <- function(roc1, roc2,
   if (methods::is(roc1, "smooth.roc")) {
     smoothing.args$roc1 <- roc1$smoothing.args
     smoothing.args$roc1$smooth <- TRUE
+    if (is.null(attr(roc1, "roc"))) { # built directly from densities
+      stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
+    }
     roc1 <- roc_utils_unsmooth(roc1)
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
@@ -155,6 +158,9 @@ roc.test.roc <- function(roc1, roc2,
   if (methods::is(roc2, "smooth.roc")) {
     smoothing.args$roc2 <- roc2$smoothing.args
     smoothing.args$roc2$smooth <- TRUE
+    if (is.null(attr(roc2, "roc"))) { # built directly from densities
+      stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
+    }
     roc2 <- roc_utils_unsmooth(roc2)
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
@@ -377,7 +383,7 @@ roc.test.roc <- function(roc1, roc2,
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
     }
 

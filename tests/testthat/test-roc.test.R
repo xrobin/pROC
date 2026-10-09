@@ -349,3 +349,17 @@ test_that("roc.test on smoothed curves with a corrected partial AUC does not war
   expect_false(is.na(s1$auc))
   expect_warning(roc.test(s1, s2, boot.n = 2), NA)
 })
+
+test_that("roc.test errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(roc.test(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("roc.test errors on curves built from numeric densities", {
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(suppressWarnings(roc.test(d1, d2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
