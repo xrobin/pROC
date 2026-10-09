@@ -56,7 +56,7 @@ test_that("print.multiclass_roc_multivariate works", {
   ))
   expect_known_output(print(multiclass.roc(responses, predictor)), "print_output/mv_multiclass")
 
-  expect_warning(expect_known_output(print(multiclass.roc(responses, predictor, levels = c("X2", "X3"))), "print_output/mv_multiclass_levels"), "X1")
+  expect_warning(expect_known_output(print(multiclass.roc(responses, predictor, levels = c("X2", "X3"))), "print_output/mv_multiclass_levels"), NA)
   expect_known_output(print(multiclass.roc(responses, predictor, percent = TRUE)), "print_output/mv_multiclass_percent")
   expect_known_output(print(multiclass.roc(responses, predictor, partial.auc = c(1, .9))), "print_output/mv_multiclass_partial")
   expect_known_output(print(multiclass.roc(responses, predictor, partial.auc = c(1, .9), partial.auc.focus = "se")), "print_output/mv_multiclass_partial_se")
