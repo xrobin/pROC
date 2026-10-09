@@ -614,3 +614,10 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
     0.2926829268292683 # and not 0
   )
 })
+
+test_that("coords with NA thresholds gives a clear error", {
+  expect_error(coords(r.s100b, c(0.5, NA), input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+  expect_error(coords(r.s100b, NaN, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+  r.rev <- roc(aSAH$outcome, aSAH$s100b, direction = ">", quiet = TRUE)
+  expect_error(coords(r.rev, NA_real_, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+})
