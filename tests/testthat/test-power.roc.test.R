@@ -343,3 +343,17 @@ test_that("power.roc.test re-pairs curves with NAs at different positions", {
   res.q <- power.roc.test(q1, q2, method = "bootstrap", boot.n = 20)
   expect_equal(numeric_fields(res.r), numeric_fields(res.q))
 })
+
+test_that("power.roc.test accepts the auc of a percent ROC curve", {
+  res <- power.roc.test(auc = r.s100b.percent$auc, ncases = 41, ncontrols = 72)
+  expect_equal(as.numeric(res$auc), as.numeric(r.s100b$auc))
+  expect_equal(res$power, 0.9904833, tolerance = 0.000001)
+  res <- power.roc.test(auc = r.s100b.percent$auc, sig.level = 0.05, power = 0.95, kappa = 1.7)
+  expect_equal(res$ncases, 29.29764, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 49.806, tolerance = 0.000001)
+})
+
+test_that("power.roc.test checks the range of auc", {
+  expect_error(power.roc.test(auc = 73, ncases = 41, ncontrols = 72), "'auc' must range from 0 to 1")
+  expect_error(power.roc.test(auc = -0.1, ncases = 41, ncontrols = 72), "'auc' must range from 0 to 1")
+})
