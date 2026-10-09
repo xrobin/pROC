@@ -502,6 +502,21 @@ roc_utils_is_perfect_curve <- function(roc) {
   return(abs(best.point - 2) < .Machine$double.eps^0.5) # or best.point == 2, with numerical tolerance
 }
 
+# roc() returns NA (NA values with na.rm = FALSE) or NaN (infinite predictor
+# values) instead of a curve. The interfaces that build a curve with roc()
+# check its result with this helper and return the NA/NaN unchanged.
+# Input: the result of roc(); plot: whether the caller was asked to draw it
+# Output: TRUE for a curve, FALSE (with a warning if plot = TRUE) otherwise
+roc_utils_is_curve <- function(roc, plot = FALSE) {
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    return(TRUE)
+  }
+  if (plot) {
+    warning(simpleWarning("Nothing plotted: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).", call = sys.call(-1)))
+  }
+  FALSE
+}
+
 # Load package namespace 'pkg'.
 # Input: package name
 # Returns: TRUE upon success (or if the package was already loaded)
