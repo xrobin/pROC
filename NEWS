@@ -62,6 +62,7 @@
   * Fixed 'roc.test' and 'cov' selecting DeLong (and failing) when only the second curve had a partial AUC
   * Curves whose responses differ only in their names (built with the formula interface, or from a named response) are now recognized as paired with curves built from the same data, so that `roc.test` and `cov` use the paired test.
   * `roc` with a formula or a data frame, `roc_` and `plot.roc` now return `NA` (or `NaN`) like the default interface when the data contains `NA` values with `na.rm = FALSE` (or infinite predictor values), instead of a malformed list (`plot.roc` warns that nothing was plotted).
+  * `roc` with `density.controls` and `density.cases` now resolves `direction = "auto"` also when `auc = FALSE` (the curve could be inverted), and stores the resolved direction instead of `"auto"`.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
