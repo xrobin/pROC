@@ -56,6 +56,7 @@
   * Fixed 'power.roc.test' with two paired ROC curves with NAs at different positions, which failed or computed the power on misaligned observations
   * Fixed 'cov(method="obuchowski")' returning NaN for 'percent=TRUE' curves with a partial AUC
   * `ci.auc()`, `var()`, `cov()` and `power.roc.test()` failed with "Cannot convert ci.coords object" on a percent curve built with `ci = TRUE, of = "coords"`.
+  * The 'var(method="obuchowski")' errors no longer claim to use the bootstrap instead
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
