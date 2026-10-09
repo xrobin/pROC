@@ -301,17 +301,21 @@ roc.default <- function(response, predictor,
     smooth.roc$specificities <- c(0, as.vector(smooth.roc$specificities), ifelse(percent, 100, 1))
     smooth.roc$sensitivities <- c(ifelse(percent, 100, 1), as.vector(smooth.roc$sensitivities), 0)
     smooth.roc$percent <- percent # keep some basic roc specifications
-    smooth.roc$direction <- direction
+    smooth.roc$direction <- dir
     smooth.roc$call <- match.call()
-    if (auc) {
-      smooth.roc$auc <- auc(smooth.roc, ...)
-      if (direction == "auto" && smooth.roc$auc < roc_utils_min_partial_auc_auc(smooth.roc$auc)) {
+    # The AUC is needed to resolve direction = "auto", even if auc = FALSE
+    if (auc || direction == "auto") {
+      smooth.auc <- auc(smooth.roc, ...)
+      if (direction == "auto" && smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc)) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...
         )
         smooth.roc$call <- match.call()
         return(smooth.roc)
+      }
+      if (auc) {
+        smooth.roc$auc <- smooth.auc
       }
     }
     if (ci) {
