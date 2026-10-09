@@ -105,6 +105,17 @@ auc.roc <- function(roc,
   if (!identical(partial.auc, FALSE) & !(is.numeric(partial.auc) && length(partial.auc) == 2)) {
     stop("partial.auc must be either FALSE or a numeric vector of length 2")
   }
+  if (!identical(partial.auc, FALSE)) {
+    if (anyNA(partial.auc)) {
+      stop("partial.auc must not contain NA values")
+    }
+    if (any(partial.auc < 0 | partial.auc > ifelse(percent, 100, 1))) {
+      stop(sprintf("partial.auc must be within [0, %s]", ifelse(percent, 100, 1)))
+    }
+    if (isTRUE(partial.auc.correct) && partial.auc[1] == partial.auc[2]) {
+      stop("partial.auc.correct requires two different partial.auc bounds")
+    }
+  }
 
   # Ensure partial.auc is sorted with partial.auc[1] >= partial.auc[2]
   partial.auc <- sort(partial.auc, decreasing = TRUE)
