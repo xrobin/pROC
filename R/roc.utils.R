@@ -752,9 +752,13 @@ coord.is.decreasing <- c(
 roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   # Get predictors (easy)
   if (data.missing) {
-    predictors <- attr(terms(formula), "term.labels")
+    formula.terms <- terms(formula)
   } else {
-    predictors <- attr(terms(formula, data = data), "term.labels")
+    formula.terms <- terms(formula, data = data)
+  }
+  predictors <- attr(formula.terms, "term.labels")
+  if (attr(formula.terms, "response") == 0) {
+    stop("Error in the formula: a response is required in a formula of type response~predictor.")
   }
 
   indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch = 0)
@@ -819,7 +823,9 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   if (!is.null(model.weights(m))) stop("weights are not supported")
 
   # Sanity checks
-  stopifnot(length(predictors) == ncol(m) - 1)
+  if (length(predictors) != ncol(m) - 1) {
+    stop("Invalid formula: only formulas of type response~predictor or response~predictor1+predictor2+... are supported.")
+  }
   stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
 
   return(list(
