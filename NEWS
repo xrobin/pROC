@@ -108,6 +108,7 @@
   * Fixed 'smooth(method="fitdistr", density="t")' always failing
   * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
   * 'roc.test' now returns the documented 'data.name' element
+  * The Venkatraman test now breaks ties at random by default ('ties.method="random"'), so that its result no longer depends on the order of the observations
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
