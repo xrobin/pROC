@@ -409,6 +409,8 @@ roc.test.roc <- function(roc1, roc2,
         "difference in sensitivity at %s specificity",
         specificity
       )
+      htest$estimate <- attr(stat, "estimate")
+      names(htest$estimate) <- sprintf("sensitivity of roc%d at %s specificity", 1:2, specificity)
     } else if (method == "sensitivity") {
       if (!is.numeric(sensitivity) || length(sensitivity) != 1) {
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
@@ -426,6 +428,8 @@ roc.test.roc <- function(roc1, roc2,
         "difference in specificity at %s sensitivity",
         sensitivity
       )
+      htest$estimate <- attr(stat, "estimate")
+      names(htest$estimate) <- sprintf("specificity of roc%d at %s sensitivity", 1:2, sensitivity)
     } else {
       stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
