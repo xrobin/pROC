@@ -156,3 +156,22 @@ test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
   expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
   expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))
 })
+
+test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide with plot.roc's 'x'", {
+  pdf(NULL)
+  on.exit(dev.off())
+  args <- list(x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 5, progress = "none", quiet = TRUE)
+  r <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", plot = TRUE), args))
+  expect_s3_class(r, "roc")
+  expect_equal(r$sensitivities, r.s100b$sensitivities)
+  expect_s3_class(r$ci, "ci.coords")
+  expect_identical(attr(r$ci, "x"), 0.5)
+
+  s <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", smooth = TRUE, plot = TRUE), args))
+  expect_s3_class(s, "smooth.roc")
+  expect_s3_class(s$ci, "ci.coords")
+
+  ci <- do.call(ci.coords, c(list(aSAH$outcome, aSAH$s100b, plot = TRUE), args))
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "x"), 0.5)
+})
