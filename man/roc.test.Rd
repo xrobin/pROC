@@ -28,7 +28,7 @@
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
-ties.method="first", progress = getOption("pROCProgress", interactive()),
+ties.method="random", progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
@@ -91,7 +91,16 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{ties.method}{for \code{method="venkatraman"} only: argument for
     \code{\link{rank}} specifying how ties are handled. Defaults to
-    \dQuote{first} as described in the paper.
+    \dQuote{random}, so that the result does not depend on the order of
+    the observations in the data (with \dQuote{first}, tied observations
+    are ranked by position, and the same data sorted differently can
+    give very different p-values). With paired curves, the ties of both
+    predictors are broken with the same random order of the observations,
+    so that identical predictors give identical ranks. No random numbers
+    are drawn when there are no ties. The test is designed for continuous
+    predictors: with many ties, the p-value depends on the random
+    tie-breaking (Venkatraman and Begg, 1996, section 5). Set the seed with
+    \code{\link{set.seed}} for reproducible results.
   }
   \item{progress}{whether to display a text progress bar during the
     bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
@@ -238,7 +247,7 @@ na.rm=TRUE, method=NULL, ...)
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
   (2000) (for unpaired ROC curves) with \code{boot.n} permutation of
-  sample ranks (with ties breaking). For consistency reasons, the same argument \code{boot.n} as
+  sample ranks (ties broken at random, see \code{ties.method}). For consistency reasons, the same argument \code{boot.n} as
   in bootstrap defines the number of permutations to execute,
   even though no bootstrap is performed.
 
