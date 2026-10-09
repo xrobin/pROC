@@ -231,3 +231,25 @@ test_that("stratified and non-stratified resampling keep their shapes", {
   expect_equal(length(nonstrat$controls) + length(nonstrat$cases),
                length(r.s100b$predictor))
 })
+
+test_that("non-stratified bootstrap drops the resamples that lose a class", {
+  # 2 cases (or controls) among 20: about 12% of the resamples have none
+  resp <- c(rep(0, 18), rep(1, 2))
+  pred <- c(1:18, 12.5, 19)
+  r.few.cases <- roc(resp, pred, quiet = TRUE)
+  r.few.controls <- roc(1 - resp, -pred, quiet = TRUE)
+  for (r in list(r.few.cases, r.few.controls)) {
+    cis <- suppressWarnings(list(
+      ci.se(r, specificities = 0.5, boot.n = 50, boot.stratified = FALSE),
+      ci.sp(r, sensitivities = 0.5, boot.n = 50, boot.stratified = FALSE),
+      ci.coords(r, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 50, boot.stratified = FALSE),
+      ci.coords(r, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 50, boot.stratified = FALSE),
+      ci.thresholds(r, thresholds = 15, boot.n = 50, boot.stratified = FALSE)
+    ))
+    for (ci in cis) {
+      values <- as.numeric(unlist(unclass(ci)))
+      expect_false(anyNA(values))
+      expect_true(all(values >= 0 & values <= 1))
+    }
+  }
+})
