@@ -251,14 +251,6 @@ roc.test.roc <- function(roc1, roc2,
         warning("DeLong's test should not be applied to ROC curves with a different direction.")
       }
 
-      # Check if conf.level is specified correctly. This is currently
-      # only used for the delong paired method, which is why it lives
-      # here for now.
-      if (!is.numeric(conf.level)) {
-        stop("conf.level must be numeric between 0 and 1.")
-      } else if (0 > conf.level | 1 < conf.level) {
-        stop("conf.level must be between 0 and 1.")
-      }
     } else if (method == "venkatraman") {
       if (has.partial.auc(roc1)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
@@ -320,6 +312,14 @@ roc.test.roc <- function(roc1, roc2,
 
   if (method == "delong") {
     if (paired) {
+      # Check if conf.level is specified correctly. It is only used here, for the
+      # CI of the paired test, whether the method was given or selected automatically.
+      # A logical counts as a number, as in t.test()
+      if (!is.numeric(conf.level) && !is.logical(conf.level)) {
+        stop("conf.level must be numeric between 0 and 1.")
+      } else if (anyNA(conf.level) || any(0 > conf.level | 1 < conf.level)) {
+        stop("conf.level must be between 0 and 1.")
+      }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
       stat <- delong.paired.test(delong.calcs)
       stat.ci <- ci_delong_paired(delong.calcs, conf.level)
