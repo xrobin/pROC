@@ -53,6 +53,7 @@
   * Fixed 'multiclass.roc' failing with 'No case observation.' when 'levels' contained a level without observations in a non-factor response, or that was not a level of the factor; it is now dropped with a warning as for unused factor levels
   * Fixed a false 'The following classes were not found in 'response'' warning in 'multiclass.roc' with a predictor matrix and a subset of 'levels'
   * Fixed 'power.roc.test' with 'method="bootstrap"', which computed the variance of each AUC from the wrong margin of the bootstrap replicates, giving essentially random results
+  * Fixed 'power.roc.test' with two paired ROC curves with NAs at different positions, which failed or computed the power on misaligned observations
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
