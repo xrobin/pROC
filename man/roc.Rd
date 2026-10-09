@@ -181,6 +181,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \code{direction = ">"}. Unused defined levels are retained. Levels of
   \code{cases} and \code{controls} must be identical (same labels, same order).
 
+  With \code{direction="auto"}, the direction is chosen by comparing the
+  median of the controls with the median of the cases (the medians of the
+  level ranks for ordered predictors): \dQuote{<} if the median of the
+  controls is lower than or equal to the median of the cases, and
+  \dQuote{>} otherwise. The AUC is not guaranteed to be above 0.5: in
+  particular, when both medians are equal (frequent with binary or
+  ordered predictors with few levels), \dQuote{<} is chosen whatever the
+  AUC. With \code{density.controls, density.cases}, the curve is built
+  with \dQuote{<} and turned to \dQuote{>} if its AUC is below that of the
+  diagonal (0.5 for a full AUC).
+
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
   \code{FALSE}. Especially, in the following case:
