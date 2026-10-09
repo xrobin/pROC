@@ -73,9 +73,7 @@ cov(...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
-    \code{\link{auc}} (if \code{reuse.auc=FALSE}) and
-    \code{\link{txtProgressBar}} (only \code{char} and \code{style}) if
-    applicable.
+    \code{\link{auc}} (if \code{reuse.auc=FALSE}).
   }
 }
 
