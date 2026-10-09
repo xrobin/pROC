@@ -25,7 +25,7 @@ best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
-\S3method{ci.coords}{formula}(formula, data, ...)
+\S3method{ci.coords}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input="specificity", ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
@@ -44,6 +44,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{x, input, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
     See there for more details. The only difference is on the \code{x} argument which cannot be

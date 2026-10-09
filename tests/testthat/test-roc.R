@@ -439,3 +439,30 @@ test_that("roc works with `with` and formula", {
 # 	}
 # }
 # save("expected.roc", system.file("extdata", "test-roc-expected.R", package="pROC"), file = "dump_roc_expected.R")
+
+test_that("formula methods with subset can plot and smooth", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r.female <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", quiet = TRUE)
+  r <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(r$auc), as.numeric(r.female$auc))
+  s <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)
+  expect_equal(s$sensitivities, smooth(r.female)$sensitivities)
+  rl <- roc(outcome ~ s100b + ndka, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(rl$s100b$auc), as.numeric(r.female$auc))
+  expect_equal(
+    as.numeric(auc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)),
+    as.numeric(auc(smooth(r.female)))
+  )
+  expect_equal(
+    as.numeric(ci(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci(r.female))
+  )
+  expect_equal(
+    as.numeric(ci.auc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci.auc(r.female))
+  )
+  expect_s3_class(ci.se(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.se")
+  expect_s3_class(ci.sp(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.sp")
+  expect_s3_class(ci.thresholds(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.thresholds")
+})
