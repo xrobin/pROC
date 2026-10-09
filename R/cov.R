@@ -68,6 +68,9 @@ cov.roc <- function(roc1, roc2,
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc1$smooth <- TRUE
+    if (is.null(attr(roc1, "roc"))) { # built directly from densities
+      stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
+    }
     roc1 <- roc_utils_unsmooth(roc1)
     # oroc1$auc <- roc1$auc
   } else {
@@ -78,6 +81,9 @@ cov.roc <- function(roc1, roc2,
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc2$smooth <- TRUE
+    if (is.null(attr(roc2, "roc"))) { # built directly from densities
+      stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
+    }
     roc2 <- roc_utils_unsmooth(roc2)
     # oroc2$auc <- roc2$auc
   } else {
@@ -195,7 +201,7 @@ cov.roc <- function(roc1, roc2,
     }
   } else { # method == "bootstrap"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
 
