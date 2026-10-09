@@ -473,3 +473,13 @@ test_that("roc with densities resolves direction = 'auto' even if auc = FALSE", 
   expect_equal(b$specificities, a$specificities)
   expect_equal(as.numeric(auc(b)), as.numeric(a$auc))
 })
+
+test_that("formulas without response or with unsupported terms give a clear error", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, 3, 2, 4, 2.5, 6), z = c(2, 1, 3, 5, 4, 6))
+  expect_error(roc(~x, d), "a response is required")
+  expect_error(auc(~x, d), "a response is required")
+  expect_error(roc.test(~ x + z, d), "a response is required")
+  expect_error(roc(y ~ . - z, d), "only formulas of type response~predictor")
+  expect_error(roc(y ~ x:z, d), "only formulas of type response~predictor")
+  expect_named(roc(y ~ ., d, quiet = TRUE), c("x", "z"))
+})
