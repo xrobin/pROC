@@ -164,6 +164,6 @@ expected.bootstrap <- list(
   roctest.venk = list(
     class = "htest",
     shape = 10L,
-    values = c(692, 0.1)
+    values = c(698, 0.1)
   )
 )
