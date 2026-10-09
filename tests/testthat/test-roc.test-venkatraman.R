@@ -60,3 +60,8 @@ test_that("unpaired venkatraman statistic is symmetric with curves of different 
   t21 <- roc.test(r2, r1, method = "venkatraman", paired = FALSE, boot.n = 2)
   expect_equal(t12$statistic, t21$statistic)
 })
+
+test_that("venkatraman rejects a partial AUC on either curve", {
+  expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported")
+  expect_error(suppressWarnings(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2)), "Partial AUC is not supported")
+})

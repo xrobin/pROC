@@ -270,7 +270,7 @@ roc.test.roc <- function(roc1, roc2,
       }
 
     } else if (method == "venkatraman") {
-      if (has.partial.auc(roc1)) {
+      if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
       }
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
