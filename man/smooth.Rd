@@ -57,9 +57,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{density.controls} and \code{density.cases}.
   }
   \item{start, start.controls, start.cases}{if
-    \code{method="fitdistr"}, optionnal \code{start}
-    arguments for . \code{start.controls}
-    and \code{start.cases} allows to specify different distributions for
+    \code{method="fitdistr"}, optional \code{start}
+    arguments for \code{\link[MASS]{fitdistr}}. \code{start.controls}
+    and \code{start.cases} allow to specify different start values for
     controls and cases.
   }
   \item{reuse.auc, reuse.ci}{if \code{TRUE} (default for reuse.auc) and the \dQuote{roc} objects
