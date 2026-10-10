@@ -573,11 +573,11 @@ test_that("invalid se/sp", {
   smooth.s100b.percent <- smooth(r.s100b.percent)
   for (inp in c("sens", "spec")) {
     for (r in list(r.s100b.percent, smooth.s100b.percent)) {
-      expect_error(coords(r.s100b.percent, x = -2, input = inp))
-      expect_error(coords(r.s100b.percent, x = 0, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 10, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 100, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 101, input = inp))
+      expect_error(coords(r, x = -2, input = inp))
+      expect_error(coords(r, x = 0, input = inp), NA)
+      expect_error(coords(r, x = 10, input = inp), NA)
+      expect_error(coords(r, x = 100, input = inp), NA)
+      expect_error(coords(r, x = 101, input = inp))
     }
   }
 })
