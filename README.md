@@ -11,7 +11,7 @@ An [R](https://www.r-project.org/) package to display and analyze ROC curves.
 
 For more information, see:
 
-1. Xavier Robin, Natacha Turck, Alexandre Hainard, *et al.* (2011) “pROC: an open-source package for R and S+ to analyze and compare ROC curves”. *BMC Bioinformatics*, **7**, 77. DOI: [10.1186/1471-2105-12-77](http://dx.doi.org/10.1186/1471-2105-12-77)
+1. Xavier Robin, Natacha Turck, Alexandre Hainard, *et al.* (2011) “pROC: an open-source package for R and S+ to analyze and compare ROC curves”. *BMC Bioinformatics*, **12**, 77. DOI: [10.1186/1471-2105-12-77](http://dx.doi.org/10.1186/1471-2105-12-77)
 2. [The official web page](https://xrobin.github.io/pROC/)
 3. [The CRAN page](https://cran.r-project.org/package=pROC)
 4. [My blog](https://xavier.robin.info/tag/pROC/)
