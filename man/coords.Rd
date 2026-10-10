@@ -77,13 +77,16 @@ transpose = FALSE, as.matrix=FALSE, ...)
   	to return the thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
   	Since pROC 1.16 the default value is \code{FALSE}.
   	See \link{coords_transpose} for more details the change.
+  	With an ordered predictor, the transposed result is a character
+  	matrix, as the thresholds are level labels.
   }
   \item{as.matrix}{DEPRECATED. If \code{transpose} is \code{FALSE}, whether to return
     a \code{\link{matrix}} (\code{TRUE}) or a \code{\link{data.frame}}
     (\code{FALSE}, the default). A \code{data.frame} is more convenient
     and flexible to use, but incurs a slight speed penalty. Consider
     setting this argument to \code{TRUE} if you are calling the function
-    repeatedly.
+    repeatedly. With an ordered predictor, the matrix is a character
+    matrix, as the thresholds are level labels.
   }
   \item{\dots}{further arguments passed from other methods. For
     \code{coords.auc}, the arguments of \code{coords.roc} or
