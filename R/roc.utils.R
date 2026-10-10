@@ -854,9 +854,9 @@ roc_utils_stop_if_no_device <- function(fun.name) {
   }
 }
 
-roc_utils_stop_if_no_auc <- function(x) {
+roc_utils_stop_if_no_auc <- function(x, arg = "x") {
   if (is.null(x$auc)) {
-    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
+    stop(sprintf("'%s' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.", arg))
   }
 }
 
