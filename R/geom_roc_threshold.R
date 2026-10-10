@@ -10,6 +10,15 @@ geom_roc_threshold.roc <- function(data,
                                    size = 2,
                                    ...) {
   load.ggplot2()
+  # Smoothed curves have no thresholds (same restrictions as plot.roc's print.thres)
+  if (methods::is(data, "smooth.roc")) {
+    if (is.numeric(thresholds)) {
+      stop("Numeric 'thresholds' unsupported on a smoothed ROC curve.")
+    } else if (is.character(thresholds) && length(thresholds) == 1 &&
+      match.arg(thresholds, c("all", "local maximas", "best")) == "local maximas") {
+      stop("'local maximas' 'thresholds' unsupported on a smoothed ROC curve.")
+    }
+  }
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
