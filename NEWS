@@ -106,6 +106,7 @@
   * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
   * Fixed 'smooth(method="fitdistr", density="t")' always failing
   * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
+  * 'smooth(method="fitdistr")' with a continuous distribution named by a character 'density' (such as the default "normal") now returns the exact ROC curve of the fitted distributions, which were truncated to the range of the data before. The smoothed curves and their AUCs change, often noticeably: for aSAH, the AUC of the default normal fit is now 0.7257 instead of 0.8311 for s100b, and 0.581 instead of 0.851 for ndka. With density "t", a discrete distribution or a density function, the curve is still computed over the range of the data only (see ?smooth)
   * 'roc.test' now returns the documented 'data.name' element
   * The Venkatraman test now breaks ties at random by default ('ties.method="random"'), so that its result no longer depends on the order of the observations
   * 'roc.test(method="venkatraman")' now rejects a partial AUC on the second curve too, as it did on the first
