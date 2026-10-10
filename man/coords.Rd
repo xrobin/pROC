@@ -131,7 +131,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   \code{roc$specificities}). More than one point may match (in
   \emph{step} curves), then only the upper-left-most point coordinates
   are returned. Otherwise,
-  the specificity and specificity of the point is interpolated and
+  the other coordinate (sensitivity or specificity, respectively) is interpolated and
   \code{NA} is returned as threshold.
 
   The coords function in this package is a generic, but it might be
