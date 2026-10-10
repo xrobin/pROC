@@ -33,7 +33,7 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   }
   \item{type}{type of plot, \dQuote{bars} or \dQuote{shape}. Can be
     shortened to \dQuote{b} or \dQuote{s}. \dQuote{shape} is only available for
-    \code{ci.se} and \code{ci.sp}, not for \code{ci.thresholds}.
+    \code{ci.se}, \code{ci.sp} and \code{ci.coords}, not for \code{ci.thresholds}.
   }
   \item{length}{the length (as plot coordinates) of the bar ticks. Only
     if \code{type="bars"}.
