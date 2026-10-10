@@ -140,3 +140,17 @@ test_that("smooth with reuse.ci recomputes the CI on the smoothed curve", {
   expect_is(s$ci, "ci.se")
   expect_equal(attr(s$ci, "specificities"), c(0.5, 0.9))
 })
+
+test_that("fitdistr smoothing works with the t distribution", {
+  skip_if_not_installed("MASS")
+  r <- roc(rep(0:1, each = 30), c(qt(ppoints(30), 5), qt(ppoints(30), 5) * 2 + 2), quiet = TRUE)
+  # lower bounds keep optim() in the parameter space (s > 0, df >= 1): no NaNs produced
+  s <- smooth(r, method = "fitdistr", density = "t", lower = c(-Inf, 0.001, 1))
+  expect_s3_class(s, "smooth.roc")
+  # The density is the location-scale t that MASS::fitdistr fits
+  fit <- MASS::fitdistr(r$controls, "t", lower = c(-Inf, 0.001, 1))
+  expect_equal(
+    sum(log(pROC:::dt_location_scale(r$controls, fit$estimate[["m"]], fit$estimate[["s"]], fit$estimate[["df"]]))),
+    fit$loglik
+  )
+})
