@@ -83,7 +83,7 @@ text(rocobj)                 # "AUC: 0.XXX (0.XXX-0.XXX)"
 
 aucobj <- auc(rocobj)
 plot(rocobj)
-text(aucobj, xy = c(40, 40), pattern = "Area under the curve: \%.2f")
+text(aucobj, xy = c(.4, .4), pattern = "Area under the curve: \%.2f")
 }
 \keyword{aplot}
 \keyword{hplot}
