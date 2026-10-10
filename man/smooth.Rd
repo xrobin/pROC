@@ -103,7 +103,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \dQuote{gaussian} is used, but \dQuote{epanechnikov},
   \dQuote{rectangular}, \dQuote{triangular}, \dQuote{biweight},
   \dQuote{cosine} and \dQuote{optcosine} are supported. As all the
-  kernels are symetrical, it might help to normalize the data first
+  kernels are symmetrical, it might help to normalize the data first
   (that is, before calling \code{\link{roc}}), for example with quantile
   normalization:
   \preformatted{
@@ -128,7 +128,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   If \code{method="fitdistr"}, the \code{\link[MASS]{fitdistr}}
   function from the \pkg{MASS} package is employed to fit parameters for
-  the density function \code{density} with optionnal start parameters
+  the density function \code{density} with optional start parameters
   \code{start}. The density function are fitted
   separately in control (\code{density.controls}, \code{start.controls})
   and case observations (\code{density.cases},
