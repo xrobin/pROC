@@ -82,3 +82,8 @@ test_that("geom_polygon_auc works with percent and legacy.axes = TRUE", {
   }
   expect_ggroc_doppelganger("geom_polygon_auc.partial.screenshot", test_geom_polygon_auc_partial_screenshot)
 })
+
+test_that("geom_polygon_auc gives a clear error on a curve without AUC", {
+  r <- roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE)
+  expect_error(geom_polygon_auc(r), "'data' has no 'auc'")
+})
