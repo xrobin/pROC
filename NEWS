@@ -105,6 +105,7 @@
   * Fixed 'coords' on smoothed curves returning a list with 'drop=TRUE' or 'transpose=TRUE' and a numeric 'x'
   * 'coords' on smoothed curves no longer gives each deprecation warning twice
   * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
+  * Fixed 'smooth(method="fitdistr", density="t")' always failing
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
