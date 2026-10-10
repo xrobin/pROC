@@ -218,8 +218,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		\code{youden} \tab Youden Index \tab 
 			se + r * sp
 			\tab - \tab No \cr
-		\code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
-			- ((1 - se)^2 + r * (1 - sp)^2)
+		\code{closest.topleft} \tab Weighted squared distance to the top left corner of the ROC space \tab 
+			(1 - se)^2 + r * (1 - sp)^2
 			\tab - \tab No \cr
 	}
 	
