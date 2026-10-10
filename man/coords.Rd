@@ -225,7 +225,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
 	
 	The value \dQuote{threshold} is not allowed in \code{coords.smooth.roc}.
 	
-	Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
+	Values can be shortened (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
 	\dQuote{se}, \dQuote{sp} or \dQuote{1-np}). In addition, some values can be prefixed with
 	\code{1-} to get their complement:
 	\code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}.

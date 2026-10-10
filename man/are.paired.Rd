@@ -33,7 +33,7 @@ are.paired(...)
     \code{\link{ci}} and \code{\link[=smooth.roc]{smooth}} should be re-computed
     (with the same parameters than the original ROC curves)
   }
-  \item{\dots}{additionnal arguments for \code{are.paired.roc}. Ignored
+  \item{\dots}{additional arguments for \code{are.paired.roc}. Ignored
     in \code{are.paired.roc}
   }
 }
@@ -57,7 +57,7 @@ are.paired(...)
   otherwise. 
 
   In addition, if \code{TRUE} and \code{return.paired.rocs=TRUE}, the
-  following atributes are defined:
+  following attributes are defined:
   \item{roc1, roc2}{the two ROC curve with all \code{NA}s values removed
     in both curves.
   }

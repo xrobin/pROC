@@ -59,7 +59,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link[=smooth.roc]{smooth}}.
   }
-  \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
+  \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
     \code{data} and \code{subset}, but not \code{na.action} are supported, see 
     \code{\link{model.frame}} for more details.
@@ -87,7 +87,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     (\code{<=}) to the threshold.
     \dQuote{auto} (default): automatically detect in which group the
     median is higher and take the direction accordingly. See details.
-    You should set this explicity to \dQuote{>} or \dQuote{<} whenever
+    You should set this explicitly to \dQuote{>} or \dQuote{<} whenever
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
   }
