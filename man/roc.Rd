@@ -77,8 +77,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
-    (ignored by \code{roc.formula}).
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.
+    This also applies to \code{roc.formula}, which passes the
+    \code{NA} values to \code{roc.default} (\code{na.action=na.pass}).
   }
   \item{direction}{how are positive observations defined?
     \dQuote{<}: observations are positive when they
