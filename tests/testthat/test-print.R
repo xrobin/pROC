@@ -181,3 +181,14 @@ test_that("smoothed curves from the plot.roc and lines.roc formula methods print
   r <- lines.roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE)
   expect_output(print(r), "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).", fixed = TRUE)
 })
+
+test_that("print.mv.multiclass.roc separates formula predictor names", {
+  d <- data.frame(
+    resp = factor(rep(c("x", "y", "z"), 4)),
+    x = c(1, 5, 9, 2, 6, 7, 3, 4, 8, 2, 6, 9),
+    y = c(9, 5, 1, 8, 4, 2, 7, 6, 3, 8, 5, 1),
+    z = c(2, 3, 9, 1, 4, 8, 3, 2, 7, 1, 5, 9)
+  )
+  expect_output(print(multiclass.roc(resp ~ x + y + z, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+  expect_output(print(multiclass.roc(resp ~ ., d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+})
