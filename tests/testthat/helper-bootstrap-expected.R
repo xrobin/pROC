@@ -153,17 +153,17 @@ expected.bootstrap <- list(
   ),
   roctest.boot = list(
     class = "htest",
-    shape = 10L,
+    shape = 11L,
     values = c(1.4790202557, 0.1391349012)
   ),
   roctest.boot.ns = list(
     class = "htest",
-    shape = 10L,
+    shape = 11L,
     values = c(1.7975749619, 0.0722443891)
   ),
   roctest.venk = list(
     class = "htest",
-    shape = 9L,
+    shape = 10L,
     values = c(692, 0.1)
   )
 )

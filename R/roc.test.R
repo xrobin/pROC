@@ -39,8 +39,10 @@ roc.test.formula <- function(formula, data, ...) {
   # data.names for pretty print()ing
   if (data.missing) {
     testres$data.names <- sprintf("%s and %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.name <- testres$data.names # the standard htest element
   } else {
     testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.name <- testres$data.names # the standard htest element
   }
 
   return(testres)
@@ -82,6 +84,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
   }
   test <- roc.test.roc(roc1, roc2, method = method, ...)
   test$data.names <- data.names
+  test$data.name <- test$data.names # the standard htest element
   return(test)
 }
 
@@ -97,6 +100,7 @@ roc.test.auc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
   testres$data.names <- data.names
+  testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
 
@@ -104,6 +108,7 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
   testres$data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
 
@@ -318,6 +323,7 @@ roc.test.roc <- function(roc1, roc2,
   htest <- list(
     alternative = alternative,
     data.names = data.names,
+    data.name = data.names, # the standard htest element
     estimate = estimate,
     null.value = null.value
   )

@@ -377,3 +377,15 @@ test_that("roc.test selects the bootstrap when only roc2 has a partial AUC", {
   expect_equal(res.12$method, res.21$method)
   expect_equal(res.12$statistic, -res.21$statistic)
 })
+
+test_that("roc.test returns the documented data.name", {
+  t <- roc.test(r.wfns, r.s100b)
+  expect_identical(t$data.name, "r.wfns and r.s100b")
+  t <- roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b)
+  expect_identical(t$data.name, t$data.names)
+  t <- roc.test(outcome ~ wfns + s100b, aSAH)
+  expect_identical(t$data.name, t$data.names)
+  old <- options(warnPartialMatchDollar = TRUE)
+  on.exit(options(old))
+  expect_warning(capture.output(print(t)), NA)
+})

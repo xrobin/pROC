@@ -107,6 +107,7 @@
   * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
   * Fixed 'smooth(method="fitdistr", density="t")' always failing
   * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
+  * 'roc.test' now returns the documented 'data.name' element
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
