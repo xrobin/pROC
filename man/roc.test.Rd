@@ -44,7 +44,7 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{response}{a vector or factor, as for the \link{roc} function.}
   \item{predictor1}{a numeric or ordered vector as for the \link{roc} function, or
-  a matrix or data.frame with predictors two colums.}
+  a matrix or data.frame with predictors two columns.}
   \item{predictor2}{only if predictor1 was a vector, the second
     predictor as a numeric vector.
   }
@@ -152,7 +152,7 @@ na.rm=TRUE, method=NULL, ...)
   employed to detect the paired status of the ROC curves. It will test if the original \code{response} is
   identical between the two ROC curves (this is always the case if the call is made with 
   \code{roc.test.default}). This detection is unlikely to raise false positives, but
-  this possibility cannot be excluded entierly. It would require equal sample sizes
+  this possibility cannot be excluded entirely. It would require equal sample sizes
   and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
@@ -316,7 +316,7 @@ na.rm=TRUE, method=NULL, ...)
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
-  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifiying the level of the test.}
+  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{a character string describing the test, such as
     \dQuote{DeLong's test for two correlated ROC curves} (if
