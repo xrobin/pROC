@@ -112,6 +112,7 @@
   * 'roc.test(method="venkatraman")' now rejects a partial AUC on the second curve too, as it did on the first
   * Fixed 'ci.auc' and 'var' with a non-stratified bootstrap failing when a resample has no control
   * 'roc.test' with 'method="sensitivity"' or 'method="specificity"' now reports the tested sensitivities or specificities as estimates instead of the AUCs
+  * Fixed non-stratified bootstraps of ordered predictors failing when a resample loses a class
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
