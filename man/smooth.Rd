@@ -216,11 +216,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   be smoothed only with binormal smoothing.} is displayed otherwise.
 
   \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
-  require additional packages. If not available, the following message 
-  will be displayed with the required command to install the package:
-  \dQuote{Package ? not available, required with method='?'.
-     Please install it with 'install.packages("?")'. 
-  }
+  require additional packages (\pkg{MASS} and \pkg{logcondens},
+  respectively). In an interactive session, you will be offered to install
+  a missing package; otherwise an error is issued.
 }
 
 \references{
