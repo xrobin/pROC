@@ -778,3 +778,40 @@ test_that("deprecated coords forms keep numeric coordinates on ordered curves", 
     suppressWarnings(apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
   )
 })
+
+test_that("coords finds exact points of percent curves despite rounding", {
+  # sp = 23/40 is a vertical segment: (23/40) * 100 != 57.5 in floating point
+  controls <- c(1:23, 30:46)
+  cases <- c(23.6, 23.7, 23.8, 50:55)
+  r <- roc(controls = controls, cases = cases, quiet = TRUE)
+  rp <- roc(controls = controls, cases = cases, percent = TRUE, quiet = TRUE)
+  ret <- c("threshold", "specificity", "sensitivity")
+  expected <- data.frame(threshold = 23.3, specificity = 0.575, sensitivity = 1)
+  expect_equal(coords(r, 0.575, input = "specificity", ret = ret), expected)
+  expected.percent <- data.frame(threshold = 23.3, specificity = 57.5, sensitivity = 100)
+  expect_equal(coords(rp, 57.5, input = "specificity", ret = ret), expected.percent)
+  expect_equal(coords(r, 0.425, input = "fpr", ret = ret), expected)
+  expect_equal(coords(rp, 42.5, input = "1-specificity", ret = ret), expected.percent)
+
+  # Partial AUC limit on a vertex adds no extra row
+  r$auc <- auc(r, partial.auc = c(.575, .2))
+  rp$auc <- auc(rp, partial.auc = c(57.5, 20))
+  expect_equal(nrow(coords(rp, "all")), nrow(coords(r, "all")))
+})
+
+test_that("coords counts are integers and match exact points", {
+  rp <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
+  tp <- coords(rp, "all", ret = "tp")$tp
+  expect_identical(tp, round(tp))
+  # tp = 2 at thresholds 3.75, 4.5 and 5.5: the upper-left one is 5.5
+  expect_equal(
+    coords(rp, 2, input = "tp", ret = c("threshold", "specificity", "sensitivity")),
+    data.frame(threshold = 5.5, specificity = 100, sensitivity = 200 / 3)
+  )
+
+  # (15 / 22) * 22 != 15 on a fraction curve
+  r <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
+  expected <- data.frame(threshold = 8.75, specificity = 1, sensitivity = 15 / 22)
+  expect_equal(coords(r, 15, input = "tp", ret = c("threshold", "specificity", "sensitivity")), expected)
+  expect_equal(coords(r, 7, input = "fn", ret = c("threshold", "specificity", "sensitivity")), expected)
+})

@@ -529,6 +529,26 @@ load.suggested.package <- function(pkg) {
 }
 
 
+# Tolerance to compare coordinates of a curve whose largest value is `scale`
+# (1, 100 or a number of observations): absorbs floating-point error such as
+# (k / n) * 100 != 100 * k / n or 1 - k / n != (n - k) / n, while staying far
+# below the smallest step between two points of a curve.
+roc_utils_coords_tol <- function(scale) {
+  1e-12 * scale
+}
+
+# Whether `value` is one of `values` up to floating-point error.
+roc_utils_near_any <- function(value, values, percent) {
+  any(abs(values - value) <= roc_utils_coords_tol(ifelse(percent, 100, 1)))
+}
+
+# Counts rebuilt from rates (se * n): remove the floating-point error so that
+# exact counts are integers again. Interpolated counts are left unchanged.
+roc_utils_round_counts <- function(x, n) {
+  rounded <- round(x)
+  ifelse(abs(x - rounded) <= roc_utils_coords_tol(n), rounded, x)
+}
+
 # Calculate coordinates
 # @param roc: the roc curve, used to guess if data is in percent and number of cases and controls.
 # @param thr, se, sp
@@ -539,9 +559,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
   ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   substr.percent <- ifelse(roc$percent, 100, 1)
 
-  tp <- se * ncases / substr.percent
+  tp <- roc_utils_round_counts(se * ncases / substr.percent, ncases)
   fn <- ncases - tp
-  tn <- sp * ncontrols / substr.percent
+  tn <- roc_utils_round_counts(sp * ncontrols / substr.percent, ncontrols)
   fp <- ncontrols - tn
   npv <- substr.percent * tn / (tn + fn)
   ppv <- substr.percent * tp / (tp + fp)

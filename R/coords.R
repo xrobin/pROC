@@ -110,11 +110,11 @@ coords.smooth.roc <- function(smooth.roc,
           se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
           sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% se) {
+          if (!roc_utils_near_any(partial.auc.limits[1], se, smooth.roc$percent)) {
             se <- c(partial.auc.limits[1], se)
             sp <- c(coords(smooth.roc, x = partial.auc.limits[1], input = "sensitivity", ret = "specificity")[1, 1], sp)
           }
-          if (!partial.auc.limits[2] %in% se) {
+          if (!roc_utils_near_any(partial.auc.limits[2], se, smooth.roc$percent)) {
             se <- c(se, partial.auc.limits[2])
             sp <- c(sp, coords(smooth.roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
           }
@@ -122,11 +122,11 @@ coords.smooth.roc <- function(smooth.roc,
           se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
           sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% sp) {
+          if (!roc_utils_near_any(partial.auc.limits[1], sp, smooth.roc$percent)) {
             se <- c(se, coords(smooth.roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
             sp <- c(sp, partial.auc.limits[1])
           }
-          if (!partial.auc.limits[2] %in% sp) {
+          if (!roc_utils_near_any(partial.auc.limits[2], sp, smooth.roc$percent)) {
             se <- c(coords(smooth.roc, x = partial.auc.limits[2], input = "specificity", ret = "sensitivity")[1, 1], se)
             sp <- c(partial.auc.limits[2], sp)
           }
@@ -300,12 +300,12 @@ coords.roc <- function(roc,
           sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           partial.auc.limits <- attr(roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% se) {
+          if (!roc_utils_near_any(partial.auc.limits[1], se, roc$percent)) {
             se <- c(partial.auc.limits[1], se)
             sp <- c(coords(roc, x = partial.auc.limits[1], input = "sensitivity", ret = "specificity")[1, 1], sp)
             thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
           }
-          if (!partial.auc.limits[2] %in% se) {
+          if (!roc_utils_near_any(partial.auc.limits[2], se, roc$percent)) {
             se <- c(se, partial.auc.limits[2])
             sp <- c(sp, coords(roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
             thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
@@ -315,12 +315,12 @@ coords.roc <- function(roc,
           sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
           partial.auc.limits <- attr(roc$auc, "partial.auc")
-          if (!partial.auc.limits[1] %in% sp) {
+          if (!roc_utils_near_any(partial.auc.limits[1], sp, roc$percent)) {
             se <- c(se, coords(roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
             sp <- c(sp, partial.auc.limits[1])
             thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
-          if (!partial.auc.limits[2] %in% sp) {
+          if (!roc_utils_near_any(partial.auc.limits[2], sp, roc$percent)) {
             se <- c(coords(roc, x = partial.auc.limits[2], input = "specificity", ret = "sensitivity")[1, 1], se)
             sp <- c(partial.auc.limits[2], sp)
             thres <- roc_utils_c_thresholds(roc_utils_na_thresholds(1L, roc$thresholds), thres)
@@ -452,6 +452,8 @@ coords.roc <- function(roc,
       sp <- all_coords[, "specificity"]
       thr <- all_coords[, "threshold"]
     }
+    # Tolerance for floating-point error in the curve's rates and counts
+    input_tol <- roc_utils_coords_tol(max(abs(input_values)))
     for (i in seq_along(x)) {
       value <- x[i]
       if (value < min(input_values) || value > max(input_values)) {
@@ -461,7 +463,7 @@ coords.roc <- function(roc,
         ))
       }
 
-      idx <- which(input_values == value)
+      idx <- which(abs(input_values - value) <= input_tol)
       if (length(idx) > 1) {
         # More than one to pick from. Need to take the upper-left-most point.
         # The curve is sorted by increasing specificity: ties of a
