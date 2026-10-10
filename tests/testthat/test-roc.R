@@ -524,3 +524,11 @@ test_that("roc_ works when called from a function through Map", {
   expect_error(roc_(d, "y", "w"), "Column 'w' not present in data d", fixed = TRUE)
   expect_warning(expect_error(roc(d, y, w), "Column 'w' not present in data d", fixed = TRUE), "non-standard evaluation")
 })
+
+test_that("roc with densities, direction = 'auto' and a corrected partial AUC below the diagonal", {
+  x <- seq(-4, 6, length.out = 256)
+  expect_warning(r <- roc(density.controls = dnorm(x, 2), density.cases = dnorm(x, 0), partial.auc = c(1, .8), partial.auc.correct = TRUE), NA)
+  expect_equal(r$direction, ">")
+  r.gt <- roc(density.controls = dnorm(x, 2), density.cases = dnorm(x, 0), partial.auc = c(1, .8), partial.auc.correct = TRUE, direction = ">")
+  expect_equal(as.numeric(r$auc), as.numeric(r.gt$auc))
+})
