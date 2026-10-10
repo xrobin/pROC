@@ -23,7 +23,10 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # Always print number of patients, controls, thresholds, levels?
-  print_dataline(attr(x, "roc")) # take this from original roc
+  # (not available for curves built with numeric densities)
+  if (!is.null(attr(x, "roc"))) {
+    print_dataline(attr(x, "roc")) # take this from original roc
+  }
 
   # Smoothing
   cat("Smoothing: ")
