@@ -163,3 +163,14 @@ test_that("print works with a formula with data attached with 'with'", {
   expect_known_output(with(aSAH, print(roc(x))), "print_output/ndka_formula_var_attached")
   expect_known_output(with(aSAH, print(roc(outcome ~ ndka))), "print_output/ndka_formula_attached")
 })
+
+test_that("print.mv.multiclass.roc separates formula predictor names", {
+  d <- data.frame(
+    resp = factor(rep(c("x", "y", "z"), 4)),
+    x = c(1, 5, 9, 2, 6, 7, 3, 4, 8, 2, 6, 9),
+    y = c(9, 5, 1, 8, 4, 2, 7, 6, 3, 8, 5, 1),
+    z = c(2, 3, 9, 1, 4, 8, 3, 2, 7, 1, 5, 9)
+  )
+  expect_output(print(multiclass.roc(resp ~ x + y + z, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+  expect_output(print(multiclass.roc(resp ~ ., d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+})
