@@ -734,3 +734,20 @@ test_that("coords.auc passes its arguments", {
   s <- smooth(r.s100b)
   expect_equal(coords(auc(s), "best", ret = "specificity"), coords(s, "best", ret = "specificity"))
 })
+
+test_that("coords on smoothed curves with numeric x honour drop and transpose", {
+  s <- smooth(r.s100b)
+  expected <- coords(s, c(0.5, 0.9), input = "specificity", transpose = FALSE)
+  expect_s3_class(expected, "data.frame")
+  expect_warning(res <- coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE), "'transpose=TRUE' is deprecated")
+  expect_equal(res, t(expected))
+  expect_warning(res <- coords(s, 0.5, input = "specificity", drop = TRUE), "'drop' is deprecated")
+  expect_identical(res, expected[1, , drop = TRUE])
+})
+
+test_that("coords as.list on smoothed curves with one numeric x returns a flat list", {
+  s <- smooth(r.s100b)
+  expect_warning(res <- coords(s, 0.5, input = "specificity", as.list = TRUE), "'as.list' is deprecated")
+  expect_equal(names(res), c("specificity", "sensitivity"))
+  expect_equal(res$specificity, 0.5)
+})
