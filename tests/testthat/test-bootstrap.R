@@ -260,3 +260,12 @@ test_that("non-stratified ci.auc and var drop the resamples that lose the contro
   expect_s3_class(suppressWarnings(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50)), "ci.auc")
   expect_true(is.numeric(suppressWarnings(var(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50))))
 })
+
+test_that("non-stratified bootstraps of ordered predictors drop the resamples that lose a class", {
+  pred <- factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), levels = c("a", "b", "c", "d"), ordered = TRUE)
+  r <- roc(c(0, 0, rep(1, 8)), pred, quiet = TRUE)
+  expect_s3_class(suppressWarnings(ci.se(r, specificities = 0.5, boot.stratified = FALSE, boot.n = 50)), "ci.se")
+  expect_s3_class(suppressWarnings(ci.sp(r, sensitivities = 0.5, boot.stratified = FALSE, boot.n = 50)), "ci.sp")
+  expect_s3_class(suppressWarnings(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50)), "ci.auc")
+  expect_s3_class(suppressWarnings(ci.coords(r, "b", input = "threshold", boot.stratified = FALSE, boot.n = 50)), "ci.coords")
+})
