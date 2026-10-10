@@ -242,7 +242,10 @@ panel.last=NULL,
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{plot.roc.roc} when calling
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
-    \code{plot} argument for \code{\link{roc}} is not allowed.
+    \code{plot} argument for \code{\link{roc}} is not allowed, and that
+    the \code{x} argument of \code{\link{ci.coords}} cannot be passed
+    this way, as it would be matched to \code{x} (use
+    \code{roc(\dots, ci=TRUE, of="coords", x=\dots, plot=TRUE)} instead).
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
