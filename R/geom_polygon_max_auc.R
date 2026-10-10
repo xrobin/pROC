@@ -50,6 +50,7 @@ geom_polygon_max_auc.auc <- function(data, fill = "#EEEEEE", colour = NA, ...) {
 }
 
 geom_polygon_max_auc.roc <- function(data, ...) {
+  roc_utils_stop_if_no_auc(data, "data")
   geom_polygon_max_auc(data$auc, ...)
 }
 
