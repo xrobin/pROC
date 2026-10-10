@@ -46,3 +46,17 @@ test_that("ci.se names itself in the multiclass error", {
   mc <- multiclass.roc(aSAH$gos6, aSAH$s100b, quiet = TRUE)
   expect_error(ci.se(mc), "'ci.se' not available for multiclass ROC curves.", fixed = TRUE)
 })
+
+test_that("ci.se gives the same result on percent and fraction curves", {
+  # sp = 23/40 is a vertical segment: (23/40) * 100 != 57.5 in floating point
+  controls <- c(1:23, 30:46)
+  cases <- c(23.6, 23.7, 23.8, 50:55)
+  r <- roc(controls = controls, cases = cases, quiet = TRUE)
+  rp <- roc(controls = controls, cases = cases, percent = TRUE, quiet = TRUE)
+  seed <- sample.int(1e6, 1)
+  set.seed(seed)
+  obtained <- ci.se(r, specificities = c(0.575, 0.6), boot.n = 50)
+  set.seed(seed)
+  obtained.percent <- ci.se(rp, specificities = c(57.5, 60), boot.n = 50)
+  expect_equal(as.numeric(obtained.percent), as.numeric(obtained) * 100)
+})
