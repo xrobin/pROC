@@ -74,9 +74,9 @@ test_that("print works without the auc", {
 
 test_that("print works with the CI", {
   skip_slow()
-  if (getRversion() > "3.6.0") {
-    suppressWarnings(RNGkind(sample.kind = "Rounding"))
-  }
+  previous.kind <- RNGkind()
+  on.exit(suppressWarnings(do.call(RNGkind, as.list(previous.kind))), add = TRUE)
+  suppressWarnings(RNGkind(sample.kind = "Rounding"))
   set.seed(42) # For reproducible CI
   expect_known_output(print(roc(outcome ~ ndka, aSAH, ci = TRUE)), "print_output/r.ndka.formula.ci")
 })
@@ -102,7 +102,6 @@ test_that("print.smooth.roc with logcondens works", {
 
 test_that("print works with ci.auc", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -111,7 +110,6 @@ test_that("print works with ci.auc", {
 
 test_that("print works with ci.coords", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -120,7 +118,6 @@ test_that("print works with ci.coords", {
 
 test_that("print works with ci.thresholds", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -129,7 +126,6 @@ test_that("print works with ci.thresholds", {
 
 test_that("print works with ci.se", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -138,7 +134,6 @@ test_that("print works with ci.se", {
 
 test_that("print works with ci.sp", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
