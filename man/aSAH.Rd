@@ -6,8 +6,8 @@
  Subarachnoid hemorrhage data
 }
 \description{
-  This dataset summarizes several clinical and one laboratory variable
-  of 113 patients with an aneurysmal subarachnoid hemorrhage.
+  This dataset summarizes several clinical and two laboratory variables
+  (s100b and ndka) of 113 patients with an aneurysmal subarachnoid hemorrhage.
 }
 \usage{aSAH}
 
