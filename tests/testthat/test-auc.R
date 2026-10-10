@@ -210,3 +210,16 @@ test_that("has.partial.auc requires a partial.auc of length 2", {
   attr(a, "partial.auc") <- c(1, 0.9, 0.8)
   expect_false(has.partial.auc(a))
 })
+
+test_that("auc rejects NA and out of range partial.auc bounds", {
+  expect_error(auc(r.s100b, partial.auc = c(1, -0.2)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(1.2, 0.8)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(-0.1, -0.5)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(NA, 0.8)), "NA")
+  expect_error(auc(r.s100b.percent, partial.auc = c(100, 120)), "within \\[0, 100\\]")
+  expect_error(auc(r.s100b.percent, partial.auc = c(1, 0.8), partial.auc.focus = "se"), NA)
+  expect_error(auc(r.s100b, partial.auc = c(0.8, 0.8), partial.auc.correct = TRUE), "different")
+  # Bounds at the limits are fine
+  expect_equal(as.numeric(auc(r.s100b, partial.auc = c(1, 0))), as.numeric(auc(r.s100b)))
+  expect_equal(as.numeric(auc(r.s100b.percent, partial.auc = c(100, 0))), as.numeric(auc(r.s100b.percent)))
+})
