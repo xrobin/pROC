@@ -158,3 +158,17 @@ test_that("roc(smooth=TRUE, smooth.method='fitdistr') does not pass auc argument
   expect_is(s, "smooth.roc")
   expect_equal(as.numeric(s$auc), as.numeric(expected))
 })
+
+test_that("fitdistr smoothing works with the t distribution", {
+  skip_if_not_installed("MASS")
+  set.seed(42)
+  r <- roc(rep(0:1, each = 30), c(rt(30, 5), rt(30, 5) * 2 + 2), quiet = TRUE)
+  s <- suppressWarnings(smooth(r, method = "fitdistr", density = "t"))
+  expect_s3_class(s, "smooth.roc")
+  fit.controls <- suppressWarnings(MASS::fitdistr(r$controls, "t"))$estimate
+  x <- seq(min(r$controls), max(r$controls), length.out = 10)
+  expect_equal(
+    dt((x - fit.controls[["m"]]) / fit.controls[["s"]], fit.controls[["df"]]) / fit.controls[["s"]],
+    pROC:::dt_location_scale(x, fit.controls[["m"]], fit.controls[["s"]], fit.controls[["df"]])
+  )
+})
