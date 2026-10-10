@@ -261,6 +261,11 @@ smooth_roc_logcondens <- function(roc, n) {
   sp <- seq(0, 1, 1 / (n - 1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC
+  # logConROC assumes cases > controls: for direction ">", take the point
+  # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
+  if (roc$direction == ">") {
+    se <- 1 - rev(se)
+  }
 
   return(list(
     sensitivities = se * ifelse(roc$percent, 100, 1),
@@ -275,6 +280,11 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
   sp <- seq(0, 1, 1 / (n - 1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC.smooth
+  # logConROC assumes cases > controls: for direction ">", take the point
+  # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
+  if (roc$direction == ">") {
+    se <- 1 - rev(se)
+  }
 
   return(list(
     sensitivities = se * ifelse(roc$percent, 100, 1),
