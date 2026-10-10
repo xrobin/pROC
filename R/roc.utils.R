@@ -885,3 +885,10 @@ roc_utils_unsmooth <- function(smooth.roc) {
   }
   return(roc)
 }
+
+# plot.roc() for roc(..., plot = TRUE). The dots may carry ci.coords()' 'x'
+# (roc(..., ci = TRUE, of = "coords", x = ...)), which would bind to the 'x'
+# of plot.roc() and replace the curve: capture it here so it is not forwarded.
+roc_utils_plot_roc <- function(curve, ..., x) {
+  plot.roc(curve, ...)
+}
