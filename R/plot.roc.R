@@ -38,7 +38,7 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
 
   roc <- roc(response, predictor, plot = TRUE, ...)
   if (roc_utils_is_curve(roc, plot = TRUE)) {
-    roc$call <- match.call()
+    roc <- roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name)
   }
   invisible(roc)
 }
