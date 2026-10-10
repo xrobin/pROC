@@ -321,8 +321,14 @@ roc.default <- function(response, predictor,
     smooth.roc$call <- match.call()
     # The AUC is needed to resolve direction = "auto", even if auc = FALSE
     if (auc || direction == "auto") {
-      smooth.auc <- auc(smooth.roc, ...)
-      if (direction == "auto" && smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc)) {
+      smooth.auc <- withCallingHandlers(auc(smooth.roc, ...), warning = function(w) {
+        # With direction = "auto", a corrected partial AUC below the diagonal
+        # (NA) only means that the curve must be flipped below
+        if (direction == "auto" && grepl("Partial AUC correction not defined", conditionMessage(w))) {
+          invokeRestart("muffleWarning")
+        }
+      })
+      if (direction == "auto" && (is.na(smooth.auc) || smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc))) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...
