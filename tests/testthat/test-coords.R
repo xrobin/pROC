@@ -765,3 +765,16 @@ test_that("coords on smoothed curves give each deprecation warning once", {
   expect_equal(count.warnings(coords(s, "best", as.list = TRUE)), 1)
   expect_equal(count.warnings(coords(s, "best", transpose = TRUE)), 1)
 })
+
+test_that("deprecated coords forms keep numeric coordinates on ordered curves", {
+  r <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
+  best <- suppressWarnings(coords(r, "best", as.list = TRUE))
+  expect_type(best$specificity, "double")
+  expect_type(best$sensitivity, "double")
+  expect_equal(best$specificity, coords(r, "best")$specificity)
+  # unchanged on numeric curves
+  expect_identical(
+    suppressWarnings(coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE)),
+    suppressWarnings(apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
+  )
+})
