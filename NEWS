@@ -44,6 +44,86 @@
     coordinate system (for example 'coord_cartesian()') to replace it.
   * Added a ggplot2 screenshot gallery vignette
   * 'size' is deprecated in 'ggroc' and the ggplot2 line and polygon layers in favour of 'linewidth'
+  * Fixed the confidence interval of the paired DeLong 'roc.test' being on the 0-1 scale for 'percent=TRUE' curves
+  * 'roc.test' now checks 'conf.level' also when the method is selected automatically
+  * Fixed 'roc.test' and 'cov' ignoring the partial AUC of 'auc' objects of smoothed curves
+  * 'roc.test', 'cov' and 'var' now give the documented error on curves smoothed with numeric 'density.controls' and 'density.cases' instead of D=Inf or 0
+  * Fixed the mixing proportion of the unpaired Venkatraman test when the two curves have different numbers of observations
+  * Fixed 'multiclass.roc' with a predictor matrix failing with 'Could not find any decision values' when exactly half of the response levels had no matching column
+  * Fixed 'multiclass.roc' failing with 'No case observation.' when 'levels' contained a level without observations in a non-factor response, or that was not a level of the factor; it is now dropped with a warning as for unused factor levels
+  * Fixed a false 'The following classes were not found in 'response'' warning in 'multiclass.roc' with a predictor matrix and a subset of 'levels'
+  * Fixed 'power.roc.test' with 'method="bootstrap"', which computed the variance of each AUC from the wrong margin of the bootstrap replicates, giving essentially random results
+  * Fixed 'power.roc.test' with two paired ROC curves with NAs at different positions, which failed or computed the power on misaligned observations
+  * Fixed 'cov(method="obuchowski")' returning NaN for 'percent=TRUE' curves with a partial AUC
+  * The 'var(method="obuchowski")' errors no longer claim to use the bootstrap instead
+  * Fixed 'cov' failing or returning a wrong value for paired curves with NA values at different positions
+  * 'roc.test' now gives the 'Missing argument predictor2' error also when 'predictor2 = NULL' is passed explicitly
+  * Fixed 'roc.test' and 'cov' selecting DeLong (and failing) when only the second curve had a partial AUC
+  * Curves built with the formula interface are now recognized as paired with curves built from the same data with the default interface, or with formula curves on data with different row names, so that `roc.test` and `cov` use the paired test.
+  * `roc` with a formula or a data frame, `roc_` and `plot.roc` now return `NA` (or `NaN`) like the default interface when the data contains `NA` values with `na.rm = FALSE` (or infinite predictor values), instead of a malformed list.
+  * `roc` with `density.controls` and `density.cases` now resolves `direction = "auto"` also when `auc = FALSE` (the curve could be inverted), and stores the resolved direction instead of `"auto"`.
+  * `are.paired` and `roc.test` are no longer affected by objects named `oroc1` or `oroc2` in the user's workspace.
+  * `are.paired(return.paired.rocs = TRUE)` now returns smoothed curves when given smoothed curves without missing values, and keeps the (partial) AUC and CI specification of smoothed curves.
+  * `has.partial.auc` now checks that the `partial.auc` specification has length 2.
+  * The warning for a deprecated `algorithm` argument now shows the value given instead of a literal `%s`.
+  * Formula methods now give clear error messages for formulas without a response or with unsupported terms (such as `. - z` or interactions) instead of an internal `stopifnot` error.
+  * `coords` with missing values in `x` and `input = "threshold"` now fails with a clear error message for numeric predictors too.
+  * The `na.action` attribute of `response` and `predictor` in `roc` objects is no longer lost when some responses are not in `levels`.
+  * The error for `density.controls`/`density.cases` combined with `controls`/`cases` in `roc` now names the right arguments.
+  * Smoothed curves built with `roc(..., smooth = TRUE)` from a formula or a data frame now print the names of the response and predictor (#101).
+  * `roc_` no longer fails when called from a function invoked by `Map`/`mapply` or an anonymous function.
+  * Fixed wrong 'youden' and 'closest.topleft' values returned by 'coords(x="best")' on curves with a specificity partial AUC
+  * Fixed 'coords(x="best")' and 'ci.coords' returning a 'closest.topleft' 100 times too large on 'percent=TRUE' curves
+  * Fixed 'coords' with input "fpr", "fp", "1-specificity", "fnr", "fn" or "1-sensitivity" returning the lower-right end of flat segments instead of the upper-left one
+  * Fixed 'coords' returning an NA threshold for exact points of the curve with numeric inputs other than "sensitivity" and "specificity" ("tn", "fpr", ...)
+  * Fixed 'coords' on an 'auc' object ignoring all its arguments and returning the whole curve
+  * Fixed 'ci.auc' returning NA on smoothed 'percent=TRUE' curves with a corrected partial AUC
+  * Fixed 'ci.coords' on smoothed curves mixing up the bootstrap values when some resamples could not be smoothed
+  * Fixed 'ci.coords(x="best")' on curves with a partial AUC failing when a resample had no point in the partial AUC range
+  * Fixed 'ci', 'ci.auc', 'ci.se', 'ci.sp' and 'ci.coords' failing with 'smooth=TRUE' in the formula interface, and 'ci' in the default interface
+  * Fixed 'ci.se', 'ci.sp', 'ci.coords' and 'ci.thresholds' failing with 'boot.stratified=FALSE' when a resample had no case or no control, instead of ignoring it as documented
+  * Fixed 'power.roc.test' returning NaN with the 'auc' of a percent ROC curve, and added a range check on 'auc'
+  * 'power.roc.test' with a list of binormal parameters now accepts the partial AUC bounds in any order, and requires all four of them
+  * `plot.roc()` and `lines.roc()` with a formula return a curve that prints the predictor and response names instead of "(unknown)" (same fix as issue #101 for `roc()`).
+  * `geom_polygon_auc()`, `geom_polygon_max_auc()` and `geom_text_auc()` give a clear error on a curve without AUC (instead of "no applicable method"), like their base-graphics counterparts.
+  * `plot.ci.coords()` draws visible ticks when the CI has a single `x`, and gives a clear error when `x` is not numeric (e.g. `x = "best"`) instead of "non-numeric argument to binary operator".
+  * `roc(..., ci = TRUE, of = "coords", x = ..., plot = TRUE)` (and `ci.coords(response, predictor, x = ..., plot = TRUE)`) no longer fail with "'response' must have two levels": the `x` of `ci.coords()` is not forwarded to `plot.roc()` anymore.
+  * Fixed 'multiclass.roc' failing with 'Predictor must be numeric or ordered.' with a tibble predictor
+  * 'multiclass.roc' now fails with a clear error instead of returning an infinite AUC or failing with 'n < m' when fewer than two levels with observations are available
+  * Fixed 'smooth' with 'method="logcondens"' or 'method="logcondens.smooth"' ignoring the direction of the ROC curve: curves with 'direction=">"' were smoothed as their mirror image
+  * Fixed 'smooth' failing with 'reuse.ci=TRUE' on curves with a CI
+  * 'auc' now fails with an informative error when 'partial.auc' contains NA or values outside [0, 1] (or [0, 100] if 'percent=TRUE'), or when 'partial.auc.correct=TRUE' and both bounds are equal, instead of returning an empty, NA or NaN AUC
+  * Fixed binormal 'smooth' returning a broken, non-monotone curve when all finite points of the ROC curve had the same specificity; it now fails with 'ROC curve not smoothable'
+  * Fixed 'roc(..., smooth=TRUE, smooth.method="fitdistr")' failing with 'unused argument' when arguments for 'auc', 'ci' or 'plot' (such as 'partial.auc' or 'boot.n') were also given
+  * Fixed 'var' failing on smoothed ROC curves built with 'percent=TRUE'
+  * Fixed 'print' of curves smoothed with 'method="fitdistr"' not showing the fitted distributions
+  * Fixed unary operators on 'auc' and 'ci' objects (e.g. '-auc(r)') failing, and arithmetic between an 'auc' and a 'ci' object returning a 'ci' object with an 'Incompatible methods' warning
+  * Fixed 'print' of multivariate 'multiclass.roc' built with a formula pasting the predictor names together
+  * Fixed 'print' of ROC curves built with 'density.controls' and 'density.cases' showing a garbage 'Data: (unknown) in 0 controls' line
+  * Fixed 'ggroc' on partially named lists: unnamed curves got an empty label, or failed with 'Names of 'data' must be unique' when more than one was unnamed
+  * The multiclass error of 'ci.se' now names 'ci.se' instead of 'ci.sp'
+  * Fixed 'coords' on smoothed curves returning a list with 'drop=TRUE' or 'transpose=TRUE' and a numeric 'x'
+  * 'coords' on smoothed curves no longer gives each deprecation warning twice
+  * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
+  * Fixed 'smooth(method="fitdistr", density="t")' always failing
+  * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
+  * 'roc.test' now returns the documented 'data.name' element
+  * The Venkatraman test now breaks ties at random by default ('ties.method="random"'), so that its result no longer depends on the order of the observations
+  * 'roc.test(method="venkatraman")' now rejects a partial AUC on the second curve too, as it did on the first
+  * Fixed 'ci.auc' and 'var' with a non-stratified bootstrap failing when a resample has no control
+  * 'roc.test' with 'method="sensitivity"' or 'method="specificity"' now reports the tested sensitivities or specificities as estimates instead of the AUCs
+  * Fixed non-stratified bootstraps of ordered predictors failing when a resample loses a class
+  * Fixed binormal smoothing (and the Obuchowski variance) of ordered predictors depending on unused levels
+  * Fixed the binormal parameters used by 'var', 'cov' and 'power.roc.test' with 'method="obuchowski"', which gave biased variances (and near-zero variances for partial AUCs)
+  * 'power.roc.test' with two ROC curves or binormal parameters now uses the covariance under the null hypothesis (with 'roc1' as reference) for the null variance, as in Obuchowski's DESIGNROC program; sample sizes are larger than before
+  * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
+  * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
+  * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
+  * coords() now finds exact points of the curve that were missed through floating-point rounding (percent curves, count inputs such as tp/fn and complements such as fpr), which returned an interpolated point with threshold NA, sometimes at the wrong end of a flat segment. This also affected ci.se(), ci.sp(), ci.coords() and roc.test(method = "sensitivity"/"specificity") on percent curves, and counts returned by coords() are now integers.
+  * pROC's ggplot2 layers (geom_*) now stop with a clear error on ggplot2 < 4.0.0 instead of a cryptic '@' error
+  * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
+  * geom_roc_threshold() now gives clear errors for 'local maximas' and numeric thresholds on smoothed curves
+  * pROC now requires R >= 4.0.0
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -23,7 +23,10 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # Always print number of patients, controls, thresholds, levels?
-  print_dataline(attr(x, "roc")) # take this from original roc
+  # (not available for curves built with numeric densities)
+  if (!is.null(attr(x, "roc"))) {
+    print_dataline(attr(x, "roc")) # take this from original roc
+  }
 
   # Smoothing
   cat("Smoothing: ")
@@ -31,7 +34,7 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     cat("density with controls: ", as.character(x$call[match("density.controls", names(x$call))]), "; and cases: ", as.character(x$call[match("density.cases", names(x$call))]), "\n", sep = "")
   } else if (x$smoothing.args$method == "density") {
     cat("density (bandwidth: ", x$smoothing.args$bw, "; adjust: ", ifelse(is.null(x$smoothing.args$adjust), 1, x$smoothing.args$adjust), ")\n", sep = "")
-  } else if (x$smoothing.args$method == "density") {
+  } else if (x$smoothing.args$method == "fitdistr") {
     cat("fitting ", x$fit.controls$densfun, " distribution for controls:\n", sep = "")
     print(x$fit.controls$estimate)
     cat("fitting ", x$fit.cases$densfun, " distribution for cases:\n", sep = "")
@@ -108,7 +111,7 @@ print.mv.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3),
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
     response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
   }
-  cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
+  cat("Data: multivariate predictor ", paste(predictor.name, collapse = ", "), " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
 
   # AUC if exists
   if (!is.null(x$auc)) {
@@ -187,8 +190,8 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 print.ci.thresholds <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(attr(x, "conf.level") * 100, "% CI", sep = "")
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
-  signif.sp <- signif(x$sp, digits = digits)
-  signif.se <- signif(x$se, digits = digits)
+  signif.sp <- signif(x$specificity, digits = digits)
+  signif.se <- signif(x$sensitivity, digits = digits)
   print(data.frame(thresholds = attr(x, "thresholds"), sp.low = signif.sp[, 1], sp.median = signif.sp[, 2], sp.high = signif.sp[, 3], se.low = signif.se[, 1], se.median = signif.se[, 2], se.high = signif.se[, 3]), row.names = FALSE)
   invisible(x)
 }

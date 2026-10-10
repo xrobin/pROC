@@ -12,9 +12,16 @@ ggroc_auc_polygon_close <- function(df, specificity, sensitivity, one) {
   rbind(df, extra)
 }
 
-geom_polygon_auc.auc <- function(data, ...) {
+geom_polygon_auc.auc <- function(data, fill = "gainsboro", colour = NA, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
+  names(extras) <- sub("color", "colour", names(extras))
+  if (is.null(extras$fill)) {
+    extras$fill <- fill
+  }
+  if (is.null(extras$colour)) {
+    extras$colour <- colour
+  }
   roc <- attr(data, "roc")
   roc$auc <- data
   new_ggroc_layer(
@@ -43,6 +50,7 @@ geom_polygon_auc.auc <- function(data, ...) {
 }
 
 geom_polygon_auc.roc <- function(data, ...) {
+  roc_utils_stop_if_no_auc(data, "data")
   geom_polygon_auc(data$auc, ...)
 }
 

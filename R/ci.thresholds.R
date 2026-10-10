@@ -21,13 +21,13 @@ ci.thresholds <- function(...) {
   UseMethod("ci.thresholds")
 }
 
-ci.thresholds.formula <- function(formula, data, ...) {
+ci.thresholds.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.thresholds'.")
   }
   response <- roc.data$response
@@ -102,6 +102,11 @@ ci.thresholds.roc <- function(roc,
     roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
     simplify = "columns", progress = progress, cl = cl
   )
+  # Drop the replicates with NA (a class can vanish from a non-stratified
+  # resample): one column per replicate, then back to the array
+  perfs.dim <- dim(perfs)
+  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L)
+  perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)

@@ -53,3 +53,35 @@ test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("var errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(var(s1, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("var errors on curves built from numeric densities", {
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(suppressWarnings(var(d1, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("var with unsupported obuchowski cases errors without claiming to use bootstrap", {
+  expect_error(var(smooth(r.s100b), method = "obuchowski"), "Use method=\"bootstrap\" instead")
+  expect_error(var(r.s100b.partial2, method = "obuchowski"), "Use method=\"bootstrap\" instead")
+})
+
+test_that("var works on smoothed percent curves", {
+  s <- smooth(r.s100b)
+  s.percent <- smooth(r.s100b.percent)
+  seed <- sample.int(1e6, 1)
+  set.seed(seed)
+  v <- var(s, boot.n = 20, progress = "none")
+  set.seed(seed)
+  v.percent <- var(s.percent, boot.n = 20, progress = "none")
+  expect_equal(v.percent, v * 100^2)
+  set.seed(seed)
+  expect_equal(var(auc(s.percent), boot.n = 20, progress = "none"), v * 100^2)
+})

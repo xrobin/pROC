@@ -231,3 +231,41 @@ test_that("stratified and non-stratified resampling keep their shapes", {
   expect_equal(length(nonstrat$controls) + length(nonstrat$cases),
                length(r.s100b$predictor))
 })
+
+test_that("non-stratified bootstrap drops the resamples that lose a class", {
+  # 2 cases (or controls) among 20: about 12% of the resamples have none
+  resp <- c(rep(0, 18), rep(1, 2))
+  pred <- c(1:18, 12.5, 19)
+  r.few.cases <- roc(resp, pred, quiet = TRUE)
+  r.few.controls <- roc(1 - resp, -pred, quiet = TRUE)
+  for (r in list(r.few.cases, r.few.controls)) {
+    cis <- suppressWarnings(list(
+      ci.se(r, specificities = 0.5, boot.n = 50, boot.stratified = FALSE),
+      ci.sp(r, sensitivities = 0.5, boot.n = 50, boot.stratified = FALSE),
+      ci.coords(r, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 50, boot.stratified = FALSE),
+      ci.coords(r, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 50, boot.stratified = FALSE),
+      ci.thresholds(r, thresholds = 15, boot.n = 50, boot.stratified = FALSE)
+    ))
+    for (ci in cis) {
+      values <- as.numeric(unlist(unclass(ci)))
+      expect_false(anyNA(values))
+      expect_true(all(values >= 0 & values <= 1))
+    }
+  }
+})
+
+test_that("non-stratified ci.auc and var drop the resamples that lose the controls", {
+  # 2 controls out of 10: most resamples of 50 lose both of them at least once
+  r <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE)
+  expect_s3_class(suppressWarnings(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50)), "ci.auc")
+  expect_true(is.numeric(suppressWarnings(var(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50))))
+})
+
+test_that("non-stratified bootstraps of ordered predictors drop the resamples that lose a class", {
+  pred <- factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), levels = c("a", "b", "c", "d"), ordered = TRUE)
+  r <- roc(c(0, 0, rep(1, 8)), pred, quiet = TRUE)
+  expect_s3_class(suppressWarnings(ci.se(r, specificities = 0.5, boot.stratified = FALSE, boot.n = 50)), "ci.se")
+  expect_s3_class(suppressWarnings(ci.sp(r, sensitivities = 0.5, boot.stratified = FALSE, boot.n = 50)), "ci.sp")
+  expect_s3_class(suppressWarnings(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50)), "ci.auc")
+  expect_s3_class(suppressWarnings(ci.coords(r, "b", input = "threshold", boot.stratified = FALSE, boot.n = 50)), "ci.coords")
+})

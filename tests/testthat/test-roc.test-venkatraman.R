@@ -52,3 +52,25 @@ test_that("non stratified, unpaired venkatraman works as expected", {
   ht$p.value <- 0.05
   expect_known_output(print(ht), "print_output/roc.test-venkatraman.unpaired.unstratified")
 })
+
+test_that("unpaired venkatraman statistic is symmetric with curves of different sizes", {
+  r1 <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 4, 3, 5, 6), quiet = TRUE)
+  r2 <- roc(c(0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), c(1, 3, 2, 4:12), quiet = TRUE)
+  t12 <- roc.test(r1, r2, method = "venkatraman", paired = FALSE, boot.n = 2)
+  t21 <- roc.test(r2, r1, method = "venkatraman", paired = FALSE, boot.n = 2)
+  expect_equal(t12$statistic, t21$statistic)
+})
+
+test_that("venkatraman breaks ties at random by default", {
+  set.seed(42)
+  t.default <- roc.test(r.wfns, r.s100b, method = "venkatraman", boot.n = 10)
+  set.seed(42)
+  t.random <- roc.test(r.wfns, r.s100b, method = "venkatraman", boot.n = 10, ties.method = "random")
+  expect_equal(t.default$statistic, t.random$statistic)
+  expect_equal(t.default$p.value, t.random$p.value)
+})
+
+test_that("venkatraman rejects a partial AUC on either curve", {
+  expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported")
+  expect_error(suppressWarnings(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2)), "Partial AUC is not supported")
+})

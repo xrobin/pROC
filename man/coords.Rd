@@ -77,15 +77,21 @@ transpose = FALSE, as.matrix=FALSE, ...)
   	to return the thresholds in columns (\code{TRUE}) or rows (\code{FALSE}).
   	Since pROC 1.16 the default value is \code{FALSE}.
   	See \link{coords_transpose} for more details the change.
+  	With an ordered predictor, the transposed result is a character
+  	matrix, as the thresholds are level labels.
   }
   \item{as.matrix}{DEPRECATED. If \code{transpose} is \code{FALSE}, whether to return
     a \code{\link{matrix}} (\code{TRUE}) or a \code{\link{data.frame}}
     (\code{FALSE}, the default). A \code{data.frame} is more convenient
     and flexible to use, but incurs a slight speed penalty. Consider
     setting this argument to \code{TRUE} if you are calling the function
-    repeatedly.
+    repeatedly. With an ordered predictor, the matrix is a character
+    matrix, as the thresholds are level labels.
   }
-  \item{\dots}{further arguments passed from other methods. Ignored.}
+  \item{\dots}{further arguments passed from other methods. For
+    \code{coords.auc}, the arguments of \code{coords.roc} or
+    \code{coords.smooth.roc}, passed on with the curve of the \code{auc}.
+    Ignored otherwise.}
 }
 
 \details{
@@ -103,7 +109,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   ROC curve), or only the threshold(s) corresponding to the best sum of
   sensitivity + specificity respectively. Note that \dQuote{best} can
   return more than one threshold. If \code{x} is a character, and
-  \code{ignore.partial.auc=TRUE}, the coordinates are limited to the
+  \code{ignore.partial.auc=FALSE} (the default), the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
   necessarily to the whole curve.
 
@@ -128,7 +134,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   \code{roc$specificities}). More than one point may match (in
   \emph{step} curves), then only the upper-left-most point coordinates
   are returned. Otherwise,
-  the specificity and specificity of the point is interpolated and
+  the other coordinate (sensitivity or specificity, respectively) is interpolated and
   \code{NA} is returned as threshold.
 
   The coords function in this package is a generic, but it might be
@@ -215,14 +221,14 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		\code{youden} \tab Youden Index \tab 
 			se + r * sp
 			\tab - \tab No \cr
-		\code{closest.topleft} \tab Distance to the top left corner of the ROC space \tab 
-			- ((1 - se)^2 + r * (1 - sp)^2)
+		\code{closest.topleft} \tab Weighted squared distance to the top left corner of the ROC space \tab 
+			(1 - se)^2 + r * (1 - sp)^2
 			\tab - \tab No \cr
 	}
 	
 	The value \dQuote{threshold} is not allowed in \code{coords.smooth.roc}.
 	
-	Values can be shortenend (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
+	Values can be shortened (for example to \dQuote{thr}, \dQuote{sens} and \dQuote{spec}, or even to
 	\dQuote{se}, \dQuote{sp} or \dQuote{1-np}). In addition, some values can be prefixed with
 	\code{1-} to get their complement:
 	\code{1-specificity}, \code{1-sensitivity}, \code{1-accuracy}, \code{1-npv}, \code{1-ppv}.
@@ -265,7 +271,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 
   W. J. Youden (1950) ``Index for rating diagnostic tests''. \emph{Cancer}, 

@@ -55,11 +55,13 @@ multiclass_roc_univariate <- function(response, predictor,
     percent = percent
   )
   class(multiclass.roc) <- "multiclass.roc"
-  if (is.factor(response) && any(names(table(response))[table(response) == 0] %in% levels)) {
-    missing.levels <- names(table(response))[table(response) == 0]
-    missing.levels.requested <- missing.levels[missing.levels %in% levels]
+  missing.levels.requested <- levels[!(levels %in% response)]
+  if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
+  }
+  if (length(levels) < 2) {
+    stop("'levels' must contain at least two levels with observations in 'response'")
   }
   multiclass.roc$levels <- levels
 
@@ -83,8 +85,8 @@ compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, di
   # computes A(i|j), the probability that a randomly
   # chosen member of class j has a lower estimated probability (or score)
   # of belonging to class i than a randomly chosen member of class i
-  pred.i <- pred.matrix[which(ref.outcome == i), i] # p(G = i) assigned to class i observations
-  pred.j <- pred.matrix[which(ref.outcome == j), i] # p(G = i) assigned to class j observations
+  pred.i <- pred.matrix[which(ref.outcome == i), i, drop = TRUE] # p(G = i) assigned to class i observations
+  pred.j <- pred.matrix[which(ref.outcome == j), i, drop = TRUE] # p(G = i) assigned to class j observations
   classes <- factor(c(rep(i, length(pred.i)), rep(j, length(pred.j))))
   # override levels argument by new levels
   levels <- unique(classes)
@@ -105,9 +107,8 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
   if (direction == "auto") {
     stop("'direction=\"auto\"' not available for multivariate multiclass.roc")
   }
-  if (is.factor(response) && any(names(table(response))[table(response) == 0] %in% levels)) {
-    missing.levels <- names(table(response))[table(response) == 0]
-    missing.levels.requested <- missing.levels[missing.levels %in% levels]
+  missing.levels.requested <- levels[!(levels %in% response)]
+  if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
   }
@@ -122,19 +123,12 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
     stop("The column names of 'predictor' could not be matched to the levels of 'response'.")
   }
   if (length(missing.classes) != 0) {
+    # some decision values not found (none found is an error above)
     out.classes <- paste0(missing.classes, collapse = ",")
-    if (length(missing.classes) == length(levels)) {
-      # no decision values found
-      stop(paste0(
-        "Could not find any decision values in 'predictor' matching the 'response' levels.",
-        " Could not find the following classes: ", out.classes, ". Check your column names!"
-      ))
-    } else {
-      # some decision values not found
-      warning("You did not provide decision values for the following classes: ", out.classes, ".")
-    }
+    warning("You did not provide decision values for the following classes: ", out.classes, ".")
   }
-  additional.classes <- colnames(predictor)[which(is.na(m))]
+  # columns excluded by a user-supplied subset of levels are silently ignored
+  additional.classes <- colnames(predictor)[is.na(m) & !(colnames(predictor) %in% response)]
   if (length(additional.classes) != 0) {
     out.classes <- paste0(additional.classes, collapse = ",")
     warning("The following classes were not found in 'response': ", out.classes, ".")
@@ -174,7 +168,7 @@ multiclass.roc.default <- function(response, predictor,
                                    direction = c("auto", "<", ">"),
                                    ...) {
   # We need at least two levels in response
-  if (length(unique(response)) < 2) {
+  if (length(unique(response[!is.na(response)])) < 2) {
     stop("'response' must have at least two levels")
   }
 

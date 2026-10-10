@@ -174,6 +174,10 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   if (is.nan(D) && all(diffs == 0) && roc1$auc == roc2$auc) {
     D <- 0
   } # special case: no difference between AUCs produces a NaN
+  if (test %in% c("sp", "se")) {
+    # the tested values, reported as estimates by roc.test
+    attr(D, "estimate") <- c(coord1, coord2)
+  }
 
   return(D)
 }
@@ -330,9 +334,6 @@ roc_utils_resolve_cluster <- function(cl) {
     return(list(cluster = cl, owned = FALSE))
   }
   if (is.numeric(cl) && length(cl) == 1L && !is.na(cl) && cl >= 1) {
-    if (cl == 1) {
-      return(none)
-    }
     # Forking is nearly free to start, so creating the cluster for the
     # duration of one call costs little; Windows has no fork and pays the
     # socket cluster's startup instead.
@@ -386,9 +387,11 @@ roc_utils_resample <- function(roc, stratified) {
     idx <- sample.int(length(roc$predictor), replace = TRUE)
     predictor <- roc$predictor[idx]
     response <- roc$response[idx]
-    splitted <- split(predictor, response)
-    controls <- splitted[[as.character(roc$levels[1])]]
-    cases <- splitted[[as.character(roc$levels[2])]]
+    # Subset rather than split(): a class missing from the resample must give
+    # an empty vector of the predictor's type (split() gives NULL), so that
+    # ordered predictors can still be combined and the replicate dropped
+    controls <- predictor[response == roc$levels[1]]
+    cases <- predictor[response == roc$levels[2]]
   }
   list(controls = controls, cases = cases, predictor = predictor, response = response)
 }
@@ -525,6 +528,10 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress 
 
 bootstrap.auc <- function(n, roc, stratified) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(NA_real_)
+  }
   # as.numeric() drops the 'roc' attribute auc.roc() attaches: it is the whole
   # resampled curve, which no caller of a bootstrap replicate ever reads.
   as.numeric(auc.roc(resampled,
@@ -550,11 +557,19 @@ bootstrap.smooth.auc <- function(n, roc, stratified, smooth.roc.call, auc.call) 
 
 bootstrap.se <- function(n, roc, stratified, sp) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(rep(NA_real_, length(sp)))
+  }
   coords.roc(resampled, sp, input = "specificity", ret = "sensitivity")[, 1]
 }
 
 bootstrap.sp <- function(n, roc, stratified, se) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(rep(NA_real_, length(se)))
+  }
   coords.roc(resampled, se, input = "sensitivity", ret = "specificity")[, 1]
 }
 
@@ -590,10 +605,21 @@ bootstrap.thresholds <- function(n, roc, stratified, thresholds) {
 bootstrap.coords <- function(n, roc, stratified, x, input, ret,
                              best.method, best.weights, best.policy) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
-  res <- coords.roc(resampled,
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
+  # Silence the "No coordinates found" warnings of resamples with no point in
+  # the partial AUC range: ci.coords reports the NA replicates once.
+  res <- suppressWarnings(coords.roc(resampled,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
-  )
+  ))
+  if (is.null(res)) {
+    # x = "best" found no point in the partial AUC range of this resample:
+    # NA replicate, with the shape of a successful one
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
   enforce.best.policy.if.needed(res, x, best.policy)
 }
 
@@ -605,16 +631,23 @@ bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
   smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
   smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
-    return(NA)
+    # Same shape as a successful replicate, so ci.coords can reshape all the
+    # replicates into an array without shifting the values
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
   }
   # coords.smooth.roc(), not coords.roc(): a smoothed curve has no thresholds,
   # and the smooth method is what fills them with NA and resolves x = "best"
   # before delegating. Calling coords.roc() directly left the "best" search
   # comparing against absent thresholds.
-  res <- coords.smooth.roc(smooth.roc,
+  res <- suppressWarnings(coords.smooth.roc(smooth.roc,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
-  )
+  ))
+  if (is.null(res)) {
+    # x = "best" found no point in the partial AUC range of this resample:
+    # NA replicate, with the shape of a successful one
+    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
   enforce.best.policy.if.needed(res, x, best.policy)
 }
 

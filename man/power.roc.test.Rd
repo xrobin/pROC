@@ -46,12 +46,12 @@ alternative = c("two.sided", "one.sided"), ...)
       \item{ra}{correlation between the variables in case patients}
       \item{delta}{the difference of AUC between the two ROC curves}
     }
-    For a partial AUC, the following additional parameters must be set:
+    For a partial AUC, the following four additional parameters must be set:
     \describe{
-      \item{FPR11}{Upper bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR12}{Lower bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR21}{Upper bound of FPR (1 - specificity) of ROC curve 2}
-      \item{FPR22}{Lower bound of FPR (1 - specificity) of ROC curve 2}
+      \item{FPR11, FPR12}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 1}
+      \item{FPR21, FPR22}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 2}
     }
   }
   \item{ncontrols, ncases}{
@@ -182,11 +182,11 @@ alternative = c("two.sided", "one.sided"), ...)
   approach''. \emph{Biometrics} \bold{44}, 837--845.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
+  determination for diagnostic accuracy studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16},
   1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 
-  Nancy A. Obuchowski, Micharl L. Lieber, Frank H. Wians
+  Nancy A. Obuchowski, Michael L. Lieber, Frank H. Wians
   Jr. (2004). ``ROC Curves in Clinical Chemistry: Uses, Misuses, and
   Possible Solutions''. \emph{Clinical Chemistry}, \bold{50}, 1118--1125. DOI:
   \doi{10.1373/clinchem.2004.031823}.

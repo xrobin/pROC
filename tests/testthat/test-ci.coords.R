@@ -156,3 +156,69 @@ test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
   expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
   expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))
 })
+
+test_that("ci.coords on a smoothed curve keeps replicates aligned when smoothing fails", {
+  # A replicate that fails to smooth has the shape of a successful one
+  failing.call <- as.call(list(function(roc) stop("cannot smooth")))
+  res <- pROC:::bootstrap.smooth.coords(1, attr(smooth(r.s100b), "roc"), TRUE,
+    x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"),
+    best.method = "youden", best.weights = c(1, 0.5), smooth.roc.call = failing.call,
+    best.policy = "stop"
+  )
+  expect_equal(dim(res), c(2, 2))
+  expect_named(res, c("sensitivity", "specificity"))
+  expect_true(all(is.na(res)))
+
+  # Every other replicate fails to smooth
+  n.calls <- 0
+  flaky.density <- function(x, ...) {
+    n.calls <<- n.calls + 1
+    if (n.calls %% 2 == 0) {
+      stop("flaky density")
+    }
+    density(x, ...)
+  }
+  s <- smooth(r.s100b, method = "density", density.controls = flaky.density)
+  ci <- suppressWarnings(ci.coords(s,
+    x = c(0.5, 0.9), input = "specificity",
+    ret = c("sensitivity", "specificity"), boot.n = 10
+  ))
+  # Every successful replicate returns the input specificity
+  for (i in 1:3) {
+    expect_equal(as.numeric(ci$specificity[, i]), c(0.5, 0.9))
+  }
+})
+
+test_that("ci.coords 'best' ignores resamples with no point in the partial AUC range", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  # With 5 controls the only specificity in the range is 0.8, missing in many resamples
+  r <- roc(resp, pred, partial.auc = c(0.9, 0.7), quiet = TRUE)
+  ci <- suppressWarnings(ci.coords(r, "best", ret = c("specificity", "sensitivity"), boot.n = 50))
+  expect_s3_class(ci, "ci.coords")
+  expect_equal(as.numeric(ci$specificity), c(0.8, 0.8, 0.8))
+})
+
+test_that("ci.coords 'best' on smoothed curves ignores resamples with no point in the partial AUC range", {
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.899)))
+  expect_s3_class(suppressWarnings(ci.coords(s, "best", boot.n = 30, progress = "none")), "ci.coords")
+})
+
+test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide with plot.roc's 'x'", {
+  pdf(NULL)
+  on.exit(dev.off())
+  args <- list(x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 5, progress = "none", quiet = TRUE)
+  r <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", plot = TRUE), args))
+  expect_s3_class(r, "roc")
+  expect_equal(r$sensitivities, r.s100b$sensitivities)
+  expect_s3_class(r$ci, "ci.coords")
+  expect_identical(attr(r$ci, "x"), 0.5)
+
+  s <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", smooth = TRUE, plot = TRUE), args))
+  expect_s3_class(s, "smooth.roc")
+  expect_s3_class(s$ci, "ci.coords")
+
+  ci <- do.call(ci.coords, c(list(aSAH$outcome, aSAH$s100b, plot = TRUE), args))
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "x"), 0.5)
+})

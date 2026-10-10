@@ -28,7 +28,7 @@ roc.test.formula <- function(formula, data, ...) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.name) != 2) {
+  if (length(roc.data$predictor.names) != 2) {
     stop("Invalid formula: exactly 2 predictors are required in a formula of type response~predictor1+predictor2.")
   }
   response <- roc.data$response
@@ -39,8 +39,10 @@ roc.test.formula <- function(formula, data, ...) {
   # data.names for pretty print()ing
   if (data.missing) {
     testres$data.names <- sprintf("%s and %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.name <- testres$data.names # the standard htest element
   } else {
-    testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse1(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.name <- testres$data.names # the standard htest element
   }
 
   return(testres)
@@ -55,17 +57,17 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
       roc1 <- roc(response, predictor1[, 1], ...)
       roc2 <- roc(response, predictor1[, 2], ...)
       if (!is.null(names(predictor1))) {
-        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", names(predictor1)[1], names(predictor1)[2], deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", names(predictor1)[1], names(predictor1)[2], deparse1(substitute(predictor1)), deparse1(substitute(response)), roc1$levels[1], roc1$levels[2])
       } else if (!is.null(colnames(predictor1))) {
-        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", colnames(predictor1)[1], colnames(predictor1)[2], deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", colnames(predictor1)[1], colnames(predictor1)[2], deparse1(substitute(predictor1)), deparse1(substitute(response)), roc1$levels[1], roc1$levels[2])
       } else {
-        data.names <- sprintf("%s by %s (%s, %s)", deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s by %s (%s, %s)", deparse1(substitute(predictor1)), deparse1(substitute(response)), roc1$levels[1], roc1$levels[2])
       }
     } else {
       stop("Wrong dimension for predictor1 as a matrix or a data.frame.")
     }
   } else {
-    if (missing(predictor2)) {
+    if (is.null(predictor2)) {
       stop("Missing argument predictor2 with predictor1 as a vector.")
     }
     # Need to remove NAs
@@ -78,16 +80,17 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     roc1 <- roc(response, predictor1, ...)
     roc2 <- roc(response, predictor2, ...)
     call <- match.call()
-    data.names <- sprintf("%s and %s by %s (%s, %s)", deparse(call$predictor1), deparse(call$predictor2), deparse(call$response), roc1$levels[1], roc1$levels[2])
+    data.names <- sprintf("%s and %s by %s (%s, %s)", deparse1(call$predictor1), deparse1(call$predictor2), deparse1(call$response), roc1$levels[1], roc1$levels[2])
   }
   test <- roc.test.roc(roc1, roc2, method = method, ...)
   test$data.names <- data.names
+  test$data.name <- test$data.names # the standard htest element
   return(test)
 }
 
 roc.test.auc <- function(roc1, roc2, ...) {
   # First save the names
-  data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
   # Change roc1 from an auc to a roc object but keep the auc specifications
   auc1 <- roc1
   attr(auc1, "roc") <- NULL
@@ -97,13 +100,15 @@ roc.test.auc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
   testres$data.names <- data.names
+  testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
 
 roc.test.smooth.roc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
-  testres$data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  testres$data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
+  testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
 
@@ -114,14 +119,21 @@ roc.test.roc <- function(roc1, roc2,
                          paired = NULL,
                          reuse.auc = TRUE,
                          boot.n = 2000, boot.stratified = TRUE,
-                         ties.method = "first",
+                         ties.method = "random",
                          progress = getOption("pROCProgress", interactive()),
                          cl = NULL,
                          parallel = FALSE,
                          conf.level = 0.95,
                          ...) {
   alternative <- match.arg(alternative)
-  data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  # Check if conf.level is specified correctly. This is currently
+  # only used for the delong paired method, but the method may not be known yet.
+  if (!is.numeric(conf.level)) {
+    stop("conf.level must be numeric between 0 and 1.")
+  } else if (0 > conf.level | 1 < conf.level) {
+    stop("conf.level must be between 0 and 1.")
+  }
+  data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
     auc2 <- roc2
@@ -141,14 +153,20 @@ roc.test.roc <- function(roc1, roc2,
   if (methods::is(roc1, "smooth.roc")) {
     smoothing.args$roc1 <- roc1$smoothing.args
     smoothing.args$roc1$smooth <- TRUE
-    roc1 <- attr(roc1, "roc")
+    if (is.null(attr(roc1, "roc"))) { # built directly from densities
+      stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
+    }
+    roc1 <- roc_utils_unsmooth(roc1)
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
   }
   if (methods::is(roc2, "smooth.roc")) {
     smoothing.args$roc2 <- roc2$smoothing.args
     smoothing.args$roc2$smooth <- TRUE
-    roc2 <- attr(roc2, "roc")
+    if (is.null(attr(roc2, "roc"))) { # built directly from densities
+      stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
+    }
+    roc2 <- roc_utils_unsmooth(roc2)
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
   }
@@ -225,7 +243,7 @@ roc.test.roc <- function(roc1, roc2,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (has.partial.auc(roc1)) {
+    if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
@@ -251,16 +269,8 @@ roc.test.roc <- function(roc1, roc2,
         warning("DeLong's test should not be applied to ROC curves with a different direction.")
       }
 
-      # Check if conf.level is specified correctly. This is currently
-      # only used for the delong paired method, which is why it lives
-      # here for now.
-      if (!is.numeric(conf.level)) {
-        stop("conf.level must be numeric between 0 and 1.")
-      } else if (0 > conf.level | 1 < conf.level) {
-        stop("conf.level must be between 0 and 1.")
-      }
     } else if (method == "venkatraman") {
-      if (has.partial.auc(roc1)) {
+      if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
       }
       if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
@@ -313,6 +323,7 @@ roc.test.roc <- function(roc1, roc2,
   htest <- list(
     alternative = alternative,
     data.names = data.names,
+    data.name = data.names, # the standard htest element
     estimate = estimate,
     null.value = null.value
   )
@@ -327,6 +338,10 @@ roc.test.roc <- function(roc1, roc2,
       htest$statistic <- stat
       htest$method <- "DeLong's test for two correlated ROC curves"
       htest$conf.int <- c(stat.ci$lower, stat.ci$upper)
+      if (roc1$percent) {
+        # the placements are on the 0-1 scale, the estimates on 0-100
+        htest$conf.int <- htest$conf.int * 100
+      }
       attr(htest$conf.int, "conf.level") <- stat.ci$level
 
       if (alternative == "two.sided") {
@@ -374,7 +389,7 @@ roc.test.roc <- function(roc1, roc2,
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
     }
 
@@ -394,6 +409,8 @@ roc.test.roc <- function(roc1, roc2,
         "difference in sensitivity at %s specificity",
         specificity
       )
+      htest$estimate <- attr(stat, "estimate")
+      names(htest$estimate) <- sprintf("sensitivity of roc%d at %s specificity", 1:2, specificity)
     } else if (method == "sensitivity") {
       if (!is.numeric(sensitivity) || length(sensitivity) != 1) {
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
@@ -411,6 +428,8 @@ roc.test.roc <- function(roc1, roc2,
         "difference in specificity at %s sensitivity",
         sensitivity
       )
+      htest$estimate <- attr(stat, "estimate")
+      names(htest$estimate) <- sprintf("specificity of roc%d at %s sensitivity", 1:2, sensitivity)
     } else {
       stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl

@@ -529,6 +529,26 @@ load.suggested.package <- function(pkg) {
 }
 
 
+# Tolerance to compare coordinates of a curve whose largest value is `scale`
+# (1, 100 or a number of observations): absorbs floating-point error such as
+# (k / n) * 100 != 100 * k / n or 1 - k / n != (n - k) / n, while staying far
+# below the smallest step between two points of a curve.
+roc_utils_coords_tol <- function(scale) {
+  1e-12 * scale
+}
+
+# Whether `value` is one of `values` up to floating-point error.
+roc_utils_near_any <- function(value, values, percent) {
+  any(abs(values - value) <= roc_utils_coords_tol(ifelse(percent, 100, 1)))
+}
+
+# Counts rebuilt from rates (se * n): remove the floating-point error so that
+# exact counts are integers again. Interpolated counts are left unchanged.
+roc_utils_round_counts <- function(x, n) {
+  rounded <- round(x)
+  ifelse(abs(x - rounded) <= roc_utils_coords_tol(n), rounded, x)
+}
+
 # Calculate coordinates
 # @param roc: the roc curve, used to guess if data is in percent and number of cases and controls.
 # @param thr, se, sp
@@ -539,9 +559,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
   ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   substr.percent <- ifelse(roc$percent, 100, 1)
 
-  tp <- se * ncases / substr.percent
+  tp <- roc_utils_round_counts(se * ncases / substr.percent, ncases)
   fn <- ncases - tp
-  tn <- sp * ncontrols / substr.percent
+  tn <- roc_utils_round_counts(sp * ncontrols / substr.percent, ncontrols)
   fp <- ncontrols - tn
   npv <- substr.percent * tn / (tn + fn)
   ppv <- substr.percent * tp / (tp + fp)
@@ -600,6 +620,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 roc_utils_thr_idx <- function(roc, x) {
   if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
+  }
+  if (anyNA(x)) {
+    stop("Missing values are not allowed in 'x'.")
   }
   cut_points <- sort(unique(roc$predictor))
   thr_idx <- rep(NA_integer_, length(x))
@@ -752,9 +775,13 @@ coord.is.decreasing <- c(
 roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   # Get predictors (easy)
   if (data.missing) {
-    predictors <- attr(terms(formula), "term.labels")
+    formula.terms <- terms(formula)
   } else {
-    predictors <- attr(terms(formula, data = data), "term.labels")
+    formula.terms <- terms(formula, data = data)
+  }
+  predictors <- attr(formula.terms, "term.labels")
+  if (attr(formula.terms, "response") == 0) {
+    stop("Error in the formula: a response is required in a formula of type response~predictor.")
   }
 
   indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch = 0)
@@ -819,12 +846,17 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   if (!is.null(model.weights(m))) stop("weights are not supported")
 
   # Sanity checks
-  stopifnot(length(predictors) == ncol(m) - 1)
+  if (length(predictors) != ncol(m) - 1) {
+    stop("Invalid formula: only formulas of type response~predictor or response~predictor1+predictor2+... are supported.")
+  }
   stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
 
   return(list(
     response.name = names(m)[1],
-    response = model.response(m),
+    # model.response() names the response with the row names of the data:
+    # drop them so that formula and default interfaces give the same
+    # response, and are.paired can recognize the curves as paired
+    response = unname(model.response(m)),
     predictor.names = names(m)[-1],
     predictors = m[-1]
   ))
@@ -842,9 +874,9 @@ roc_utils_stop_if_no_device <- function(fun.name) {
   }
 }
 
-roc_utils_stop_if_no_auc <- function(x) {
+roc_utils_stop_if_no_auc <- function(x, arg = "x") {
   if (is.null(x$auc)) {
-    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
+    stop(sprintf("'%s' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.", arg))
   }
 }
 
@@ -855,4 +887,28 @@ roc_utils_warn_deprecated_parallel <- function(parallel) {
   if (!identical(parallel, FALSE)) {
     warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
   }
+}
+
+# Returns the empirical ROC curve a smooth.roc was built from, with the AUC
+# specification of the smoothed curve (partial.auc etc.) rather than the one
+# of the empirical curve, so that the smoothed curve can be rebuilt as it was.
+roc_utils_unsmooth <- function(smooth.roc) {
+  roc <- attr(smooth.roc, "roc")
+  if (!is.null(smooth.roc$auc)) {
+    # Only the specification matters: the (corrected) partial AUC of the
+    # empirical curve may not be defined, and is never reported
+    roc$auc <- suppressWarnings(auc(roc,
+      partial.auc = attr(smooth.roc$auc, "partial.auc"),
+      partial.auc.focus = attr(smooth.roc$auc, "partial.auc.focus"),
+      partial.auc.correct = attr(smooth.roc$auc, "partial.auc.correct")
+    ))
+  }
+  return(roc)
+}
+
+# plot.roc() for roc(..., plot = TRUE). The dots may carry ci.coords()' 'x'
+# (roc(..., ci = TRUE, of = "coords", x = ...)), which would bind to the 'x'
+# of plot.roc() and replace the curve: capture it here so it is not forwarded.
+roc_utils_plot_roc <- function(curve, ..., x) {
+  plot.roc(curve, ...)
 }

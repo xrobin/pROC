@@ -242,7 +242,10 @@ panel.last=NULL,
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{plot.roc.roc} when calling
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
-    \code{plot} argument for \code{\link{roc}} is not allowed.
+    \code{plot} argument for \code{\link{roc}} is not allowed, and that
+    the \code{x} argument of \code{\link{ci.coords}} cannot be passed
+    this way, as it would be matched to \code{x} (use
+    \code{roc(\dots, ci=TRUE, of="coords", x=\dots, plot=TRUE)} instead).
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
@@ -323,7 +326,7 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
@@ -337,7 +340,7 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 data(aSAH)
 roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
 roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
-roc.ndka <- roc(aSAH$outcome, aSAH$wfns)
+roc.ndka <- roc(aSAH$outcome, aSAH$ndka)
 
 # Simple example:
 plot(roc.s100b)

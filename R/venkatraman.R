@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method = "first") {
+venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method = "random") {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
@@ -29,14 +29,14 @@ venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method = "first") {
   return(list(E, EP))
 }
 
-venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method = "first") {
+venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method = "random") {
   X <- roc1$predictor
   Y <- roc2$predictor
   R <- rank(X, ties.method = ties.method)
   S <- rank(Y, ties.method = ties.method)
   D1 <- roc1$response
   D2 <- roc2$response
-  mp <- (sum(D1 == roc1$levels[2]) + sum(D2 == roc2$levels[2])) / (length(D1) + length(D1)) # mixing proportion, kappa
+  mp <- (sum(D1 == roc1$levels[2]) + sum(D2 == roc2$levels[2])) / (length(D1) + length(D2)) # mixing proportion, kappa
 
   E <- venkatraman.unpaired.stat(R, S, D1, D2, roc1$levels, roc2$levels, mp)
   EP <- vapply(seq_len(boot.n), venkatraman.unpaired.permutation, FUN.VALUE = double(1L), R = R, S = S, D1 = D1, D2 = D2, levels1 = roc1$levels, levels2 = roc2$levels, mp = mp, ties.method = ties.method)

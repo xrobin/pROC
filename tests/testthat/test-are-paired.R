@@ -128,3 +128,63 @@ test_that("are.paired return.paired.rocs doesn't return when unpaired and smooth
   pair <- are.paired(smooth(roc(aSAH$outcome[21:113], aSAH$wfns[21:113])), smooth(r.ndka), return.paired.rocs = TRUE)
   expect_null(attributes(pair))
 })
+
+test_that("formula and default interfaces give paired curves", {
+  d <- data.frame(
+    y = c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1),
+    a = c(1, 2, 3, 5, 7, 4, 6, 8, 9, 10),
+    b = c(6, 1, 4, 3, 8, 2, 5, 9, 7, 10)
+  )
+  ra <- roc(y ~ a, d, quiet = TRUE)
+  rb <- roc(d$y, d$b, quiet = TRUE)
+  expect_identical(ra$response, roc(d$y, d$a, quiet = TRUE)$response)
+  expect_true(are.paired(ra, rb))
+  expect_identical(roc.test(ra, rb)$p.value, roc.test(ra, roc(y ~ b, d, quiet = TRUE))$p.value)
+  # Same data with different row names
+  d2 <- d
+  rownames(d2) <- letters[1:10]
+  expect_true(are.paired(ra, roc(y ~ b, d2, quiet = TRUE)))
+})
+
+test_that("are.paired doesn't use objects named oroc1/oroc2 from the user's workspace", {
+  oroc1 <- oroc2 <- smooth(r.ndka)
+  assign("oroc1", oroc1, envir = globalenv())
+  assign("oroc2", oroc2, envir = globalenv())
+  on.exit(rm("oroc1", "oroc2", envir = globalenv()))
+  r1 <- roc(aSAH$outcome, c(NA, aSAH$s100b[-1]), quiet = TRUE)
+  pair <- are.paired(r1, r.wfns, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_s3_class(attr(pair, "roc1"), "roc")
+  expect_false(inherits(attr(pair, "roc1"), "smooth.roc"))
+  expect_false(inherits(attr(pair, "roc2"), "smooth.roc"))
+  expect_equal(
+    roc.test(r1, r.wfns)$p.value,
+    roc.test(roc(aSAH$outcome[-1], aSAH$s100b[-1], quiet = TRUE), roc(aSAH$outcome[-1], aSAH$wfns[-1], quiet = TRUE))$p.value
+  )
+})
+
+test_that("are.paired return.paired.rocs returns smoothed curves with their AUC", {
+  # Without NA: the smoothed curves are returned as is
+  s1 <- smooth(r.s100b)
+  s2 <- smooth(r.wfns)
+  pair <- are.paired(s1, s2, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_identical(attr(pair, "roc1"), s1)
+  expect_identical(attr(pair, "roc2"), s2)
+  pair <- are.paired(s1, s2, return.paired.rocs = TRUE, reuse.smooth = FALSE)
+  expect_false(inherits(attr(pair, "roc1"), "smooth.roc"))
+
+  # With NA: the AUC specification of the smoothed curve is reused
+  s100b.na <- c(NA, aSAH$s100b[-1])
+  sa <- roc(aSAH$outcome, s100b.na, smooth = TRUE, partial.auc = c(1, 0.8), quiet = TRUE)
+  sb <- roc(aSAH$outcome, aSAH$wfns, smooth = TRUE, partial.auc = c(1, 0.8), quiet = TRUE)
+  pair <- are.paired(sa, sb, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_s3_class(attr(pair, "roc1"), "smooth.roc")
+  expect_equal(attr(attr(pair, "roc1")$auc, "partial.auc"), c(1, 0.8))
+  expect_equal(as.numeric(attr(pair, "roc1")$auc), as.numeric(sa$auc))
+  expect_equal(
+    as.numeric(attr(pair, "roc2")$auc),
+    as.numeric(roc(aSAH$outcome[-1], aSAH$wfns[-1], smooth = TRUE, partial.auc = c(1, 0.8), quiet = TRUE)$auc)
+  )
+})

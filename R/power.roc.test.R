@@ -65,10 +65,12 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       roc2 <- roc_utils_unpercent(roc2)
 
       # Make sure the ROC curves are paired
-      rocs.are.paired <- are.paired(roc1, roc2)
+      rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
       if (!rocs.are.paired) {
         stop("The sample size for a difference in AUC cannot be applied to unpaired ROC curves yet.")
       }
+      roc1 <- attr(rocs.are.paired, "roc1")
+      roc2 <- attr(rocs.are.paired, "roc2")
       # Make sure the AUC specifications are identical
       attr1 <- attributes(roc1$auc)
       attr1$roc <- NULL
@@ -108,7 +110,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       else {
         zalpha <- qnorm(1 - sig.level)
         zbeta <- qnorm(power)
-        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method = method, ...)
+        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method = method, kappa = kappa, ...)
         ncontrols <- kappa * ncases
       }
 
@@ -121,6 +123,10 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       stop("'roc2' must be an object of class 'roc'.")
     }
   } else {
+    # The one ROC curve formula (Obuchowski et al., 2004) is for the full AUC
+    if (has.partial.auc(roc1)) {
+      stop("Power calculation for one ROC curve is only available for the full AUC.")
+    }
     ncontrols <- length(roc1$controls)
     ncases <- length(roc1$cases)
     if (!is.null(sig.level) && !is.null(power)) {
@@ -151,6 +157,14 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   }
   if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
     stop("'sig.level' must range from 0 to 1")
+  }
+  if (!is.null(auc)) {
+    if (methods::is(auc, "auc")) {
+      auc <- roc_utils_unpercent(auc)
+    }
+    if (any(auc < 0 | auc > 1, na.rm = TRUE)) {
+      stop("'auc' must range from 0 to 1")
+    }
   }
 
   # Complete ncontrols and ncases with kappa
@@ -309,6 +323,21 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
   if (any(!required %in% names(parslist))) {
     stop(paste("Missing parameter(s):", paste(required[!required %in% names(parslist)], collapse = ", ")))
   }
+  # Partial AUC: all four FPR bounds are needed, in any order within a curve.
+  # The Obuchowski formulas expect the upper bound first.
+  fpr.names <- c("FPR11", "FPR12", "FPR21", "FPR22")
+  fpr.given <- !vapply(fpr.names, function(name) is.null(parslist[[name]]), logical(1))
+  if (any(fpr.given)) {
+    if (!all(fpr.given)) {
+      stop(paste("Missing parameter(s) for partial AUC:", paste(fpr.names[!fpr.given], collapse = ", ")))
+    }
+    fpr1 <- c(parslist$FPR11, parslist$FPR12)
+    fpr2 <- c(parslist$FPR21, parslist$FPR22)
+    parslist$FPR11 <- max(fpr1)
+    parslist$FPR12 <- min(fpr1)
+    parslist$FPR21 <- max(fpr2)
+    parslist$FPR22 <- min(fpr2)
+  }
 
   # Determine number of patients (sample size)
   if (is.null(ncases) && is.null(ncontrols)) {
@@ -380,14 +409,21 @@ var_delta_covvar <- function(covvar) {
 # Compute variance of a delta from a 'covvar' list (see 'covvar' below)
 # under the null hypothesis
 # roc1 taken as reference.
+# cov0 is the covariance under the null hypothesis (both curves with the
+# parameters of roc1). Without it, the covariance under the alternative
+# is used as an approximation.
 var0.delta.covvar <- function(covvar) {
-  2 * covvar$var1 - 2 * covvar$cov12
+  if (!is.null(covvar$cov0)) {
+    2 * covvar$var1 - 2 * covvar$cov0
+  } else {
+    2 * covvar$var1 - 2 * covvar$cov12
+  }
 }
 
 # Compute the number of cases with Obuchowski formula and var(... method=method)
-ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
+ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, kappa, ...) {
   delta <- roc1$auc - roc2$auc
-  covvar <- covvar(roc1, roc2, method, ...)
+  covvar <- covvar(roc1, roc2, method, kappa = kappa, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   nd <- solve.nd(
@@ -404,7 +440,8 @@ ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
   covvar <- list(
     var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
     var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22),
+    cov0 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A1, parslist$B1, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR11, parslist$FPR12)
   )
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
@@ -438,7 +475,8 @@ zalpha.obuchowski.params <- function(parslist, zbeta, ncases, kappa) {
   covvar <- list(
     var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
     var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22),
+    cov0 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A1, parslist$B1, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR11, parslist$FPR12)
   )
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
@@ -472,7 +510,8 @@ zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
   covvar <- list(
     var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
     var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22),
+    cov0 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A1, parslist$B1, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR11, parslist$FPR12)
   )
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
@@ -532,16 +571,56 @@ solve.zalpha <- function(nd, zbeta, v0, va, delta) {
 }
 
 # Compute var and cov of two ROC curves by bootstrap in a single bootstrap run
-covvar <- function(roc1, roc2, method, ...) {
+# kappa: ratio of controls to cases at which the variances are computed
+# (defaults to the observed one)
+covvar <- function(roc1, roc2, method, kappa = NULL, ...) {
   cov12 <- cov(roc1, roc2, boot.return = TRUE, method = method, ...)
   if (!is.null(attr(cov12, "resampled.values"))) {
-    var1 <- var(attr(cov12, "resampled.values")[, 1])
-    var2 <- var(attr(cov12, "resampled.values")[, 2])
+    var1 <- var(attr(cov12, "resampled.values")[1, ])
+    var2 <- var(attr(cov12, "resampled.values")[2, ])
     attr(cov12, "resampled.values") <- NULL
   } else {
     var1 <- var(roc1, method = method, ...)
     var2 <- var(roc2, method = method, ...)
   }
   ncases <- length(roc1$cases)
-  return(list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases))
+  covvar <- list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases)
+  observed.kappa <- length(roc1$controls) / ncases
+  if (!is.null(kappa) && !isTRUE(all.equal(kappa, observed.kappa))) {
+    # Variances for a design with kappa controls per case: n_cases * var is
+    # a function of kappa only
+    if (is.null(method)) {
+      # Same default as cov(): DeLong unless bootstrap was used
+      method <- if (has.partial.auc(roc1) || roc1$direction != roc2$direction) "bootstrap" else "delong"
+    }
+    if (method == "delong") {
+      # n_cases * var = var(X) + var(Y) / kappa (structural components)
+      V1 <- delongPlacements(roc1)
+      V2 <- delongPlacements(roc2)
+      covvar <- list(
+        var1 = var(V1$X) + var(V1$Y) / kappa,
+        var2 = var(V2$X) + var(V2$Y) / kappa,
+        cov12 = cov(V1$X, V2$X) + cov(V1$Y, V2$Y) / kappa
+      )
+    } else if (method == "obuchowski") {
+      covvar <- list(
+        var1 = var_roc_obuchowski(roc1, kappa),
+        var2 = var_roc_obuchowski(roc2, kappa),
+        cov12 = cov_roc_obuchowski(roc1, roc2, kappa)
+      )
+    } else {
+      warning("'kappa' cannot be taken into account in the variance with method=\"bootstrap\": the ratio of controls to cases of the ROC curves is used.")
+      kappa <- observed.kappa
+    }
+  } else {
+    kappa <- observed.kappa
+  }
+  if (identical(method, "obuchowski")) {
+    covvar$cov0 <- cov0.roc.obuchowski(roc1, roc2, kappa)
+  } else if (covvar$var2 > 0) {
+    # Under the null hypothesis both AUCs have the variance of roc1: keep the
+    # observed correlation of the two AUCs, cov0 = cor12 * var1
+    covvar$cov0 <- covvar$cov12 * sqrt(covvar$var1 / covvar$var2)
+  }
+  return(covvar)
 }

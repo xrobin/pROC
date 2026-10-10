@@ -21,13 +21,13 @@ auc <- function(...) {
   UseMethod("auc")
 }
 
-auc.formula <- function(formula, data, ...) {
+auc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'auc'.")
   }
   response <- roc.data$response
@@ -104,6 +104,17 @@ auc.roc <- function(roc,
   # Validate partial.auc
   if (!identical(partial.auc, FALSE) & !(is.numeric(partial.auc) && length(partial.auc) == 2)) {
     stop("partial.auc must be either FALSE or a numeric vector of length 2")
+  }
+  if (!identical(partial.auc, FALSE)) {
+    if (anyNA(partial.auc)) {
+      stop("partial.auc must not contain NA values")
+    }
+    if (any(partial.auc < 0 | partial.auc > ifelse(percent, 100, 1))) {
+      stop(sprintf("partial.auc must be within [0, %s]", ifelse(percent, 100, 1)))
+    }
+    if (isTRUE(partial.auc.correct) && partial.auc[1] == partial.auc[2]) {
+      stop("partial.auc.correct requires two different partial.auc bounds")
+    }
   }
 
   # Ensure partial.auc is sorted with partial.auc[1] >= partial.auc[2]

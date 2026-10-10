@@ -21,23 +21,28 @@ ci.se <- function(...) {
   UseMethod("ci.se")
 }
 
-ci.se.formula <- function(formula, data, ...) {
+ci.se.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.se'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.se(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.se(smooth.roc = roc, ...))
+  } else {
+    return(ci.se(roc = roc, ...))
+  }
 }
 
 ci.se.default <- function(response, predictor, ...) {
   if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
-    stop("'ci.sp' not available for multiclass ROC curves.")
+    stop("'ci.se' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
   if (methods::is(roc, "smooth.roc")) {

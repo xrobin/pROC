@@ -57,9 +57,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{density.controls} and \code{density.cases}.
   }
   \item{start, start.controls, start.cases}{if
-    \code{method="fitdistr"}, optionnal \code{start}
-    arguments for . \code{start.controls}
-    and \code{start.cases} allows to specify different distributions for
+    \code{method="fitdistr"}, optional \code{start}
+    arguments for \code{\link[MASS]{fitdistr}}. \code{start.controls}
+    and \code{start.cases} allow to specify different start values for
     controls and cases.
   }
   \item{reuse.auc, reuse.ci}{if \code{TRUE} (default for reuse.auc) and the \dQuote{roc} objects
@@ -103,7 +103,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \dQuote{gaussian} is used, but \dQuote{epanechnikov},
   \dQuote{rectangular}, \dQuote{triangular}, \dQuote{biweight},
   \dQuote{cosine} and \dQuote{optcosine} are supported. As all the
-  kernels are symetrical, it might help to normalize the data first
+  kernels are symmetrical, it might help to normalize the data first
   (that is, before calling \code{\link{roc}}), for example with quantile
   normalization:
   \preformatted{
@@ -128,13 +128,23 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   If \code{method="fitdistr"}, the \code{\link[MASS]{fitdistr}}
   function from the \pkg{MASS} package is employed to fit parameters for
-  the density function \code{density} with optionnal start parameters
+  the density function \code{density} with optional start parameters
   \code{start}. The density function are fitted
   separately in control (\code{density.controls}, \code{start.controls})
   and case observations (\code{density.cases},
   \code{start.cases}). \code{density} can be one of the character values
   allowed by \code{\link[MASS]{fitdistr}} or a density function (such
   as \code{\link{dnorm}}, \code{\link{dweibull}}, ...).
+  For the continuous distributions named by a character value
+  (\dQuote{beta}, \dQuote{cauchy}, \dQuote{chi-squared},
+  \dQuote{exponential}, \dQuote{f}, \dQuote{gamma}, \dQuote{lognormal},
+  \dQuote{logistic}, \dQuote{normal} and \dQuote{weibull}), the smoothed
+  curve is the exact ROC curve of the fitted distributions, computed from
+  their cumulative distribution functions at \code{n} thresholds spread
+  over the quantiles of both fits. With a density function, the fitted
+  densities are evaluated at \code{n} equally spaced points over the range of
+  the observations only, so that the curve is an approximation that ignores
+  the tails of the fitted distributions outside of this range.
 
   The \code{method="logcondens"} and \code{method="logcondens.smooth"} use the
     \pkg{logcondens} package to generate a non smoothed or smoothed
@@ -158,9 +168,10 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{sensitivities}{the smoothed sensitivities defining the ROC curve.}
   \item{specificities}{the smoothed specificities defining the ROC curve.}
   \item{percent}{if the sensitivities, specificities and AUC are
-    reported in percent, as defined in argument.
+    reported in percent, as in the original \dQuote{\link{roc}} object.
   }
-  \item{direction}{the direction of the comparison, as defined in argument.}
+  \item{direction}{the direction of the comparison, as in the original
+    \dQuote{\link{roc}} object.}
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
@@ -216,11 +227,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   be smoothed only with binormal smoothing.} is displayed otherwise.
 
   \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
-  require additional packages. If not available, the following message 
-  will be displayed with the required command to install the package:
-  \dQuote{Package ? not available, required with method='?'.
-     Please install it with 'install.packages("?")'. 
-  }
+  require additional packages (\pkg{MASS} and \pkg{logcondens},
+  respectively). In an interactive session, you will be offered to install
+  a missing package. If it is not installed, the error \dQuote{Package
+  'MASS' not available.} (or \dQuote{Package 'logcondens' not
+  available.}) is issued.
 }
 
 \references{
@@ -233,7 +244,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 
   Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.

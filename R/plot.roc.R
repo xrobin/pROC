@@ -30,20 +30,31 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'plot.roc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
 
   roc <- roc(response, predictor, plot = TRUE, ...)
-  roc$call <- match.call()
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    roc$call <- match.call()
+    roc$predictor.name <- roc.data$predictor.names
+    roc$response.name <- roc.data$response.name
+    if (methods::is(roc, "smooth.roc")) {
+      attr(roc, "roc")$call <- roc$call
+      attr(roc, "roc")$predictor.name <- roc$predictor.name
+      attr(roc, "roc")$response.name <- roc$response.name
+    }
+  }
   invisible(roc)
 }
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
-  roc$call <- match.call()
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    roc$call <- match.call()
+  }
   invisible(roc)
 }
 
@@ -149,6 +160,9 @@ plot.roc.roc <- function(x,
                          panel.last = NULL,
                          ...) {
   percent <- x$percent
+  if (ci && is.null(x$ci)) {
+    stop("'x' has no confidence interval; compute it with ci() first (or roc(..., ci = TRUE)), or set ci = FALSE.")
+  }
 
   if (max.auc.polygon | auc.polygon | print.auc) { # we need the auc here
     if (is.null(x$auc) | !reuse.auc) {

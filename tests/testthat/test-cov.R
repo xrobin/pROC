@@ -9,9 +9,9 @@ test_that("cov with delong works", {
 
 
 test_that("cov with obuchowski works", {
-  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -3.917223e-06)
-  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.0007945308)
-  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.0008560803)
+  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -2.293385e-05)
+  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.001121222)
+  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.0008540910)
 })
 
 
@@ -37,9 +37,9 @@ test_that("cov with delong, percent and mixed roc/auc works", {
 
 
 test_that("cov with obuchowski, percent and mixed roc/auc works", {
-  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.03917223)
-  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 7.9453082)
-  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.560803)
+  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.2293385)
+  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 11.21222148)
+  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.540910259)
 })
 
 
@@ -108,7 +108,7 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
 
   set.seed(42) # For reproducible CI
   expected_cov <- cov(roc1, roc2, boot.n = 100)
-  expect_equal(expected_cov, -3.033016e-06)
+  expect_equal(expected_cov, -3.002432e-06)
 
   # Now with reuse.auc
   set.seed(42) # For reproducible CI
@@ -118,4 +118,64 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
     boot.n = 100
   )
   expect_equal(expected_cov, obtained_cov)
+})
+
+test_that("cov keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  c.auc <- cov(a1, a2, boot.n = 10)
+  set.seed(42)
+  c.smooth <- cov(s1, s2, boot.n = 10)
+  expect_equal(c.auc, c.smooth)
+})
+
+test_that("cov errors on curves smoothed with numeric densities", {
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(suppressWarnings(cov(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("cov errors on curves built from numeric densities", {
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(suppressWarnings(cov(d1, d2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("obuchowski cov of percent curves with partial AUC is the fraction cov times 100^2", {
+  expect_equal(
+    cov(r.s100b.percent.partial1, r.ndka.percent.partial1, method = "obuchowski"),
+    cov(r.s100b.partial1, r.ndka.partial1, method = "obuchowski") * 100^2
+  )
+})
+
+test_that("cov re-pairs curves with NAs at different positions", {
+  x1 <- aSAH$s100b
+  x2 <- aSAH$ndka
+  x1[c(3, 50)] <- NA
+  x2[c(10, 90)] <- NA
+  r1 <- roc(aSAH$outcome, x1, quiet = TRUE)
+  r2 <- roc(aSAH$outcome, x2, quiet = TRUE)
+  ok <- !is.na(x1) & !is.na(x2)
+  q1 <- roc(aSAH$outcome[ok], x1[ok], quiet = TRUE)
+  q2 <- roc(aSAH$outcome[ok], x2[ok], quiet = TRUE)
+  expect_equal(cov(r1, r2), cov(q1, q2))
+  expect_equal(cov(r1, r2, method = "obuchowski"), cov(q1, q2, method = "obuchowski"))
+  set.seed(42)
+  c.na <- cov(r1, r2, method = "bootstrap", boot.n = 10)
+  set.seed(42)
+  c.ok <- cov(q1, q2, method = "bootstrap", boot.n = 10)
+  expect_equal(c.na, c.ok)
+})
+
+test_that("cov selects the bootstrap when only roc2 has a partial AUC", {
+  set.seed(42)
+  res.12 <- suppressWarnings(cov(r.ndka, r.s100b.partial1, boot.n = 10))
+  set.seed(42)
+  res.21 <- suppressWarnings(cov(r.s100b.partial1, r.ndka, boot.n = 10))
+  expect_equal(res.12, res.21)
 })

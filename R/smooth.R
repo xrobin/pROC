@@ -108,7 +108,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     args <- attributes(roc$ci)
     args$roc <- NULL
     args$smooth.roc <- sesp
-    sesp$ci <- do.call(paste(class(roc$ci), "smooth.roc", sep = "."), args)
+    sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
   }
 
   return(sesp)
@@ -169,13 +169,17 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
 }
 
 smooth_roc_binormal <- function(roc, n) {
-  df <- data.frame(sp = qnorm(roc$sp * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$se * ifelse(roc$percent, 1 / 100, 1)))
+  df <- data.frame(sp = qnorm(roc$specificities * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$sensitivities * ifelse(roc$percent, 1 / 100, 1)))
   df <- df[apply(df, 1, function(x) all(is.finite(x))), ]
+  # Empty levels of ordered predictors give the same ROC point several times:
+  # count each point once in the fit
+  df <- unique(df)
   if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
     stop("ROC curve not smoothable (not enough points).")
   }
   model <- lm(sp ~ se, df)
-  if (any(is.na(model$coefficients[2]))) {
+  # A constant sp gives a slope of 0 up to rounding, and a degenerate curve
+  if (any(is.na(model$coefficients[2])) || length(unique(df$sp)) < 2) {
     stop("ROC curve not smoothable (not enough points).")
   }
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
@@ -195,7 +199,7 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
     gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
     logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
-    t = "dt", weibull = "dweibull"
+    t = "dt_location_scale", weibull = "dweibull"
   )
 
   if (is.null(densfun.controls)) {
@@ -210,8 +214,17 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
   }
 
-  fit.controls <- MASS::fitdistr(roc$controls, densfun.controls, start.controls, ...)
-  fit.cases <- MASS::fitdistr(roc$cases, densfun.cases, start.cases, ...)
+  # Only pass the arguments of densfun or optim to fitdistr: when called
+  # from roc(), ... also contains the arguments of auc, ci and plot
+  fitdistr.dots <- function(densfun) {
+    if (is.character(densfun)) {
+      densfun <- match.fun(densfuns.list[[densfun]])
+    }
+    allowed <- setdiff(c(names(formals(densfun)), "gr", "lower", "upper", "control"), c("x", "..."))
+    list(...)[names(list(...)) %in% allowed]
+  }
+  fit.controls <- do.call(MASS::fitdistr, c(list(roc$controls, densfun.controls, start.controls), fitdistr.dots(densfun.controls)))
+  fit.cases <- do.call(MASS::fitdistr, c(list(roc$cases, densfun.cases, start.cases), fitdistr.dots(densfun.cases)))
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function") {
@@ -219,6 +232,42 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   }
   if (mode(densfun.cases) != "function") {
     fit.cases$densfun <- densfun.cases
+  }
+
+  # Named continuous distributions: the ROC curve of the fitted distributions
+  # is computed exactly from their CDFs over their whole support, at
+  # thresholds spread over the quantiles of both fits
+  cdf.densfuns <- c(
+    "beta", "cauchy", "chi-squared", "exponential", "f", "gamma",
+    "log-normal", "lognormal", "logistic", "normal", "weibull"
+  )
+  if (is.character(densfun.controls) && is.character(densfun.cases) &&
+    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns)) {
+    fitted.fun <- function(prefix, densfun, fit) {
+      f <- match.fun(sub("^d", prefix, densfuns.list[[densfun]]))
+      dots <- list(...)[names(list(...)) %in% setdiff(names(formals(f)), c("q", "p", "lower.tail", "log.p"))]
+      function(v) do.call(f, c(list(v), as.list(fit$estimate), dots))
+    }
+    # interior probabilities, alternately for controls and cases
+    p <- seq(0, 1, length.out = n + 2)[-c(1, n + 2)]
+    thresholds <- sort(c(
+      fitted.fun("q", densfun.controls, fit.controls)(p[seq(1, n, by = 2)]),
+      fitted.fun("q", densfun.cases, fit.cases)(p[seq_len(n %/% 2) * 2])
+    ))
+    cdf.controls <- fitted.fun("p", densfun.controls, fit.controls)(thresholds)
+    cdf.cases <- fitted.fun("p", densfun.cases, fit.cases)(thresholds)
+    if (roc$direction == "<") {
+      sp <- cdf.controls
+      se <- 1 - cdf.cases
+    } else {
+      sp <- 1 - cdf.controls
+      se <- cdf.cases
+    }
+    return(list(
+      sensitivities = se * ifelse(roc$percent, 100, 1),
+      specificities = sp * ifelse(roc$percent, 100, 1),
+      fit.controls = fit.controls, fit.cases = fit.cases
+    ))
   }
 
   x <- seq(min(c(roc$controls, roc$cases)), max(c(roc$controls, roc$cases)), length.out = n)
@@ -259,7 +308,9 @@ smooth_roc_logcondens <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
+  # logConROC assumes cases > controls: negate the values for direction ">"
+  sign <- ifelse(roc$direction == ">", -1, 1)
+  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
   se <- logcondens$fROC
 
   return(list(
@@ -273,7 +324,9 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
+  # logConROC assumes cases > controls: negate the values for direction ">"
+  sign <- ifelse(roc$direction == ">", -1, 1)
+  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
   se <- logcondens$fROC.smooth
 
   return(list(
@@ -281,4 +334,10 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
     specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
     logcondens = logcondens
   ))
+}
+
+# fitdistr(densfun = "t") fits a location-scale t distribution (m, s, df),
+# which stats::dt does not take
+dt_location_scale <- function(x, m, s, df) {
+  dt((x - m) / s, df) / s
 }

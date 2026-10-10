@@ -21,18 +21,23 @@ ci.sp <- function(...) {
   UseMethod("ci.sp")
 }
 
-ci.sp.formula <- function(formula, data, ...) {
+ci.sp.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.sp'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.sp(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.sp(smooth.roc = roc, ...))
+  } else {
+    return(ci.sp(roc = roc, ...))
+  }
 }
 
 ci.sp.default <- function(response, predictor, ...) {

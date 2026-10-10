@@ -33,7 +33,7 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   }
   \item{type}{type of plot, \dQuote{bars} or \dQuote{shape}. Can be
     shortened to \dQuote{b} or \dQuote{s}. \dQuote{shape} is only available for
-    \code{ci.se} and \code{ci.sp}, not for \code{ci.thresholds}.
+    \code{ci.se}, \code{ci.sp} and \code{ci.coords}, not for \code{ci.thresholds}.
   }
   \item{length}{the length (as plot coordinates) of the bar ticks. Only
     if \code{type="bars"}.
@@ -78,7 +78,7 @@ This function returns the confidence interval object invisibly.
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 

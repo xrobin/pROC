@@ -21,18 +21,23 @@ ci.auc <- function(...) {
   UseMethod("ci.auc")
 }
 
-ci.auc.formula <- function(formula, data, ...) {
+ci.auc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.auc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.auc.roc(roc.default(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.auc(smooth.roc = roc, ...))
+  } else {
+    return(ci.auc(roc = roc, ...))
+  }
 }
 
 ci.auc.default <- function(response, predictor, ...) {
@@ -83,6 +88,9 @@ ci.auc.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate, with
+  # its partial AUC still in percent once roc$percent is set to FALSE below
+  roc$auc <- NULL
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- smooth.roc$percent

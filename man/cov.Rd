@@ -29,8 +29,8 @@ cov(...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
   }
-  \item{method}{the method to use, either \dQuote{delong} or
-    \dQuote{bootstrap}. The first letter is
+  \item{method}{the method to use, either \dQuote{delong},
+    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
     sufficient. If omitted, the appropriate method is selected as
     explained in details.
   }
@@ -73,9 +73,7 @@ cov(...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
-    \code{\link{auc}} (if \code{reuse.auc=FALSE}) and
-    \code{\link{txtProgressBar}} (only \code{char} and \code{style}) if
-    applicable.
+    \code{\link{auc}} (if \code{reuse.auc=FALSE}).
   }
 }
 
@@ -83,8 +81,8 @@ cov(...)
   This function computes the covariance between the AUC of two
   correlated (or paired, according to the detection of \code{\link{are.paired}}) ROC
   curves. It is typically called with the two \link{roc} objects of
-  interest. Two methods are available: \dQuote{delong} and
-  \dQuote{bootstrap} (see \dQuote{Computational
+  interest. Three methods are available: \dQuote{delong},
+  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
   The default is to use \dQuote{delong} method except with
@@ -126,7 +124,7 @@ cov(...)
   field, the \code{\link{auc}} function will always be called with
   \code{\dots} to determine the specification.
 
-  Warning: if the roc object passed to roc.test contains an \code{auc}
+  Warning: if the roc object passed to cov contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
   arguments such as \code{partial.auc} are silently ignored.
 }
@@ -141,10 +139,8 @@ cov(...)
     sample, otherwise if \var{FALSE} the numbers can vary.
     \item for each bootstrap replicate, the AUC of the two ROC curves
     are computed and stored.
-    \item the variance (as per \code{\link{var.roc}}) of the resampled
-    AUCs and their covariance are assessed in a single bootstrap pass.
-    \item The following formula is used to compute the final covariance:
-    \eqn{Var[AUC1] + Var[AUC2] - 2cov[AUC1,AUC2]}
+    \item the covariance of the resampled AUCs of the two ROC curves is
+    computed (with \code{\link[stats]{cov}}) and returned.
   }
 
   With \code{method="delong"}, the processing is done as described in
@@ -176,15 +172,30 @@ cov(...)
 
   If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
   \code{resampled.values} is set with the resampled (bootstrapped)
-  values. It contains a matrix with the columns representing the two ROC
-  curves, and the rows the \code{boot.n} bootstrap replicates.
+  values. It contains a matrix with 2 rows representing the two ROC
+  curves, and one column per bootstrap replicate (replicates that produced
+  \code{NA} values are removed).
 }
 
 \section{Errors}{
   If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the covariance on ROC
-    curves smoothed with density.controls and density.cases.} is
+  for smoothing, the error \dQuote{Cannot compute the covariance of ROC
+    curves smoothed with numeric density.controls and density.cases.} is
   issued.
+
+  If \code{method="delong"} and the AUC specification specifies a
+  partial AUC, or one of the ROC curves is smoothed, the error \dQuote{DeLong
+    method is not supported for partial AUC. Use method="bootstrap"
+    instead.} (or \dQuote{DeLong method is not supported for smoothed
+    ROCs. Use method="bootstrap" instead.}) is issued.
+
+  If \code{method="obuchowski"} and one of the ROC curves is smoothed, or the
+  AUC specification specifies a partial AUC with
+  \code{partial.auc.focus="sensitivity"}, the error
+  \dQuote{Obuchowski method is not supported for smoothed ROCs. Use
+    method="bootstrap" instead.} (or \dQuote{Obuchowski method is not
+    supported for partial AUC on sensitivity region. Use
+    method="bootstrap" instead.}) is issued.
 }
 
 \section{Warnings}{
@@ -202,21 +213,12 @@ cov(...)
   functions (such as plot), or if you really want to compare two ROC
   curves smoothed differently.
 
-  If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the warning \dQuote{Using DeLong for partial AUC is
-    not supported. Using bootstrap test instead.} is issued. The
-  \code{method} argument is ignored and \dQuote{bootstrap} is used instead.
-
-  If \code{method="delong"} and the ROC
-  curve is smoothed, the warning \dQuote{Using DeLong for
-  smoothed ROCs is not supported. Using bootstrap instead.} is
-  issued. The \code{method} argument is ignored and \dQuote{bootstrap}
-  is used instead.
-
-  DeLong ignores the direction of the ROC curve so that if two
+  If \code{method="delong"} or \code{method="obuchowski"} and the two
   ROC curves have a different \code{direction}, the warning
-  \dQuote{"DeLong should not be applied to ROC curves with a different
-  direction."} is printed. However, the spurious computation is enforced.
+  \dQuote{DeLong method should not be applied to ROC curves with a
+  different direction.} (or \dQuote{Obuchowski method should not be
+  applied to ROC curves with a different direction.}) is printed.
+  However, the spurious computation is enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
@@ -254,7 +256,7 @@ cov(...)
   \doi{10.1016/S1076-6332(97)80161-4}.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
+  determination for diagnostic accuracy studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
   1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
   
@@ -262,9 +264,6 @@ cov(...)
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
   DOI: \doi{10.1109/LSP.2014.2337313}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{
@@ -302,9 +301,9 @@ cov(auc(roc1), roc2)
 # ROC curves in one single bootstrap run:
 cov.rocs <- cov(roc1, roc2, method="bootstrap", boot.return=TRUE)
 # var(roc1):
-var(attr(cov.rocs, "resampled.values")[,1])
+var(attr(cov.rocs, "resampled.values")[1,])
 # var(roc2):
-var(attr(cov.rocs, "resampled.values")[,2])
+var(attr(cov.rocs, "resampled.values")[2,])
 }
 
 \dontrun{

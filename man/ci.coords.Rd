@@ -25,7 +25,7 @@ best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
-\S3method{ci.coords}{formula}(formula, data, ...)
+\S3method{ci.coords}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input="specificity", ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
@@ -44,6 +44,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{x, input, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
     See there for more details. The only difference is on the \code{x} argument which cannot be
@@ -87,8 +90,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable.
   }
 }
 
@@ -139,7 +140,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \bold{Note:} changed in version 1.16.
   
   A list of the same length as \code{ret} and named as \code{ret}, and of 
-  class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order).
+  class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{list} (in this order).
   
   Each element of the list is a matrix of the confidence intervals with
   rows given by \code{x} and with 3 columns, the lower bound of the CI, 
@@ -153,14 +154,14 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{input}{the input coordinate, as given in argument.}
   \item{x}{the coordinates used to calculate the CI, as given in argument.}
   \item{ret}{the return values, as given in argument or substituted by
-  	\code{link{coords}}.}
+  	\code{\link{coords}}.}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -168,9 +169,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern
     Recognition Letters} \bold{27}, 861--874. DOI:
   \doi{10.1016/j.patrec.2005.10.010}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

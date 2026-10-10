@@ -20,7 +20,7 @@
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
 progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
-\S3method{ci.thresholds}{formula}(formula, data, ...)
+\S3method{ci.thresholds}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
 }
@@ -34,6 +34,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
   in percent. Default: 0.95, resulting in a 95\% CI.
@@ -73,8 +76,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.thresholds.roc}
     when calling \code{ci.thresholds.default} or \code{ci.thresholds.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable. 
     Arguments \code{best.method} and \code{best.weights} to \code{\link{coords}}.
   }
 }
@@ -130,7 +131,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -141,11 +142,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

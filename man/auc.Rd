@@ -25,7 +25,7 @@ auc(...)
 allow.invalid.partial.auc.correct = FALSE, ...)
 \S3method{auc}{smooth.roc}(smooth.roc, ...)
 \S3method{auc}{multiclass.roc}(multiclass.roc, ...)
-\S3method{auc}{formula}(formula, data, ...)
+\S3method{auc}{formula}(formula, data, subset, na.action, ...)
 \S3method{auc}{default}(response, predictor, ...)
 }
 
@@ -37,6 +37,9 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   }
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type response~predictor for the \code{\link{roc}} function.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
+  }
   \item{partial.auc}{either \code{FALSE} (default: consider total area) or a
     numeric vector of length 2: boundaries of the AUC to consider in
     [0,1] (or [0,100] if percent is \code{TRUE}).
@@ -59,10 +62,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   pAUCs in bootstrap operations.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} when calling
-	\code{auc.default}, \code{auc.formula}, \code{auc.smooth.roc}.
+	\code{auc.default} or \code{auc.formula}.
 	Note that the \code{auc}
 	argument of \code{\link{roc}} is not allowed. Unused in
-	\code{auc.roc}. 
+	\code{auc.roc}. Passed to \code{auc.roc} by \code{auc.smooth.roc}.
   }
 }
 
@@ -90,7 +93,7 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   make sure the specification is correct.
   
   If a pAUC is defined, it can be standardized (corrected). This correction is 
-  controled by the \code{partial.auc.correct} argument. If \code{partial.auc.correct=TRUE},
+  controlled by the \code{partial.auc.correct} argument. If \code{partial.auc.correct=TRUE},
   the correction by McClish will be applied:
   
   \deqn{\frac{1+\frac{auc-min}{max-min}}{2}}{(1+(auc-min)/(max-min))/2}
@@ -106,10 +109,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 }
 \section{Smoothed ROC curves}{
   There is no difference in the computation of the area under a smoothed
-  ROC curve, except for curves smoothed with \code{method="binomial"}. In this case
+  ROC curve, except for curves smoothed with \code{method="binormal"}. In this case
   and only if a full AUC is requested, the classical binormal AUC formula is applied:
 
-  \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2).}
+  \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2)).}
 
   If the ROC curve is smoothed with any other \code{method} or if a partial AUC
   is requested, the empirical AUC described in the previous section is applied.
@@ -157,7 +160,7 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 

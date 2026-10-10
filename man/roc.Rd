@@ -18,7 +18,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, ...)
+\S3method{roc}{formula}(formula, data, subset, na.action, ...)
 \S3method{roc}{data.frame}(data, response, predictor,
 ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
@@ -59,10 +59,13 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link[=smooth.roc]{smooth}}.
   }
-  \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
+  \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
     \code{data} and \code{subset}, but not \code{na.action} are supported, see 
     \code{\link{model.frame}} for more details.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}}
+    with \code{formula} and \code{data} (see above).
   }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of
@@ -77,8 +80,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
-    (ignored by \code{roc.formula}).
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.
+    This also applies to \code{roc.formula}, which passes the
+    \code{NA} values to \code{roc.default} (\code{na.action=na.pass}).
   }
   \item{direction}{how are positive observations defined?
     \dQuote{<}: observations are positive when they
@@ -87,7 +91,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     (\code{<=}) to the threshold.
     \dQuote{auto} (default): automatically detect in which group the
     median is higher and take the direction accordingly. See details.
-    You should set this explicity to \dQuote{>} or \dQuote{<} whenever
+    You should set this explicitly to \dQuote{>} or \dQuote{<} whenever
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
   }
@@ -159,12 +163,12 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   inverted.
 	
   In some cases, it is more convenient to pass the data as
-  \code{controls, cases}, but both arguments are ignored if
-  \code{response, predictor} was specified to non-\code{NULL} values.
+  \code{controls, cases}, but they cannot be combined with
+  non-\code{NULL} \code{response, predictor} (an error is raised).
   It is also possible to pass density data with \code{density.controls,
   density.cases}, which will result in a smoothed ROC curve even if
-  \code{smooth=FALSE}, but are ignored if \code{response, predictor} or
-  \code{controls, cases} are provided.
+  \code{smooth=FALSE}, but they cannot be combined with
+  \code{response, predictor} or \code{controls, cases} either.
   
   Thresholds are selected as the means between any two consecutive values 
   observed in the data. This choice is aimed to facilitate their interpretation,
@@ -321,7 +325,8 @@ aSAH  \%>\%
   Infinite values of the predictor cannot always be thresholded by
   infinity and can cause ROC curves to not reach 0 or 100\% 
   specificity or sensitivity. Since version 1.13.0, pROC returns \code{NaN}
-  with a warning message \dQuote{Infinite value(s) in predictor} if
+  with a warning message \dQuote{Infinite values(s) in predictor, cannot
+  build a valid ROC curve. NaN returned instead.} if
   \code{predictor} contains any \link[=is.infinite]{infinite} values.
 }
 
@@ -332,7 +337,7 @@ aSAH  \%>\%
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
@@ -398,9 +403,10 @@ plot(rocobj)
 
 # Smoothed ROC curve
 roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-# this is not identical to
+# this gives the same smoothed curve and AUC as
 smooth(roc(aSAH$outcome, aSAH$s100b))
-# because in the latter case, the returned object contains no AUC
+# but the returned objects differ in their call and in the data stored
+# (the former also contains the predictor, response and levels)
 }
 
 \keyword{univar}

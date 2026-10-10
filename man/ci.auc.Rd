@@ -26,11 +26,10 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
-\S3method{ci.auc}{auc}(auc, ...)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
-\S3method{ci.auc}{formula}(formula, data, ...)
+\S3method{ci.auc}{formula}(formula, data, subset, na.action, ...)
 \S3method{ci.auc}{default}(response, predictor, ...)
 }
 		   
@@ -44,6 +43,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
   in percent. Default: 0.95, resulting in a 95\% CI.
@@ -82,11 +84,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
-    especially arguments for \code{\link{roc}} and \code{roc.test.roc}
-    when calling \code{roc.test.default} or \code{roc.test.formula}.
-    Arguments for \code{\link{auc}}
-    and \code{\link{txtProgressBar}} (only \code{char} and \code{style})
-    if applicable.
+    especially arguments for \code{\link{roc}} and \code{ci.auc.roc}
+    when calling \code{ci.auc.default} or \code{ci.auc.formula}.
+    Arguments for \code{\link{auc}} if applicable.
   }
 }
 
@@ -149,12 +149,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Warnings}{
-  If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the warning \dQuote{Using DeLong's test for partial AUC is
-    not supported. Using bootstrap test instead.} is issued. The
-  \code{method} argument is ignored and \dQuote{bootstrap} is used
-  instead.
-
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
   contains no case or control observation, or that there are not enough
@@ -166,26 +160,33 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Errors}{
+  If \code{method="delong"} and the AUC specification specifies a
+  partial AUC, the error \dQuote{DeLong method is not supported for
+  partial AUC. Use method="bootstrap" instead.} is issued.
+
   If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-  curves smoothed with density.controls and density.cases.} is issued.
+  for smoothing, the error \dQuote{Cannot compute CI of ROC curves
+  smoothed with numeric density.controls and density.cases.} is issued.
 }
 
 \value{
 A numeric vector of length 3 and class \dQuote{ci.auc}, \dQuote{ci} and \dQuote{numeric} (in this order), with the lower
-bound, the median and the upper bound of the CI, and the following attributes:
+bound, the central value and the upper bound of the CI, and the following attributes:
 \item{conf.level}{the width of the CI, in fraction.}
 \item{method}{the method employed.}
 \item{boot.n}{the number of bootstrap replicates.}
 \item{boot.stratified}{whether or not the bootstrapping was stratified.}
 \item{auc}{an object of class \dQuote{\link{auc}} stored for reference about the
-  compued AUC details (partial, percent, ...)}
+  computed AUC details (partial, percent, ...)}
+
+The central value is the AUC itself with \code{method="delong"}, and the
+median of the bootstrapped AUCs with \code{method="bootstrap"}.
 
 The \code{aucs} item is not included in this list since version 1.2 for
 consistency reasons.
 }
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -202,11 +203,8 @@ consistency reasons.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{
@@ -231,11 +229,11 @@ ci(auc(roc1))
 # Partial AUC and customized bootstrap:
 \dontrun{
 ci.auc(roc1,
-       conf.level=0.9,
+       conf.level=0.9, reuse.auc=FALSE,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
        boot.n=10000, boot.stratified=FALSE)}\dontshow{
 ci.auc(roc1,
-       conf.level=0.9,
+       conf.level=0.9, reuse.auc=FALSE,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
        boot.n=10, boot.stratified=FALSE)}
 
@@ -243,7 +241,7 @@ ci.auc(roc1,
 \dontrun{
 ci.auc(roc1,
        partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE)}
-# This is because rocobj$auc is not a partial AUC and reuse.auc = TRUE by default.
+# This is because roc1$auc is not a partial AUC and reuse.auc = TRUE by default.
 # You can overcome this problem by passing an AUC instead:
 auc1 <- auc(roc1, partial.auc=c(1, .8), partial.auc.focus="se", 
             partial.auc.correct=FALSE)

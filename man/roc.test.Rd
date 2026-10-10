@@ -28,7 +28,7 @@
 "venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
-ties.method="first", progress = getOption("pROCProgress", interactive()),
+ties.method="random", progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
@@ -44,7 +44,7 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{response}{a vector or factor, as for the \link{roc} function.}
   \item{predictor1}{a numeric or ordered vector as for the \link{roc} function, or
-  a matrix or data.frame with predictors two colums.}
+  a matrix or data.frame with predictors two columns.}
   \item{predictor2}{only if predictor1 was a vector, the second
     predictor as a numeric vector.
   }
@@ -58,7 +58,9 @@ na.rm=TRUE, method=NULL, ...)
     will be removed.
   }
   \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{venkatraman}. The first letter is sufficient. If omitted, the
+    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity} or
+    \dQuote{specificity}. It can be abbreviated, as long as it is not
+    ambiguous (\dQuote{s} is not sufficient). If omitted, the
 	appropriate method is selected as explained in details.
   }
   \item{sensitivity, specificity}{if \code{method="sensitivity"} or
@@ -89,7 +91,11 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{ties.method}{for \code{method="venkatraman"} only: argument for
     \code{\link{rank}} specifying how ties are handled. Defaults to
-    \dQuote{first} as described in the paper.
+    \dQuote{random}, so that the result does not depend on the order of
+    the observations in the data (with \dQuote{first}, tied observations
+    are ranked by position, and the same data sorted differently can
+    give very different p-values). Set the seed with
+    \code{\link{set.seed}} for reproducible results.
   }
   \item{progress}{whether to display a text progress bar during the
     bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
@@ -110,14 +116,13 @@ na.rm=TRUE, method=NULL, ...)
     section of \link{pROC-package}.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
-  \item{conf.level}{a numeric scalar between 0 and 1 (non-inclusive) which
-    species the confidence level to use for any calculated CI's.}
+  \item{conf.level}{the width of the confidence interval as [0,1], never
+    in percent, used for any calculated CI. Default: 0.95, resulting in a
+    95\% CI.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
-    Arguments for \code{\link{auc}},
-    and \code{\link{txtProgressBar}} (only \code{char} and \code{style})
-    if applicable.
+    Arguments for \code{\link{auc}} if applicable.
   }
 }
 
@@ -152,7 +157,7 @@ na.rm=TRUE, method=NULL, ...)
   employed to detect the paired status of the ROC curves. It will test if the original \code{response} is
   identical between the two ROC curves (this is always the case if the call is made with 
   \code{roc.test.default}). This detection is unlikely to raise false positives, but
-  this possibility cannot be excluded entierly. It would require equal sample sizes
+  this possibility cannot be excluded entirely. It would require equal sample sizes
   and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
@@ -186,7 +191,8 @@ na.rm=TRUE, method=NULL, ...)
   field, the \code{\link{auc}} function will always be called with
   \code{\dots} to determine the specification.
 
-  The AUC specification is ignored in the Venkatraman test.
+  The Venkatraman test compares the whole curves: it fails with an error if
+  either curve has a partial AUC specification.
 
   Warning: if the roc object passed to roc.test contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
@@ -222,9 +228,9 @@ na.rm=TRUE, method=NULL, ...)
   unpaired ROC curves where the p-value is computed with an unpaired
   t-test with unequal sample size and unequal variance, with 
   \deqn{
-    D=\frac{V^r(\theta^r) - V^s(\theta^s) }{ \sqrt{S^r + S^s}}
+    D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
-    D=(V^r(\theta^r) - V^s(\theta^s)) / sqrt(S^r + S^s)
+    D=(\theta^r - \theta^s) / sqrt(S^r + S^s)
   }
 
   With \code{method="venkatraman"}, the processing is done as described
@@ -259,11 +265,6 @@ na.rm=TRUE, method=NULL, ...)
   functions (such as plot), or if you really want to compare two ROC
   curves smoothed differently.
 
-  If \code{method="venkatraman"}, and \code{alternative} is
-  \dQuote{less} or \dQuote{greater}, the warning \dQuote{Only two-sided
-    tests are available for Venkatraman. Performing two-sided test instead.}
-  is produced and a two tailed test is performed.
-
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
   ROC curves have a different differ in the value of
   \code{direction}, the warning \dQuote{(DeLong|Venkatraman)'s test should not be
@@ -294,12 +295,20 @@ na.rm=TRUE, method=NULL, ...)
   
   If \code{density.cases} and \code{density.controls} were provided
   for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-    curves smoothed with density.controls and density.cases.} is
+    curves smoothed with numeric density.controls and density.cases.} is
   issued.
 
   If \code{method="venkatraman"} and one of the ROC curves is smoothed,
-  the error \dQuote{Using Venkatraman's test for smoothed ROCs is not
-    supported.} is produced.
+  the error \dQuote{Venkatraman's test is not supported for smoothed
+    ROCs} is produced.
+
+  If \code{method="venkatraman"} and one of the ROC curves has a partial
+  AUC specification, the error \dQuote{Partial AUC is not supported for
+    Venkatraman's test.} is produced.
+
+  If \code{method="venkatraman"}, and \code{alternative} is
+  \dQuote{less} or \dQuote{greater}, the error \dQuote{Only two-sided
+    tests are available for Venkatraman.} is produced.
 
   With \code{method="specificity"}, the error \dQuote{Argument
     'specificity' must be numeric of length 1 for a specificity test.}
@@ -312,22 +321,31 @@ na.rm=TRUE, method=NULL, ...)
 \value{
   A list of class "htest" with following content:
   \item{p.value}{the p-value of the test.}
-  \item{statistic}{the value of the Z (\code{method="delong"}) or D
-    (\code{method="bootstrap"}) statistics.
+  \item{statistic}{the value of the Z (\code{method="delong"}, paired
+    curves), D (\code{method="delong"} with unpaired curves,
+    \code{method="bootstrap"}, \code{"sensitivity"} and
+    \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
-  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifiying the level of the test.}
+  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
-  \item{method}{the character string \dQuote{DeLong's test for two
-      correlated ROC curves} (if \code{method="delong"}) or
-    \dQuote{Bootstrap test for two correlated ROC curves} (if
-    \code{method="bootstrap"}).
+  \item{method}{a character string describing the test, such as
+    \dQuote{DeLong's test for two correlated ROC curves} (if
+    \code{method="delong"} with paired curves) or
+    \dQuote{Bootstrap test for two ROC curves} (if
+    \code{method="bootstrap"} with unpaired curves).
   }
   \item{null.value}{the expected value of the statistic under the null
     hypothesis, that is 0.}
-  \item{estimate}{the AUC in the two ROC curves.}
+  \item{estimate}{the AUC in the two ROC curves, or with
+    \code{method="sensitivity"} and \code{method="specificity"}, the
+    specificity and sensitivity of the two curves at the given
+    sensitivity or specificity.}
   \item{data.name}{the names of the data that was used.}
-  \item{parameter}{for \code{method="bootstrap"} only: the values of the
-    \code{boot.n} and \code{boot.stratified} arguments.
+  \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
+    and \code{"specificity"}: the values of the \code{boot.n} and
+    \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
+    value of \code{boot.n}. For \code{method="delong"} with unpaired
+    curves: the degrees of freedom \code{df} of the t-test.
   }
 }
 
@@ -356,7 +374,7 @@ na.rm=TRUE, method=NULL, ...)
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
@@ -372,9 +390,6 @@ na.rm=TRUE, method=NULL, ...)
   E. S. Venkatraman (2000) ``A Permutation Test to Compare Receiver
   Operating Characteristic Curves''. \emph{Biometrics} \bold{56},
   1134--1138. DOI: \doi{10.1111/j.0006-341X.2000.01134.x}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

@@ -19,7 +19,7 @@
 
 plot.ci.thresholds <- function(x, length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = par("fg"), ...) {
   roc_utils_stop_if_no_device("plot.ci.thresholds")
-  bounds <- cbind(x$sp, x$se)
+  bounds <- cbind(x$specificity, x$sensitivity)
   apply(bounds, 1, function(x, ...) {
     suppressWarnings(segments(x[2], x[4], x[2], x[6], col = col, ...))
     suppressWarnings(segments(x[2] - length, x[4], x[2] + length, x[4], col = col, ...))
@@ -104,9 +104,16 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
   if (length(x) > 1) {
     warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))
   }
+  if (!is.numeric(attr(x, "x"))) {
+    stop(sprintf("Only 'ci.coords' with a numeric 'x' can be plotted, not '%s'.", paste(attr(x, "x"), collapse = "', '")))
+  }
   if (is.null(length)) {
     x_range <- range(attr(x, "x"))
     length <- (x_range[2] - x_range[1]) / length(attr(x, "x")) / 5
+    if (!is.finite(length) || length == 0) {
+      # Single x: no range to scale on, use 1% of the plot's x axis
+      length <- abs(diff(par("usr")[1:2])) / 100
+    }
   }
   if (type == "bars") {
     x_val <- attr(x, "x")

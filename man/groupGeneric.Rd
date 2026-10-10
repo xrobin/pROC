@@ -3,30 +3,25 @@
 \alias{groupGeneric}
 \alias{groupGeneric.pROC}
 \alias{groupGeneric.auc}
-\alias{groupGeneric.ci.coords}
 \alias{groupGeneric.ci.se}
 \alias{groupGeneric.ci.sp}
 \alias{Ops}
 \alias{Math}
 \alias{Ops.auc}
 \alias{Math.auc}
-\alias{Ops.ci.coords}
-\alias{Math.ci.coords}
 \alias{Ops.ci.se}
 \alias{Math.ci.se}
 \alias{Ops.ci.sp}
 \alias{Math.ci.sp}
 \alias{Ops.ci.auc}
 \alias{Math.ci.auc}
-\alias{Ops.ci}
-\alias{Math.ci}
 
 
 \title{
   pROC Group Generic Functions
 }
 \description{
-  Redefine \pkg{base} groupGeneric functions to handle \code{\link{auc}} and \code{\link{ci}} objects properly on operations and mathematical operations.
+  Redefine \pkg{base} groupGeneric functions to handle \code{\link{auc}} and \code{\link{ci}} objects (of class \dQuote{ci.auc}, \dQuote{ci.se} and \dQuote{ci.sp}) properly on operations and mathematical operations.
   Attributes are dropped so that the AUC/CI behaves as a numeric value/matrix, respectively.
   In the case of AUC, all attributes are dropped, while in CI only the CI-specific attributes are, keeping those necessary for the matrices.
 }
@@ -36,7 +31,8 @@
 }
 		   
 \arguments{
-  \item{x, e1, e2}{\code{\link{auc}} objects, or mixed numerics and \code{auc} objects.
+  \item{x, e1, e2}{\code{\link{auc}}, \code{\link{ci.auc}}, \code{\link{ci.se}} or
+    \code{\link{ci.sp}} objects, or mixed numerics and such objects.
   }
   \item{\dots}{further arguments passed to other Math methods.
   }

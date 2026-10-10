@@ -281,3 +281,65 @@ test_that("Invalid CI functions fail cleanly", {
   expect_error(ci.thresholds(uv.mr), "not available for multiclass ROC curves")
   expect_error(ci.thresholds(uv.mr$auc), "not available for multiclass ROC curves")
 })
+
+test_that("multivariate with decision values for exactly half of the levels warns", {
+  response <- factor(c("a", "a", "b", "b", "c", "c", "d", "d"))
+  pred <- cbind(a = c(.9, .8, .1, .2, .1, .3, .2, .1), b = c(.1, .2, .7, .8, .2, .1, .3, .2))
+  expect_warning(mc <- multiclass.roc(response, pred), "following classes: c,d")
+  expect_equal(mc$levels, c("a", "b"))
+  expect_equal(as.numeric(mc$auc), 1)
+})
+
+test_that("requested levels without observation are dropped whatever the response type", {
+  x <- c(1, 2, 3, 4, 5, 6)
+  resp <- c("a", "a", "b", "b", "c", "c")
+  ref <- suppressWarnings(multiclass.roc(factor(resp, levels = c("a", "b", "c", "q")), x, quiet = TRUE))
+  expect_warning(mc.chr <- multiclass.roc(resp, x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  expect_warning(mc.fac <- multiclass.roc(factor(resp), x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  for (mc in list(mc.chr, mc.fac)) {
+    expect_equal(mc$levels, c("a", "b", "c"))
+    expect_equal(as.numeric(mc$auc), as.numeric(ref$auc))
+  }
+
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_warning(mv <- multiclass.roc(resp, P, levels = c("a", "b", "c", "q")), "No observation for response level\\(s\\): q")
+  expect_equal(mv$levels, c("a", "b", "c"))
+})
+
+test_that("multivariate with a subset of levels does not warn about columns present in response", {
+  response <- c("a", "a", "b", "b", "c", "c")
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_silent(mc <- multiclass.roc(response, P, levels = c("a", "b")))
+  expect_equal(mc$levels, c("a", "b"))
+  # A column really absent from response still warns
+  expect_warning(multiclass.roc(response[1:4], P[1:4, ], levels = c("a", "b")), "not found in 'response': c")
+})
+
+test_that("multivariate works with a data.frame that does not drop single columns (tibble)", {
+  response <- c("a", "a", "b", "b", "c", "c")
+  P <- data.frame(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  # Emulate a tibble: `[` keeps a data.frame unless drop = TRUE is explicit
+  registerS3method("[", "pROC_test_nodrop", function(x, i, j, drop = FALSE) {
+    class(x) <- "data.frame"
+    res <- x[i, j, drop = drop]
+    if (is.data.frame(res)) class(res) <- c("pROC_test_nodrop", "data.frame")
+    res
+  })
+  P.nodrop <- structure(P, class = c("pROC_test_nodrop", "data.frame"))
+  expect_true(is.data.frame(P.nodrop[1:2, "a"]))
+  mc <- multiclass.roc(response, P.nodrop)
+  expect_equal(as.numeric(mc$auc), as.numeric(multiclass.roc(response, P)$auc))
+})
+
+test_that("multiclass.roc requires at least two levels", {
+  response <- c(1, 1, 2, 2, 3, 3)
+  predictor <- c(1, 2, 3, 4, 5, 6)
+  expect_error(multiclass.roc(response, predictor, levels = 3, quiet = TRUE), "at least two levels")
+  expect_error(multiclass.roc(response, predictor, levels = "3", quiet = TRUE), "at least two levels")
+  expect_error(
+    suppressWarnings(multiclass.roc(response, predictor, levels = c(3, 4), quiet = TRUE)),
+    "at least two levels"
+  )
+  # NA is not a level
+  expect_error(multiclass.roc(c(1, NA, 1, 1), c(1, 2, 3, 4)), "at least two levels")
+})
