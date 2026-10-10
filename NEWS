@@ -104,6 +104,7 @@
   * The multiclass error of 'ci.se' now names 'ci.se' instead of 'ci.sp'
   * Fixed 'coords' on smoothed curves returning a list with 'drop=TRUE' or 'transpose=TRUE' and a numeric 'x'
   * 'coords' on smoothed curves no longer gives each deprecation warning twice
+  * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
