@@ -70,7 +70,6 @@ test_that("cov with delong, percent, direction = > and mixed roc/auc", {
 
 test_that("cov with bootstrap works", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
   set.seed(42)
   expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100), -0.000648524)
@@ -99,7 +98,6 @@ test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
 
 test_that("bootstrap cov works with smooth and !reuse.auc", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   # First calculate cov by giving full curves
   roc1 <- smooth(roc(aSAH$outcome, aSAH$wfns, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
   roc2 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))

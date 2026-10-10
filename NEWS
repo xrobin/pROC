@@ -117,6 +117,8 @@
   * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
   * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
   * 'geom_polygon_auc' now needs ggplot2 >= 4.0.0
+  * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
+  * pROC now requires R >= 4.0.0
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
