@@ -330,3 +330,16 @@ test_that("multivariate works with a data.frame that does not drop single column
   mc <- multiclass.roc(response, P.nodrop)
   expect_equal(as.numeric(mc$auc), as.numeric(multiclass.roc(response, P)$auc))
 })
+
+test_that("multiclass.roc requires at least two levels", {
+  response <- c(1, 1, 2, 2, 3, 3)
+  predictor <- c(1, 2, 3, 4, 5, 6)
+  expect_error(multiclass.roc(response, predictor, levels = 3, quiet = TRUE), "at least two levels")
+  expect_error(multiclass.roc(response, predictor, levels = "3", quiet = TRUE), "at least two levels")
+  expect_error(
+    suppressWarnings(multiclass.roc(response, predictor, levels = c(3, 4), quiet = TRUE)),
+    "at least two levels"
+  )
+  # NA is not a level
+  expect_error(multiclass.roc(c(1, NA, 1, 1), c(1, 2, 3, 4)), "at least two levels")
+})

@@ -60,6 +60,9 @@ multiclass_roc_univariate <- function(response, predictor,
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
   }
+  if (length(levels) < 2) {
+    stop("'levels' must contain at least two levels with observations in 'response'")
+  }
   multiclass.roc$levels <- levels
 
   rocs <- utils::combn(levels, 2, function(X, response, predictor, percent, ...) {
@@ -165,7 +168,7 @@ multiclass.roc.default <- function(response, predictor,
                                    direction = c("auto", "<", ">"),
                                    ...) {
   # We need at least two levels in response
-  if (length(unique(response)) < 2) {
+  if (length(unique(response[!is.na(response)])) < 2) {
     stop("'response' must have at least two levels")
   }
 
