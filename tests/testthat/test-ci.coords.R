@@ -203,3 +203,22 @@ test_that("ci.coords 'best' on smoothed curves ignores resamples with no point i
   s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.899)))
   expect_s3_class(suppressWarnings(ci.coords(s, "best", boot.n = 30, progress = "none")), "ci.coords")
 })
+
+test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide with plot.roc's 'x'", {
+  pdf(NULL)
+  on.exit(dev.off())
+  args <- list(x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 5, progress = "none", quiet = TRUE)
+  r <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", plot = TRUE), args))
+  expect_s3_class(r, "roc")
+  expect_equal(r$sensitivities, r.s100b$sensitivities)
+  expect_s3_class(r$ci, "ci.coords")
+  expect_identical(attr(r$ci, "x"), 0.5)
+
+  s <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", smooth = TRUE, plot = TRUE), args))
+  expect_s3_class(s, "smooth.roc")
+  expect_s3_class(s$ci, "ci.coords")
+
+  ci <- do.call(ci.coords, c(list(aSAH$outcome, aSAH$s100b, plot = TRUE), args))
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "x"), 0.5)
+})
