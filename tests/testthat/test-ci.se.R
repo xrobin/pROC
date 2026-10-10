@@ -41,3 +41,8 @@ for (stratified in c(TRUE, FALSE)) {
     })
   }
 }
+
+test_that("ci.se names itself in the multiclass error", {
+  mc <- multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(3, 4, 5), quiet = TRUE)
+  expect_error(ci.se(mc), "'ci.se' not available for multiclass ROC curves.", fixed = TRUE)
+})
