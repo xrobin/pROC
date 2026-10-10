@@ -314,3 +314,16 @@ test_that("multivariate with a subset of levels does not warn about columns pres
   # A column really absent from response still warns
   expect_warning(multiclass.roc(response[1:4], P[1:4, ], levels = c("a", "b")), "not found in 'response': c")
 })
+
+test_that("multiclass.roc requires at least two levels", {
+  response <- c(1, 1, 2, 2, 3, 3)
+  predictor <- c(1, 2, 3, 4, 5, 6)
+  expect_error(multiclass.roc(response, predictor, levels = 3, quiet = TRUE), "at least two levels")
+  expect_error(multiclass.roc(response, predictor, levels = "3", quiet = TRUE), "at least two levels")
+  expect_warning(
+    expect_error(multiclass.roc(response, predictor, levels = c(3, 4), quiet = TRUE), "at least two levels"),
+    "No observation for response level\\(s\\): 4"
+  )
+  # NA is not a level
+  expect_error(multiclass.roc(c(1, NA, 1, 1), c(1, 2, 3, 4)), "at least two levels")
+})
