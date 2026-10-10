@@ -749,3 +749,19 @@ test_that("coords as.list on smoothed curves with one numeric x returns a flat l
   expect_equal(names(res), c("specificity", "sensitivity"))
   expect_equal(res$specificity, 0.5)
 })
+
+test_that("coords on smoothed curves give each deprecation warning once", {
+  s <- smooth(r.s100b)
+  count.warnings <- function(expr) {
+    n <- 0
+    withCallingHandlers(expr, warning = function(w) {
+      n <<- n + 1
+      invokeRestart("muffleWarning")
+    })
+    n
+  }
+  expect_equal(count.warnings(coords(s, 0.5, input = "specificity", transpose = TRUE)), 1)
+  expect_equal(count.warnings(coords(s, 0.5, input = "specificity", as.list = TRUE)), 1)
+  expect_equal(count.warnings(coords(s, "best", as.list = TRUE)), 1)
+  expect_equal(count.warnings(coords(s, "best", transpose = TRUE)), 1)
+})
