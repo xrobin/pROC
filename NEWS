@@ -115,6 +115,7 @@
   * Fixed non-stratified bootstraps of ordered predictors failing when a resample loses a class
   * Fixed binormal smoothing (and the Obuchowski variance) of ordered predictors depending on unused levels
   * Fixed the binormal parameters used by 'var', 'cov' and 'power.roc.test' with 'method="obuchowski"', which gave biased variances (and near-zero variances for partial AUCs)
+  * 'power.roc.test' with two ROC curves or binormal parameters now uses the covariance under the null hypothesis (with 'roc1' as reference) for the null variance, as in Obuchowski's DESIGNROC program; sample sizes are larger than before
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
