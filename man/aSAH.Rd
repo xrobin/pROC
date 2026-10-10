@@ -45,7 +45,7 @@
 # load the dataset
 data(aSAH)
 
-# Gender, outcome and set
+# Gender and outcome
 with(aSAH, table(gender, outcome))
 
 # Age
