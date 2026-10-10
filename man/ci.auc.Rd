@@ -227,11 +227,11 @@ ci(auc(roc1))
 # Partial AUC and customized bootstrap:
 \dontrun{
 ci.auc(roc1,
-       conf.level=0.9,
+       conf.level=0.9, reuse.auc=FALSE,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
        boot.n=10000, boot.stratified=FALSE)}\dontshow{
 ci.auc(roc1,
-       conf.level=0.9,
+       conf.level=0.9, reuse.auc=FALSE,
 	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
        boot.n=10, boot.stratified=FALSE)}
 
@@ -239,7 +239,7 @@ ci.auc(roc1,
 \dontrun{
 ci.auc(roc1,
        partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE)}
-# This is because rocobj$auc is not a partial AUC and reuse.auc = TRUE by default.
+# This is because roc1$auc is not a partial AUC and reuse.auc = TRUE by default.
 # You can overcome this problem by passing an AUC instead:
 auc1 <- auc(roc1, partial.auc=c(1, .8), partial.auc.focus="se", 
             partial.auc.correct=FALSE)
