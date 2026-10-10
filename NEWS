@@ -124,6 +124,7 @@
   * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
   * geom_roc_threshold() now gives clear errors for 'local maximas' and numeric thresholds on smoothed curves
   * pROC now requires R >= 4.0.0
+  * geom_roc_threshold(thresholds = "all") now stops on smoothed curves (like plot.roc(print.thres = "all")) instead of labelling every point "NA"
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

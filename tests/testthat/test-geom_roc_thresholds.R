@@ -43,3 +43,9 @@ test_that("geom_roc_threshold gives clear errors for thresholds a smoothed curve
   expect_error(geom_roc_threshold(s, thresholds = c(0.5, 1)), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
   expect_s3_class(geom_roc_threshold(s, thresholds = "best"), "ggroc_layer")
 })
+
+test_that("geom_roc_threshold refuses 'all' on a smoothed curve, like plot.roc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  s <- smooth(r.s100b)
+  expect_error(geom_roc_threshold(s, thresholds = "all"), "'all' 'thresholds' unsupported on a smoothed ROC curve")
+})

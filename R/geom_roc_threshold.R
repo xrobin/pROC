@@ -14,9 +14,11 @@ geom_roc_threshold.roc <- function(data,
   if (methods::is(data, "smooth.roc")) {
     if (is.numeric(thresholds)) {
       stop("Numeric 'thresholds' unsupported on a smoothed ROC curve.")
-    } else if (is.character(thresholds) && length(thresholds) == 1 &&
-      match.arg(thresholds, c("all", "local maximas", "best")) == "local maximas") {
-      stop("'local maximas' 'thresholds' unsupported on a smoothed ROC curve.")
+    } else if (is.character(thresholds) && length(thresholds) == 1) {
+      special <- match.arg(thresholds, c("all", "local maximas", "best"))
+      if (special != "best") {
+        stop(sprintf("'%s' 'thresholds' unsupported on a smoothed ROC curve.", special))
+      }
     }
   }
   extras <- list(...)
