@@ -19,7 +19,7 @@
 
 plot.ci.thresholds <- function(x, length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = par("fg"), ...) {
   roc_utils_stop_if_no_device("plot.ci.thresholds")
-  bounds <- cbind(x$sp, x$se)
+  bounds <- cbind(x$specificity, x$sensitivity)
   apply(bounds, 1, function(x, ...) {
     suppressWarnings(segments(x[2], x[4], x[2], x[6], col = col, ...))
     suppressWarnings(segments(x[2] - length, x[4], x[2] + length, x[4], col = col, ...))
