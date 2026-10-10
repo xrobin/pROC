@@ -192,3 +192,11 @@ test_that("print.mv.multiclass.roc separates formula predictor names", {
   expect_output(print(multiclass.roc(resp ~ x + y + z, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
   expect_output(print(multiclass.roc(resp ~ ., d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
 })
+
+test_that("print.smooth.roc of a curve built with numeric densities has no data line", {
+  x <- seq(-3, 5, length.out = 50)
+  s <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  out <- capture.output(print(s))
+  expect_false(any(grepl("^Data:", out)))
+  expect_true(any(grepl("^Smoothing: density with controls: dnorm\\(x\\); and cases: dnorm\\(x, 1\\)", out)))
+})
