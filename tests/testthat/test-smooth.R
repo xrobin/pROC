@@ -140,3 +140,18 @@ test_that("smooth with reuse.ci recomputes the CI on the smoothed curve", {
   expect_is(s$ci, "ci.se")
   expect_equal(attr(s$ci, "specificities"), c(0.5, 0.9))
 })
+
+test_that("roc(smooth=TRUE, smooth.method='fitdistr') does not pass auc arguments to fitdistr", {
+  set.seed(42)
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  expected <- auc(smooth(r, method = "fitdistr", density = "weibull"), partial.auc = c(1, .8))
+  s <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = "weibull", partial.auc = c(1, .8), boot.n = 10
+  )
+  expect_is(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), as.numeric(expected))
+})
