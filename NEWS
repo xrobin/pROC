@@ -106,6 +106,7 @@
   * 'coords' on smoothed curves no longer gives each deprecation warning twice
   * Fixed 'roc' with densities, 'direction="auto"' and a corrected partial AUC failing for curves below the diagonal
   * Fixed 'smooth(method="fitdistr", density="t")' always failing
+  * Removed the remaining partial matching of list elements, which warned with 'options(warnPartialMatchDollar=TRUE)' (issue #87)
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -28,7 +28,7 @@ roc.test.formula <- function(formula, data, ...) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.name) != 2) {
+  if (length(roc.data$predictor.names) != 2) {
     stop("Invalid formula: exactly 2 predictors are required in a formula of type response~predictor1+predictor2.")
   }
   response <- roc.data$response
