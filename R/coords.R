@@ -193,7 +193,7 @@ coords.smooth.roc <- function(smooth.roc,
   }
 
   if (as.list) {
-    list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
+    list <- roc_utils_coords_as_list(res, ret)
     if (drop == TRUE && length(x) == 1) {
       return(list[[1]])
     }
@@ -462,7 +462,7 @@ coords.roc <- function(roc,
   }
 
   if (as.list) {
-    list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
+    list <- roc_utils_coords_as_list(res, ret)
     if (drop == TRUE && length(x) == 1) {
       return(list[[1]])
     }
@@ -496,4 +496,15 @@ coords.roc <- function(roc,
     }
     return(res[, , drop = drop])
   }
+}
+
+# One list per row of the coords data.frame, keeping the column types (an
+# ordered threshold stays a factor, the coordinates stay numeric). Going
+# through a matrix (t()) turned everything into character for ordered curves.
+roc_utils_coords_as_list <- function(res, ret) {
+  res <- res[, ret, drop = FALSE]
+  list <- lapply(seq_len(nrow(res)), function(i) as.list(res[i, , drop = FALSE]))
+  # same names as apply() over the columns of t(res) gave
+  names(list) <- rownames(as.matrix(res))
+  list
 }
