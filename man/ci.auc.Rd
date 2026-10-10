@@ -169,13 +169,16 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
 \value{
 A numeric vector of length 3 and class \dQuote{ci.auc}, \dQuote{ci} and \dQuote{numeric} (in this order), with the lower
-bound, the median and the upper bound of the CI, and the following attributes:
+bound, the central value and the upper bound of the CI, and the following attributes:
 \item{conf.level}{the width of the CI, in fraction.}
 \item{method}{the method employed.}
 \item{boot.n}{the number of bootstrap replicates.}
 \item{boot.stratified}{whether or not the bootstrapping was stratified.}
 \item{auc}{an object of class \dQuote{\link{auc}} stored for reference about the
   compued AUC details (partial, percent, ...)}
+
+The central value is the AUC itself with \code{method="delong"}, and the
+median of the bootstrapped AUCs with \code{method="bootstrap"}.
 
 The \code{aucs} item is not included in this list since version 1.2 for
 consistency reasons.
