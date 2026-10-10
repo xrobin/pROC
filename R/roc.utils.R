@@ -525,12 +525,7 @@ load.suggested.package <- function(pkg) {
   if (requireNamespace(pkg)) {
     return(TRUE)
   } else if (interactive()) {
-    if (getRversion() < "3.5.0") { # utils::askYesNo not available
-      message(sprintf("Package %s not available, do you want to install it now?", pkg))
-      auto.install <- utils::menu(c("Yes", "No")) == 1
-    } else {
-      auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
-    }
+    auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
     if (isTRUE(auto.install)) {
       utils::install.packages(pkg)
       if (requireNamespace(pkg)) {
@@ -905,9 +900,3 @@ roc_utils_unsmooth <- function(smooth.roc) {
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
-
-# deparse() splits long expressions into several strings; keep a single one
-# (as for the data.name of an htest).
-roc_utils_deparse <- function(expr) {
-  paste(deparse(expr, width.cutoff = 500L), collapse = " ")
-}
