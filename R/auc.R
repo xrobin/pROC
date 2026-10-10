@@ -105,9 +105,15 @@ auc.roc <- function(roc,
   if (!identical(partial.auc, FALSE) & !(is.numeric(partial.auc) && length(partial.auc) == 2)) {
     stop("partial.auc must be either FALSE or a numeric vector of length 2")
   }
+  if (!identical(partial.auc, FALSE)) {
+    if (any(partial.auc < 0 | partial.auc > ifelse(percent, 100, 1), na.rm = TRUE)) {
+      stop(sprintf("partial.auc must be within [0, %s]", ifelse(percent, 100, 1)))
+    }
+  }
 
   # Ensure partial.auc is sorted with partial.auc[1] >= partial.auc[2]
-  partial.auc <- sort(partial.auc, decreasing = TRUE)
+  # (keeping NA bounds, which give a NA AUC)
+  partial.auc <- sort(partial.auc, decreasing = TRUE, na.last = TRUE)
   # Get and sort the sensitivities and specificities
   roc <- sort_roc(roc)
   se <- roc$sensitivities
@@ -123,6 +129,10 @@ auc.roc <- function(roc,
       means.vert <- (se[-1] + se[-length(se)]) / 2
       auc <- sum(means.vert * diffs.x)
     }
+  }
+  # NA bounds: the partial area is not available
+  else if (anyNA(partial.auc)) {
+    auc <- NA_real_
   }
   # Partial area
   else {
@@ -192,7 +202,7 @@ auc.roc <- function(roc,
     min <- roc_utils_min_partial_auc(partial.auc, percent)
     max <- roc_utils_max_partial_auc(partial.auc, percent)
     # The correction is defined only when auc >= min
-    if (!allow.invalid.partial.auc.correct && auc < min) {
+    if (!allow.invalid.partial.auc.correct && isTRUE(auc < min)) {
       warning("Partial AUC correction not defined for ROC curves below the diagonal.")
       auc <- NA
     } else if (percent) {
