@@ -135,6 +135,16 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \code{start.cases}). \code{density} can be one of the character values
   allowed by \code{\link[MASS]{fitdistr}} or a density function (such
   as \code{\link{dnorm}}, \code{\link{dweibull}}, ...).
+  For the continuous distributions named by a character value
+  (\dQuote{beta}, \dQuote{cauchy}, \dQuote{chi-squared},
+  \dQuote{exponential}, \dQuote{f}, \dQuote{gamma}, \dQuote{lognormal},
+  \dQuote{logistic}, \dQuote{normal} and \dQuote{weibull}), the smoothed
+  curve is the exact ROC curve of the fitted distributions, computed from
+  their cumulative distribution functions at \code{n} thresholds spread
+  over the quantiles of both fits. With a density function, the fitted
+  densities are evaluated at \code{n} equally spaced points over the range of
+  the observations only, so that the curve is an approximation that ignores
+  the tails of the fitted distributions outside of this range.
 
   The \code{method="logcondens"} and \code{method="logcondens.smooth"} use the
     \pkg{logcondens} package to generate a non smoothed or smoothed
