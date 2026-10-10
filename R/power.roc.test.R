@@ -154,6 +154,10 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
     stop("'sig.level' must range from 0 to 1")
   }
+  if (!is.null(auc) && methods::is(auc, "auc")) {
+    # The auc of a percent curve is on the 0-100 scale
+    auc <- roc_utils_unpercent(auc)
+  }
 
   # Complete ncontrols and ncases with kappa
   if (is.null(ncontrols) && !is.null(ncases) && !is.null(kappa)) {
