@@ -222,9 +222,9 @@ na.rm=TRUE, method=NULL, ...)
   unpaired ROC curves where the p-value is computed with an unpaired
   t-test with unequal sample size and unequal variance, with 
   \deqn{
-    D=\frac{V^r(\theta^r) - V^s(\theta^s) }{ \sqrt{S^r + S^s}}
+    D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
-    D=(V^r(\theta^r) - V^s(\theta^s)) / sqrt(S^r + S^s)
+    D=(\theta^r - \theta^s) / sqrt(S^r + S^s)
   }
 
   With \code{method="venkatraman"}, the processing is done as described
