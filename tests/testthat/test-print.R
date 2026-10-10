@@ -172,3 +172,12 @@ test_that("smoothed curves from the formula and data.frame interfaces print the 
   expect_output(print(roc(d, y, x, smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
   expect_output(print(roc_(d, "y", "x", smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
 })
+
+test_that("smoothed curves from the plot.roc and lines.roc formula methods print the variable names", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- plot.roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE)
+  expect_output(print(r), "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).", fixed = TRUE)
+  r <- lines.roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE)
+  expect_output(print(r), "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).", fixed = TRUE)
+})

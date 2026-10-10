@@ -84,6 +84,7 @@
   * Fixed 'ci.se', 'ci.sp', 'ci.coords' and 'ci.thresholds' failing with 'boot.stratified=FALSE' when a resample had no case or no control, instead of ignoring it as documented
   * Fixed 'power.roc.test' returning NaN with the 'auc' of a percent ROC curve, and added a range check on 'auc'
   * 'power.roc.test' with a list of binormal parameters now accepts the partial AUC bounds in any order, and requires all four of them
+  * `plot.roc()` and `lines.roc()` with a formula return a curve that prints the predictor and response names instead of "(unknown)" (same fix as issue #101 for `roc()`).
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

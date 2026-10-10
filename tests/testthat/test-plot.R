@@ -207,3 +207,13 @@ test_that("PR curve with CI works", {
   }
   expect_doppelganger("plot_pr", test_plot_pr)
 })
+
+test_that("plot.roc and lines.roc formula methods keep the variable names", {
+  pdf(NULL)
+  on.exit(dev.off())
+  dataline <- function(x) grep("^Data:", capture.output(print(x)), value = TRUE)
+  expected <- dataline(roc(outcome ~ s100b, data = aSAH, quiet = TRUE))
+  expect_identical(expected, "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).")
+  expect_identical(dataline(plot.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
+  expect_identical(dataline(lines.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
+})
