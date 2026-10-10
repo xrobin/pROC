@@ -102,6 +102,7 @@
   * Fixed 'print' of ROC curves built with 'density.controls' and 'density.cases' showing a garbage 'Data: (unknown) in 0 controls' line
   * Fixed 'ggroc' on partially named lists: unnamed curves got an empty label, or failed with 'Names of 'data' must be unique' when more than one was unnamed
   * The multiclass error of 'ci.se' now names 'ci.se' instead of 'ci.sp'
+  * Fixed 'coords' on smoothed curves returning a list with 'drop=TRUE' or 'transpose=TRUE' and a numeric 'x'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
