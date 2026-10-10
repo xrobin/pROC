@@ -29,9 +29,9 @@ ggroc_insert_last_before_roc_line <- function(layers) {
 }
 
 ggroc_plot_mapping <- function(plot) {
-  mapping <- plot@mapping
+  mapping <- plot$mapping
   if (is.null(mapping$x)) {
-    for (layer in plot@layers) {
+    for (layer in plot$layers) {
       if (!is.null(layer$mapping$x)) {
         return(layer$mapping)
       }
@@ -95,7 +95,7 @@ ggplot_add.ggroc_layer <- function(object, plot, ...) {
   for (layer in layers) {
     plot <- ggplot2::ggplot_add(layer, plot, ...)
     if (behind) {
-      plot@layers <- ggroc_insert_last_before_roc_line(plot@layers)
+      plot$layers <- ggroc_insert_last_before_roc_line(plot$layers)
     }
   }
   plot
