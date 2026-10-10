@@ -896,3 +896,9 @@ roc_utils_plot_roc <- function(curve, ..., x) {
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+
+# deparse() splits long expressions into several strings; keep a single one
+# (as for the data.name of an htest).
+roc_utils_deparse <- function(expr) {
+  paste(deparse(expr, width.cutoff = 500L), collapse = " ")
+}

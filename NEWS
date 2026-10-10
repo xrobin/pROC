@@ -120,6 +120,7 @@
   * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
   * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
   * pROC's ggplot2 layers (geom_*) now stop with a clear error on ggplot2 < 4.0.0 instead of a cryptic '@' error
+  * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
