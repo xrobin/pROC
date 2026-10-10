@@ -4,7 +4,7 @@
 
 \title{Transposing the output of \code{coords}}
 
-\description{This help page desribes recent and upcoming changes in the 
+\description{This help page describes recent and upcoming changes in the 
 return values of the \code{\link{coords}} function.}
 
 \section{Background information}{
@@ -42,7 +42,7 @@ Although it is possible to pass \code{drop = FALSE}, the fact that it is not the
 default makes the behaviour unintuitive.
 
 In pROC version 1.16, this was changed and \code{coords} now returns
-a \code{\link{data.frame}} with the thresholds in rows and measurement in colums by default.
+a \code{\link{data.frame}} with the thresholds in rows and measurement in columns by default.
 
 \preformatted{
  coords(rocobj, c(0.05, 0.2, 0.5), transpose = FALSE)
@@ -63,7 +63,7 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in colums
 
 \section{Changes in 1.16}{
 \itemize{
-	\item{Change of the default \code{transpose} to \code{TRUE}.}
+	\item{Change of the default \code{transpose} to \code{FALSE}.}
 }
 THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
@@ -78,7 +78,7 @@ THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 \enumerate{
 	\item{Setting \code{transpose=TRUE} is deprecated and triggers a warning.}
 	\item{The  \code{as.list}, \code{as.matrix} and \code{drop} are deprecated.
-	Setting them to any value triggers a waring.}
+	Setting them to \code{TRUE} triggers a warning.}
 	\item{\code{transpose=FALSE} continues to work normally.}
 }
 }
