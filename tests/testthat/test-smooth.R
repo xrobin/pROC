@@ -136,3 +136,11 @@ test_that("smooth with reuse.ci recomputes the CI on the smoothed curve", {
   expect_is(s$ci, "ci.se")
   expect_equal(attr(s$ci, "specificities"), c(0.5, 0.9))
 })
+
+test_that("binormal smoothing rejects curves with a single finite specificity", {
+  # All finite points share sp = 0.75: lm(sp ~ se) has a slope of 0 up to rounding
+  r <- roc(controls = c(1, 2, 3, 10), cases = c(5, 6, 7, 11), direction = "<", quiet = TRUE)
+  expect_error(smooth(r, n = 6), "not smoothable")
+  r2 <- roc(controls = c(4, 5, 6, 12), cases = c(9, 6, 12, 7), direction = "<", quiet = TRUE)
+  expect_error(smooth(r2, n = 20), "not smoothable")
+})
