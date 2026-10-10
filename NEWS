@@ -119,6 +119,7 @@
   * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
   * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
   * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
+  * pROC's ggplot2 layers (geom_*) now stop with a clear error on ggplot2 < 4.0.0 instead of a cryptic '@' error
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
