@@ -59,10 +59,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   pAUCs in bootstrap operations.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} when calling
-	\code{auc.default}, \code{auc.formula}, \code{auc.smooth.roc}.
+	\code{auc.default} or \code{auc.formula}.
 	Note that the \code{auc}
 	argument of \code{\link{roc}} is not allowed. Unused in
-	\code{auc.roc}. 
+	\code{auc.roc}. Passed to \code{auc.roc} by \code{auc.smooth.roc}.
   }
 }
 
