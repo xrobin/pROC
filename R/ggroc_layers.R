@@ -86,7 +86,17 @@ new_ggroc_layer <- function(make_layers, behind = FALSE) {
   )
 }
 
+# The layers use ggplot2 >= 4.0.0 (S7 objects, `plot@layers`). Suggests
+# versions are not enforced by requireNamespace(), so check here.
+ggroc_ggplot2_version <- function() {
+  getNamespaceVersion("ggplot2")
+}
+
 ggplot_add.ggroc_layer <- function(object, plot, ...) {
+  version <- ggroc_ggplot2_version()
+  if (package_version(version) < "4.0.0") {
+    stop(sprintf("pROC's ggplot2 layers (geom_*) require ggplot2 >= 4.0.0, but ggplot2 %s is loaded.", version), call. = FALSE)
+  }
   layers <- object$make_layers(plot)
   if (inherits(layers, "Layer") || inherits(layers, "LayerInstance")) {
     layers <- list(layers)
