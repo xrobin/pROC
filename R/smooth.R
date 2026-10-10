@@ -231,6 +231,42 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     fit.cases$densfun <- densfun.cases
   }
 
+  # Named continuous distributions: the ROC curve of the fitted distributions
+  # is computed exactly from their CDFs over their whole support, at
+  # thresholds spread over the quantiles of both fits
+  cdf.densfuns <- c(
+    "beta", "cauchy", "chi-squared", "exponential", "f", "gamma",
+    "log-normal", "lognormal", "logistic", "normal", "weibull"
+  )
+  if (is.character(densfun.controls) && is.character(densfun.cases) &&
+    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns)) {
+    fitted.fun <- function(prefix, densfun, fit) {
+      f <- match.fun(sub("^d", prefix, densfuns.list[[densfun]]))
+      dots <- list(...)[names(list(...)) %in% setdiff(names(formals(f)), c("q", "p", "lower.tail", "log.p"))]
+      function(v) do.call(f, c(list(v), as.list(fit$estimate), dots))
+    }
+    # interior probabilities, alternately for controls and cases
+    p <- seq(0, 1, length.out = n + 2)[-c(1, n + 2)]
+    thresholds <- sort(c(
+      fitted.fun("q", densfun.controls, fit.controls)(p[seq(1, n, by = 2)]),
+      fitted.fun("q", densfun.cases, fit.cases)(p[seq_len(n %/% 2) * 2])
+    ))
+    cdf.controls <- fitted.fun("p", densfun.controls, fit.controls)(thresholds)
+    cdf.cases <- fitted.fun("p", densfun.cases, fit.cases)(thresholds)
+    if (roc$direction == "<") {
+      sp <- cdf.controls
+      se <- 1 - cdf.cases
+    } else {
+      sp <- 1 - cdf.controls
+      se <- cdf.cases
+    }
+    return(list(
+      sensitivities = se * ifelse(roc$percent, 100, 1),
+      specificities = sp * ifelse(roc$percent, 100, 1),
+      fit.controls = fit.controls, fit.cases = fit.cases
+    ))
+  }
+
   x <- seq(min(c(roc$controls, roc$cases)), max(c(roc$controls, roc$cases)), length.out = n)
 
   # get the actual function name for do.call
