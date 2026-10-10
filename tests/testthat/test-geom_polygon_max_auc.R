@@ -33,3 +33,8 @@ test_that("geom_polygon_max_auc works with partial AUC", {
   }
   expect_ggroc_doppelganger("geom_polygon_max_auc.partial.screenshot", test_screenshot)
 })
+
+test_that("geom_polygon_max_auc gives a clear error on a curve without AUC", {
+  r <- roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE)
+  expect_error(geom_polygon_max_auc(r), "'data' has no 'auc'")
+})

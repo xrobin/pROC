@@ -14,3 +14,8 @@ test_that("geom_text_auc includes ci.auc when present", {
   p <- ggroc(roc_ci) + geom_text_auc(roc_ci)
   expect_true("GeomText" %in% layer_geom_classes(p))
 })
+
+test_that("geom_text_auc gives a clear error on a curve without AUC", {
+  r <- roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE)
+  expect_error(geom_text_auc(r), "'data' has no 'auc'")
+})
