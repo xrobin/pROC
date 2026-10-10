@@ -72,3 +72,16 @@ test_that("var with unsupported obuchowski cases errors without claiming to use 
   expect_error(var(smooth(r.s100b), method = "obuchowski"), "Use method=\"bootstrap\" instead")
   expect_error(var(r.s100b.partial2, method = "obuchowski"), "Use method=\"bootstrap\" instead")
 })
+
+test_that("var works on smoothed percent curves", {
+  s <- smooth(r.s100b)
+  s.percent <- smooth(r.s100b.percent)
+  seed <- sample.int(1e6, 1)
+  set.seed(seed)
+  v <- var(s, boot.n = 20, progress = "none")
+  set.seed(seed)
+  v.percent <- var(s.percent, boot.n = 20, progress = "none")
+  expect_equal(v.percent, v * 100^2)
+  set.seed(seed)
+  expect_equal(var(auc(s.percent), boot.n = 20, progress = "none"), v * 100^2)
+})
