@@ -82,8 +82,8 @@ compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, di
   # computes A(i|j), the probability that a randomly
   # chosen member of class j has a lower estimated probability (or score)
   # of belonging to class i than a randomly chosen member of class i
-  pred.i <- pred.matrix[which(ref.outcome == i), i] # p(G = i) assigned to class i observations
-  pred.j <- pred.matrix[which(ref.outcome == j), i] # p(G = i) assigned to class j observations
+  pred.i <- pred.matrix[which(ref.outcome == i), i, drop = TRUE] # p(G = i) assigned to class i observations
+  pred.j <- pred.matrix[which(ref.outcome == j), i, drop = TRUE] # p(G = i) assigned to class j observations
   classes <- factor(c(rep(i, length(pred.i)), rep(j, length(pred.j))))
   # override levels argument by new levels
   levels <- unique(classes)
