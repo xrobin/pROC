@@ -160,6 +160,9 @@ plot.roc.roc <- function(x,
                          panel.last = NULL,
                          ...) {
   percent <- x$percent
+  if (ci && is.null(x$ci)) {
+    stop("'x' has no confidence interval; compute it with ci() first (or roc(..., ci = TRUE)), or set ci = FALSE.")
+  }
 
   if (max.auc.polygon | auc.polygon | print.auc) { # we need the auc here
     if (is.null(x$auc) | !reuse.auc) {
