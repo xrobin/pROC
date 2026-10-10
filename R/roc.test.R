@@ -41,7 +41,7 @@ roc.test.formula <- function(formula, data, ...) {
     testres$data.names <- sprintf("%s and %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
     testres$data.name <- testres$data.names # the standard htest element
   } else {
-    testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
+    testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc_utils_deparse(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
     testres$data.name <- testres$data.names # the standard htest element
   }
 
@@ -57,11 +57,11 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
       roc1 <- roc(response, predictor1[, 1], ...)
       roc2 <- roc(response, predictor1[, 2], ...)
       if (!is.null(names(predictor1))) {
-        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", names(predictor1)[1], names(predictor1)[2], deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", names(predictor1)[1], names(predictor1)[2], roc_utils_deparse(substitute(predictor1)), roc_utils_deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
       } else if (!is.null(colnames(predictor1))) {
-        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", colnames(predictor1)[1], colnames(predictor1)[2], deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s and %s in %s by %s (%s, %s)", colnames(predictor1)[1], colnames(predictor1)[2], roc_utils_deparse(substitute(predictor1)), roc_utils_deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
       } else {
-        data.names <- sprintf("%s by %s (%s, %s)", deparse(substitute(predictor1)), deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
+        data.names <- sprintf("%s by %s (%s, %s)", roc_utils_deparse(substitute(predictor1)), roc_utils_deparse(substitute(response)), roc1$levels[1], roc1$levels[2])
       }
     } else {
       stop("Wrong dimension for predictor1 as a matrix or a data.frame.")
@@ -80,7 +80,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     roc1 <- roc(response, predictor1, ...)
     roc2 <- roc(response, predictor2, ...)
     call <- match.call()
-    data.names <- sprintf("%s and %s by %s (%s, %s)", deparse(call$predictor1), deparse(call$predictor2), deparse(call$response), roc1$levels[1], roc1$levels[2])
+    data.names <- sprintf("%s and %s by %s (%s, %s)", roc_utils_deparse(call$predictor1), roc_utils_deparse(call$predictor2), roc_utils_deparse(call$response), roc1$levels[1], roc1$levels[2])
   }
   test <- roc.test.roc(roc1, roc2, method = method, ...)
   test$data.names <- data.names
@@ -90,7 +90,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
 
 roc.test.auc <- function(roc1, roc2, ...) {
   # First save the names
-  data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  data.names <- paste(roc_utils_deparse(substitute(roc1)), "and", roc_utils_deparse(substitute(roc2)))
   # Change roc1 from an auc to a roc object but keep the auc specifications
   auc1 <- roc1
   attr(auc1, "roc") <- NULL
@@ -107,7 +107,7 @@ roc.test.auc <- function(roc1, roc2, ...) {
 roc.test.smooth.roc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
-  testres$data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  testres$data.names <- paste(roc_utils_deparse(substitute(roc1)), "and", roc_utils_deparse(substitute(roc2)))
   testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
@@ -133,7 +133,7 @@ roc.test.roc <- function(roc1, roc2,
   } else if (0 > conf.level | 1 < conf.level) {
     stop("conf.level must be between 0 and 1.")
   }
-  data.names <- paste(deparse(substitute(roc1)), "and", deparse(substitute(roc2)))
+  data.names <- paste(roc_utils_deparse(substitute(roc1)), "and", roc_utils_deparse(substitute(roc2)))
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
     auc2 <- roc2
