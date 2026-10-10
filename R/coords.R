@@ -198,7 +198,6 @@ coords.smooth.roc <- function(smooth.roc,
     }
 
     if (as.list) {
-      warning("'as.list' is deprecated and will be removed in a future version.")
       list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
       if (drop == TRUE && length(x) == 1) {
         return(list[[1]])
@@ -230,9 +229,15 @@ coords.smooth.roc <- function(smooth.roc,
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  return(coords.roc(smooth.roc,
-    x = x, input = input, ret = ret, as.list = as.list, drop = drop,
-    transpose = transpose, as.matrix = as.matrix, ...
+  # The deprecation warnings were already given at the top of this function
+  return(withCallingHandlers(
+    coords.roc(smooth.roc,
+      x = x, input = input, ret = ret, as.list = as.list, drop = drop,
+      transpose = transpose, as.matrix = as.matrix, ...
+    ),
+    warning = function(w) {
+      if (grepl("deprecated", conditionMessage(w))) invokeRestart("muffleWarning")
+    }
   ))
 }
 
