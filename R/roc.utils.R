@@ -912,9 +912,3 @@ roc_utils_unsmooth <- function(smooth.roc) {
 roc_utils_plot_roc <- function(curve, ..., x) {
   plot.roc(curve, ...)
 }
-
-# deparse() splits long expressions into several strings; keep a single one
-# (as for the data.name of an htest).
-roc_utils_deparse <- function(expr) {
-  paste(deparse(expr, width.cutoff = 500L), collapse = " ")
-}

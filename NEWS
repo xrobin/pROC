@@ -123,6 +123,7 @@
   * pROC's ggplot2 layers (geom_*) now stop with a clear error on ggplot2 < 4.0.0 instead of a cryptic '@' error
   * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
   * geom_roc_threshold() now gives clear errors for 'local maximas' and numeric thresholds on smoothed curves
+  * pROC now requires R >= 4.0.0
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
