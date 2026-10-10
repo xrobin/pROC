@@ -30,7 +30,7 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'plot.roc'.")
   }
   response <- roc.data$response
