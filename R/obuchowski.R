@@ -147,17 +147,19 @@ cov_roc_obuchowski <- function(roc1, roc2) {
 }
 
 # Covariance under the null hypothesis
-# roc1 is taken as null
+# roc1 is taken as null: both curves have the binormal parameters of roc1
+# (Obuchowski's DESIGNROC program, "A and B under the null hypothesis")
 cov0.roc.obuchowski <- function(roc1, roc2) {
-  binormal <- smooth(roc, method = "binormal")$model
-  A <- unname(coefficients(binormal)[1])
-  B <- unname(coefficients(binormal)[2])
-  R <- length(roc1$controls) / length(roc1$cases)
+  binormal <- smooth(roc1, method = "binormal")$model
+  params <- binormal_params_obuchowski(binormal)
+  A <- params[["A"]]
+  B <- params[["B"]]
+  kappa <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
   rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    FPR1 <- attr(roc1$auc, "partial.auc")[2]
-    FPR2 <- attr(roc1$auc, "partial.auc")[1]
+    FPR1 <- 1 - attr(roc1$auc, "partial.auc")[2]
+    FPR2 <- 1 - attr(roc1$auc, "partial.auc")[1]
     co <- cov_params_obuchowski(A, B, A, B, rn, ra, kappa, FPR1, FPR2, FPR1, FPR2)
   } else {
     co <- cov_params_obuchowski(A, B, A, B, rn, ra, kappa)
