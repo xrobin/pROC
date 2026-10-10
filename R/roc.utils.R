@@ -549,6 +549,13 @@ roc_utils_round_counts <- function(x, n) {
   ifelse(abs(x - rounded) <= roc_utils_coords_tol(n), rounded, x)
 }
 
+# Which values of the optimality criterion (roc_utils_optim_crit) are the best,
+# up to floating-point error `tol`: points that tie exactly can differ by a few
+# ulp as the criterion is computed from rounded rates.
+roc_utils_is_best <- function(optim.crit, tol) {
+  optim.crit >= max(optim.crit) - tol
+}
+
 # Calculate coordinates
 # @param roc: the roc curve, used to guess if data is in percent and number of cases and controls.
 # @param thr, se, sp
