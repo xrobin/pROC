@@ -734,3 +734,18 @@ test_that("coords.auc passes its arguments", {
   s <- smooth(r.s100b)
   expect_equal(coords(auc(s), "best", ret = "specificity"), coords(s, "best", ret = "specificity"))
 })
+
+test_that("coords on smoothed curves with numeric x honour drop and transpose", {
+  s <- smooth(r.s100b)
+  expected <- coords(s, c(0.5, 0.9), input = "specificity", transpose = FALSE)
+  expect_s3_class(expected, "data.frame")
+  expect_equal(suppressWarnings(coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE)), t(expected))
+  expect_identical(suppressWarnings(coords(s, 0.5, input = "specificity", drop = TRUE)), expected[1, , drop = TRUE])
+})
+
+test_that("coords as.list on smoothed curves with one numeric x returns a flat list", {
+  s <- smooth(r.s100b)
+  res <- suppressWarnings(coords(s, 0.5, input = "specificity", as.list = TRUE))
+  expect_equal(names(res), c("specificity", "sensitivity"))
+  expect_equal(res$specificity, 0.5)
+})
