@@ -86,6 +86,7 @@
   * 'power.roc.test' with a list of binormal parameters now accepts the partial AUC bounds in any order, and requires all four of them
   * `plot.roc()` and `lines.roc()` with a formula return a curve that prints the predictor and response names instead of "(unknown)" (same fix as issue #101 for `roc()`).
   * `geom_polygon_auc()`, `geom_polygon_max_auc()` and `geom_text_auc()` give a clear error on a curve without AUC (instead of "no applicable method"), like their base-graphics counterparts.
+  * `plot.ci.coords()` draws visible ticks when the CI has a single `x`, and gives a clear error when `x` is not numeric (e.g. `x = "best"`) instead of "non-numeric argument to binary operator".
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
