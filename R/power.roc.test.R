@@ -110,7 +110,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       else {
         zalpha <- qnorm(1 - sig.level)
         zbeta <- qnorm(power)
-        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method = method, ...)
+        ncases <- ncases.obuchowski(roc1, roc2, zalpha, zbeta, method = method, kappa = kappa, ...)
         ncontrols <- kappa * ncases
       }
 
@@ -421,9 +421,9 @@ var0.delta.covvar <- function(covvar) {
 }
 
 # Compute the number of cases with Obuchowski formula and var(... method=method)
-ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
+ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, kappa, ...) {
   delta <- roc1$auc - roc2$auc
-  covvar <- covvar(roc1, roc2, method, ...)
+  covvar <- covvar(roc1, roc2, method, kappa = kappa, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   nd <- solve.nd(
@@ -571,7 +571,9 @@ solve.zalpha <- function(nd, zbeta, v0, va, delta) {
 }
 
 # Compute var and cov of two ROC curves by bootstrap in a single bootstrap run
-covvar <- function(roc1, roc2, method, ...) {
+# kappa: ratio of controls to cases at which the variances are computed
+# (defaults to the observed one)
+covvar <- function(roc1, roc2, method, kappa = NULL, ...) {
   cov12 <- cov(roc1, roc2, boot.return = TRUE, method = method, ...)
   if (!is.null(attr(cov12, "resampled.values"))) {
     var1 <- var(attr(cov12, "resampled.values")[1, ])
@@ -583,8 +585,38 @@ covvar <- function(roc1, roc2, method, ...) {
   }
   ncases <- length(roc1$cases)
   covvar <- list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases)
+  observed.kappa <- length(roc1$controls) / ncases
+  if (!is.null(kappa) && !isTRUE(all.equal(kappa, observed.kappa))) {
+    # Variances for a design with kappa controls per case: n_cases * var is
+    # a function of kappa only
+    if (is.null(method)) {
+      # Same default as cov(): DeLong unless bootstrap was used
+      method <- if (has.partial.auc(roc1) || roc1$direction != roc2$direction) "bootstrap" else "delong"
+    }
+    if (method == "delong") {
+      # n_cases * var = var(X) + var(Y) / kappa (structural components)
+      V1 <- delongPlacements(roc1)
+      V2 <- delongPlacements(roc2)
+      covvar <- list(
+        var1 = var(V1$X) + var(V1$Y) / kappa,
+        var2 = var(V2$X) + var(V2$Y) / kappa,
+        cov12 = cov(V1$X, V2$X) + cov(V1$Y, V2$Y) / kappa
+      )
+    } else if (method == "obuchowski") {
+      covvar <- list(
+        var1 = var_roc_obuchowski(roc1, kappa),
+        var2 = var_roc_obuchowski(roc2, kappa),
+        cov12 = cov_roc_obuchowski(roc1, roc2, kappa)
+      )
+    } else {
+      warning("'kappa' cannot be taken into account in the variance with method=\"bootstrap\": the ratio of controls to cases of the ROC curves is used.")
+      kappa <- observed.kappa
+    }
+  } else {
+    kappa <- observed.kappa
+  }
   if (identical(method, "obuchowski")) {
-    covvar$cov0 <- cov0.roc.obuchowski(roc1, roc2)
+    covvar$cov0 <- cov0.roc.obuchowski(roc1, roc2, kappa)
   } else if (covvar$var2 > 0) {
     # Under the null hypothesis both AUCs have the variance of roc1: keep the
     # observed correlation of the two AUCs, cov0 = cor12 * var1

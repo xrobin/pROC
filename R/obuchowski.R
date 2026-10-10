@@ -91,12 +91,12 @@ binormal_params_obuchowski <- function(binormal) {
 }
 
 # Variance of a ROC curve given a 'roc' object
-var_roc_obuchowski <- function(roc) {
+# kappa: ratio of controls to cases (defaults to the observed one)
+var_roc_obuchowski <- function(roc, kappa = length(roc$controls) / length(roc$cases)) {
   binormal <- smooth(roc, method = "binormal")$model
   params <- binormal_params_obuchowski(binormal)
   A <- params[["A"]]
   B <- params[["B"]]
-  kappa <- length(roc$controls) / length(roc$cases)
 
   if (!identical(attr(roc$auc, "partial.auc"), FALSE)) {
     FPR1 <- 1 - attr(roc$auc, "partial.auc")[2]
@@ -122,7 +122,8 @@ var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 }
 
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
-cov_roc_obuchowski <- function(roc1, roc2) {
+# kappa: ratio of controls to cases (defaults to the observed one)
+cov_roc_obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
   binormal1 <- smooth(roc1, method = "binormal")$model
   params1 <- binormal_params_obuchowski(binormal1)
   A1 <- params1[["A"]]
@@ -131,7 +132,6 @@ cov_roc_obuchowski <- function(roc1, roc2) {
   params2 <- binormal_params_obuchowski(binormal2)
   A2 <- params2[["A"]]
   B2 <- params2[["B"]]
-  kappa <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
   rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {
@@ -149,12 +149,12 @@ cov_roc_obuchowski <- function(roc1, roc2) {
 # Covariance under the null hypothesis
 # roc1 is taken as null: both curves have the binormal parameters of roc1
 # (Obuchowski's DESIGNROC program, "A and B under the null hypothesis")
-cov0.roc.obuchowski <- function(roc1, roc2) {
+# kappa: ratio of controls to cases (defaults to the observed one)
+cov0.roc.obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
   binormal <- smooth(roc1, method = "binormal")$model
   params <- binormal_params_obuchowski(binormal)
   A <- params[["A"]]
   B <- params[["B"]]
-  kappa <- length(roc1$controls) / length(roc1$cases)
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
   rn <- cor(as.numeric(roc1$controls), as.numeric(roc2$controls))
   if (!identical(attr(roc1$auc, "partial.auc"), FALSE)) {

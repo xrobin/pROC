@@ -285,8 +285,8 @@ test_that("kappa works with two ROC curves", {
   expect_equal(res$ncases / res$ncontrols, length(r.s100b$cases) / length(r.s100b$controls))
   # set kappa
   res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9, kappa = 1)
-  expect_equal(res$ncases, 210.7168158)
-  expect_equal(res$ncases, 210.7168158)
+  expect_equal(res$ncases, 240.816982)
+  expect_equal(res$ncontrols, 240.816982)
   # ...
 })
 
@@ -460,4 +460,44 @@ test_that("power.roc.test with DeLong uses the AUC correlation under the null hy
   va <- var1 + var2 - 2 * cov12
   delta <- as.numeric(r.s100b$auc - r.ndka$auc)
   expect_equal(res$ncases, (qnorm(0.975) * sqrt(v0) + qnorm(0.9) * sqrt(va))^2 / delta^2)
+})
+
+test_that("power.roc.test with two ROC curves computes the variance at the requested kappa", {
+  observed.kappa <- length(r.s100b$controls) / length(r.s100b$cases)
+  expect_equal(
+    power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = observed.kappa),
+    power.roc.test(r.s100b, r.ndka, power = 0.9)
+  )
+  # DeLong: n_cases * var = var(X) + var(Y) / kappa
+  V1 <- pROC:::delongPlacements(r.s100b)
+  V2 <- pROC:::delongPlacements(r.ndka)
+  delta <- as.numeric(r.s100b$auc - r.ndka$auc)
+  for (kappa in c(0.25, 4)) {
+    var1 <- var(V1$X) + var(V1$Y) / kappa
+    var2 <- var(V2$X) + var(V2$Y) / kappa
+    cov12 <- cov(V1$X, V2$X) + cov(V1$Y, V2$Y) / kappa
+    v0 <- 2 * var1 * (1 - cov12 / sqrt(var1 * var2))
+    va <- var1 + var2 - 2 * cov12
+    res <- power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = kappa)
+    expect_equal(res$ncases, (qnorm(0.975) * sqrt(v0) + qnorm(0.9) * sqrt(va))^2 / delta^2)
+    expect_equal(res$ncontrols, kappa * res$ncases)
+  }
+  # More controls per case need fewer cases
+  ncases <- sapply(c(0.25, 1, 4), function(kappa) power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = kappa)$ncases)
+  expect_true(all(diff(ncases) < 0))
+  ncases <- sapply(c(0.25, 1, 4), function(kappa) power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = kappa, method = "obuchowski")$ncases)
+  expect_true(all(diff(ncases) < 0))
+})
+
+test_that("power.roc.test warns that kappa does not enter the bootstrap variance", {
+  # Collect all warnings: with few replicates the bootstrap may warn about NaNs too
+  warnings <- character(0)
+  withCallingHandlers(
+    power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = 4, method = "bootstrap", boot.n = 10),
+    warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_true(any(grepl("'kappa' cannot be taken into account", warnings)))
 })
