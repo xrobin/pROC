@@ -10,6 +10,10 @@ geom_roc_threshold.roc <- function(data,
                                    size = 2,
                                    ...) {
   load.ggplot2()
+  # A smoothed curve has no thresholds: only "best" can be marked (as with plot.roc's print.thres)
+  if (methods::is(data, "smooth.roc") && !identical(coords_special_x(thresholds, roc = data), "best")) {
+    stop("Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds.")
+  }
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
