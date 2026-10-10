@@ -815,3 +815,31 @@ test_that("coords counts are integers and match exact points", {
   expect_equal(coords(r, 15, input = "tp", ret = c("threshold", "specificity", "sensitivity")), expected)
   expect_equal(coords(r, 7, input = "fn", ret = c("threshold", "specificity", "sensitivity")), expected)
 })
+
+test_that("coords 'best' returns all thresholds that tie up to floating-point error", {
+  # 14.5 (se 3/6, sp 5/6) and 17.5 (se 2/6, sp 6/6) both have Youden 8/6,
+  # but 3/6 + 5/6 != 2/6 + 6/6 in floating point
+  r <- roc(controls = c(1, 7, 10, 11, 13, 17), cases = c(3, 6, 9, 16, 18, 20), direction = "<", quiet = TRUE)
+  expect_equal(coords(r, "best", ret = "threshold")$threshold, c(14.5, 17.5))
+  r.percent <- roc(controls = c(1, 7, 10, 11, 13, 17), cases = c(3, 6, 9, 16, 18, 20), direction = "<", percent = TRUE, quiet = TRUE)
+  expect_equal(coords(r.percent, "best", ret = "threshold")$threshold, c(14.5, 17.5))
+
+  # se + 1.5 * sp = 1.5 at 1.5, 3.5 and Inf, with r = 1.5 computed as 1.4999999999999998
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = c(1, 3, 5), cases = c(2, 4), direction = "<", percent = percent, quiet = TRUE)
+    expect_equal(coords(r, "best", best.weights = c(1, 0.4), ret = "threshold")$threshold, c(1.5, 3.5, Inf))
+  }
+
+  # closest.topleft: (1 - 3/6)^2 + (1 - 1/3)^2 == (1 - 1/6)^2 + (1 - 3/3)^2,
+  # lost only in percent
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = c(9, 14, 20), cases = c(1, 2, 5, 11, 12, 24), direction = "<", percent = percent, quiet = TRUE)
+    expect_equal(coords(r, "best", best.method = "closest.topleft", ret = "threshold")$threshold, c(10, 22))
+  }
+
+  # Same in the partial AUC branches
+  r <- roc(controls = c(1, 7, 10, 11, 13, 17), cases = c(3, 6, 9, 16, 18, 20), direction = "<", partial.auc = c(1, 0.8), quiet = TRUE)
+  expect_equal(coords(r, "best", ret = "threshold")$threshold, c(14.5, 17.5))
+  r <- roc(controls = c(1, 7, 10, 11, 13, 17), cases = c(3, 6, 9, 16, 18, 20), direction = "<", partial.auc = c(0, 0.6), partial.auc.focus = "se", quiet = TRUE)
+  expect_equal(coords(r, "best", ret = "threshold")$threshold, c(14.5, 17.5))
+})

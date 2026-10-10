@@ -158,22 +158,24 @@ coords.smooth.roc <- function(smooth.roc,
         ifelse(smooth.roc$percent, 100, 1),
         best.weights, best.method
       )
+      # Tolerance for ties: the criterion is computed from rounded rates
+      best.tol <- roc_utils_coords_tol(max(abs(optim.crit)))
 
       if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
-        se <- smooth.roc$sensitivities[optim.crit == max(optim.crit)]
-        sp <- smooth.roc$specificities[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
+        se <- smooth.roc$sensitivities[roc_utils_is_best(optim.crit, best.tol)]
+        sp <- smooth.roc$specificities[roc_utils_is_best(optim.crit, best.tol)]
+        optim.crit <- optim.crit[roc_utils_is_best(optim.crit, best.tol)]
       } else {
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
+          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
+          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
+          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
         } else {
           optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
+          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
+          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
+          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit.partial, best.tol)]
         }
       }
       if (length(se) == 0) {
@@ -366,26 +368,28 @@ coords.roc <- function(roc,
         ifelse(roc$percent, 100, 1),
         best.weights, best.method
       )
+      # Tolerance for ties: the criterion is computed from rounded rates
+      best.tol <- roc_utils_coords_tol(max(abs(optim.crit)))
 
       # Filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
-        se <- roc$sensitivities[optim.crit == max(optim.crit)]
-        sp <- roc$specificities[optim.crit == max(optim.crit)]
-        thres <- roc$thresholds[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
+        se <- roc$sensitivities[roc_utils_is_best(optim.crit, best.tol)]
+        sp <- roc$specificities[roc_utils_is_best(optim.crit, best.tol)]
+        thres <- roc$thresholds[roc_utils_is_best(optim.crit, best.tol)]
+        optim.crit <- optim.crit[roc_utils_is_best(optim.crit, best.tol)]
       } else {
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit <- (optim.crit)[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
+          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          optim.crit <- optim.crit[roc_utils_is_best(optim.crit, best.tol)]
         } else {
           optim.crit <- (optim.crit)[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
+          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][roc_utils_is_best(optim.crit, best.tol)]
+          optim.crit <- optim.crit[roc_utils_is_best(optim.crit, best.tol)]
         }
       }
       if (length(thres) == 0) {
