@@ -168,7 +168,9 @@ aSAH \%>\%
 	  functions, or set the default for the session with
 	  \code{options(pROCProgress = FALSE)}. The bar costs essentially nothing:
 	  it is redrawn about a hundred times over the whole bootstrap, not once per
-	  replicate.
+	  replicate. When the bootstrap runs in parallel (see \code{cl} below), no
+	  bar is drawn: a single message such as \dQuote{Bootstrapping 2000
+	  replicates on 2 workers...} is printed instead.
 	}
 
 	\subsection{Parallel processing}{
