@@ -104,9 +104,16 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
   if (length(x) > 1) {
     warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))
   }
+  if (!is.numeric(attr(x, "x"))) {
+    stop(sprintf("Only 'ci.coords' with a numeric 'x' can be plotted, not '%s'.", paste(attr(x, "x"), collapse = "', '")))
+  }
   if (is.null(length)) {
     x_range <- range(attr(x, "x"))
     length <- (x_range[2] - x_range[1]) / length(attr(x, "x")) / 5
+    if (!is.finite(length) || length == 0) {
+      # Single x: no range to scale on, use 1% of the plot's x axis
+      length <- abs(diff(par("usr")[1:2])) / 100
+    }
   }
   if (type == "bars") {
     x_val <- attr(x, "x")
