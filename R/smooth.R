@@ -196,7 +196,7 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
     gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
     logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
-    t = "dt", weibull = "dweibull"
+    t = "dt_location_scale", weibull = "dweibull"
   )
 
   if (is.null(densfun.controls)) {
@@ -295,4 +295,10 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
     specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
     logcondens = logcondens
   ))
+}
+
+# fitdistr(densfun = "t") fits a location-scale t distribution (m, s, df),
+# which stats::dt does not take
+dt_location_scale <- function(x, m, s, df) {
+  dt((x - m) / s, df) / s
 }
