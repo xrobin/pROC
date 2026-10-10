@@ -174,7 +174,7 @@ bound, the central value and the upper bound of the CI, and the following attrib
 \item{boot.n}{the number of bootstrap replicates.}
 \item{boot.stratified}{whether or not the bootstrapping was stratified.}
 \item{auc}{an object of class \dQuote{\link{auc}} stored for reference about the
-  compued AUC details (partial, percent, ...)}
+  computed AUC details (partial, percent, ...)}
 
 The central value is the AUC itself with \code{method="delong"}, and the
 median of the bootstrapped AUCs with \code{method="bootstrap"}.
@@ -183,7 +183,7 @@ The \code{aucs} item is not included in this list since version 1.2 for
 consistency reasons.
 }
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
