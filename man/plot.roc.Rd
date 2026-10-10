@@ -103,8 +103,9 @@ panel.last=NULL,
 		   
 \arguments{
   \item{x}{a roc object from the \link{roc} function (for plot.roc.roc),
-    a formula (for plot.roc.formula) or a response vector (for
-    plot.roc.default).
+    a smooth.roc object from the \link[=smooth.roc]{smooth} function (for
+    plot.roc.smooth.roc), a formula (for plot.roc.formula) or a response
+    vector (for plot.roc.default).
   }
   \item{predictor, data}{arguments for the \link{roc} function.}
   \item{subset,na.action}{arguments for \code{\link{model.frame}}}
@@ -317,7 +318,9 @@ panel.last=NULL,
 }
 
 \value{
-This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for more details.
+This function returns the ROC curve invisibly: a list of class \dQuote{roc},
+or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
+\code{\link[=smooth.roc]{smooth}} for more details.
 }
 
 \references{

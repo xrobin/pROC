@@ -116,6 +116,7 @@
   * 'power.roc.test' with binormal parameters, or two ROC curves and 'method="obuchowski"', now uses the covariance under the null hypothesis (both curves with the binormal parameters of 'roc1') for the null variance, as in Obuchowski and McClish (1997); sample sizes change: Example 2 of the paper, in ?power.roc.test, now needs 120 cases (240 patients, as in the paper) instead of 107
   * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
   * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
+  * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
