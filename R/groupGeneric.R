@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Ops.auc <- function(e1, e2) {
-  if (methods::is(e1, "auc")) {
-    attributes(e1) <- NULL
-  }
-  if (methods::is(e2, "auc")) {
-    attributes(e2) <- NULL
+# A single function for all classes: R only dispatches to the method when
+# both operands have identical methods (e.g. an auc and a ci.auc)
+Ops.auc <- Ops.ci.se <- Ops.ci.sp <- Ops.ci.auc <- function(e1, e2) {
+  e1 <- remove.auc.ci.attributes(e1)
+  # e2 is missing for unary operators
+  if (!missing(e2)) {
+    e2 <- remove.auc.ci.attributes(e2)
   }
   NextMethod()
 }
@@ -30,16 +31,19 @@ Math.auc <- function(x, ...) {
   NextMethod()
 }
 
-Ops.ci.se <- Ops.ci.sp <- Ops.ci.auc <- function(e1, e2) {
-  e1 <- remove.ci.attributes(e1)
-  e2 <- remove.ci.attributes(e2)
-  NextMethod()
-}
-
 
 Math.ci.se <- Math.ci.sp <- Math.ci.auc <- function(x, ...) {
   x <- remove.ci.attributes(x)
   NextMethod()
+}
+
+remove.auc.ci.attributes <- function(x) {
+  if (methods::is(x, "auc")) {
+    attributes(x) <- NULL
+  } else if (methods::is(x, "ci.se") || methods::is(x, "ci.sp") || methods::is(x, "ci.auc")) {
+    x <- remove.ci.attributes(x)
+  }
+  return(x)
 }
 
 remove.ci.attributes <- function(ci) {
