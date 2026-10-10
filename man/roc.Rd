@@ -398,9 +398,10 @@ plot(rocobj)
 
 # Smoothed ROC curve
 roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-# this is not identical to
+# this gives the same smoothed curve and AUC as
 smooth(roc(aSAH$outcome, aSAH$s100b))
-# because in the latter case, the returned object contains no AUC
+# but the returned objects differ in their call and in the data stored
+# (the former also contains the predictor, response and levels)
 }
 
 \keyword{univar}
