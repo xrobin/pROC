@@ -337,7 +337,7 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 data(aSAH)
 roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
 roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
-roc.ndka <- roc(aSAH$outcome, aSAH$wfns)
+roc.ndka <- roc(aSAH$outcome, aSAH$ndka)
 
 # Simple example:
 plot(roc.s100b)
