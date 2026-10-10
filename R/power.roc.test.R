@@ -319,6 +319,21 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
   if (any(!required %in% names(parslist))) {
     stop(paste("Missing parameter(s):", paste(required[!required %in% names(parslist)], collapse = ", ")))
   }
+  # Partial AUC: all four FPR bounds are needed, in any order within a curve.
+  # The Obuchowski formulas expect the upper bound first.
+  fpr.names <- c("FPR11", "FPR12", "FPR21", "FPR22")
+  fpr.given <- !vapply(fpr.names, function(name) is.null(parslist[[name]]), logical(1))
+  if (any(fpr.given)) {
+    if (!all(fpr.given)) {
+      stop(paste("Missing parameter(s) for partial AUC:", paste(fpr.names[!fpr.given], collapse = ", ")))
+    }
+    fpr1 <- c(parslist$FPR11, parslist$FPR12)
+    fpr2 <- c(parslist$FPR21, parslist$FPR22)
+    parslist$FPR11 <- max(fpr1)
+    parslist$FPR12 <- min(fpr1)
+    parslist$FPR21 <- max(fpr2)
+    parslist$FPR22 <- min(fpr2)
+  }
 
   # Determine number of patients (sample size)
   if (is.null(ncases) && is.null(ncontrols)) {

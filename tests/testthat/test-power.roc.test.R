@@ -364,3 +364,24 @@ test_that("power.roc.test accepts a vector of AUCs", {
   expect_equal(res$ncases[2], power.roc.test(auc = 0.8, power = 0.9)$ncases)
   expect_error(power.roc.test(auc = c(0.7, 1.2), power = 0.9), "must range from 0 to 1")
 })
+
+test_that("power.roc.test with binormal parameters accepts FPR bounds in any order", {
+  base <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6, delta = 0.037)
+  lower.upper <- c(base, list(FPR11 = 0, FPR12 = 0.2, FPR21 = 0, FPR22 = 0.2))
+  upper.lower <- c(base, list(FPR11 = 0.2, FPR12 = 0, FPR21 = 0.2, FPR22 = 0))
+  mixed <- c(base, list(FPR11 = 0.2, FPR12 = 0, FPR21 = 0, FPR22 = 0.2))
+  expected <- power.roc.test(lower.upper, power = 0.8)$ncases
+  expect_equal(power.roc.test(upper.lower, power = 0.8)$ncases, expected)
+  expect_equal(power.roc.test(mixed, power = 0.8)$ncases, expected)
+  expect_equal(power.roc.test(mixed, ncases = 107)$power, power.roc.test(lower.upper, ncases = 107)$power)
+  expect_equal(
+    power.roc.test(mixed, ncases = 107, power = 0.8, sig.level = NULL)$sig.level,
+    power.roc.test(lower.upper, ncases = 107, power = 0.8, sig.level = NULL)$sig.level
+  )
+})
+
+test_that("power.roc.test with binormal parameters requires all four FPR bounds", {
+  base <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6, delta = 0.037)
+  expect_error(power.roc.test(c(base, list(FPR11 = 0.2, FPR12 = 0)), power = 0.8), "FPR21, FPR22")
+  expect_error(power.roc.test(c(base, list(FPR11 = 0.2, FPR12 = 0, FPR21 = 0)), power = 0.8), "FPR22")
+})
