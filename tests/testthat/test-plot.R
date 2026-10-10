@@ -217,3 +217,22 @@ test_that("plot.roc and lines.roc formula methods keep the variable names", {
   expect_identical(dataline(plot.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
   expect_identical(dataline(lines.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
 })
+
+test_that("plot.ci.coords draws visible ticks for a single x", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  ci <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-ci-coords-single-x", function() {
+    plot(r.s100b)
+    plot(ci)
+  })
+})
+
+test_that("plot.ci.coords gives a clear error for non-numeric x", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  ci <- ci.coords(r.s100b, x = "best", ret = "sensitivity", best.policy = "random", boot.n = 10, progress = "none")
+  expect_error(plot(ci), "numeric 'x'")
+})
