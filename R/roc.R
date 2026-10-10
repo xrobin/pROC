@@ -319,10 +319,14 @@ roc.default <- function(response, predictor,
     smooth.roc$percent <- percent # keep some basic roc specifications
     smooth.roc$direction <- dir
     smooth.roc$call <- match.call()
-    # The AUC is needed to resolve direction = "auto", even if auc = FALSE
-    if (auc || direction == "auto") {
-      smooth.auc <- auc(smooth.roc, ...)
-      if (direction == "auto" && smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc)) {
+    # The AUC is needed to resolve direction = "auto", even if auc = FALSE.
+    # Use the uncorrected (partial) AUC: the corrected partial AUC is not
+    # defined for a curve below the diagonal, which is when it must be flipped
+    if (direction == "auto") {
+      auc.args <- list(...)
+      auc.args$partial.auc.correct <- FALSE
+      uncorrected.auc <- do.call(auc.smooth.roc, c(list(smooth.roc), auc.args))
+      if (isTRUE(uncorrected.auc < roc_utils_min_partial_auc_auc(uncorrected.auc))) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...
@@ -330,9 +334,9 @@ roc.default <- function(response, predictor,
         smooth.roc$call <- match.call()
         return(smooth.roc)
       }
-      if (auc) {
-        smooth.roc$auc <- smooth.auc
-      }
+    }
+    if (auc) {
+      smooth.roc$auc <- auc(smooth.roc, ...)
     }
     if (ci) {
       warning("CI can not be computed with densities.")
