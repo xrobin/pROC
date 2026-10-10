@@ -217,3 +217,27 @@ test_that("plot.roc and lines.roc formula methods keep the variable names", {
   expect_identical(dataline(plot.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
   expect_identical(dataline(lines.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
 })
+
+test_that("plot.ci.coords draws visible ticks for a single x", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  ci <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  segs <- list()
+  record <- function(x0, x1) segs[[length(segs) + 1]] <<- c(x0, x1)
+  trace("segments", bquote(.(record)(x0, x1)), print = FALSE, where = asNamespace("graphics"))
+  on.exit(untrace("segments", where = asNamespace("graphics")), add = TRUE)
+  plot(ci)
+  expect_length(segs, 3)
+  # Vertical bar, then two horizontal ticks of non-zero width around x
+  expect_equal(segs[[1]], c(0.5, 0.5))
+  expect_true(all(sapply(segs[2:3], function(s) s[1] < 0.5 && s[2] > 0.5)))
+})
+
+test_that("plot.ci.coords gives a clear error for non-numeric x", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  ci <- ci.coords(r.s100b, x = "best", ret = "sensitivity", best.policy = "random", boot.n = 10, progress = "none")
+  expect_error(plot(ci), "numeric 'x'")
+})
