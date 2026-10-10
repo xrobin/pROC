@@ -89,6 +89,7 @@
   * `plot.ci.coords()` draws visible ticks when the CI has a single `x`, and gives a clear error when `x` is not numeric (e.g. `x = "best"`) instead of "non-numeric argument to binary operator".
   * `roc(..., ci = TRUE, of = "coords", x = ..., plot = TRUE)` (and `ci.coords(response, predictor, x = ..., plot = TRUE)`) no longer fail with "'response' must have two levels": the `x` of `ci.coords()` is not forwarded to `plot.roc()` anymore.
   * Fixed 'multiclass.roc' failing with 'Predictor must be numeric or ordered.' with a tibble predictor
+  * 'multiclass.roc' now fails with a clear error instead of returning an infinite AUC or failing with 'n < m' when fewer than two levels with observations are available
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
