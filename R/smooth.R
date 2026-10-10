@@ -175,7 +175,8 @@ smooth_roc_binormal <- function(roc, n) {
     stop("ROC curve not smoothable (not enough points).")
   }
   model <- lm(sp ~ se, df)
-  if (any(is.na(model$coefficients[2]))) {
+  # A constant sp gives a slope of 0 up to rounding, and a degenerate curve
+  if (any(is.na(model$coefficients[2])) || length(unique(df$sp)) < 2) {
     stop("ROC curve not smoothable (not enough points).")
   }
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
