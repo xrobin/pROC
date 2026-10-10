@@ -259,7 +259,9 @@ smooth_roc_logcondens <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
+  # logConROC assumes cases > controls: negate the values for direction ">"
+  sign <- ifelse(roc$direction == ">", -1, 1)
+  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
   se <- logcondens$fROC
 
   return(list(
@@ -273,7 +275,9 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
   load.suggested.package("logcondens")
 
   sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
+  # logConROC assumes cases > controls: negate the values for direction ">"
+  sign <- ifelse(roc$direction == ">", -1, 1)
+  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
   se <- logcondens$fROC.smooth
 
   return(list(

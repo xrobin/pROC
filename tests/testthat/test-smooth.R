@@ -104,3 +104,19 @@ test_that("smooth with fitdistr with a density function works", {
   ))
   expect_equal(as.numeric(smoothed$auc), 0.568359799581078)
 })
+
+test_that("logcondens smoothing respects direction", {
+  testthat::skip_if_not_installed("logcondens")
+  controls <- c(-1.2, -0.8, -0.5, -0.3, 0, 0.1, 0.4, 0.6, 0.9, 1.3)
+  cases <- c(0.2, 0.5, 0.7, 1.0, 1.1, 1.4, 1.8, 2.1, 2.5)
+  r.lt <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE)
+  r.gt <- roc(controls = -controls, cases = -cases, direction = ">", quiet = TRUE)
+  for (method in c("logcondens", "logcondens.smooth")) {
+    s.lt <- smooth(r.lt, method = method, n = 10)
+    s.gt <- smooth(r.gt, method = method, n = 10)
+    expect_equal(s.gt$sensitivities, s.lt$sensitivities)
+    expect_equal(s.gt$specificities, s.lt$specificities)
+    expect_equal(as.numeric(s.gt$auc), as.numeric(s.lt$auc))
+    expect_gt(as.numeric(s.gt$auc), 0.5)
+  }
+})
