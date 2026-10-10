@@ -170,7 +170,10 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
 
 smooth_roc_binormal <- function(roc, n) {
   df <- data.frame(sp = qnorm(roc$specificities * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$sensitivities * ifelse(roc$percent, 1 / 100, 1)))
-  df <- df[apply(df, 1, function(x) all(is.finite(x))), ]
+  df <- df[is.finite(df$sp) & is.finite(df$se), ]
+  # Empty levels of ordered predictors give the same ROC point several times,
+  # next to each other in curve order: count each point once in the fit
+  df <- df[c(TRUE, diff(df$sp) != 0 | diff(df$se) != 0), ]
   if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
     stop("ROC curve not smoothable (not enough points).")
   }
