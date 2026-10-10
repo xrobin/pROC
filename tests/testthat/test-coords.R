@@ -884,3 +884,17 @@ test_that("local maximas with a partial AUC are the local maximas of the curve w
     all.maximas$threshold[all.maximas$sensitivity <= .75 & all.maximas$sensitivity >= .6]
   )
 })
+
+test_that("local maximas exclude points inside the bottom edge of the curve", {
+  # se = 0 from threshold 2.75 to Inf: 3.5 and 4.5 are not angles of the curve
+  r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(0, 2.5), direction = "<", quiet = TRUE)
+  expect_equal(coords(r, "local maximas", ret = "threshold")$threshold, c(-Inf, 2.25, Inf))
+  # Same as the mirrored curve (roles of cases and controls swapped)
+  r2 <- roc(controls = -c(0, 2.5), cases = -c(1, 2, 3, 4, 5), direction = "<", quiet = TRUE)
+  lm <- coords(r, "local maximas", ret = c("specificity", "sensitivity"))
+  lm2 <- coords(r2, "local maximas", ret = c("sensitivity", "specificity"))
+  expect_equal(unname(as.matrix(lm)), unname(as.matrix(lm2))[3:1, ])
+  # ci.thresholds uses local maximas by default
+  ci <- ci.thresholds(r, boot.n = 2)
+  expect_equal(as.vector(attr(ci, "thresholds")), c(-Inf, 2.25, Inf))
+})
