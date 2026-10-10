@@ -137,7 +137,7 @@ aSAH \%>\%
   cases or controls.
 
   The number of bootstrap replicates is controlled by \code{boot.n}. Higher numbers will give a more precise estimate of the significance tests and confidence intervals
-  but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
+  but take more time to compute. 2000 is recommended by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Speed}{
@@ -217,7 +217,7 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.

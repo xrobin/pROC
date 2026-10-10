@@ -256,7 +256,7 @@ cov(...)
   \doi{10.1016/S1076-6332(97)80161-4}.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
+  determination for diagnostic accuracy studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
   1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
   

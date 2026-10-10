@@ -90,7 +90,7 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   make sure the specification is correct.
   
   If a pAUC is defined, it can be standardized (corrected). This correction is 
-  controled by the \code{partial.auc.correct} argument. If \code{partial.auc.correct=TRUE},
+  controlled by the \code{partial.auc.correct} argument. If \code{partial.auc.correct=TRUE},
   the correction by McClish will be applied:
   
   \deqn{\frac{1+\frac{auc-min}{max-min}}{2}}{(1+(auc-min)/(max-min))/2}

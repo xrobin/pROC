@@ -128,7 +128,7 @@ cl = NULL, parallel=FALSE, ...)
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.

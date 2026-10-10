@@ -94,7 +94,7 @@ THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
 \section{Related changes in ci.coords}{
-In version 1.16, the format of the \code{\link{ci.coords}} return value was changed from a matrix-like object with mixed \code{x} and \code{ret} in rows and 3 columns, into a list-like object which should be easier to use programatically.
+In version 1.16, the format of the \code{\link{ci.coords}} return value was changed from a matrix-like object with mixed \code{x} and \code{ret} in rows and 3 columns, into a list-like object which should be easier to use programmatically.
 }
 
 \section{See also}{
