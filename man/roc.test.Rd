@@ -112,8 +112,9 @@ na.rm=TRUE, method=NULL, ...)
     section of \link{pROC-package}.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
-  \item{conf.level}{a numeric scalar between 0 and 1 (non-inclusive) which
-    species the confidence level to use for any calculated CI's.}
+  \item{conf.level}{the width of the confidence interval as [0,1], never
+    in percent, used for any calculated CI. Default: 0.95, resulting in a
+    95\% CI.}
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
