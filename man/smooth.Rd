@@ -158,9 +158,10 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{sensitivities}{the smoothed sensitivities defining the ROC curve.}
   \item{specificities}{the smoothed specificities defining the ROC curve.}
   \item{percent}{if the sensitivities, specificities and AUC are
-    reported in percent, as defined in argument.
+    reported in percent, as in the original \dQuote{\link{roc}} object.
   }
-  \item{direction}{the direction of the comparison, as defined in argument.}
+  \item{direction}{the direction of the comparison, as in the original
+    \dQuote{\link{roc}} object.}
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
