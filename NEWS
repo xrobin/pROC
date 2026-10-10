@@ -99,6 +99,7 @@
   * Fixed 'print' of curves smoothed with 'method="fitdistr"' not showing the fitted distributions
   * Fixed unary operators on 'auc' and 'ci' objects (e.g. '-auc(r)') failing, and arithmetic between an 'auc' and a 'ci' object returning a 'ci' object with an 'Incompatible methods' warning
   * Fixed 'print' of multivariate 'multiclass.roc' built with a formula pasting the predictor names together
+  * Fixed 'print' of ROC curves built with 'density.controls' and 'density.cases' showing a garbage 'Data: (unknown) in 0 controls' line
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
