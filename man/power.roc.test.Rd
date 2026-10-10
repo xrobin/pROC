@@ -288,13 +288,14 @@ power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
 
 ## With only binormal parameters given
-# From example 2 of Obuchowski and McClish, 1997.
+# Example 2 of Obuchowski and McClish (1997): with kappa = 1, the paper
+# requires 240 patients in total (120 cases and 120 controls).
 ob.params <- list(A1=2.6, B1=1, A2=1.9, B2=1, rn=0.6, ra=0.6, FPR11=0,
 FPR12=0.2, FPR21=0, FPR22=0.2, delta=0.037) 
 
 power.roc.test(ob.params, power=0.8, sig.level=0.05)
-power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=107)
-power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=107)
+power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=120)
+power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=120)
 
 }
 

@@ -405,8 +405,15 @@ var_delta_covvar <- function(covvar) {
 # Compute variance of a delta from a 'covvar' list (see 'covvar' below)
 # under the null hypothesis
 # roc1 taken as reference.
+# cov0 is the covariance under the null hypothesis (both curves with the
+# parameters of roc1). Without it, the covariance under the alternative
+# is used as an approximation.
 var0.delta.covvar <- function(covvar) {
-  2 * covvar$var1 - 2 * covvar$cov12
+  if (!is.null(covvar$cov0)) {
+    2 * covvar$var1 - 2 * covvar$cov0
+  } else {
+    2 * covvar$var1 - 2 * covvar$cov12
+  }
 }
 
 # Compute the number of cases with Obuchowski formula and var(... method=method)
@@ -424,13 +431,21 @@ ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, ...) {
   return(nd)
 }
 
-# Compute the number of cases with Obuchowski formula from params
-ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
-  covvar <- list(
+# Variances and covariances of the binormal parameters in parslist, with
+# the covariance under the null hypothesis (both curves with the parameters
+# of roc1) as cov0
+covvar_params_obuchowski <- function(parslist, kappa) {
+  list(
     var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
     var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
+    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22),
+    cov0 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A1, parslist$B1, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR11, parslist$FPR12)
   )
+}
+
+# Compute the number of cases with Obuchowski formula from params
+ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
+  covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   nd <- solve.nd(
@@ -460,11 +475,7 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
 
 # Compute the z alpha with Obuchowski formula from params
 zalpha.obuchowski.params <- function(parslist, zbeta, ncases, kappa) {
-  covvar <- list(
-    var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
-    var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
-  )
+  covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   zalpha <- solve.zalpha(
@@ -494,11 +505,7 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
 
 # Compute the z beta with Obuchowski formula from params
 zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
-  covvar <- list(
-    var1 = var_params_obuchowski(parslist$A1, parslist$B1, kappa, parslist$FPR11, parslist$FPR12),
-    var2 = var_params_obuchowski(parslist$A2, parslist$B2, kappa, parslist$FPR21, parslist$FPR22),
-    cov12 = cov_params_obuchowski(parslist$A1, parslist$B1, parslist$A2, parslist$B2, parslist$rn, parslist$ra, kappa, parslist$FPR11, parslist$FPR12, parslist$FPR21, parslist$FPR22)
-  )
+  covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   a <- va
@@ -568,5 +575,9 @@ covvar <- function(roc1, roc2, method, ...) {
     var2 <- var(roc2, method = method, ...)
   }
   ncases <- length(roc1$cases)
-  return(list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases))
+  covvar <- list(var1 = var1 * ncases, var2 = var2 * ncases, cov12 = cov12 * ncases)
+  if (identical(method, "obuchowski")) {
+    covvar$cov0 <- cov0.roc.obuchowski(roc1, roc2)
+  }
+  return(covvar)
 }
