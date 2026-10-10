@@ -93,6 +93,7 @@
   * Fixed 'smooth' failing with 'reuse.ci=TRUE' on curves with a CI
   * 'auc' now fails with an informative error when 'partial.auc' contains values outside [0, 1] (or [0, 100] if 'percent=TRUE'), instead of returning an empty or NA AUC. A NA bound now gives a NA AUC (keeping both bounds in the 'partial.auc' attribute) instead of being dropped, also with 'partial.auc.correct=TRUE'
   * Fixed 'var' failing on smoothed ROC curves built with 'percent=TRUE'
+  * Fixed 'print' of curves smoothed with 'method="fitdistr"' not showing the fitted distributions
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
