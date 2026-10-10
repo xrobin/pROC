@@ -403,3 +403,38 @@ test_that("sensitivity and specificity tests report the tested values as estimat
     coords(r.s100b, 0.8, input = "sensitivity", ret = "specificity")[1, 1]
   ))
 })
+
+test_that("roc.test data.name is a single string for long calls", {
+  t1 <- roc.test(
+    roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE),
+    roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  )
+  expect_length(t1$data.name, 1)
+  expect_identical(t1$data.names, t1$data.name)
+  expect_match(t1$data.name, "quiet = TRUE) and roc(aSAH$outcome, aSAH$wfns", fixed = TRUE)
+
+  t2 <- roc.test(aSAH$outcome, aSAH$s100b * 1000 + aSAH$ndka * 0 + aSAH$age * 0, aSAH$ndka * 1000 + aSAH$s100b * 0 + aSAH$age * 0, quiet = TRUE)
+  expect_length(t2$data.name, 1)
+  expect_match(t2$data.name, "aSAH$s100b * 1000 + aSAH$ndka * 0 + aSAH$age * 0 and aSAH$ndka * 1000", fixed = TRUE)
+
+  t3 <- roc.test(outcome ~ s100b + ndka, data = aSAH[aSAH$age > 0 & aSAH$gender %in% c("Male", "Female") & !is.na(aSAH$wfns), ], quiet = TRUE)
+  expect_length(t3$data.name, 1)
+  expect_match(t3$data.name, "in aSAH[aSAH$age > 0", fixed = TRUE)
+
+  t4 <- roc.test(
+    auc(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  )
+  expect_length(t4$data.name, 1)
+
+  t5 <- suppressWarnings(roc.test( # resamples may fail to smooth: only data.name matters here
+    smooth(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    smooth(roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    method = "bootstrap", boot.n = 10, progress = "none"
+  ))
+  expect_length(t5$data.name, 1)
+
+  t6 <- roc.test(aSAH$outcome, data.frame(s100b = aSAH$s100b, ndka = aSAH$ndka, check.names = FALSE, stringsAsFactors = FALSE), quiet = TRUE)
+  expect_length(t6$data.name, 1)
+  expect_match(t6$data.name, "s100b and ndka in data.frame(s100b = aSAH$s100b", fixed = TRUE)
+})
