@@ -91,6 +91,7 @@
   * 'multiclass.roc' now fails with a clear error instead of returning an infinite AUC or failing with 'n < m' when fewer than two levels with observations are available
   * Fixed 'smooth' with 'method="logcondens"' or 'method="logcondens.smooth"' ignoring the direction of the ROC curve: curves with 'direction=">"' were smoothed as with 'direction="<"'. Smoothed curves saved by earlier versions keep their old curve: smooth them again
   * Fixed 'smooth' failing with 'reuse.ci=TRUE' on curves with a CI
+  * 'auc' now fails with an informative error when 'partial.auc' contains values outside [0, 1] (or [0, 100] if 'percent=TRUE'), instead of returning an empty or NA AUC. A NA bound now gives a NA AUC (keeping both bounds in the 'partial.auc' attribute) instead of being dropped, also with 'partial.auc.correct=TRUE'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
