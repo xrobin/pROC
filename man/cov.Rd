@@ -124,7 +124,7 @@ cov(...)
   field, the \code{\link{auc}} function will always be called with
   \code{\dots} to determine the specification.
 
-  Warning: if the roc object passed to roc.test contains an \code{auc}
+  Warning: if the roc object passed to cov contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
   arguments such as \code{partial.auc} are silently ignored.
 }
