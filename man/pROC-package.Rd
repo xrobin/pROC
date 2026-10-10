@@ -83,7 +83,7 @@
 }
 
 \section{Dataset}{
-  This package comes with a dataset of 141 patients with aneurysmal
+  This package comes with a dataset of 113 patients with aneurysmal
   subarachnoid hemorrhage: \code{\link{aSAH}}.
 }
 
