@@ -137,7 +137,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \bold{Note:} changed in version 1.16.
   
   A list of the same length as \code{ret} and named as \code{ret}, and of 
-  class \dQuote{ci.thresholds}, \dQuote{ci} and \dQuote{list} (in this order).
+  class \dQuote{ci.coords}, \dQuote{ci} and \dQuote{list} (in this order).
   
   Each element of the list is a matrix of the confidence intervals with
   rows given by \code{x} and with 3 columns, the lower bound of the CI, 
@@ -151,7 +151,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{input}{the input coordinate, as given in argument.}
   \item{x}{the coordinates used to calculate the CI, as given in argument.}
   \item{ret}{the return values, as given in argument or substituted by
-  	\code{link{coords}}.}
+  	\code{\link{coords}}.}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
