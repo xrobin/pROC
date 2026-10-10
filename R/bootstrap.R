@@ -609,16 +609,25 @@ bootstrap.coords <- function(n, roc, stratified, x, input, ret,
     # A non-stratified resample can lose a class: NA replicate
     return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
   }
+  # x = "best": a level of an ordered predictor missing from the resample
+  # repeats the point of its neighbour. Also return sp and se to merge such
+  # identical points, so that "omit" does not drop the replicate and "random"
+  # does not favour that point ("stop" still stops on them).
+  best <- length(x) == 1 && x == "best" && best.policy %in% c("omit", "random")
   # Silence the "No coordinates found" warnings of resamples with no point in
   # the partial AUC range: ci.coords reports the NA replicates once.
   res <- suppressWarnings(coords.roc(resampled,
-    x = x, input = input, ret = ret,
+    x = x, input = input, ret = if (best) c(ret, "specificity", "sensitivity") else ret,
     best.method = best.method, best.weights = best.weights
   ))
   if (is.null(res)) {
     # x = "best" found no point in the partial AUC range of this resample:
     # NA replicate, with the shape of a successful one
     return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
+  }
+  if (best) {
+    n <- length(ret)
+    res <- res[!duplicated(res[, n + 1:2]), seq_len(n), drop = FALSE]
   }
   enforce.best.policy.if.needed(res, x, best.policy)
 }
