@@ -190,3 +190,14 @@ test_that("fitdistr smoothing gives the ROC curve of the fitted distributions", 
   r2 <- roc(controls = -r$controls, cases = -r$cases, direction = ">", quiet = TRUE)
   expect_equal(as.numeric(smooth(r2, method = "fitdistr", n = 1000)$auc), as.numeric(s$auc), tolerance = 1e-6)
 })
+
+test_that("binormal smoothing of ordered predictors does not depend on unused levels", {
+  resp <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
+  lv <- c("a", "b", "c", "d", "e")
+  pred <- c("a", "a", "b", "b", "c", "c", "d", "e", "b", "c", "c", "d", "d", "e", "e", "e")
+  o <- roc(resp, factor(pred, levels = lv, ordered = TRUE), quiet = TRUE)
+  oe <- roc(resp, factor(pred, levels = c("a", "b", "bc", "c", "d", "e"), ordered = TRUE), quiet = TRUE)
+  rn <- roc(resp, as.integer(factor(pred, levels = lv)), quiet = TRUE)
+  expect_equal(coef(smooth(oe)$model), coef(smooth(o)$model))
+  expect_equal(coef(smooth(o)$model), coef(smooth(rn)$model))
+})
