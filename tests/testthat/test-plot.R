@@ -241,3 +241,10 @@ test_that("plot.ci.coords gives a clear error for non-numeric x", {
   ci <- ci.coords(r.s100b, x = "best", ret = "sensitivity", best.policy = "random", boot.n = 10, progress = "none")
   expect_error(plot(ci), "numeric 'x'")
 })
+
+test_that("plot with ci = TRUE on a curve without CI gives a clear error", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(plot(r.s100b, ci = TRUE), "has no confidence interval")
+  expect_error(plot(smooth(r.s100b), ci = TRUE), "has no confidence interval")
+})

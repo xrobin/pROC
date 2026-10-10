@@ -118,6 +118,7 @@
   * 'power.roc.test' with two ROC curves or binormal parameters now uses the covariance under the null hypothesis (with 'roc1' as reference) for the null variance, as in Obuchowski's DESIGNROC program; sample sizes are larger than before
   * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
   * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
+  * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
