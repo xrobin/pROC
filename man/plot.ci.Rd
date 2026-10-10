@@ -78,7 +78,7 @@ This function returns the confidence interval object invisibly.
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
