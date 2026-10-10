@@ -123,3 +123,20 @@ test_that("logcondens smoothing respects direction", {
     expect_gt(as.numeric(smooth(r.neg, method = method, n = 10)$auc), 0.5)
   }
 })
+
+test_that("smooth with reuse.ci recomputes the CI on the smoothed curve", {
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.auc(r, method = "bootstrap", boot.n = 10, conf.level = 0.9, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_is(s, "smooth.roc")
+  expect_is(s$ci, "ci.auc")
+  expect_equal(attr(s$ci, "conf.level"), 0.9)
+  expect_equal(attr(s$ci, "boot.n"), 10)
+  expect_true(s$ci[1] <= s$ci[3])
+
+  r$ci <- ci.se(r, specificities = c(0.5, 0.9), boot.n = 10, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_is(s$ci, "ci.se")
+  expect_equal(attr(s$ci, "specificities"), c(0.5, 0.9))
+})

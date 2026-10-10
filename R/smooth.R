@@ -108,7 +108,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     args <- attributes(roc$ci)
     args$roc <- NULL
     args$smooth.roc <- sesp
-    sesp$ci <- do.call(paste(class(roc$ci), "smooth.roc", sep = "."), args)
+    sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
   }
 
   return(sesp)
