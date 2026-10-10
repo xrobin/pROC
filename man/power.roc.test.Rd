@@ -46,12 +46,12 @@ alternative = c("two.sided", "one.sided"), ...)
       \item{ra}{correlation between the variables in case patients}
       \item{delta}{the difference of AUC between the two ROC curves}
     }
-    For a partial AUC, the following additional parameters must be set:
+    For a partial AUC, the following four additional parameters must be set:
     \describe{
-      \item{FPR11}{Upper bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR12}{Lower bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR21}{Upper bound of FPR (1 - specificity) of ROC curve 2}
-      \item{FPR22}{Lower bound of FPR (1 - specificity) of ROC curve 2}
+      \item{FPR11, FPR12}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 1}
+      \item{FPR21, FPR22}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 2}
     }
   }
   \item{ncontrols, ncases}{
