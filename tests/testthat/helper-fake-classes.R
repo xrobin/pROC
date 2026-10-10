@@ -26,3 +26,10 @@ skip_if_no_mocked_s3_method <- function() {
     skip("testthat::local_mocked_s3_method() is not available")
   }
 }
+
+# local_mocked_bindings() needs testthat >= 3.1.7
+skip_if_no_mocked_bindings <- function() {
+  if (!exists("local_mocked_bindings", envir = asNamespace("testthat"), inherits = FALSE)) {
+    skip("testthat::local_mocked_bindings() is not available")
+  }
+}
