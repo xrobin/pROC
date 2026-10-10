@@ -26,7 +26,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
-\S3method{ci.auc}{auc}(auc, ...)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
