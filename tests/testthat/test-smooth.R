@@ -144,3 +144,17 @@ test_that("binormal smoothing rejects curves with a single finite specificity", 
   r2 <- roc(controls = c(4, 5, 6, 12), cases = c(9, 6, 12, 7), direction = "<", quiet = TRUE)
   expect_error(smooth(r2, n = 20), "not smoothable")
 })
+
+test_that("roc(smooth=TRUE, smooth.method='fitdistr') does not pass auc arguments to fitdistr", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  expected <- auc(smooth(r, method = "fitdistr", density = "weibull"), partial.auc = c(1, .8))
+  s <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = "weibull", partial.auc = c(1, .8), boot.n = 10
+  )
+  expect_is(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), as.numeric(expected))
+})
