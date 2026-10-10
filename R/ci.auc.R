@@ -27,7 +27,7 @@ ci.auc.formula <- function(formula, data, ...) {
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.auc'.")
   }
   response <- roc.data$response
