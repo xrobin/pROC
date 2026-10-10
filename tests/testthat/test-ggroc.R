@@ -147,3 +147,11 @@ test_that("Ggroc list converts size aes to linewidth", {
   expect_true("linewidth" %in% names(g$mapping))
   expect_false("size" %in% names(g$mapping))
 })
+
+test_that("ggroc names unnamed elements of a partially named list by index", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  g <- ggroc(list(a = r.s100b, r.wfns))
+  expect_equal(sort(unique(as.character(g$data$name))), c("2", "a"))
+  g <- ggroc(list(a = r.s100b, r.wfns, r.ndka))
+  expect_equal(sort(unique(as.character(g$data$name))), c("2", "3", "a"))
+})
