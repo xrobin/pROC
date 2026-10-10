@@ -522,6 +522,10 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress 
 
 bootstrap.auc <- function(n, roc, stratified) {
   resampled <- roc_utils_resampled_roc(roc, stratified)
+  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
+    # A non-stratified resample can lose a class: NA replicate
+    return(NA_real_)
+  }
   # as.numeric() drops the 'roc' attribute auc.roc() attaches: it is the whole
   # resampled curve, which no caller of a bootstrap replicate ever reads.
   as.numeric(auc.roc(resampled,
