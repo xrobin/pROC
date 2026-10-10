@@ -220,8 +220,8 @@ coords.smooth.roc <- function(smooth.roc,
     }
   }
 
-  # Adjust drop for downstream call
-  if (missing(drop) && !transpose) {
+  # Adjust drop for downstream call (as.list keeps its default drop = TRUE)
+  if (missing(drop) && !transpose && !as.list) {
     drop <- FALSE
   }
 
@@ -230,7 +230,8 @@ coords.smooth.roc <- function(smooth.roc,
 
   # use coords.roc
   smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  return(coords.roc(smooth.roc, x, input, ret, as.list, drop,
+  return(coords.roc(smooth.roc,
+    x = x, input = input, ret = ret, as.list = as.list, drop = drop,
     transpose = transpose, as.matrix = as.matrix, ...
   ))
 }
