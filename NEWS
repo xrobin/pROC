@@ -82,6 +82,7 @@
   * Fixed 'ci.coords(x="best")' on curves with a partial AUC failing when a resample had no point in the partial AUC range
   * Fixed 'ci', 'ci.auc', 'ci.se', 'ci.sp' and 'ci.coords' failing with 'smooth=TRUE' in the formula interface, and 'ci' in the default interface
   * Fixed 'ci.se', 'ci.sp', 'ci.coords' and 'ci.thresholds' failing with 'boot.stratified=FALSE' when a resample had no case or no control, instead of ignoring it as documented
+  * Fixed 'power.roc.test' returning NaN with the 'auc' of a percent ROC curve, and added a range check on 'auc'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

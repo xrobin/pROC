@@ -154,6 +154,14 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
     stop("'sig.level' must range from 0 to 1")
   }
+  if (!is.null(auc)) {
+    if (methods::is(auc, "auc")) {
+      auc <- roc_utils_unpercent(auc)
+    }
+    if (any(auc < 0 | auc > 1, na.rm = TRUE)) {
+      stop("'auc' must range from 0 to 1")
+    }
+  }
 
   # Complete ncontrols and ncases with kappa
   if (is.null(ncontrols) && !is.null(ncases) && !is.null(kappa)) {
