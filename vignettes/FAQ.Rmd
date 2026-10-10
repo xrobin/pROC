@@ -148,13 +148,18 @@ value to `direction`, either `direction="<"` or `direction=">"`. I also
 recommend taking a minute to set the `levels` (value of the `response` for
 controls and cases, respectively) argument explicitly too.
 
-A future version of pROC will be more verbose and print a message when auto-detecting the direction.
+pROC prints a message such as `Setting direction: controls < cases` when it
+auto-detects the direction (unless `quiet = TRUE`).
 
 ## Can I test if a single ROC curve is significantly different from 0.5?
 
-This is equivalent to asking whether the median values of cases and controls are
-significantly different. Therefore you can easily perform a [Wilcoxon Rank Sum
-Test](https://www.rdocumentation.org/packages/stats/topics/wilcox.test).
+The AUC is the probability that a randomly chosen case has a higher value than a
+randomly chosen control (counting ties as 1/2). Testing whether it is different
+from 0.5 is exactly what the [Wilcoxon Rank Sum
+Test](https://www.rdocumentation.org/packages/stats/topics/wilcox.test) (also
+known as the Mann-Whitney U test) does: its statistic `W` divided by the number
+of case-control pairs is the AUC. Note that this is not a test of the medians of
+cases and controls, which can be identical even when the AUC is far from 0.5.
 
 ## My dataset is huge. Can I use pROC?
 
@@ -175,11 +180,11 @@ Yes you can since pROC 1.6 and its `ci.coords` function. For instance:
 ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
           ret="threshold")
 # 95% CI (2000 stratified bootstrap replicates):
-#            2.5%   50%  97.5%
-# threshold 0.115 0.205 0.4854
+#  threshold threshold.low threshold.median threshold.high
+#       best         0.155            0.205          0.485
 ```
 
-There is 95% chance that the optimal threshold lies between 0.115 and 0.4854.
+The 95% bootstrap confidence interval of the optimal threshold is 0.155-0.485.
 
 ## The functions are giving me weird error messages I don't understand
 
