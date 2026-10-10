@@ -222,3 +222,25 @@ test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide wi
   expect_s3_class(ci, "ci.coords")
   expect_identical(attr(ci, "x"), 0.5)
 })
+
+test_that("best.policy omit and random treat empty levels of a resample as one point", {
+  # Levels missing from a resample repeat the point of their neighbour on the
+  # ordered curve: they must not count as several "best" points, so that
+  # the result is the same as with the integer-coded predictor.
+  resp <- c(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)
+  o <- ordered(c("1", "1", "2", "2", "3", "4", "2", "3", "4", "4", "5", "5"), levels = c("1", "2", "3", "4", "5"))
+  r.ordered <- roc(resp, o, quiet = TRUE)
+  r.integer <- roc(resp, as.integer(o), quiet = TRUE)
+  run <- function(roc, best.policy, seed) {
+    set.seed(seed)
+    res <- try(suppressWarnings(ci.coords(roc, "best",
+      ret = c("specificity", "sensitivity"),
+      boot.n = 20, best.policy = best.policy
+    )), silent = TRUE)
+    if (inherits(res, "try-error")) "error" else unlist(res)
+  }
+  for (best.policy in c("omit", "random")) {
+    seed <- sample.int(1e6, 1)
+    expect_equal(run(r.ordered, best.policy, seed), run(r.integer, best.policy, seed))
+  }
+})
