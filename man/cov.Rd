@@ -139,10 +139,8 @@ cov(...)
     sample, otherwise if \var{FALSE} the numbers can vary.
     \item for each bootstrap replicate, the AUC of the two ROC curves
     are computed and stored.
-    \item the variance (as per \code{\link{var.roc}}) of the resampled
-    AUCs and their covariance are assessed in a single bootstrap pass.
-    \item The following formula is used to compute the final covariance:
-    \eqn{Var[AUC1] + Var[AUC2] - 2cov[AUC1,AUC2]}
+    \item the covariance of the resampled AUCs of the two ROC curves is
+    computed (with \code{\link[stats]{cov}}) and returned.
   }
 
   With \code{method="delong"}, the processing is done as described in
@@ -174,8 +172,9 @@ cov(...)
 
   If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
   \code{resampled.values} is set with the resampled (bootstrapped)
-  values. It contains a matrix with the columns representing the two ROC
-  curves, and the rows the \code{boot.n} bootstrap replicates.
+  values. It contains a matrix with 2 rows representing the two ROC
+  curves, and one column per bootstrap replicate (replicates that produced
+  \code{NA} values are removed).
 }
 
 \section{Errors}{
@@ -305,9 +304,9 @@ cov(auc(roc1), roc2)
 # ROC curves in one single bootstrap run:
 cov.rocs <- cov(roc1, roc2, method="bootstrap", boot.return=TRUE)
 # var(roc1):
-var(attr(cov.rocs, "resampled.values")[,1])
+var(attr(cov.rocs, "resampled.values")[1,])
 # var(roc2):
-var(attr(cov.rocs, "resampled.values")[,2])
+var(attr(cov.rocs, "resampled.values")[2,])
 }
 
 \dontrun{
