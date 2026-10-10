@@ -211,8 +211,17 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
   }
 
-  fit.controls <- MASS::fitdistr(roc$controls, densfun.controls, start.controls, ...)
-  fit.cases <- MASS::fitdistr(roc$cases, densfun.cases, start.cases, ...)
+  # Only pass the arguments of densfun or optim to fitdistr: when called
+  # from roc(), ... also contains the arguments of auc, ci and plot
+  fitdistr.dots <- function(densfun) {
+    if (is.character(densfun)) {
+      densfun <- match.fun(densfuns.list[[densfun]])
+    }
+    allowed <- setdiff(c(names(formals(densfun)), "gr", "lower", "upper", "control"), c("x", "..."))
+    list(...)[names(list(...)) %in% allowed]
+  }
+  fit.controls <- do.call(MASS::fitdistr, c(list(roc$controls, densfun.controls, start.controls), fitdistr.dots(densfun.controls)))
+  fit.cases <- do.call(MASS::fitdistr, c(list(roc$cases, densfun.cases, start.cases), fitdistr.dots(densfun.cases)))
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function") {
