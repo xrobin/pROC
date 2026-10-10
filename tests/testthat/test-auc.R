@@ -210,3 +210,31 @@ test_that("has.partial.auc requires a partial.auc of length 2", {
   attr(a, "partial.auc") <- c(1, 0.9, 0.8)
   expect_false(has.partial.auc(a))
 })
+
+test_that("auc rejects out of range partial.auc bounds", {
+  expect_error(auc(r.s100b, partial.auc = c(1, -0.2)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(1.2, 0.8)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(-0.1, -0.5)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b.percent, partial.auc = c(100, 120)), "within \\[0, 100\\]")
+  expect_error(auc(r.s100b.percent, partial.auc = c(1, 0.8), partial.auc.focus = "se"), NA)
+  # Bounds at the limits are fine
+  expect_equal(as.numeric(auc(r.s100b, partial.auc = c(1, 0))), as.numeric(auc(r.s100b)))
+  expect_equal(as.numeric(auc(r.s100b.percent, partial.auc = c(100, 0))), as.numeric(auc(r.s100b.percent)))
+})
+
+test_that("auc returns NA for NA partial.auc bounds", {
+  a <- auc(r.s100b, partial.auc = c(NA, 0.8))
+  expect_identical(as.numeric(a), NA_real_)
+  expect_identical(attr(a, "partial.auc"), c(0.8, NA))
+  expect_true(has.partial.auc(a))
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(NA, 0.8), partial.auc.correct = TRUE)), NA_real_)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, NA))), NA_real_)
+  # The range check still applies to the other bound
+  expect_error(auc(r.s100b, partial.auc = c(NA, 1.2)), "within \\[0, 1\\]")
+})
+
+test_that("auc returns NaN for equal partial.auc bounds with the correction", {
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8))), 0)
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8), partial.auc.correct = TRUE)), NaN)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, 80), partial.auc.correct = TRUE)), NaN)
+})
