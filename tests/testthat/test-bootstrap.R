@@ -253,3 +253,10 @@ test_that("non-stratified bootstrap drops the resamples that lose a class", {
     }
   }
 })
+
+test_that("non-stratified ci.auc and var drop the resamples that lose the controls", {
+  # 2 controls out of 10: most resamples of 50 lose both of them at least once
+  r <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE)
+  expect_s3_class(suppressWarnings(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50)), "ci.auc")
+  expect_true(is.numeric(suppressWarnings(var(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 50))))
+})
