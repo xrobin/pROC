@@ -81,3 +81,16 @@ test_that("a percent curve with a ci.coords can be used in ci.auc, var, cov and 
     power.roc.test(r.s100b.percent, r.ndka.percent)$power
   )
 })
+
+test_that("a smoothed percent curve with a ci.coords can be used in var", {
+  s <- roc(aSAH$outcome, aSAH$s100b,
+    percent = TRUE, smooth = TRUE, ci = TRUE, of = "coords",
+    x = 90, input = "specificity", ret = "sensitivity", boot.n = 10, quiet = TRUE
+  )
+  expect_s3_class(s$ci, "ci.coords")
+  s.noci <- smooth(r.s100b.percent)
+  set.seed(42)
+  v <- var(s, boot.n = 10)
+  set.seed(42)
+  expect_equal(v, var(s.noci, boot.n = 10))
+})
