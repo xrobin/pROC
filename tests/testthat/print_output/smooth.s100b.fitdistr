@@ -3,5 +3,10 @@ Call:
 smooth.roc(roc = roc(outcome ~ s100b, aSAH), method = "fitdistr")
 
 Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).
-Smoothing: fitdistr 
+Smoothing: fitting normal distribution for controls:
+     mean        sd 
+0.1615278 0.1299429 
+fitting normal distribution for cases:
+     mean        sd 
+0.3970732 0.3705911 
 Area under the curve: 0.8311
