@@ -96,6 +96,7 @@
   * Fixed binormal 'smooth' returning a broken, non-monotone curve when all finite points of the ROC curve had the same specificity; it now fails with 'ROC curve not smoothable'
   * Fixed 'roc(..., smooth=TRUE, smooth.method="fitdistr")' failing with 'unused argument' when arguments for 'auc', 'ci' or 'plot' (such as 'partial.auc' or 'boot.n') were also given
   * Fixed 'var' failing on smoothed ROC curves built with 'percent=TRUE'
+  * Fixed 'print' of curves smoothed with 'method="fitdistr"' not showing the fitted distributions
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
