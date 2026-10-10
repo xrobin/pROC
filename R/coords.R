@@ -196,44 +196,38 @@ coords.smooth.roc <- function(smooth.roc,
         res[[best.method]] <- extra[[best.method]]
       }
     }
+  } else {
+    # match input
+    input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
 
-    if (as.list) {
-      warning("'as.list' is deprecated and will be removed in a future version.")
-      list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
-      if (drop == TRUE && length(x) == 1) {
-        return(list[[1]])
-      }
-      return(list)
-    } else if (transpose) {
-      rownames(res) <- NULL
-      return(t(res[, ret, drop = FALSE])[, , drop = drop])
-    } else {
-      if (missing(drop)) {
-        drop <- FALSE
-      }
-      if (as.matrix) {
-        res <- as.matrix(res[, ret, drop = FALSE])
-      } else {
-        res <- as.data.frame(res[, ret, drop = FALSE])
-      }
-      return(res[, , drop = drop])
+    # use coords.roc, without the deprecated arguments: they were handled at
+    # the top of this function, and the result is formatted below
+    smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
+    res <- coords.roc(smooth.roc,
+      x = x, input = input, ret = ret, drop = FALSE, ...
+    )
+  }
+
+  if (as.list) {
+    list <- apply(t(res[, ret, drop = FALSE]), 2, as.list)
+    if (drop == TRUE && length(x) == 1) {
+      return(list[[1]])
     }
+    return(list)
+  } else if (transpose) {
+    rownames(res) <- NULL
+    return(t(res[, ret, drop = FALSE])[, , drop = drop])
+  } else {
+    if (missing(drop)) {
+      drop <- FALSE
+    }
+    if (as.matrix) {
+      res <- as.matrix(res[, ret, drop = FALSE])
+    } else {
+      res <- as.data.frame(res[, ret, drop = FALSE])
+    }
+    return(res[, , drop = drop])
   }
-
-  # Adjust drop for downstream call (as.list keeps its default drop = TRUE)
-  if (missing(drop) && !transpose && !as.list) {
-    drop <- FALSE
-  }
-
-  # match input
-  input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
-
-  # use coords.roc
-  smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
-  return(coords.roc(smooth.roc,
-    x = x, input = input, ret = ret, as.list = as.list, drop = drop,
-    transpose = transpose, as.matrix = as.matrix, ...
-  ))
 }
 
 coords.roc <- function(roc,
