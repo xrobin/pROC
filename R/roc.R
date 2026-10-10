@@ -42,7 +42,7 @@ roc.formula <- function(formula, data, ...) {
     roc$call <- match.call()
     roc$predictor.name <- roc.data$predictor.names
     roc$response.name <- roc.data$response.name
-    if (!is.null(roc$smooth)) {
+    if (methods::is(roc, "smooth.roc")) {
       attr(roc, "roc")$call <- roc$call
       attr(roc, "roc")$predictor.name <- roc$predictor.name
       attr(roc, "roc")$response.name <- roc$response.name
