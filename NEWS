@@ -97,6 +97,7 @@
   * Fixed 'roc(..., smooth=TRUE, smooth.method="fitdistr")' failing with 'unused argument' when arguments for 'auc', 'ci' or 'plot' (such as 'partial.auc' or 'boot.n') were also given
   * Fixed 'var' failing on smoothed ROC curves built with 'percent=TRUE'
   * Fixed 'print' of curves smoothed with 'method="fitdistr"' not showing the fitted distributions
+  * Fixed unary operators on 'auc' and 'ci' objects (e.g. '-auc(r)') failing, and arithmetic between an 'auc' and a 'ci' object returning a 'ci' object with an 'Incompatible methods' warning
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
