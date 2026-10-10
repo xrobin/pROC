@@ -4,7 +4,7 @@ Title: Display and Analyze ROC Curves
 Version: 1.19.9999
 Date: 2026-08-27
 Encoding: UTF-8
-Depends: R (>= 4.0.0)
+Depends: R (>= 4.1.0)
 Imports: methods, parallel, Rcpp (>= 0.11.1)
 Suggests: MASS, logcondens, testthat, vdiffr, ggplot2 (>= 4.0.0), rlang, knitr, rmarkdown
 VignetteBuilder: knitr, rmarkdown
