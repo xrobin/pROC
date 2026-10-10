@@ -115,9 +115,12 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
     stop("ROC curves use percent inconsistently and cannot be plotted together")
   }
 
-  # Make sure the data is a named list
+  # Make sure the data is a named list: unnamed elements are named by index
   if (is.null(names(data))) {
     names(data) <- seq(data)
+  } else {
+    unnamed <- is.na(names(data)) | names(data) == ""
+    names(data)[unnamed] <- which(unnamed)
   }
   # Make sure names are unique:
   if (any(duplicated(names(data)))) {

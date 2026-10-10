@@ -100,6 +100,7 @@
   * Fixed unary operators on 'auc' and 'ci' objects (e.g. '-auc(r)') failing, and arithmetic between an 'auc' and a 'ci' object returning a 'ci' object with an 'Incompatible methods' warning
   * Fixed 'print' of multivariate 'multiclass.roc' built with a formula pasting the predictor names together
   * Fixed 'print' of ROC curves built with 'density.controls' and 'density.cases' showing a garbage 'Data: (unknown) in 0 controls' line
+  * Fixed 'ggroc' on partially named lists: unnamed curves got an empty label, or failed with 'Names of 'data' must be unique' when more than one was unnamed
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
