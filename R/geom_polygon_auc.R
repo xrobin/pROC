@@ -43,6 +43,7 @@ geom_polygon_auc.auc <- function(data, ...) {
 }
 
 geom_polygon_auc.roc <- function(data, ...) {
+  roc_utils_stop_if_no_auc(data, "data")
   geom_polygon_auc(data$auc, ...)
 }
 
