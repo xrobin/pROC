@@ -314,3 +314,19 @@ test_that("multivariate with a subset of levels does not warn about columns pres
   # A column really absent from response still warns
   expect_warning(multiclass.roc(response[1:4], P[1:4, ], levels = c("a", "b")), "not found in 'response': c")
 })
+
+test_that("multivariate works with a data.frame that does not drop single columns (tibble)", {
+  response <- c("a", "a", "b", "b", "c", "c")
+  P <- data.frame(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  # Emulate a tibble: `[` keeps a data.frame unless drop = TRUE is explicit
+  registerS3method("[", "pROC_test_nodrop", function(x, i, j, drop = FALSE) {
+    class(x) <- "data.frame"
+    res <- x[i, j, drop = drop]
+    if (is.data.frame(res)) class(res) <- c("pROC_test_nodrop", "data.frame")
+    res
+  })
+  P.nodrop <- structure(P, class = c("pROC_test_nodrop", "data.frame"))
+  expect_true(is.data.frame(P.nodrop[1:2, "a"]))
+  mc <- multiclass.roc(response, P.nodrop)
+  expect_equal(as.numeric(mc$auc), as.numeric(multiclass.roc(response, P)$auc))
+})
