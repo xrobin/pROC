@@ -108,7 +108,7 @@ print.mv.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3),
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
     response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
   }
-  cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
+  cat("Data: multivariate predictor ", paste(predictor.name, collapse = ", "), " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
 
   # AUC if exists
   if (!is.null(x$auc)) {
