@@ -106,10 +106,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 }
 \section{Smoothed ROC curves}{
   There is no difference in the computation of the area under a smoothed
-  ROC curve, except for curves smoothed with \code{method="binomial"}. In this case
+  ROC curve, except for curves smoothed with \code{method="binormal"}. In this case
   and only if a full AUC is requested, the classical binormal AUC formula is applied:
 
-  \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2).}
+  \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2)).}
 
   If the ROC curve is smoothed with any other \code{method} or if a partial AUC
   is requested, the empirical AUC described in the previous section is applied.
