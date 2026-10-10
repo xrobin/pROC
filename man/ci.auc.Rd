@@ -202,9 +202,6 @@ consistency reasons.
   (2011) ``pROC: an open-source package for R and S+ to analyze and
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{
