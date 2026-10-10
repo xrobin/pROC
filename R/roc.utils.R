@@ -360,10 +360,6 @@ roc_utils_max_thresholds_idx <- function(thresholds, sp, se) {
     for (i in 2:(length(thresholds) - 1)) {
       if (sp[i] > sp[i - 1] & se[i] > se[i + 1]) {
         local.maximas <- c(local.maximas, TRUE)
-      } else if (sp[i] > sp[i - 1] & se[i] == 0) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else if (se[i] > se[i - 1] & sp[i] == 1) {
-        local.maximas <- c(local.maximas, TRUE)
       } else {
         local.maximas <- c(local.maximas, FALSE)
       }
