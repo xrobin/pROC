@@ -328,7 +328,8 @@ roc.default <- function(response, predictor,
           invokeRestart("muffleWarning")
         }
       })
-      if (direction == "auto" && (is.na(smooth.auc) || smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc))) {
+      if (direction == "auto" && (is.na(smooth.auc) || smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc) -
+        roc_utils_coords_tol(ifelse(percent, 100, 1)))) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...

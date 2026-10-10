@@ -559,3 +559,23 @@ test_that("formula methods with subset can plot and smooth", {
   expect_s3_class(ci.sp(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.sp")
   expect_s3_class(ci.thresholds(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.thresholds")
 })
+
+test_that("roc.density with direction = 'auto' keeps '<' for a curve on the diagonal", {
+  for (n in c(2:20, 50, 512)) {
+    d <- dnorm(seq(-3, 3, length.out = n))
+    for (percent in c(FALSE, TRUE)) {
+      for (partial.auc in list(FALSE, c(1, 0.8), c(0.9, 0.3))) {
+        if (!isFALSE(partial.auc)) {
+          partial.auc <- partial.auc * ifelse(percent, 100, 1)
+        }
+        r <- roc(density.controls = d, density.cases = d, percent = percent, partial.auc = partial.auc)
+        expect_equal(r$direction, "<")
+        if (!isFALSE(partial.auc)) {
+          expect_silent(r <- roc(density.controls = d, density.cases = d, percent = percent, partial.auc = partial.auc, partial.auc.correct = TRUE))
+          expect_equal(r$direction, "<")
+          expect_equal(as.numeric(r$auc), ifelse(percent, 50, 0.5))
+        }
+      }
+    }
+  }
+})
