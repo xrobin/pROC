@@ -33,3 +33,14 @@ test_that("geom_roc_threshold screenshot looks normal", {
   }
   expect_ggroc_doppelganger("geom_roc_threshold.screenshot", test_screenshot)
 })
+
+test_that("geom_roc_threshold gives clear errors for thresholds a smoothed curve does not have", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  s <- smooth(r.s100b)
+  msg <- "Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds."
+  for (thresholds in list("all", "local maximas", "local", 0.5, c(0.5, 1))) {
+    expect_error(geom_roc_threshold(s, thresholds = thresholds), msg, fixed = TRUE)
+  }
+  expect_s3_class(geom_roc_threshold(s, thresholds = "best"), "ggroc_layer")
+  expect_s3_class(geom_roc_threshold(s, thresholds = "b"), "ggroc_layer")
+})
