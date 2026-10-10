@@ -33,3 +33,13 @@ test_that("geom_roc_threshold screenshot looks normal", {
   }
   expect_ggroc_doppelganger("geom_roc_threshold.screenshot", test_screenshot)
 })
+
+test_that("geom_roc_threshold gives clear errors for thresholds a smoothed curve does not have", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  s <- smooth(r.s100b)
+  expect_error(geom_roc_threshold(s, thresholds = "local maximas"), "'local maximas' 'thresholds' unsupported on a smoothed ROC curve")
+  expect_error(geom_roc_threshold(s, thresholds = "local"), "'local maximas' 'thresholds' unsupported on a smoothed ROC curve")
+  expect_error(geom_roc_threshold(s, thresholds = 0.5), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
+  expect_error(geom_roc_threshold(s, thresholds = c(0.5, 1)), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
+  expect_s3_class(geom_roc_threshold(s, thresholds = "best"), "ggroc_layer")
+})
