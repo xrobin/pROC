@@ -200,3 +200,26 @@ test_that("print.smooth.roc of a curve built with numeric densities has no data 
   expect_false(any(grepl("^Data:", out)))
   expect_true(any(grepl("^Smoothing: density with controls: dnorm\\(x\\); and cases: dnorm\\(x, 1\\)", out)))
 })
+
+test_that("no partial matching of list elements", {
+  old <- options(warnPartialMatchDollar = TRUE)
+  on.exit(options(old))
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_warning(smooth(r.s100b), NA)
+  expect_warning(r <- roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE), NA)
+  expect_warning(ci.t <- ci.thresholds(r.s100b, boot.n = 2, thresholds = 0.5), NA)
+  expect_warning(capture.output(print(ci.t)), NA)
+  expect_warning(plot(r.s100b), NA)
+  expect_warning(plot(ci.t), NA)
+  for (f in list(auc, ci, ci.auc)) {
+    expect_warning(f(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  }
+  expect_warning(ci.se(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.sp(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.thresholds(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.coords(outcome ~ s100b, aSAH, x = 0.5, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(plot.roc(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  expect_warning(lines.roc(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  expect_warning(roc.test(outcome ~ s100b + ndka, aSAH, quiet = TRUE), NA)
+})
