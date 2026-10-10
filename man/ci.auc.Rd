@@ -82,8 +82,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{\dots}{further arguments passed to or from other methods,
-    especially arguments for \code{\link{roc}} and \code{roc.test.roc}
-    when calling \code{roc.test.default} or \code{roc.test.formula}.
+    especially arguments for \code{\link{roc}} and \code{ci.auc.roc}
+    when calling \code{ci.auc.default} or \code{ci.auc.formula}.
     Arguments for \code{\link{auc}} if applicable.
   }
 }
