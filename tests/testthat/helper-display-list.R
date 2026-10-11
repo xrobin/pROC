@@ -18,3 +18,8 @@ display_list_calls <- function(dl, name) {
 display_list_texts <- function(dl) {
   unlist(lapply(display_list_calls(dl, "text"), function(e) e$args[[2]]))
 }
+
+# Vertices of the polygons drawn with polygon()
+display_list_polygons <- function(dl) {
+  lapply(display_list_calls(dl, "polygon"), function(e) list(x = e$args[[1]], y = e$args[[2]]))
+}
