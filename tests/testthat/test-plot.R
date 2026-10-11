@@ -263,3 +263,13 @@ test_that("lines.roc default/formula give a clear error when roc() returns NA/Na
   expect_error(suppressWarnings(lines.roc(d$y, d$xinf, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
   expect_error(suppressWarnings(lines.roc(y ~ xinf, d, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
 })
+
+test_that("percent print.thres labels keep 3 decimals for the threshold", {
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  expect_identical(
+    display_list_texts(capture_display_list(plot(r.percent, print.thres = "best"))),
+    "0.205 (80.6%, 63.4%)"
+  )
+  labels <- display_list_texts(capture_display_list(plot(r.percent, print.thres = "local maximas")))
+  expect_identical(labels[2:3], c("0.065 (13.9%, 97.6%)", "0.075 (22.2%, 90.2%)"))
+})
