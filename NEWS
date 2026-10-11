@@ -130,6 +130,7 @@
   * Fixed a partial argument match warning in 'ggroc' with options(warnPartialMatchArgs = TRUE) (issue #87).
   * Parallel bootstrap operations now leave the random number generator of the cluster workers as they found it.
   * 'roc' (and 'auc', 'ci', ... with response and predictor) now gives a clear error when 'response' is a data.frame, for instance a single selected column, instead of 'cannot xtfrm data frames'.
+  * Fixed 'ci.coords' (and 'roc(ci = TRUE, of = "coords")') passing 'x' to 'density' with 'smooth.method = "density"'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

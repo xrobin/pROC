@@ -128,8 +128,19 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
     from <- min(predictor) - (cut * bw)
     to <- max(predictor) + (cut * bw)
   }
+  # Only pass the arguments of the density function (or of density() if it
+  # takes ...) from ...: when called from roc(), ... also contains the
+  # arguments of auc, ci and plot, such as the 'x' of ci.coords
+  density.dots <- function(densfun) {
+    allowed <- names(formals(densfun))
+    if ("..." %in% allowed) {
+      allowed <- c(allowed, names(formals(stats::density.default)))
+    }
+    allowed <- setdiff(allowed, c("x", "n", "from", "to", "bw", "kernel", "..."))
+    list(...)[names(list(...)) %in% allowed]
+  }
   if (mode(density.controls) == "function") {
-    density.controls <- density.controls(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel, ...)
+    density.controls <- do.call(density.controls, c(list(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density.controls)))
     if (!is.numeric(density.controls)) {
       if (is.list(density.controls) && !is.null(density.controls$y) && is.numeric(density.controls$y)) {
         density.controls <- density.controls$y
@@ -138,12 +149,12 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
       }
     }
   } else if (is.null(density.controls)) {
-    density.controls <- suppressWarnings(density(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel, ...))$y
+    density.controls <- suppressWarnings(do.call(density, c(list(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density))))$y
   } else if (!is.numeric(density.controls)) {
     stop("'density.controls' must be either NULL, a function or numeric values of density (over the y axis).")
   }
   if (mode(density.cases) == "function") {
-    density.cases <- density.cases(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel, ...)
+    density.cases <- do.call(density.cases, c(list(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density.cases)))
     if (!is.numeric(density.cases)) {
       if (is.list(density.cases) && !is.null(density.cases$y) && is.numeric(density.cases$y)) {
         density.cases <- density.cases$y
@@ -152,7 +163,7 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
       }
     }
   } else if (is.null(density.cases)) {
-    density.cases <- suppressWarnings(density(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel, ...))$y
+    density.cases <- suppressWarnings(do.call(density, c(list(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density))))$y
   } else if (!is.numeric(density.cases)) {
     stop("'density.cases' must be either NULL, a function or numeric values of density (over the y axis).")
   }
