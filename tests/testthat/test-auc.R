@@ -223,3 +223,31 @@ test_that("auc rejects NA and out of range partial.auc bounds", {
   expect_equal(as.numeric(auc(r.s100b, partial.auc = c(1, 0))), as.numeric(auc(r.s100b)))
   expect_equal(as.numeric(auc(r.s100b.percent, partial.auc = c(100, 0))), as.numeric(auc(r.s100b.percent)))
 })
+
+test_that("McClish-corrected partial AUC of a curve on the diagonal is 0.5", {
+  # The trapezoid area of this diagonal is 1 ulp below the closed-form area
+  # under the diagonal
+  r <- roc(controls = 1:3, cases = 1:3, direction = "<", quiet = TRUE)
+  expect_silent(a <- auc(r, partial.auc = c(1, 0.8), partial.auc.correct = TRUE))
+  expect_equal(as.numeric(a), 0.5)
+  expect_equal(as.numeric(auc(r, partial.auc = c(1, 0), partial.auc.correct = TRUE)), 0.5)
+  expect_equal(as.numeric(auc(r, partial.auc = c(0.8, 1), partial.auc.focus = "se", partial.auc.correct = TRUE)), 0.5)
+  for (n in 1:12) {
+    for (percent in c(FALSE, TRUE)) {
+      r <- roc(controls = 1:n, cases = 1:n, direction = "<", percent = percent, quiet = TRUE)
+      for (partial.auc in list(c(1, 0.8), c(1, 0), c(0.9, 0.3), c(0.5, 0))) {
+        for (focus in c("specificity", "sensitivity")) {
+          expect_silent(a <- auc(r,
+            partial.auc = partial.auc * ifelse(percent, 100, 1),
+            partial.auc.focus = focus, partial.auc.correct = TRUE
+          ))
+          expect_equal(as.numeric(a), ifelse(percent, 50, 0.5))
+        }
+      }
+    }
+  }
+  # A curve below the diagonal still gives NA
+  r <- roc(controls = 4:6, cases = 1:3, direction = "<", quiet = TRUE)
+  expect_warning(a <- auc(r, partial.auc = c(1, 0.8), partial.auc.correct = TRUE), "below the diagonal")
+  expect_true(is.na(a))
+})

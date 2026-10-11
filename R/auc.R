@@ -202,7 +202,12 @@ auc.roc <- function(roc,
   if (all(!identical(partial.auc, FALSE), partial.auc.correct)) { # only for pAUC
     min <- roc_utils_min_partial_auc(partial.auc, percent)
     max <- roc_utils_max_partial_auc(partial.auc, percent)
-    # The correction is defined only when auc >= min
+    # The correction is defined only when auc >= min. A curve on the diagonal
+    # can be below min by floating-point error only: treat it as on the diagonal
+    if (!allow.invalid.partial.auc.correct && auc < min &&
+      min - auc <= roc_utils_coords_tol(ifelse(percent, 100, 1))) {
+      auc <- min
+    }
     if (!allow.invalid.partial.auc.correct && auc < min) {
       warning("Partial AUC correction not defined for ROC curves below the diagonal.")
       auc <- NA
