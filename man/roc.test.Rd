@@ -55,7 +55,11 @@ na.rm=TRUE, method=NULL, ...)
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
-    will be removed.
+    in the response or in either predictor will be removed before the
+    two curves are built (only when \code{predictor1} and
+    \code{predictor2} are vectors). Setting it to \code{FALSE} does not
+    keep the \code{NA}s: \code{\link{roc}} still removes them from each
+    curve, and a paired test then uses the observations complete in both.
   }
   \item{method}{the method to use, either \dQuote{delong},
     \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity} or
