@@ -46,7 +46,7 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
   if (roc_utils_is_curve(roc, plot = TRUE)) {
-    roc$call <- match.call()
+    roc <- roc_utils_set_call_names(roc, match.call())
   }
   invisible(roc)
 }
