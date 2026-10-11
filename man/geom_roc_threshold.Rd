@@ -27,7 +27,8 @@
   }
   \item{pattern}{sprintf pattern as in \code{print.thres.pattern}.
     The default uses \code{\%s} for ordered thresholds and
-    \code{\%.3f} (or \code{\%.1f} with \code{percent}) otherwise.
+    \code{\%.3f} otherwise for the threshold, and \code{\%.1f\%\%} with
+    \code{percent} (\code{\%.3f} otherwise) for specificity and sensitivity.
   }
   \item{hjust, vjust}{text justification, matching
     \code{print.thres.adj = c(-0.05, 1.25)} by default.
