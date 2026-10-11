@@ -64,13 +64,17 @@ print.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3), ca
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # get predictor name
-  if ("predictor" %in% names(x$call)) {
+  if (!is.null(x$predictor.name)) { # stored by the formula method
+    predictor.name <- x$predictor.name
+  } else if ("predictor" %in% names(x$call)) {
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     predictor.name <- attr(terms(as.formula(x$call$formula), data = x$data), "term.labels")
   }
   # Get response
-  if ("response" %in% names(x$call)) {
+  if (!is.null(x$response.name)) { # stored by the formula method
+    response.name <- x$response.name
+  } else if ("response" %in% names(x$call)) {
     response.name <- as.character(x$call[match("response", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
@@ -99,13 +103,17 @@ print.mv.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3),
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # get predictor name
-  if ("predictor" %in% names(x$call)) {
+  if (!is.null(x$predictor.name)) { # stored by the formula method
+    predictor.name <- x$predictor.name
+  } else if ("predictor" %in% names(x$call)) {
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     predictor.name <- attr(terms(as.formula(x$call$formula), data = x$data), "term.labels")
   }
   # Get response
-  if ("response" %in% names(x$call)) {
+  if (!is.null(x$response.name)) { # stored by the formula method
+    response.name <- x$response.name
+  } else if ("response" %in% names(x$call)) {
     response.name <- as.character(x$call[match("response", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
