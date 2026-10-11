@@ -181,3 +181,27 @@ test_that("cl = 1 gives the same answer as any other number of workers", {
   by.two <- ci.auc(r.s100b, method = "bootstrap", boot.n = B, cl = 2)
   expect_equal(as.numeric(by.one), as.numeric(by.two))
 })
+
+
+test_that("a bootstrap leaves the generator of the user's workers as it was", {
+  skip_if_no_cluster()
+  with_cluster(2, function(cl) {
+    # Workers without a seed stay without one, with their RNG kind
+    fresh <- clusterEvalQ(cl, list(RNGkind(), exists(".Random.seed", envir = globalenv())))
+    invisible(ci.auc(r.s100b, method = "bootstrap", boot.n = 10, cl = cl))
+    expect_identical(clusterEvalQ(cl, list(RNGkind(), exists(".Random.seed", envir = globalenv()))), fresh)
+
+    # Seeded workers keep their own streams
+    clusterSetRNGStream(cl, 42)
+    expected <- clusterEvalQ(cl, runif(3))
+    clusterSetRNGStream(cl, 42)
+    invisible(ci.auc(r.s100b, method = "bootstrap", boot.n = 10, cl = cl))
+    expect_identical(clusterEvalQ(cl, runif(3)), expected)
+
+    clusterEvalQ(cl, set.seed(1, kind = "Mersenne-Twister"))
+    expected <- clusterEvalQ(cl, list(RNGkind(), runif(3)))
+    clusterEvalQ(cl, set.seed(1, kind = "Mersenne-Twister"))
+    invisible(ci.auc(r.s100b, method = "bootstrap", boot.n = 10, cl = cl))
+    expect_identical(clusterEvalQ(cl, list(RNGkind(), runif(3))), expected)
+  })
+})
