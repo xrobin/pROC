@@ -146,6 +146,7 @@
   * Fixed axis labels of 'plot.roc(legacy.axes=TRUE)' with 'percent=TRUE' padded with spaces and drawn off-centre
   * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"): only the sensitivity at given specificities is drawn, other coordinates are skipped with a warning
   * Fixed 'plot.roc' and 'lines.roc' default methods with 'smooth=TRUE' returning a curve that prints internal variable names
+  * Fixed 'plot.roc(print.thres="all")' and 'geom_roc_threshold(thresholds="all")' marking the interpolated limits of the partial AUC as thresholds labelled "NA"
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
