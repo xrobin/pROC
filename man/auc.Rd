@@ -116,7 +116,9 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 }
 \section{Multi-class AUCs}{
   With an object of class \dQuote{multiclass.roc}, a multi-class AUC is
-  computed as an average AUC as defined by Hand and Till (equation 7).
+  computed as the average of the pairwise AUCs, in the form of Hand and
+  Till's equation 7 (see \code{\link{multiclass.roc}} for how this
+  univariate measure differs from their \eqn{M}).
 
   \deqn{auc=\frac{2}{c(c-1)}\sum{aucs}}{2/(count * (count -
     1))*sum(aucs)}
