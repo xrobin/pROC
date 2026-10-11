@@ -523,3 +523,70 @@ test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 
   t <- suppressWarnings(roc.test(r.single, r1, paired = FALSE))
   expect_true(is.na(t$p.value))
 })
+
+test_that("roc.test compares only the smoothing arguments of the curves", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  s2 <- smooth(r.ndka)
+  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  s1.ci <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", quiet = TRUE)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(s1.col, s2, boot.n = 5)))))
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(s1.ci, s2, boot.n = 5)))))
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(t$roc1, s2, boot.n = 5)))))
+  # real differences are still reported
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b, n = 100), s2, boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b, method = "density", adjust = 2), smooth(r.ndka, method = "density"), boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b), r.ndka, boot.n = 5)))))
+})
+
+test_that("roc.test and cov do not warn for the same smoothing spelled differently", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  smoothing.warned <- function(expr) any(grepl("Different smoothing parameters", warnings.of(expr)))
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, n = 512L), smooth(r.ndka), boot.n = 2)))
+  expect_false(smoothing.warned(cov(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.n = 512L, quiet = TRUE), smooth(r.ndka), boot.n = 2)))
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "density", adjust = 1, cut = 3), smooth(r.ndka, method = "density"), boot.n = 2)))
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "gaussian"), smooth(r.ndka, method = "density", window = "gaussian"), boot.n = 2)))
+  # real differences are still reported
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "epanechnikov"), smooth(r.ndka, method = "density"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "density", adjust = 1.5), smooth(r.ndka, method = "density"), boot.n = 2)))
+  skip_if_not_installed("MASS")
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "normal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
+})
+
+test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  smoothing.warned <- function(expr) any(grepl("Different smoothing parameters", warnings.of(expr)))
+  # density() matches the kernel partially
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density", kernel = "epanechnikov"), boot.n = 2)))
+  expect_false(smoothing.warned(cov(smooth(r.s100b, method = "density", window = "rect"), smooth(r.ndka, method = "density", kernel = "rectangular"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density"), boot.n = 2)))
+  skip_if_not_installed("MASS")
+  # "lognormal" and "log-normal" are the same density
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
+})
