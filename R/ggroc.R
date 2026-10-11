@@ -13,13 +13,13 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
         x = "1-specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_continuous(lim = c(0, 100))
+      xlims <- ggplot2::scale_x_continuous(limits = c(0, 100))
     } else {
       aes_list <- list(
         x = "specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_reverse(lim = c(100, 0))
+      xlims <- ggplot2::scale_x_reverse(limits = c(100, 0))
     }
   } else {
     if (legacy.axes) {
@@ -27,13 +27,13 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
         x = "1-specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_continuous(lim = c(0, 1))
+      xlims <- ggplot2::scale_x_continuous(limits = c(0, 1))
     } else {
       aes_list <- list(
         x = "specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_reverse(lim = c(1, 0))
+      xlims <- ggplot2::scale_x_reverse(limits = c(1, 0))
     }
   }
   # Add extra aes
