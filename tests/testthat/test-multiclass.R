@@ -343,3 +343,18 @@ test_that("multiclass.roc requires at least two levels", {
   # NA is not a level
   expect_error(multiclass.roc(c(1, NA, 1, 1), c(1, 2, 3, 4)), "at least two levels")
 })
+
+test_that("CI functions give a clear error for multivariate multiclass curves", {
+  response <- factor(rep(c("a", "b", "c"), each = 4))
+  predictor <- matrix(c(9:1, 1:3, 1:12, 12:1), ncol = 3, dimnames = list(NULL, c("a", "b", "c")))
+  mv.mr <- multiclass.roc(response, predictor)
+  mv.auc <- auc(mv.mr)
+  expect_error(ci(mv.mr), "multiclass ROC curve not implemented")
+  expect_error(ci(mv.auc), "multiclass AUC not implemented")
+  expect_error(ci.auc(mv.mr), "multiclass ROC curve not implemented")
+  expect_error(ci.auc(mv.auc), "multiclass AUC not implemented")
+  for (f in c("ci.se", "ci.sp", "ci.thresholds", "ci.coords")) {
+    expect_error(match.fun(f)(mv.mr), "not available for multiclass ROC curves")
+    expect_error(match.fun(f)(mv.auc), "not available for multiclass ROC curves")
+  }
+})
