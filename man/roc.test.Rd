@@ -162,6 +162,13 @@ na.rm=TRUE, method=NULL, ...)
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
 
+  If paired curves do not have the same missing (\code{NA}) predictor
+  values, the observations missing in either curve are removed from both,
+  and both curves are rebuilt on the observations they have in common (see
+  \code{\link{are.paired}}). The test and the \code{estimate} then refer
+  to these rebuilt curves, whose AUC can differ from that of the curves
+  passed in. They are returned as \code{roc1} and \code{roc2}.
+
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
   If a density smoothing was performed with user-provided
@@ -336,11 +343,15 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{null.value}{the expected value of the statistic under the null
     hypothesis, that is 0.}
-  \item{estimate}{the AUC in the two ROC curves, or with
+  \item{estimate}{the AUC of the two ROC curves (with paired curves,
+    the curves rebuilt on the observations complete in both, see
+    Details), or with
     \code{method="sensitivity"} and \code{method="specificity"}, the
     specificity and sensitivity of the two curves at the given
     sensitivity or specificity.}
   \item{data.name}{the names of the data that was used.}
+  \item{roc1, roc2}{the two ROC curves that were compared (with paired
+    curves, rebuilt on the observations complete in both, see Details).}
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the

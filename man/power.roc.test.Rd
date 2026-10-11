@@ -117,6 +117,12 @@ alternative = c("two.sided", "one.sided"), ...)
   of \code{roc1} is the same than the AUC of \code{roc2}, with
   \code{roc1} taken as the reference ROC curve.
 
+  If the two curves do not have the same missing (\code{NA}) predictor
+  values, the observations missing in either curve are removed from both,
+  and the curves are rebuilt on the observations they have in common
+  (see \code{\link{are.paired}}). The AUCs, variances, covariance and
+  numbers of cases and controls are then those of the rebuilt curves.
+
   For the sample size, \code{ncases} is computed directly from formula 2
   and ncontrols is deduced with \code{kappa} (defaults to the
   ratio of controls to cases in \code{roc1}).

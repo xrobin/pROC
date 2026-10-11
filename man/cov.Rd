@@ -85,6 +85,12 @@ cov(...)
   \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
+  If the paired curves do not have the same missing (\code{NA})
+  predictor values, the observations missing in either curve are
+  removed from both, and the covariance is computed on the two curves
+  rebuilt on the observations they have in common (see
+  \code{\link{are.paired}}).
+
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
