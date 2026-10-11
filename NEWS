@@ -119,6 +119,7 @@
   * 'geom_polygon_auc' now needs ggplot2 >= 4.0.0
   * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
   * pROC now requires R >= 4.0.0
+  * smooth(method = "fitdistr") with a density function and another argument in ... (an optim() argument such as control, or partial.auc passed through roc()) no longer fails with "unused argument (`NA` = NULL)".
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
