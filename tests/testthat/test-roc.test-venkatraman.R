@@ -74,3 +74,15 @@ test_that("venkatraman rejects a partial AUC on either curve", {
   expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported")
   expect_error(suppressWarnings(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2)), "Partial AUC is not supported")
 })
+
+test_that("paired venkatraman of identical tied predictors gives E = 0 and p = 1", {
+  for (r in list(r.wfns, r.s100b)) {
+    t <- roc.test(r, r, method = "venkatraman", boot.n = 20)
+    expect_equal(unname(t$statistic), 0)
+    expect_equal(t$p.value, 1)
+  }
+  # Same predictor values in two separately built curves
+  r2 <- roc(aSAH$outcome, as.numeric(aSAH$wfns), levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  r3 <- roc(aSAH$outcome, as.numeric(aSAH$wfns), levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  expect_equal(roc.test(r2, r3, method = "venkatraman", boot.n = 20)$p.value, 1)
+})
