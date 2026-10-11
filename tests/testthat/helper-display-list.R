@@ -23,3 +23,8 @@ display_list_texts <- function(dl) {
 display_list_polygons <- function(dl) {
   lapply(display_list_calls(dl, "polygon"), function(e) list(x = e$args[[1]], y = e$args[[2]]))
 }
+
+# Labels passed to axis(), one element per axis() call
+display_list_axis_labels <- function(dl) {
+  lapply(display_list_calls(dl, "axis"), function(e) e$args[[3]])
+}
