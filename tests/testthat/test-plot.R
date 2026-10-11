@@ -377,3 +377,13 @@ test_that("panel.first and panel.last are drawn on smoothed curves from roc() an
     plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE, panel.last = text(0.5, 0.5, "last"))
   })
 })
+
+test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
+  pdf(NULL)
+  on.exit(dev.off())
+  dataline <- function(x) grep("^Data:", capture.output(print(x)), value = TRUE)
+  expected <- "Data: aSAH$s100b in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor)."
+  expect_identical(dataline(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(lines.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+})

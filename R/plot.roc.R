@@ -54,6 +54,9 @@ plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
   if (roc_utils_is_curve(roc, plot = TRUE)) {
     roc$call <- match.call()
+    if (methods::is(roc, "smooth.roc")) {
+      attr(roc, "roc")$call <- roc$call
+    }
   }
   invisible(roc)
 }
