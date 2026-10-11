@@ -523,3 +523,28 @@ test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 
   t <- suppressWarnings(roc.test(r.single, r1, paired = FALSE))
   expect_true(is.na(t$p.value))
 })
+
+test_that("roc.test compares only the smoothing arguments of the curves", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  s2 <- smooth(r.ndka)
+  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  s1.ci <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", quiet = TRUE)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(s1.col, s2, boot.n = 5)))))
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(s1.ci, s2, boot.n = 5)))))
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(t$roc1, s2, boot.n = 5)))))
+  # real differences are still reported
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b, n = 100), s2, boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b, method = "density", adjust = 2), smooth(r.ndka, method = "density"), boot.n = 5)))))
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(roc.test(smooth(r.s100b), r.ndka, boot.n = 5)))))
+})

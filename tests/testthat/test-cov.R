@@ -190,3 +190,23 @@ test_that("cov works on curves smoothed in roc() with a partial AUC", {
   set.seed(42)
   expect_equal(cov(r1, r2, boot.n = 10), expected)
 })
+
+test_that("cov compares only the smoothing arguments of the curves", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  s2 <- smooth(r.ndka)
+  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(cov(s1.col, s2, boot.n = 5)))))
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(cov(t$roc1, s2, boot.n = 5)))))
+  # real differences are still reported
+  expect_true(any(grepl("Different smoothing parameters", warnings.of(cov(smooth(r.s100b, n = 100), s2, boot.n = 5)))))
+})

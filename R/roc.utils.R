@@ -916,3 +916,24 @@ roc_utils_plot_roc <- function(curve, ..., x) {
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+
+# The smoothing arguments that can change a smoothed curve, sorted by name, to
+# compare how two curves were smoothed. roc(..., smooth = TRUE) also stores the
+# arguments of plot and ci in smoothing.args, but the smoothers ignore them.
+roc_utils_relevant_smoothing_args <- function(smoothing.args) {
+  relevant <- c("smooth", "method", "n", "bw", "density.controls", "density.cases", "start.controls", "start.cases")
+  densfuns <- Filter(is.function, smoothing.args[c("density.controls", "density.cases")])
+  if (identical(smoothing.args$method, "density")) {
+    # arguments taken by smooth_roc_density or passed to the density functions
+    densfuns <- c(densfuns, stats::density.default)
+    relevant <- c(relevant, names(formals(smooth_roc_density)))
+  } else if (identical(smoothing.args$method, "fitdistr")) {
+    # arguments passed to the density functions or to optim by fitdistr
+    densfuns <- c(densfuns, lapply(smooth_roc_fitdistr_densfuns, match.fun))
+    relevant <- c(relevant, "gr", "lower", "upper", "control")
+  }
+  for (densfun in densfuns) {
+    relevant <- c(relevant, names(formals(densfun)))
+  }
+  smoothing.args[sort(intersect(names(smoothing.args), relevant))]
+}
