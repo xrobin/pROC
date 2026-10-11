@@ -312,6 +312,16 @@ test_that("CI shapes are drawn in increasing order whatever order the CI was com
   })
 })
 
+test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
+  pdf(NULL)
+  on.exit(dev.off())
+  dataline <- function(x) grep("^Data:", capture.output(print(x)), value = TRUE)
+  expected <- "Data: aSAH$s100b in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor)."
+  expect_identical(dataline(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(lines.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+})
+
 test_that("print.auc does not print the CI of another AUC specification", {
   skip_if(getRversion() < "4.1")
   r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)

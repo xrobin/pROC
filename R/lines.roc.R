@@ -49,8 +49,7 @@ lines.roc.default <- function(x, predictor, ...) {
     return(invisible(roc))
   }
   lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  invisible(roc)
+  invisible(roc_utils_set_call_names(roc, match.call()))
 }
 
 lines.roc.smooth.roc <- lines.smooth.roc <- function(x, ...) {
