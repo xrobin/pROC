@@ -460,7 +460,7 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
   roc$fun.sesp <- roc_utils_fun_sesp
 
   if (smooth) {
-    roc <- smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
+    roc <- roc_utils_smooth_roc(roc, method = smooth.method, n = smooth.n, ...)
   }
   # compute AUC
   if (auc) {
