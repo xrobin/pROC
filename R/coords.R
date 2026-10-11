@@ -59,7 +59,7 @@ coords.auc <- function(auc,
 
 coords.smooth.roc <- function(smooth.roc,
                               x,
-                              input,
+                              input = "specificity",
                               ret = c("specificity", "sensitivity"),
                               ignore.partial.auc = FALSE,
                               as.list = FALSE,

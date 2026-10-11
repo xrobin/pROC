@@ -841,3 +841,15 @@ test_that("coords partial AUC window keeps curve points within float error of th
   co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
   expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc))
 })
+
+test_that("coords on smooth.roc with numeric x defaults to input = 'specificity'", {
+  smooth.s100b <- smooth(r.s100b)
+  expect_identical(
+    coords(smooth.s100b, c(0.5, 0.9)),
+    coords(smooth.s100b, c(0.5, 0.9), input = "specificity")
+  )
+  expect_identical(
+    coords(smooth.s100b, 0.9, ret = "all"),
+    coords(smooth.s100b, 0.9, input = "specificity", ret = "all")
+  )
+})

@@ -19,8 +19,9 @@ coords(...)
 "specificity", "sensitivity"),  ignore.partial.auc=FALSE,
 as.list=FALSE, drop=TRUE, best.method=c("youden", "closest.topleft"),
 best.weights=c(1, 0.5), transpose = FALSE, as.matrix=FALSE, ...)
-\S3method{coords}{smooth.roc}(smooth.roc, x, input, ret=c("specificity",
-"sensitivity"), ignore.partial.auc=FALSE, as.list=FALSE, drop=TRUE, 
+\S3method{coords}{smooth.roc}(smooth.roc, x, input="specificity",
+ret=c("specificity", "sensitivity"), ignore.partial.auc=FALSE,
+as.list=FALSE, drop=TRUE,
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5), 
 transpose = FALSE, as.matrix=FALSE, ...)
 }
@@ -47,8 +48,9 @@ transpose = FALSE, as.matrix=FALSE, ...)
   	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
   	\dQuote{sensitivity}, but can be any of the monotone coordinate available,
   	see the \dQuote{Valid input} column under \dQuote{Available coordinates}.
-  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold}. Note
-  	that \dQuote{threshold} is not allowed in \code{coords.smooth.roc} and that
+  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold}
+  	(\dQuote{specificity} for \code{coords.smooth.roc}, where
+  	\dQuote{threshold} is not allowed). Note that
   	the argument is ignored when \code{x} is a character.
   }
   \item{ret}{The coordinates to return. See \dQuote{Available coordinates}
