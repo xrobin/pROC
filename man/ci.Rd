@@ -21,7 +21,7 @@ ci(...)
 \S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
 \S3method{ci}{multiclass.roc}(multiclass.roc, of = "auc", ...)
 \S3method{ci}{multiclass.auc}(multiclass.auc, of = "auc", ...)
-\S3method{ci}{formula}(formula, data, subset, na.action, ...)
+\S3method{ci}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci}{default}(response, predictor, ...)
 }
 		   

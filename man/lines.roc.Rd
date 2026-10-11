@@ -17,7 +17,7 @@
 \S3method{lines}{roc}(x, ...)
 \S3method{lines}{smooth.roc}(x, ...)
 \S3method{lines.roc}{roc}(x, lwd=2, ...)
-\S3method{lines.roc}{formula}(x, data, subset, na.action, ...)
+\S3method{lines.roc}{formula}(x, data, ..., subset, na.action)
 \S3method{lines.roc}{default}(x, predictor, ...)
 \S3method{lines.roc}{smooth.roc}(x, ...)
 

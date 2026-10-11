@@ -411,3 +411,24 @@ test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve
   labels <- display_list_texts(capture_display_list(plot(r2, print.thres = "all")))
   expect_identical(labels[length(labels)], "0.075 (0.222, 0.902)")
 })
+
+test_that("formula methods draw sub (subtitle) instead of matching it to subset", {
+  subtitle <- function(dl) display_list_calls(dl, "title")[[1]]$args[[2]]
+  r <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
+  dl <- capture_display_list(r1 <- plot.roc(outcome ~ s100b, data = aSAH, sub = "All patients", quiet = TRUE))
+  expect_identical(subtitle(dl), "All patients")
+  expect_equal(as.numeric(r1$auc), as.numeric(r$auc))
+  dl <- capture_display_list(r2 <- roc(outcome ~ s100b, data = aSAH, plot = TRUE, sub = "All patients", quiet = TRUE))
+  expect_identical(subtitle(dl), "All patients")
+  expect_equal(as.numeric(r2$auc), as.numeric(r$auc))
+  dl <- capture_display_list({
+    plot(r)
+    r3 <- lines.roc(outcome ~ wfns, data = aSAH, sub = "x", quiet = TRUE)
+  })
+  expect_equal(as.numeric(r3$auc), as.numeric(auc(aSAH$outcome, aSAH$wfns, quiet = TRUE)))
+  # subset itself is still taken by the formula
+  r.female <- roc(aSAH$outcome[aSAH$gender == "Female"], aSAH$s100b[aSAH$gender == "Female"], quiet = TRUE)
+  dl <- capture_display_list(r4 <- plot.roc(outcome ~ s100b, data = aSAH, subset = gender == "Female", sub = "Women", quiet = TRUE))
+  expect_identical(subtitle(dl), "Women")
+  expect_equal(as.numeric(r4$auc), as.numeric(r.female$auc))
+})

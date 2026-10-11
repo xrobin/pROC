@@ -21,7 +21,7 @@ plot.roc <- function(x, ...) {
   UseMethod("plot.roc")
 }
 
-plot.roc.formula <- function(x, data, subset, na.action, ...) {
+plot.roc.formula <- function(x, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   names(call)[2] <- "formula" # forced to be x by definition of plot

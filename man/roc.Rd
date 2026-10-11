@@ -18,7 +18,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, subset, na.action, ...)
+\S3method{roc}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc}{data.frame}(data, response, predictor,
 ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
