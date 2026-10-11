@@ -160,6 +160,13 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   }
   if (!is.null(auc)) {
     if (methods::is(auc, "auc")) {
+      # As power.roc.test.roc: the one ROC curve formula is for the full AUC
+      if (isTRUE(attr(auc, "partial.auc.correct"))) {
+        stop("Cannot compute power with corrected partial AUCs")
+      }
+      if (has.partial.auc(auc)) {
+        stop("Power calculation for one ROC curve is only available for the full AUC.")
+      }
       auc <- roc_utils_unpercent(auc)
     }
     if (any(auc < 0 | auc > 1, na.rm = TRUE)) {
