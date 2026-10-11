@@ -579,3 +579,9 @@ test_that("roc.density with direction = 'auto' keeps '<' for a curve on the diag
     }
   }
 })
+
+test_that("a data.frame response gives a clear error", {
+  expect_error(auc(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+})
