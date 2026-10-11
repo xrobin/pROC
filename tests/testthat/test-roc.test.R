@@ -481,3 +481,20 @@ test_that("roc.test default/formula give a clear error when roc() returns NaN", 
   expect_error(suppressWarnings(roc.test(d$y, d[c("x1", "x2")], quiet = TRUE)), "roc\\(\\) returned NA or NaN")
   expect_error(suppressWarnings(roc.test(y ~ x1 + x2, d, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
 })
+
+test_that("one-sided paired DeLong tests return a one-sided conf.int", {
+  # The one-sided 95% bound is the bound of the two-sided 90% interval
+  ci90 <- roc.test(r.wfns, r.s100b, conf.level = 0.9)$conf.int
+  t.gt <- roc.test(r.wfns, r.s100b, alternative = "greater")
+  t.lt <- roc.test(r.wfns, r.s100b, alternative = "less")
+  expect_equal(t.gt$conf.int[1:2], c(ci90[1], Inf))
+  expect_equal(t.lt$conf.int[1:2], c(-Inf, ci90[2]))
+  expect_identical(attr(t.gt$conf.int, "conf.level"), 0.95)
+  expect_identical(attr(t.lt$conf.int, "conf.level"), 0.95)
+  # p < 0.05 if and only if the interval excludes 0
+  expect_true(t.gt$p.value < 0.05 && t.gt$conf.int[1] > 0)
+  expect_true(t.lt$p.value > 0.05 && t.lt$conf.int[2] > 0)
+  # percent
+  t.gt.percent <- roc.test(r.wfns.percent, r.s100b.percent, alternative = "greater")
+  expect_equal(t.gt.percent$conf.int[1:2], t.gt$conf.int[1:2] * 100)
+})

@@ -337,7 +337,7 @@ na.rm=TRUE, method=NULL, ...)
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
-  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifying the level of the test.}
+  \item{conf.int}{the confidence interval of the test (currently only returned for the paired DeLong's test). Has an attribute \code{conf.level} specifying the level of the test. With a one-sided \code{alternative}, the interval is one-sided (\code{-Inf} or \code{Inf} on one end), as in \code{\link{t.test}}.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{a character string describing the test, such as
     \dQuote{DeLong's test for two correlated ROC curves} (if
