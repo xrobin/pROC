@@ -44,7 +44,7 @@ ci.sp.formula <- function(formula, data, subset, na.action, ...) {
 }
 
 ci.sp.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
     stop("'ci.sp' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
