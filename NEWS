@@ -145,6 +145,7 @@
   * 'smooth' with method = "fitdistr", "logcondens" or "logcondens.smooth" now fails with a clear 'ROC curve not smoothable' error when the controls or the cases take a single distinct value, instead of an error from optim or logcondens, and with a clear error when a parameter of a "normal", "lognormal", "exponential", "poisson" or "geometric" density is passed to be held fixed, instead of 'formal argument matched by multiple actual arguments'
   * Fixed 'power.roc.test' asking for an 'auc' that was given (or that the list method does not take) when the power or the sample size was missing
   * Fixed the default threshold labels of 'plot.roc(print.thres=...)' and 'geom_roc_threshold' with 'percent=TRUE' showing the threshold with only 1 decimal
+  * Fixed confidence shapes of 'plot.ci' (type="shape"), 'plot.roc(ci.type="shape")' and 'geom_polygon_ci' crossing themselves when the CI was computed at specificities, sensitivities or x not in increasing order
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
