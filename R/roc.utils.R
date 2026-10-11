@@ -913,14 +913,28 @@ roc_utils_plot_roc <- function(curve, ..., x) {
   plot.roc(curve, ...)
 }
 
-# smooth.roc() for roc(..., smooth = TRUE). smooth.roc() forces all its dots
-# (list(...)), which would evaluate the panel.first/panel.last expressions
-# that roc() also forwards to plot.roc() before the plot exists: capture them
-# here so they are not forwarded (formals that are never used are never forced).
-# The method of ci.auc() (ci.auc(response, predictor, smooth = TRUE, method =
-# "bootstrap")) is captured too: the smoothing method is smooth.method.
-roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ..., method, panel.first, panel.last) {
-  smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
+# smooth.roc() for roc(..., smooth = TRUE). roc() forwards its ... to auc, ci
+# and plot.roc too, but smooth.roc() forces all its dots (list(...)) and stores
+# them in smoothing.args, where they are evaluated again when the smoothing is
+# replayed (bootstrap, roc.test, are.paired): a plotmath title such as
+# main = quote(italic(x)) then fails, and panel.first/panel.last would be drawn
+# before the plot exists. Pass only the arguments of smooth.roc() and of the
+# smoothers, selected by name without forcing the others (..N refers to the
+# N-th element of ... lazily). The method of ci.auc() (ci.auc(response,
+# predictor, smooth = TRUE, method = "bootstrap")) is not passed either: the
+# smoothing method is smooth.method.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...) {
+  densfuns <- (function(..., density.controls = NULL, density.cases = NULL) list(density.controls, density.cases))(...)
+  methods <- eval(formals(smooth.roc)$method)
+  arg.names <- setdiff(
+    c(names(formals(smooth.roc)), roc_utils_smoothing_arg_names(methods[pmatch(smooth.method, methods)], densfuns)),
+    c("roc", "method", "n", "...")
+  )
+  dots.names <- names(substitute(list(...)))[-1]
+  keep <- which(dots.names %in% arg.names)
+  args <- lapply(keep, function(i) as.name(paste0("..", i)))
+  names(args) <- dots.names[keep]
+  eval(as.call(c(list(quote(smooth.roc), quote(roc), method = quote(smooth.method), n = quote(smooth.n)), args)))
 }
 
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
@@ -928,16 +942,24 @@ roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ..., method, pane
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
 
 # The smoothing arguments that can change a smoothed curve, sorted by name, to
-# compare how two curves were smoothed. roc(..., smooth = TRUE) also stores the
-# arguments of plot and ci in smoothing.args, but the smoothers ignore them.
+# compare how two curves were smoothed. smoothing.args can also hold arguments
+# that the smoothers ignore (passed to smooth() directly, or the arguments of
+# plot and ci stored by roc(..., smooth = TRUE) in older versions).
 roc_utils_relevant_smoothing_args <- function(smoothing.args) {
+  relevant <- roc_utils_smoothing_arg_names(smoothing.args$method, smoothing.args[c("density.controls", "density.cases")])
+  smoothing.args[sort(intersect(names(smoothing.args), relevant))]
+}
+
+# The names of the arguments that can change a curve smoothed with 'method'
+# (already matched), given the density.controls and density.cases arguments
+roc_utils_smoothing_arg_names <- function(method, densfuns) {
   relevant <- c("smooth", "method", "n", "bw", "density.controls", "density.cases", "start.controls", "start.cases")
-  densfuns <- Filter(is.function, smoothing.args[c("density.controls", "density.cases")])
-  if (identical(smoothing.args$method, "density")) {
+  densfuns <- Filter(is.function, densfuns)
+  if (identical(method, "density")) {
     # arguments taken by smooth_roc_density or passed to the density functions
     densfuns <- c(densfuns, stats::density.default)
     relevant <- c(relevant, names(formals(smooth_roc_density)))
-  } else if (identical(smoothing.args$method, "fitdistr")) {
+  } else if (identical(method, "fitdistr")) {
     # arguments passed to the density functions or to optim by fitdistr
     densfuns <- c(densfuns, lapply(smooth_roc_fitdistr_densfuns, match.fun))
     relevant <- c(relevant, "gr", "lower", "upper", "control")
@@ -945,5 +967,5 @@ roc_utils_relevant_smoothing_args <- function(smoothing.args) {
   for (densfun in densfuns) {
     relevant <- c(relevant, names(formals(densfun)))
   }
-  smoothing.args[sort(intersect(names(smoothing.args), relevant))]
+  relevant
 }
