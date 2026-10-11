@@ -7,8 +7,8 @@
  Multi-class AUC
 }
 \description{
-  This function builds builds multiple ROC curve to compute the
-  multi-class AUC as defined by Hand and Till.
+  This function builds multiple ROC curves to compute a multi-class
+  AUC, following Hand and Till (2001).
 }
 \usage{
 multiclass.roc(...)
@@ -54,7 +54,7 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
   }
 }
 \details{
-This function performs multiclass AUC as defined by Hand and Till
+This function computes a multiclass AUC following Hand and Till
 (2001). A multiclass AUC is a mean of several \code{\link{auc}} and
 cannot be plotted. Only AUCs can be computed for such curves.
 Confidence intervals, standard deviation, smoothing and
@@ -67,6 +67,17 @@ I the multivariate case, a \code{\link{matrix}} or \code{\link{data.frame}}
 is passed as \code{predictor}. The columns must be named according to the
 levels of the \code{response}.
 
+Only the multivariate case, with one column of predictions per class,
+computes the measure \eqn{M} defined by Hand and Till. In the univariate
+case, a two-class ROC curve is built on the single predictor for each
+pair of levels, and the multi-class AUC is the mean of their AUCs, in
+the form of Hand and Till's equation 7 (Hand and Till's \eqn{M} itself
+would always be 0.5 with a single predictor). With the default
+\code{direction="auto"}, the direction is chosen separately for each
+pair, which makes this mean optimistic: it is above 0.5 on average for
+a predictor unrelated to the response (about 0.6 with 3 classes of 10
+observations).
+
 This function has been much less tested than the rest of the package and
 is more subject to bugs. Please report them if you find one.
 }
@@ -78,7 +89,7 @@ is more subject to bugs. Please report them if you find one.
   \item{auc}{the multi-class AUC, always computed: a numeric of class
     \dQuote{multiclass.auc} (univariate) or \dQuote{mv.multiclass.auc}
     (multivariate). Note that this is not the standard AUC
-    but the multi-class AUC as defined by Hand and Till.
+    but a multi-class AUC (see \sQuote{Details}).
   }
   \item{response}{the response vector as passed in argument.
   }
