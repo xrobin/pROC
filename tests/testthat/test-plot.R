@@ -324,3 +324,10 @@ test_that("print.auc does not print the CI of another AUC specification", {
   })
   expect_doppelganger("plot-print-auc-with-stored-ci", function() plot(r.ci, print.auc = TRUE))
 })
+
+test_that("legacy.axes labels are not padded", {
+  skip_if(getRversion() < "4.1")
+  r.percent <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), percent = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-legacy-axes-percent", function() plot(r.percent, legacy.axes = TRUE))
+  # Same number of decimals on all labels: see the "legacy.axes" snapshot
+})
