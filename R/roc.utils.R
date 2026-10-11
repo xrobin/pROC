@@ -904,6 +904,30 @@ roc_utils_plot_roc <- function(curve, ..., x) {
   plot.roc(curve, ...)
 }
 
+# smooth.roc() for roc(..., smooth = TRUE). roc() forwards its ... to auc, ci
+# and plot.roc too, but smooth.roc() forces all its dots (list(...)) and stores
+# them in smoothing.args, where they are evaluated again when the smoothing is
+# replayed (bootstrap, roc.test, are.paired): a plotmath title such as
+# main = quote(italic(x)) then fails, and panel.first/panel.last would be drawn
+# before the plot exists. Pass only the arguments of smooth.roc() and of the
+# smoothers, selected by name without forcing the others (..N refers to the
+# N-th element of ... lazily). The method of ci.auc() (ci.auc(response,
+# predictor, smooth = TRUE, method = "bootstrap")) is not passed either: the
+# smoothing method is smooth.method.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...) {
+  densfuns <- (function(..., density.controls = NULL, density.cases = NULL) list(density.controls, density.cases))(...)
+  methods <- eval(formals(smooth.roc)$method)
+  arg.names <- setdiff(
+    c(names(formals(smooth.roc)), roc_utils_smoothing_arg_names(methods[pmatch(smooth.method, methods)], densfuns)),
+    c("roc", "method", "n", "...")
+  )
+  dots.names <- names(substitute(list(...)))[-1]
+  keep <- which(dots.names %in% arg.names)
+  args <- lapply(keep, function(i) as.name(paste0("..", i)))
+  names(args) <- dots.names[keep]
+  eval(as.call(c(list(quote(smooth.roc), quote(roc), method = quote(smooth.method), n = quote(smooth.n)), args)))
+}
+
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
@@ -977,7 +1001,9 @@ roc_utils_smoothing_arg_names <- function(method, densfuns) {
     relevant <- c(relevant, "gr", "lower", "upper", "control")
   }
   for (densfun in densfuns) {
-    relevant <- c(relevant, names(formals(densfun)))
+    # Not the arguments the smoothers set themselves: the data (first
+    # argument), from/to of density() and log of fitdistr
+    relevant <- c(relevant, setdiff(names(formals(densfun))[-1], c("from", "to", "log")))
   }
   relevant
 }

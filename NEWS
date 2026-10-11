@@ -149,6 +149,7 @@
   * Fixed 'plot.roc(print.auc=TRUE, reuse.auc=FALSE, partial.auc=...)' printing the new partial AUC with the confidence interval of the stored AUC
   * Fixed axis labels of 'plot.roc(legacy.axes=TRUE)' with 'percent=TRUE' padded with spaces and drawn off-centre
   * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"): only the sensitivity at given specificities is drawn, other coordinates are skipped with a warning
+  * Fixed 'panel.first' and 'panel.last' being evaluated before the plot (error or drawn on the previous plot) in 'roc(..., smooth=TRUE, plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE)'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
