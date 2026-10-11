@@ -155,6 +155,7 @@
   * Fixed axis labels of 'plot.roc(legacy.axes=TRUE)' with 'percent=TRUE' padded with spaces and drawn off-centre
   * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"); CIs that cannot be drawn on a ROC curve are now skipped with a warning
   * Fixed 'panel.first' and 'panel.last' being evaluated before the plot (error or drawn on the previous plot) in 'roc(..., smooth=TRUE, plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE)'
+  * Fixed 'plot.roc' and 'lines.roc' default methods with 'smooth=TRUE' returning a curve that prints internal variable names
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
