@@ -25,9 +25,8 @@
     \code{"best"}, \code{"all"}, \code{"local maximas"}, numeric
     cut-offs, or ordered/character level labels on an ordered ROC.
   }
-  \item{pattern}{sprintf pattern as in \code{print.thres.pattern}.
-    The default uses \code{\%s} for ordered thresholds and
-    \code{\%.3f} (or \code{\%.1f} with \code{percent}) otherwise.
+  \item{pattern}{sprintf pattern, as \code{print.thres.pattern} in
+    \code{\link{plot.roc}}, with the same default.
   }
   \item{hjust, vjust}{text justification, matching
     \code{print.thres.adj = c(-0.05, 1.25)} by default.

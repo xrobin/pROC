@@ -243,14 +243,6 @@ plot.roc.roc <- function(x,
       plot(x$ci, type = "bars", col = ci.col, ...)
     }
   }
-  if (is.null(print.thres.pattern)) {
-    print.thres.pattern <- if (!methods::is(x, "smooth.roc") && roc_utils_is_ordered_roc(x)) {
-      ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
-    } else {
-      ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
-    }
-  }
-
   # Print the thresholds on the curve if print.thres is TRUE
   if (isTRUE(print.thres)) {
     print.thres <- "best"
@@ -269,13 +261,12 @@ plot.roc.roc <- function(x,
     } else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
       suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-      suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, NA, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
     suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-    thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) as.character(co$threshold) else co$threshold
-    suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+    suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
   }
 
   # Print the AUC on the plot
