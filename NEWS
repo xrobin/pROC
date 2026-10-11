@@ -131,6 +131,7 @@
   * Parallel bootstrap operations now leave the random number generator of the cluster workers as they found it.
   * 'roc' (and 'auc', 'ci', ... with response and predictor) now gives a clear error when 'response' is a data.frame, for instance a single selected column, instead of 'cannot xtfrm data frames'.
   * Fixed 'ci.coords' (and 'roc(ci = TRUE, of = "coords")') passing 'x' to 'density' with 'smooth.method = "density"'
+  * CI functions now give the same clear error for multivariate 'multiclass.roc' curves as for univariate ones
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
