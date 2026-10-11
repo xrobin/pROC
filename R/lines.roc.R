@@ -58,6 +58,9 @@ lines.roc.default <- function(x, predictor, ...) {
   }
   lines.roc.roc(roc, ...)
   roc$call <- match.call()
+  if (methods::is(roc, "smooth.roc")) {
+    attr(roc, "roc")$call <- roc$call
+  }
   invisible(roc)
 }
 
