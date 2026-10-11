@@ -135,6 +135,7 @@
   * Fixed 'roc.test' and 'cov' ignoring the partial AUC of curves smoothed in 'roc(smooth = TRUE)', or failing with an internal error
   * Fixed 'coords' "best" and "local maximas" dropping the curve points on a partial AUC limit of percent curves
   * Fixed 'ci.coords' (and 'roc(ci = TRUE, of = "coords")') passing 'x' to 'density' with 'smooth.method = "density"'
+  * CI functions now give the same clear error for multivariate 'multiclass.roc' curves as for univariate ones
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
