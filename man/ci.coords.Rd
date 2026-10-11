@@ -158,6 +158,11 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
+
+  With \code{response} and \code{predictor} (or a \code{formula}),
+  \code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
+  returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
+  predictor values).
 }
 
 \references{

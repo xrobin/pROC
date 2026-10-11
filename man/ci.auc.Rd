@@ -184,6 +184,11 @@ median of the bootstrapped AUCs with \code{method="bootstrap"}.
 
 The \code{aucs} item is not included in this list since version 1.2 for
 consistency reasons.
+
+With \code{response} and \code{predictor} (or a \code{formula}),
+\code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
+returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
+predictor values).
 }
 \references{
   James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:

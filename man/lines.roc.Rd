@@ -44,6 +44,10 @@
 This function returns the ROC curve invisibly: a list of class \dQuote{roc},
 or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
 \code{\link[=smooth.roc]{smooth}} for more details.
+
+With \code{predictor} (or a \code{formula}), an error is raised if
+\code{\link{roc}} returns \code{NA} or \code{NaN} (\code{NA} values
+with \code{na.rm=FALSE}, or infinite predictor values).
 }
 
 \seealso{
