@@ -201,3 +201,26 @@ test_that("binormal smoothing of ordered predictors does not depend on unused le
   expect_equal(coef(smooth(oe)$model), coef(smooth(o)$model))
   expect_equal(coef(smooth(o)$model), coef(smooth(rn)$model))
 })
+
+test_that("fitdistr smoothing with a density function accepts other ... arguments", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  # location-scale t density with a fixed df: only m and s are fitted
+  dens <- function(x, m, s, df = 30) dt((x - m) / s, df) / s
+  expected <- suppressWarnings(smooth(r, method = "fitdistr", density = dens, start = list(m = 2, s = 1), df = 5))
+  # with an optim() argument for fitdistr (maxit = 500 is the default)
+  s <- suppressWarnings(smooth(r,
+    method = "fitdistr", density = dens, start = list(m = 2, s = 1), df = 5,
+    control = list(maxit = 500)
+  ))
+  expect_equal(s$sensitivities, expected$sensitivities)
+  expect_equal(s$specificities, expected$specificities)
+  # with an auc argument forwarded by roc()
+  r2 <- suppressWarnings(roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = dens, start = list(m = 2, s = 1), df = 5, partial.auc = c(1, .8)
+  ))
+  expect_equal(as.numeric(r2$auc), as.numeric(auc(expected, partial.auc = c(1, .8))))
+})
