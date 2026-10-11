@@ -135,7 +135,7 @@ cov.roc <- function(roc1, roc2,
     warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
   }
   # check that the same smoothing params were requested in auc. Otherwise, issue a warning
-  if (!identical(smoothing.args$roc1, smoothing.args$roc2)) {
+  if (!identical(roc_utils_relevant_smoothing_args(smoothing.args$roc1), roc_utils_relevant_smoothing_args(smoothing.args$roc2))) {
     warning("Different smoothing parameters in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
   }
 
