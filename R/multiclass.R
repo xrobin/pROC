@@ -58,7 +58,13 @@ multiclass_roc_univariate <- function(response, predictor,
     percent = percent
   )
   class(multiclass.roc) <- "multiclass.roc"
-  missing.levels.requested <- levels[!(levels %in% response)]
+  # observations with an NA predictor are removed by roc() (na.rm = TRUE):
+  # a level with only such observations has no observation either
+  observed <- response
+  if (multiclass_na_rm(...)) {
+    observed <- response[!is.na(predictor)]
+  }
+  missing.levels.requested <- levels[!(levels %in% observed)]
   if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
@@ -82,6 +88,11 @@ multiclass_roc_univariate <- function(response, predictor,
   #  multiclass.roc$ci <- ci.multiclass.roc(multiclass.roc, ...)
 
   return(multiclass.roc)
+}
+
+# The na.rm argument of roc() in ...
+multiclass_na_rm <- function(..., na.rm = TRUE) {
+  isTRUE(na.rm)
 }
 
 compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, direction, ...) {
@@ -111,6 +122,15 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
     stop("'direction=\"auto\"' not available for multivariate multiclass.roc")
   }
   missing.levels.requested <- levels[!(levels %in% response)]
+  # observations with an NA predictor are removed by roc() (na.rm = TRUE): a
+  # level needs a non-NA value in each column of the levels to be compared
+  if (multiclass_na_rm(...)) {
+    columns <- intersect(colnames(predictor), levels)
+    no.values <- vapply(levels, function(level) {
+      any(colSums(!is.na(predictor[which(response == level), columns, drop = FALSE])) == 0)
+    }, logical(1))
+    missing.levels.requested <- union(missing.levels.requested, levels[no.values])
+  }
   if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
