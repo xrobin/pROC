@@ -43,3 +43,11 @@ test_that("geom_roc_threshold gives clear errors for thresholds a smoothed curve
   expect_error(geom_roc_threshold(s, thresholds = c(0.5, 1)), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
   expect_s3_class(geom_roc_threshold(s, thresholds = "best"), "ggroc_layer")
 })
+
+test_that("geom_roc_threshold percent labels keep 3 decimals for the threshold", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  p <- ggroc(r.percent) + geom_roc_threshold(r.percent, thresholds = "best")
+  text_i <- match("GeomText", layer_geom_classes(p))
+  expect_identical(p@layers[[text_i]]$data$label, "0.205 (80.6%, 63.4%)")
+})
