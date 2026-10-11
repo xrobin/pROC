@@ -143,6 +143,7 @@
   * Fixed 'multiclass.roc' failing with "No case observation." when all observations of a level have an NA predictor: the level is now ignored with a warning, as a level without observations
   * Fixed 'text' and 'geom_text_auc' on 'roc' and 'smooth.roc' objects failing with a 'ci' argument
   * Fixed 'smooth' with method = "fitdistr" returning an all-NA curve when the parameters could not be estimated (a single case or control), and non-stratified 'ci.sp', 'ci.coords' and 'roc.test' of such smoothed curves failing
+  * Fixed 'power.roc.test' asking for an 'auc' that was given (or that the list method does not take) when the power or the sample size was missing
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
