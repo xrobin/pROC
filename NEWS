@@ -133,6 +133,7 @@
   * Parallel bootstrap operations now leave the random number generator of the cluster workers as they found it.
   * 'roc' (and 'auc', 'ci', ... with response and predictor) now gives a clear error when 'response' is a data.frame, for instance a single selected column, instead of 'cannot xtfrm data frames'.
   * Fixed 'roc.test' and 'cov' ignoring the partial AUC of curves smoothed in 'roc(smooth = TRUE)', or failing with an internal error
+  * Fixed 'coords' "best" and "local maximas" dropping the curve points on a partial AUC limit of percent curves
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

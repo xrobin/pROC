@@ -841,3 +841,25 @@ test_that("coords partial AUC window keeps curve points within float error of th
   co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
   expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc))
 })
+
+test_that("coords best and local maximas keep curve points within float error of the pAUC limits", {
+  # (23 / 40) * 100 is 57.5 - 7e-15 on the percent curve
+  controls <- 1:40
+  cases <- c(rep(23.5, 8), 30, 31)
+  r <- roc(controls = controls, cases = cases, percent = TRUE, direction = "<", partial.auc = c(100, 57.5), quiet = TRUE)
+  r.fraction <- roc(controls = controls, cases = cases, direction = "<", partial.auc = c(1, .575), quiet = TRUE)
+  for (x in c("best", "local maximas")) {
+    co <- coords(r, x, ret = c("threshold", "specificity", "sensitivity"))
+    co.fraction <- coords(r.fraction, x, ret = c("threshold", "specificity", "sensitivity"))
+    expect_equal(co$threshold, co.fraction$threshold)
+    expect_equal(co$specificity, co.fraction$specificity * 100)
+    expect_equal(co$sensitivity, co.fraction$sensitivity * 100)
+  }
+  expect_equal(coords(r, "best", ret = "threshold")$threshold, 23.25)
+
+  # smoothed curve: a limit within float error above the point closest to the best one in the window
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE))
+  k <- which(s$specificities > coords(s, "best")$specificity + 10)[1]
+  s$auc <- auc(s, partial.auc = c(100, s$specificities[k] + 1e-11))
+  expect_equal(coords(s, "best")$specificity, s$specificities[k])
+})
