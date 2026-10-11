@@ -50,3 +50,16 @@ test_that("ci.sp of a smoothed curve gives an NA interval when no resample can b
   expect_equal(dim(obtained), c(2, 3))
   expect_true(all(is.na(obtained)))
 })
+
+test_that("ci.sp of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
+  resp <- rep(0:1, each = 8)
+  pred <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9, 0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
+  warnings <- character(0)
+  withCallingHandlers(ci.sp(s, boot.n = 50), warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  expect_false(any(grepl("Partial AUC correction not defined", warnings)))
+})

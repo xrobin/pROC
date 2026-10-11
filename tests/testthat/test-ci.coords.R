@@ -222,3 +222,16 @@ test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide wi
   expect_s3_class(ci, "ci.coords")
   expect_identical(attr(ci, "x"), 0.5)
 })
+
+test_that("ci.coords of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
+  resp <- rep(0:1, each = 8)
+  pred <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9, 0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
+  warnings <- character(0)
+  withCallingHandlers(ci.coords(s, x = 0.95, boot.n = 50), warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  expect_false(any(grepl("Partial AUC correction not defined", warnings)))
+})
