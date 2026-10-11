@@ -33,11 +33,19 @@ auc.formula <- function(formula, data, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
 
-  roc(response, predictor, auc = TRUE, ...)$auc
+  roc <- roc(response, predictor, auc = TRUE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  roc$auc
 }
 
 auc.default <- function(response, predictor, ...) {
-  roc.default(response, predictor, auc = TRUE, ...)$auc
+  roc <- roc.default(response, predictor, auc = TRUE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  roc$auc
 }
 
 auc.smooth.roc <- function(smooth.roc, ...) {

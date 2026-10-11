@@ -33,6 +33,9 @@ ci.auc.formula <- function(formula, data, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.auc(smooth.roc = roc, ...))
   } else {
@@ -42,6 +45,9 @@ ci.auc.formula <- function(formula, data, ...) {
 
 ci.auc.default <- function(response, predictor, ...) {
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.auc(smooth.roc = roc, ...))
   } else {
