@@ -335,3 +335,17 @@ test_that("polygon_ci via panel.first draws the curve once, unlike plot.ci(type=
   # panel_first draws it exactly once. Everything else is identical.
   expect_equal(count_polylines(f1), count_polylines(f2) + 1)
 })
+
+test_that("text(roc, ci = ) uses the given ci.auc", {
+  pdf(NULL)
+  on.exit(dev.off())
+
+  ci1 <- ci.auc(r.s100b)
+  plot(r.s100b)
+  expect_identical(text(r.s100b, ci = ci1), ggroc_auc_label(r.s100b$auc, ci1))
+  # it takes precedence over the stored CI
+  roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
+  ci90 <- ci.auc(roc_ci, conf.level = 0.9)
+  expect_identical(text(roc_ci, ci = ci90), ggroc_auc_label(roc_ci$auc, ci90))
+  expect_identical(text(smooth(r.s100b), ci = ci1), ggroc_auc_label(smooth(r.s100b)$auc, ci1))
+})
