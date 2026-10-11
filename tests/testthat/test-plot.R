@@ -248,3 +248,18 @@ test_that("plot with ci = TRUE on a curve without CI gives a clear error", {
   expect_error(plot(r.s100b, ci = TRUE), "has no confidence interval")
   expect_error(plot(smooth(r.s100b), ci = TRUE), "has no confidence interval")
 })
+
+test_that("lines.roc default/formula give a clear error when roc() returns NA/NaN", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  d <- data.frame(
+    y = c(0, 0, 0, 1, 1, 1),
+    xna = c(1, 2, NA, 4, 5, 6),
+    xinf = c(1, 2, Inf, 4, 5, 6)
+  )
+  expect_error(lines.roc(d$y, d$xna, na.rm = FALSE, quiet = TRUE), "roc\\(\\) returned NA or NaN")
+  expect_error(lines.roc(y ~ xna, d, na.rm = FALSE, quiet = TRUE), "roc\\(\\) returned NA or NaN")
+  expect_error(suppressWarnings(lines.roc(d$y, d$xinf, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
+  expect_error(suppressWarnings(lines.roc(y ~ xinf, d, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
+})

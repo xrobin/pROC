@@ -32,14 +32,22 @@ ci.thresholds.formula <- function(formula, data, subset, na.action, ...) {
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.thresholds(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!inherits(roc, c("roc", "smooth.roc"))) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  ci.thresholds(roc, ...)
 }
 
 ci.thresholds.default <- function(response, predictor, ...) {
   if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
     stop("'ci.thresholds' not available for multiclass ROC curves.")
   }
-  ci.thresholds(roc.default(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!inherits(roc, c("roc", "smooth.roc"))) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  ci.thresholds(roc, ...)
 }
 
 ci.thresholds.smooth.roc <- function(smooth.roc, ...) {
