@@ -36,6 +36,9 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ...)
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
+  }
   lines.roc.roc(roc, ...)
   roc$call <- match.call()
   roc$predictor.name <- roc.data$predictor.names
@@ -50,6 +53,9 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
 
 lines.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, ...)
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
+  }
   lines.roc.roc(roc, ...)
   roc$call <- match.call()
   invisible(roc)

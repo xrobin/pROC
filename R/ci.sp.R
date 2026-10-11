@@ -33,6 +33,9 @@ ci.sp.formula <- function(formula, data, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.sp(smooth.roc = roc, ...))
   } else {
@@ -45,6 +48,9 @@ ci.sp.default <- function(response, predictor, ...) {
     stop("'ci.sp' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.sp(smooth.roc = roc, ...))
   } else {
