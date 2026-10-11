@@ -291,3 +291,23 @@ test_that("percent print.thres labels show the threshold as non-percent ones", {
   expect_doppelganger("plot-percent-print-thres-best", function() plot(r.percent, print.thres = "best"))
   expect_doppelganger("plot-percent-print-thres-local-maximas", function() plot(r.percent, print.thres = "local maximas"))
 })
+
+test_that("CI shapes are drawn in increasing order whatever order the CI was computed in", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  ci_sp <- ci.sp(r.s100b, sensitivities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_se <- ci.se(r.s100b, specificities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_co <- ci.coords(r.s100b, x = c(0.75, 0.25, 0.5), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-ci-sp-shape-unordered-sensitivities", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_sp, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-se-shape-unordered-specificities", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_se, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-coords-shape-unordered-x", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_co, type = "shape"), "Low definition shape")
+  })
+})
