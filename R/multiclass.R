@@ -21,7 +21,7 @@ multiclass.roc <- function(...) {
   UseMethod("multiclass.roc")
 }
 
-multiclass.roc.formula <- function(formula, data, ...) {
+multiclass.roc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   call <- match.call()
   roc.data <- roc_utils_extract_formula(formula, data, ...,

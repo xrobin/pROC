@@ -32,7 +32,7 @@ ties.method="random", progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, conf.level=0.95, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
-\S3method{roc.test}{formula}(formula, data, ...)
+\S3method{roc.test}{formula}(formula, data, subset, na.action, ...)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
 na.rm=TRUE, method=NULL, ...)
 }
@@ -54,6 +54,9 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
+  }
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
     two curves are built (only when \code{predictor1} and

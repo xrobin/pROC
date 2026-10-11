@@ -585,3 +585,23 @@ test_that("a data.frame response gives a clear error", {
   expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
   expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
 })
+
+test_that("roc.test and multiclass.roc formula methods with subset can plot and smooth", {
+  pdf(NULL)
+  on.exit(dev.off())
+  female <- aSAH[aSAH$gender == "Female", ]
+  male <- aSAH[aSAH$gender == "Male", ]
+  set.seed(42)
+  t <- roc.test(outcome ~ s100b + ndka, aSAH, subset = gender == "Female", smooth = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.female <- roc.test(outcome ~ s100b + ndka, female, smooth = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(t$p.value, t.female$p.value)
+  expect_equal(t$estimate, t.female$estimate)
+  t <- roc.test(outcome ~ s100b + ndka, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, female, quiet = TRUE)$p.value)
+  # gos6 has no observation for level 2
+  expect_equal(
+    as.numeric(suppressWarnings(multiclass.roc(gos6 ~ s100b, aSAH, subset = gender == "Male", plot = TRUE, quiet = TRUE))$auc),
+    as.numeric(suppressWarnings(multiclass.roc(gos6 ~ s100b, male, quiet = TRUE))$auc)
+  )
+})

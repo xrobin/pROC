@@ -12,7 +12,7 @@
 }
 \usage{
 multiclass.roc(...)
-\S3method{multiclass.roc}{formula}(formula, data, ...)
+\S3method{multiclass.roc}{formula}(formula, data, subset, na.action, ...)
 \S3method{multiclass.roc}{default}(response, predictor,
 levels=base::levels(as.factor(response)), 
 percent=FALSE, direction = c("auto", "<", ">"), ...)
@@ -31,6 +31,9 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
   \item{formula}{a formula of the type \code{response~predictor}.}
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
+  }
   \item{levels}{the value of the response for controls and cases
     respectively. In contrast with \code{levels} argument to
     \code{\link{roc}}, all the levels are used and
