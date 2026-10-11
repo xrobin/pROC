@@ -77,10 +77,11 @@ test_that("coords with percent works", {
 test_that("coords with local maximas thresholds works", {
   return.rows <- "all"
   obtained <- coords(r.s100b, "local maximas", ret = return.rows)
-  # Upper angles only: 0.075, 0.095, 0.105 and 0.135 are lower angles and 0.325 is collinear (ties)
-  # expected.thresholds <- c(-Inf, 0.065, 0.085, 0.115, 0.155, 0.205, 0.245, 0.29, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+  # Upper angles only: 0.075, 0.095, 0.105 and 0.135 are lower angles and 0.325 is collinear (ties).
+  # The end of the curve (-Inf) is not a local maxima.
+  # expected.thresholds <- c(0.065, 0.085, 0.115, 0.155, 0.205, 0.245, 0.29, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
   expected.thresholds <- c(
-    -Inf, 0x1.0a3d70a3d70a4p-4, 0x1.5c28f5c28f5c2p-4,
+    0x1.0a3d70a3d70a4p-4, 0x1.5c28f5c28f5c2p-4,
     0x1.d70a3d70a3d7p-4, 0x1.3d70a3d70a3d7p-3, 0x1.a3d70a3d70a3ep-3,
     0x1.f5c28f5c28f5cp-3, 0x1.28f5c28f5c29p-2, 0x1.6147ae147ae14p-2,
     0x1.947ae147ae148p-2, 0x1.bd70a3d70a3d7p-2, 0x1.e666666666666p-2,
@@ -878,32 +879,31 @@ test_that("local maximas are the upper angles of the curve", {
   r <- roc(controls = 1:10, cases = c(4.5, 6.5, 8.5, 11, 12), direction = "<", quiet = TRUE)
   expect_equal(coords(r, "local maximas")$threshold, c(4.25, 6.25, 8.25, 10.5))
 
-  # Straight diagonal through tied pairs: only the two ends
+  # Straight diagonal through tied pairs: no local maxima (the ends are never local maximas)
   r <- roc(controls = 1:3, cases = 1:3, direction = "<", quiet = TRUE)
-  expect_equal(coords(r, "local maximas")$threshold, c(-Inf, Inf))
+  expect_warning(expect_null(coords(r, "local maximas")), "No local maximas found")
   r <- roc(controls = 1:3, cases = 1:3, direction = "<", quiet = TRUE, percent = TRUE)
-  expect_equal(coords(r, "local maximas")$threshold, c(-Inf, Inf))
-  expect_equal(as.vector(attr(ci.thresholds(r, boot.n = 2, progress = "none"), "thresholds")), c(-Inf, Inf))
+  expect_warning(expect_null(coords(r, "local maximas")), "No local maximas found")
 
   # Points inside the bottom edge (se = 0) are not angles
   r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(0, 2.5), direction = "<", quiet = TRUE)
-  expect_equal(coords(r, "local maximas")$threshold, c(-Inf, 2.25, Inf))
+  expect_equal(coords(r, "local maximas")$threshold, 2.25)
   # Same as the mirrored curve (roles of cases and controls swapped)
   r2 <- roc(controls = -c(0, 2.5), cases = -c(1, 2, 3, 4, 5), direction = "<", quiet = TRUE)
   lm <- coords(r, "local maximas", ret = c("specificity", "sensitivity"))
   lm2 <- coords(r2, "local maximas", ret = c("sensitivity", "specificity"))
-  expect_equal(unname(as.matrix(lm)), unname(as.matrix(lm2))[3:1, ])
-  expect_equal(as.vector(attr(ci.thresholds(r, boot.n = 2, progress = "none"), "thresholds")), c(-Inf, 2.25, Inf))
+  expect_equal(unname(as.matrix(lm)), unname(as.matrix(lm2)))
+  expect_equal(as.vector(attr(ci.thresholds(r, boot.n = 2, progress = "none"), "thresholds")), 2.25)
 
   # Ties: 2.5 lies on a straight segment of two tied pairs
   r <- roc(controls = c(1, 2, 3, 5), cases = c(2, 3, 4, 5), direction = "<", quiet = TRUE)
-  expect_equal(coords(r, "local maximas")$threshold, c(1.5, 3.5, Inf))
+  expect_equal(coords(r, "local maximas")$threshold, c(1.5, 3.5))
   # Ties: 2.5 is a lower angle (the slope goes from -2 to -1/2)
   r <- roc(controls = c(1, 2, 3, 3), cases = c(2, 2, 3, 4), direction = "<", quiet = TRUE)
   expect_equal(coords(r, "local maximas")$threshold, c(1.5, 3.5))
 
   # Ordered predictor: level 3 is a lower angle
-  expect_equal(as.character(coords(r.wfns, "local maximas")$threshold), c("1", "2", "4", "5", "Inf"))
+  expect_equal(as.character(coords(r.wfns, "local maximas")$threshold), c("2", "4", "5"))
   expect_equal(coords(r.wfns.percent, "local maximas")$threshold, coords(r.wfns, "local maximas")$threshold)
   expect_equal(coords(r.s100b.percent, "local maximas")$threshold, coords(r.s100b, "local maximas")$threshold)
 })
