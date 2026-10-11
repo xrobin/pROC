@@ -87,7 +87,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   With \code{method="density"}, the \code{\link{density}}
   function is employed to generate a smooth kernel
-  density of the control and case observations as described by Zhou
+  density of the control and case observations as described by Zou
   \emph{et al.} (1997), unless
   \code{density.controls} or \code{density.cases} are provided
   directly. \code{bw} can be given to
@@ -250,8 +250,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 
-  Kaspar Rufibach (2011) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
-  \emph{The International Journal of Biostatistics}, \bold{8}, accepted. DOI: 
+  Kaspar Rufibach (2012) ``A Smooth ROC Curve Estimator Based on Log-Concave Density Estimates''.
+  \emph{The International Journal of Biostatistics}, \bold{8}(1), 1--29. DOI: 
   \doi{10.1515/1557-4679.1378}. arXiv:
   \href{https://arxiv.org/abs/1103.1787}{arXiv:1103.1787}.
 
@@ -262,7 +262,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   Kelly H. Zou, W. J. Hall and David E. Shapiro (1997) ``Smooth
   non-parametric receiver operating characteristic (ROC) curves for
   continuous diagnostic tests''. \emph{Statistics in Medicine}
-  \bold{18}, 2143--2156. DOI: 
+  \bold{16}(19), 2143--2156. DOI: 
   \doi{10.1002/(SICI)1097-0258(19971015)16:19<2143::AID-SIM655>3.0.CO;2-3}.
 }
 
