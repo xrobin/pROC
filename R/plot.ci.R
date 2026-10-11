@@ -134,3 +134,26 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
   }
   invisible(x)
 }
+
+# Draw a ci.coords on the axes of a ROC plot (x = specificity, y = sensitivity)
+# with plot.ci.coords. It draws attr(x, "x") horizontally and the first 'ret'
+# vertically, which maps onto the ROC axes only for the sensitivity at given
+# specificities. Other coordinates are skipped with a warning.
+roc_utils_plot_ci_coords_on_roc <- function(x, type, col, ...) {
+  ret.se <- NA
+  if (attr(x, "input") %in% c("specificity", "tnr")) {
+    ret.se <- intersect(names(x), c("sensitivity", "tpr", "recall"))[1]
+  }
+  skipped <- setdiff(names(x), ret.se)
+  if (length(skipped) > 0) {
+    warning(simpleWarning(sprintf(
+      "Only the sensitivity at given specificities of a 'ci.coords' can be drawn on a ROC curve, not '%s' with input '%s'.",
+      paste(skipped, collapse = "', '"), attr(x, "input")
+    ), call = sys.call(-1)))
+  }
+  if (!is.na(ret.se)) {
+    x[skipped] <- NULL
+    plot.ci.coords(x, type = type, col = col, ...)
+  }
+  invisible(x)
+}
