@@ -171,9 +171,10 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   } else {
     D <- (roc1$auc - roc2$auc) / sd(diffs)
   }
-  if (is.nan(D) && all(diffs == 0) && roc1$auc == roc2$auc) {
+  estimates.equal <- if (test %in% c("sp", "se")) coord1 == coord2 else roc1$auc == roc2$auc
+  if (is.nan(D) && all(diffs == 0) && estimates.equal) {
     D <- 0
-  } # special case: no difference between AUCs produces a NaN
+  } # special case: no difference between the tested values produces a NaN
   if (test %in% c("sp", "se")) {
     # the tested values, reported as estimates by roc.test
     attr(D, "estimate") <- c(coord1, coord2)
