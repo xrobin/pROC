@@ -126,6 +126,7 @@
   * Fixed a partial argument match warning in 'ggroc' with options(warnPartialMatchArgs = TRUE) (issue #87).
   * 'multiclass.roc', and 'auc', 'ci', ... with response and predictor, now give a clear error when 'response' is a data.frame, for instance a single selected column
   * CI functions now give the same clear error for multivariate 'multiclass.roc' curves as for univariate ones
+  * ci.se() and ci.sp() of a smoothed curve no longer fail with "length of 'dimnames' [1] not equal to array extent" when no bootstrap resample can be smoothed; they return an NA interval with a warning like ci.auc() and ci.coords().
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
