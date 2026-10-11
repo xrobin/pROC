@@ -264,6 +264,42 @@ test_that("non-stratified bootstraps of fitdistr smoothed curves ignore resample
   expect_error(suppressWarnings(roc.test(s, s, method = "sensitivity", sensitivity = 0.5, boot.n = 20, boot.stratified = FALSE)), NA)
 })
 
+test_that("roc(smooth = TRUE) keeps only the smoothing arguments for the replays", {
+  pdf(NULL)
+  on.exit(dev.off())
+  title <- quote(italic(S100) * beta)
+  s <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, plot = TRUE, main = title, xlab = quote(alpha), col = "red", quiet = TRUE)
+  s.char <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)
+  expect_identical(s$smoothing.args, s.char$smoothing.args)
+  expect_false(any(c("main", "xlab", "col") %in% names(s$smoothing.args)))
+  s2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, quiet = TRUE)
+  seed <- sample.int(1e6, 1)
+  set.seed(seed)
+  expected <- roc.test(s.char, s2, boot.n = 5, progress = "none")$p.value
+  set.seed(seed)
+  expect_equal(roc.test(s, s2, boot.n = 5, progress = "none")$p.value, expected)
+  set.seed(seed)
+  expected <- as.numeric(ci.auc(s.char, boot.n = 5, progress = "none"))
+  set.seed(seed)
+  expect_equal(as.numeric(ci.auc(s, boot.n = 5, progress = "none")), expected)
+  set.seed(seed)
+  ci.plotmath <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", plot = TRUE, main = title, quiet = TRUE)$ci
+  expect_equal(as.numeric(ci.plotmath), expected)
+})
+
+test_that("the graphical adj argument does not change density smoothing", {
+  pdf(NULL)
+  on.exit(dev.off())
+  s <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0.5, quiet = TRUE)
+  expect_equal(s.adj$sensitivities, s$sensitivities)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", adj = 0.5, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)

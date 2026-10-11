@@ -571,6 +571,38 @@ test_that("roc.test and cov do not warn for the same smoothing spelled different
   expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
 })
 
+test_that("roc(smooth = TRUE) does not take the x of ci.coords or the log of plot as smoothing arguments", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  # x is a formal of density(), but the data of the smoother
+  a <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "density",
+    ci = TRUE, of = "coords", x = "best", boot.n = 5, progress = "none", quiet = TRUE
+  )
+  expect_null(a$smoothing.args$x)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(a, smooth(r.ndka, method = "density"), boot.n = 5)))))
+
+  skip_if_not_installed("MASS")
+  pdf(NULL)
+  on.exit(dev.off())
+  # log is a formal of the fitdistr densities, but set by fitdistr itself
+  f <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "fitdistr", plot = TRUE, log = "", quiet = TRUE)
+  expect_null(f$smoothing.args$log)
+  expect_false(any(grepl("Different smoothing parameters", warnings.of(roc.test(f, smooth(r.ndka, method = "fitdistr"), boot.n = 5)))))
+  g <- roc(aSAH$outcome, aSAH$s100b + 0.01,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = "gamma", plot = TRUE, log = "", quiet = TRUE
+  )
+  expect_s3_class(g, "smooth.roc")
+  expect_null(g$smoothing.args$log)
+})
+
 test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
   warnings.of <- function(expr) {
     warnings <- character(0)

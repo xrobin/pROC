@@ -362,3 +362,25 @@ test_that("plot.roc draws a ci.coords of the best threshold", {
   expect_equal(nrow(segs), 6)
   expect_equal(segs[1, ], unname(c(r$ci$specificity[1, 2], r$ci$sensitivity[1, 1], r$ci$specificity[1, 2], r$ci$sensitivity[1, 3])))
 })
+
+test_that("panel.first and panel.last are drawn on smoothed curves from roc() and plot.roc()", {
+  n <- 0
+  dl <- capture_display_list(s <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, plot = TRUE, quiet = TRUE,
+    panel.first = {
+      n <- n + 1
+      abline(h = 0.5)
+    },
+    panel.last = text(0.5, 0.5, "last")
+  ))
+  expect_equal(n, 1)
+  # identity line and panel.first
+  expect_length(display_list_calls(dl, "abline"), 2)
+  expect_identical(display_list_texts(dl), "last")
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$smoothing.args$panel.first)
+  expect_null(s$smoothing.args$panel.last)
+
+  dl <- capture_display_list(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE, panel.last = text(0.5, 0.5, "last")))
+  expect_identical(display_list_texts(dl), "last")
+})
