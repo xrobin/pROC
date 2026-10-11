@@ -123,14 +123,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     \itemize{
       \item \code{\link{auc}}: \code{partial.auc}, \code{partial.auc.focus}, \code{partial.auc.correct}.
       \item \code{\link{ci}}: \code{of}, \code{conf.level}, \code{boot.n}, \code{boot.stratified}, \code{progress}
-      \item \code{\link{ci.auc}}:, \code{reuse.auc}, \code{method}
+      \item \code{\link{ci.auc}}: \code{reuse.auc}, and \code{method}
+        as \code{ci.method}
       \item \code{\link{ci.thresholds}}: \code{thresholds}
-      \item \code{\link{ci.se}}: \code{sensitivities}
-      \item \code{\link{ci.sp}}: \code{specificities}
+      \item \code{\link{ci.se}}: \code{specificities}
+      \item \code{\link{ci.sp}}: \code{sensitivities}
       \item \code{\link{plot.roc}}: \code{add}, \code{col} and most
         other arguments to the \code{\link{plot.roc}} function. See
 	\code{\link{plot.roc}} directly for more details.
-      \item \code{\link{smooth}}: \code{method}, \code{n}, and all other
+      \item \code{\link{smooth}}: \code{method} and \code{n} as
+        \code{smooth.method} and \code{smooth.n} (\code{n} itself would
+        be taken as \code{na.rm}), and all other
         arguments. See \code{\link{smooth}} for more details.
     }
   }
