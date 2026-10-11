@@ -127,6 +127,7 @@
   * The McClish-corrected partial AUC of a ROC curve lying exactly on the diagonal returned NA with a "below the diagonal" warning depending on floating-point rounding; it is now 0.5 (or 50%)
   * smooth(method = "fitdistr") with a density function and another argument in ... (an optim() argument such as control, or partial.auc passed through roc()) no longer fails with "unused argument (`NA` = NULL)".
   * roc.test(method = "specificity"/"sensitivity") now returns D = 0 and p = 1 instead of NaN when the tested values of both curves are identical in the sample and all bootstrap replicates.
+  * roc.test() with paired DeLong no longer fails with "missing value where TRUE/FALSE needed" when one group has a single observation and both AUCs are equal: it returns an NA p-value, as when the AUCs differ.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
