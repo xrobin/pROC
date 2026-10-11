@@ -135,6 +135,7 @@
   * multiclass.roc() now gives a clear error when the response is a data.frame, as roc() does.
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for curves smoothed identically in 'roc' with plot or CI arguments, or returned by 'roc.test'
+  * Fixed 'print' of 'multiclass.roc' objects built from a formula passed in a variable (twin of issue #101)
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -224,3 +224,16 @@ test_that("no partial matching of list elements", {
   expect_warning(lines.roc(outcome ~ s100b, aSAH, quiet = TRUE), NA)
   expect_warning(roc.test(outcome ~ s100b + ndka, aSAH, quiet = TRUE), NA)
 })
+
+test_that("print.multiclass.roc works with a formula passed as variable", {
+  d <- data.frame(
+    resp = factor(rep(c("x", "y", "z"), 4)),
+    x = c(1, 5, 9, 2, 6, 7, 3, 4, 8, 2, 6, 9),
+    y = c(9, 5, 1, 8, 4, 2, 7, 6, 3, 8, 5, 1),
+    z = c(2, 3, 9, 1, 4, 8, 3, 2, 7, 1, 5, 9)
+  )
+  fo <- resp ~ x
+  expect_output(print(multiclass.roc(fo, d, quiet = TRUE)), "Data: x with 3 levels of resp: x, y, z.", fixed = TRUE)
+  fo.mv <- resp ~ x + y + z
+  expect_output(print(multiclass.roc(fo.mv, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+})
