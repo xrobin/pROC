@@ -134,6 +134,7 @@
   * roc.test() with unpaired DeLong now returns D = 0 and p = 1 instead of NaN when both AUCs are equal with zero variance (e.g. AUC = 1), like the paired DeLong and bootstrap tests.
   * multiclass.roc() now gives a clear error when the response is a data.frame, as roc() does.
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
+  * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for curves smoothed identically in 'roc' with plot or CI arguments, or returned by 'roc.test'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

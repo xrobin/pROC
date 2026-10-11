@@ -533,3 +533,50 @@ test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 
   expect_warning(t <- roc.test(r.single, r1, paired = FALSE), "AUC == 1")
   expect_true(is.na(t$p.value))
 })
+
+test_that("roc.test compares only the smoothing arguments of the curves", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  s2 <- smooth(r.ndka)
+  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  s1.ci <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", quiet = TRUE)
+  expect_no_warning(roc.test(s1.col, s2, boot.n = 5), message = msg)
+  expect_no_warning(roc.test(s1.ci, s2, boot.n = 5), message = msg)
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_no_warning(roc.test(t$roc1, s2, boot.n = 5), message = msg)
+  # real differences are still reported
+  expect_warning(roc.test(smooth(r.s100b, n = 100), s2, boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", adjust = 2), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), r.ndka, boot.n = 5), msg)
+})
+
+test_that("roc.test and cov do not warn for the same smoothing spelled differently", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  expect_no_warning(roc.test(smooth(r.s100b, n = 512L), smooth(r.ndka), boot.n = 2), message = msg)
+  expect_no_warning(cov(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.n = 512L, quiet = TRUE), smooth(r.ndka), boot.n = 2), message = msg)
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", adjust = 1, cut = 3), smooth(r.ndka, method = "density"), boot.n = 2), message = msg)
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", kernel = "gaussian"), smooth(r.ndka, method = "density", window = "gaussian"), boot.n = 2), message = msg)
+  # real differences are still reported
+  expect_warning(roc.test(smooth(r.s100b, method = "density", kernel = "epanechnikov"), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", adjust = 1.5), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  skip_if_not_installed("MASS")
+  expect_no_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "normal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
+})
+
+test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  # density() matches the kernel partially
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density", kernel = "epanechnikov"), boot.n = 2), message = msg)
+  expect_no_warning(cov(smooth(r.s100b, method = "density", window = "rect"), smooth(r.ndka, method = "density", kernel = "rectangular"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  skip_if_not_installed("MASS")
+  # "lognormal" and "log-normal" are the same density
+  expect_no_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
+})
