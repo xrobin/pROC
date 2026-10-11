@@ -28,3 +28,10 @@ display_list_polygons <- function(dl) {
 display_list_axis_labels <- function(dl) {
   lapply(display_list_calls(dl, "axis"), function(e) e$args[[3]])
 }
+
+# Segments drawn with segments(), one row per segment
+display_list_segments <- function(dl) {
+  do.call(rbind, lapply(display_list_calls(dl, "segments"), function(e) {
+    unname(cbind(x0 = e$args[[1]], y0 = e$args[[2]], x1 = e$args[[3]], y1 = e$args[[4]]))
+  }))
+}

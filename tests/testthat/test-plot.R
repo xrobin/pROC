@@ -331,3 +331,34 @@ test_that("legacy.axes labels are not padded", {
   labels <- display_list_axis_labels(capture_display_list(plot(r.s100b, legacy.axes = TRUE)))
   expect_identical(labels, rep(list(c("0.0", "0.2", "0.4", "0.6", "0.8", "1.0")), 2))
 })
+
+test_that("plot.roc draws a ci.coords on the ROC axes", {
+  r <- r.s100b
+  # CI of the specificity at given sensitivities: horizontal bars, as ci.sp
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "sensitivity", ret = "specificity", boot.n = 10, progress = "none")
+  segs <- display_list_segments(capture_display_list(plot(r)))
+  expect_equal(segs[c(1, 4), ], unname(cbind(r$ci$specificity[, 1], c(0.5, 0.9), r$ci$specificity[, 3], c(0.5, 0.9))))
+  # CI of the sensitivity at given specificities: vertical bars, as before
+  r$ci <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  segs <- display_list_segments(capture_display_list(plot(r)))
+  expect_equal(segs[1, ], unname(c(0.5, r$ci$sensitivity[1, 1], 0.5, r$ci$sensitivity[1, 3])))
+  # CI at a threshold: cross of specificity and sensitivity bars, as ci.thresholds
+  r$ci <- ci.coords(r.s100b, x = 0.2, boot.n = 10, progress = "none")
+  segs <- expect_silent(display_list_segments(capture_display_list(plot(r))))
+  expect_equal(nrow(segs), 6)
+  expect_equal(segs[1, ], unname(c(r$ci$specificity[1, 2], r$ci$sensitivity[1, 1], r$ci$specificity[1, 2], r$ci$sensitivity[1, 3])))
+  expect_equal(segs[4, ], unname(c(r$ci$specificity[1, 1], r$ci$sensitivity[1, 2], r$ci$specificity[1, 3], r$ci$sensitivity[1, 2])))
+  # Nothing to draw on ROC axes: skipped with a warning
+  r$ci <- ci.coords(r.s100b, x = 0.5, input = "sensitivity", ret = "precision", boot.n = 10, progress = "none")
+  expect_warning(dl <- capture_display_list(plot(r)), "cannot be drawn on a ROC curve")
+  expect_null(display_list_segments(dl))
+})
+
+test_that("plot.roc draws a ci.coords of the best threshold", {
+  # Perfect separation: a single best threshold in every resample
+  r <- roc(rep(0:1, each = 10), c(1:10, 11:20), quiet = TRUE)
+  r$ci <- expect_warning(ci.coords(r, x = "best", boot.n = 10, progress = "none"), "AUC == 1")
+  segs <- expect_silent(display_list_segments(capture_display_list(plot(r))))
+  expect_equal(nrow(segs), 6)
+  expect_equal(segs[1, ], unname(c(r$ci$specificity[1, 2], r$ci$sensitivity[1, 1], r$ci$specificity[1, 2], r$ci$sensitivity[1, 3])))
+})

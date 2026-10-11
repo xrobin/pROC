@@ -148,6 +148,7 @@
   * Fixed confidence shapes of 'plot.ci' (type="shape"), 'plot.roc(ci.type="shape")' and 'geom_polygon_ci' crossing themselves when the CI was computed at specificities, sensitivities or x not in increasing order
   * Fixed 'plot.roc(print.auc=TRUE, reuse.auc=FALSE, partial.auc=...)' printing the new partial AUC with the confidence interval of the stored AUC
   * Fixed axis labels of 'plot.roc(legacy.axes=TRUE)' with 'percent=TRUE' padded with spaces and drawn off-centre
+  * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"); CIs that cannot be drawn on a ROC curve are now skipped with a warning
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
