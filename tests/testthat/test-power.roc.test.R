@@ -512,3 +512,16 @@ test_that("power.roc.test with two ROC curves returns NA with a single case", {
   expect_true(is.na(power.roc.test(r1, r2, power = 0.8, sig.level = NULL)$sig.level))
   expect_true(is.na(power.roc.test(r1, r2, power = 0.8, kappa = 2)$ncases))
 })
+
+test_that("power.roc.test refuses a partial or corrected auc object", {
+  expect_error(power.roc.test(auc = r.s100b.partial$auc, ncases = 41, ncontrols = 72), "only available for the full AUC")
+  expect_error(power.roc.test(r.s100b.partial$auc, power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(auc = r.s100b.percent.partial1$auc, ncases = 41, ncontrols = 72), "only available for the full AUC")
+  corrected <- auc(r.s100b, partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
+  expect_error(power.roc.test(auc = corrected, ncases = 41, ncontrols = 72), "corrected partial AUCs")
+  # Full AUC objects and plain numbers still work
+  expect_equal(
+    power.roc.test(auc = r.s100b$auc, ncases = 41, ncontrols = 72)$power,
+    power.roc.test(auc = as.numeric(r.s100b$auc), ncases = 41, ncontrols = 72)$power
+  )
+})
