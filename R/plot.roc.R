@@ -186,10 +186,10 @@ plot.roc.roc <- function(x,
       # so handle each case separately and consistently across axes
       if (legacy.axes) {
         lab.at <- axTicks(side = 1)
-        lab.labels <- format(ifelse(x$percent, 100, 1) - lab.at)
+        lab.labels <- format(ifelse(x$percent, 100, 1) - lab.at, trim = TRUE)
         suppressWarnings(axis(side = 1, at = lab.at, labels = lab.labels, ...))
         lab.at <- axTicks(side = 2)
-        suppressWarnings(axis(side = 2, at = lab.at, labels = format(lab.at), ...))
+        suppressWarnings(axis(side = 2, at = lab.at, labels = format(lab.at, trim = TRUE), ...))
       } else {
         suppressWarnings(axis(side = 1, ...))
         suppressWarnings(axis(side = 2, ...))
