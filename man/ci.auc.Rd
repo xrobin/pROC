@@ -29,7 +29,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
-\S3method{ci.auc}{formula}(formula, data, subset, na.action, ...)
+\S3method{ci.auc}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.auc}{default}(response, predictor, ...)
 }
 		   
