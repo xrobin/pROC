@@ -335,9 +335,8 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
 # Find all the local maximas of the ROC curve: its upper angles, where the
 # curve makes a strict convex (clockwise) turn. Collinear points (ties on a
 # straight segment, flat parts of the bottom edge) are not angles. The ends
-# of the curve are compared to the border of the ROC space, as if the curve
-# came along the top edge before its first point and went down the right
-# edge after its last point. Must be given the whole curve.
+# of the curve (thresholds -Inf and Inf) are never local maximas. Must be
+# given the whole curve.
 # Returns a logical vector
 roc_utils_max_thresholds_idx <- function(sp, se, percent = FALSE) {
   reversed <- is.unsorted(sp)
@@ -352,11 +351,11 @@ roc_utils_max_thresholds_idx <- function(sp, se, percent = FALSE) {
   keep <- c(TRUE, abs(diff(sp)) > tol | abs(diff(se)) > tol)
   x <- sp[keep]
   y <- se[keep]
-  # Segments into and out of each point, with the borders at the ends
-  dx.in <- c(scale, diff(x))
+  # Segments into and out of each point (none at the ends)
+  dx.in <- c(0, diff(x))
   dy.in <- c(0, diff(y))
   dx.out <- c(diff(x), 0)
-  dy.out <- c(diff(y), -scale)
+  dy.out <- c(diff(y), 0)
   # Cross product < 0: the curve turns clockwise (an upper angle)
   cross <- dx.in * dy.out - dy.in * dx.out
   local.maximas <- rep(FALSE, length(sp))

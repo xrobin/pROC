@@ -352,9 +352,13 @@ coords.roc <- function(roc,
           in.range <- roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol
         }
         lm.idx <- lm.idx & in.range
+        if (!any(lm.idx)) {
+          warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+          return(NULL)
+        }
       }
       if (!any(lm.idx)) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No local maximas found (the curve has no upper angle), returning NULL.")
         return(NULL)
       }
       res <- roc_utils_coords_basic(roc$thresholds[lm.idx], roc$specificities[lm.idx], roc$sensitivities[lm.idx])
