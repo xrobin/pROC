@@ -128,6 +128,7 @@
   * roc.test() with paired DeLong no longer fails with "missing value where TRUE/FALSE needed" when one group has a single observation and both AUCs are equal: it returns an NA p-value, as when the AUCs differ.
   * auc(), ci(), ci.auc(), ci.se(), ci.sp(), ci.coords() and ci.thresholds() called with response and predictor (or a formula) now return NA or NaN when roc() does (NA values with na.rm = FALSE, or infinite predictor values) instead of failing with unrelated errors; lines.roc() returns them with a warning that nothing was plotted, like plot.roc(); roc.test() stops with a clear error.
   * Fixed a partial argument match warning in 'ggroc' with options(warnPartialMatchArgs = TRUE) (issue #87).
+  * Parallel bootstrap operations now leave the random number generator of the cluster workers as they found it.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
