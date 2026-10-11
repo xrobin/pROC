@@ -331,3 +331,43 @@ test_that("legacy.axes labels are not padded", {
   expect_doppelganger("plot-legacy-axes-percent", function() plot(r.percent, legacy.axes = TRUE))
   # Same number of decimals on all labels: see the "legacy.axes" snapshot
 })
+
+test_that("plot.roc draws the sensitivity of a ci.coords with plot.ci.coords", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-roc-ci-coords-sensitivity", function() plot(r))
+  # Other coordinates are skipped, even before the sensitivity
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "specificity", ret = c("precision", "sensitivity"), boot.n = 10, progress = "none")
+  expect_warning(
+    expect_doppelganger("plot-roc-ci-coords-sensitivity-not-precision", function() plot(r)),
+    "not 'precision' with input 'specificity'"
+  )
+})
+
+test_that("plot.roc skips with a warning a ci.coords that does not map onto the ROC axes", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- r.s100b
+  # CI of the specificity at given sensitivities
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "sensitivity", ret = "specificity", boot.n = 10, progress = "none")
+  expect_warning(expect_identical(plot(r), r), "not 'specificity' with input 'sensitivity'")
+  expect_warning(plot(r, ci.type = "shape"), "not 'specificity' with input 'sensitivity'")
+  # CI at a threshold
+  r$ci <- ci.coords(r.s100b, x = 0.2, boot.n = 10, progress = "none")
+  expect_warning(plot(r), "not 'threshold', 'specificity', 'sensitivity' with input 'threshold'")
+  # CI at the best threshold (perfect separation: a single best threshold in every resample)
+  r <- roc(rep(0:1, each = 10), c(1:10, 11:20), quiet = TRUE)
+  r$ci <- expect_warning(ci.coords(r, x = "best", boot.n = 10, progress = "none"), "AUC == 1")
+  expect_warning(expect_identical(plot(r), r), "with input 'threshold'")
+  # Nothing is drawn
+  skip_if(getRversion() < "4.1")
+  r <- r.s100b
+  r$ci <- ci.coords(r.s100b, x = 0.2, boot.n = 10, progress = "none")
+  expect_warning(
+    expect_doppelganger("plot-roc-ci-coords-threshold-skipped", function() plot(r)),
+    "with input 'threshold'"
+  )
+})
