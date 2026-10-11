@@ -59,6 +59,16 @@ delong.unpaired.test <- function(roc1, roc2) {
   df <- ((SR) + (SS))^2 /
     (((SR)^2 / (ntotR - 1)) + ((SS)^2 / (ntotS - 1)))
 
+  if (is.nan(t) && VR$theta == VS$theta && isTRUE(SR + SS == 0)) {
+    # special case: no difference between theta's with zero variance
+    # produces a NaN (as in delong.paired.test). df is 0/0 too: use the
+    # pooled df, the p-value does not depend on it with t = 0.
+    # With a single case or control SR + SS is NaN (undefined variance):
+    # keep t NaN so that the p-value is NA.
+    t <- 0
+    df <- ntotR + ntotS - 2
+  }
+
   return(c(t, df))
 }
 
