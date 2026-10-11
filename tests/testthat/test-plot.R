@@ -265,3 +265,10 @@ test_that("lines.roc default/formula return the NA/NaN of roc() with a warning, 
   expect_warning(r <- withVisible(plot.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
   expect_identical(r, list(value = NaN, visible = FALSE))
 })
+
+test_that("percent print.thres labels keep 3 decimals for the threshold", {
+  skip_if(getRversion() < "4.1")
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-percent-print-thres-best", function() plot(r.percent, print.thres = "best"))
+  expect_doppelganger("plot-percent-print-thres-local-maximas", function() plot(r.percent, print.thres = "local maximas"))
+})
