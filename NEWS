@@ -139,6 +139,7 @@
   * ci.se() and ci.sp() of a smoothed curve no longer fail with "length of 'dimnames' [1] not equal to array extent" when no bootstrap resample can be smoothed; they return an NA interval with a warning like ci.auc() and ci.coords().
   * coords(input = "threshold") again uses the names of x as row names when ret includes derived coordinates such as accuracy or ppv (lost in the development version since the data.frame refactor; kept in 1.19.1).
   * power.roc.test() with two ROC curves no longer fails with "missing value where TRUE/FALSE needed" when one group has a single observation: it returns NA again.
+  * roc.test() with unpaired DeLong now returns D = 0 and p = 1 instead of NaN when both AUCs are equal with zero variance (e.g. AUC = 1), like the paired DeLong and bootstrap tests.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
