@@ -23,9 +23,11 @@ delong.paired.test <- function(calcs) {
 
   zscore <- with(calcs, d / sig)
 
-  if (is.nan(zscore) && calcs$d == 0 && calcs$sig == 0) {
+  if (is.nan(zscore) && calcs$d == 0 && isTRUE(calcs$sig == 0)) {
     zscore <- 0
   } # special case: no difference between theta's produces a NaN
+  # With a single case or control sig is NaN (undefined variance, as in
+  # ci_auc_delong): keep zscore NaN so that the p-value is NA.
 
   return(zscore)
 }
