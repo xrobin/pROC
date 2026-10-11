@@ -158,9 +158,9 @@ text.ci.auc <- function(x, ...) {
   text.auc(attr(x, "auc"), ci = x, ...)
 }
 
-text.roc <- function(x, ...) {
+text.roc <- function(x, ci = x$ci, ...) {
   roc_utils_stop_if_no_auc(x)
-  text.auc(x$auc, ci = x$ci, ...)
+  text.auc(x$auc, ci = ci, ...)
 }
 
 text.smooth.roc <- text.roc
