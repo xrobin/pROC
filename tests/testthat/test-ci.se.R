@@ -60,3 +60,13 @@ test_that("ci.se gives the same result on percent and fraction curves", {
   obtained.percent <- ci.se(rp, specificities = c(57.5, 60), boot.n = 50)
   expect_equal(as.numeric(obtained.percent), as.numeric(obtained) * 100)
 })
+
+test_that("ci.se of a smoothed curve gives an NA interval when no resample can be smoothed", {
+  s <- smooth(r.s100b)
+  # Every resample fails to smooth
+  s$smoothing.args$method <- "density"
+  s$smoothing.args$density.controls <- function(x, ...) stop("not smoothable")
+  expect_warning(obtained <- ci.se(s, specificities = c(0.5, 0.9), boot.n = 3, progress = "none"), "NA value")
+  expect_equal(dim(obtained), c(2, 3))
+  expect_true(all(is.na(obtained)))
+})

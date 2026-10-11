@@ -595,7 +595,8 @@ bootstrap.smooth.se <- function(n, roc, stratified, sp, smooth.roc.call) {
   smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
   smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
-    return(NA_real_)
+    # One NA per requested specificity, as bootstrap.se
+    return(rep(NA_real_, length(sp)))
   }
   coords.smooth.roc(smooth.roc, sp, input = "specificity", ret = "sensitivity")[, 1]
 }
@@ -604,7 +605,8 @@ bootstrap.smooth.sp <- function(n, roc, stratified, se, smooth.roc.call) {
   smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
   smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
-    return(NA_real_)
+    # One NA per requested sensitivity, as bootstrap.sp
+    return(rep(NA_real_, length(se)))
   }
   coords.smooth.roc(smooth.roc, se, input = "sensitivity", ret = "specificity")[, 1]
 }
