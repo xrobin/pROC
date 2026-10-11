@@ -56,6 +56,9 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     if (dim(predictor1)[2] == 2 & length(response) == dim(predictor1)[1]) {
       roc1 <- roc(response, predictor1[, 1], ...)
       roc2 <- roc(response, predictor1[, 2], ...)
+      if (!inherits(roc1, c("roc", "smooth.roc")) || !inherits(roc2, c("roc", "smooth.roc"))) {
+        stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
+      }
       if (!is.null(names(predictor1))) {
         data.names <- sprintf("%s and %s in %s by %s (%s, %s)", names(predictor1)[1], names(predictor1)[2], deparse1(substitute(predictor1)), deparse1(substitute(response)), roc1$levels[1], roc1$levels[2])
       } else if (!is.null(colnames(predictor1))) {
@@ -79,6 +82,9 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     }
     roc1 <- roc(response, predictor1, ...)
     roc2 <- roc(response, predictor2, ...)
+    if (!inherits(roc1, c("roc", "smooth.roc")) || !inherits(roc2, c("roc", "smooth.roc"))) {
+      stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
+    }
     call <- match.call()
     data.names <- sprintf("%s and %s by %s (%s, %s)", deparse1(call$predictor1), deparse1(call$predictor2), deparse1(call$response), roc1$levels[1], roc1$levels[2])
   }

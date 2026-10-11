@@ -79,3 +79,21 @@ test_that("ci formula and default methods work with smooth = TRUE", {
     expect_equal(as.numeric(unlist(unclass(obs.formula))), as.numeric(unlist(unclass(obs.smooth))))
   }
 })
+
+test_that("auc and ci default/formula return the NA/NaN of roc()", {
+  d <- data.frame(
+    y = c(0, 0, 0, 1, 1, 1),
+    xna = c(1, 2, NA, 4, 5, 6),
+    xinf = c(1, 2, Inf, 4, 5, 6)
+  )
+  for (fun in list(auc, ci, ci.auc, ci.se, ci.sp, ci.thresholds)) {
+    expect_identical(fun(d$y, d$xna, na.rm = FALSE, quiet = TRUE), NA)
+    expect_identical(fun(y ~ xna, d, na.rm = FALSE, quiet = TRUE), NA)
+    expect_identical(suppressWarnings(fun(d$y, d$xinf, quiet = TRUE)), NaN)
+    expect_identical(suppressWarnings(fun(y ~ xinf, d, quiet = TRUE)), NaN)
+  }
+  expect_identical(ci.coords(d$y, d$xna, x = 3, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(ci.coords(y ~ xna, d, x = 3, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(suppressWarnings(ci.coords(d$y, d$xinf, x = 3, quiet = TRUE)), NaN)
+  expect_identical(suppressWarnings(ci.coords(y ~ xinf, d, x = 3, quiet = TRUE)), NaN)
+})
