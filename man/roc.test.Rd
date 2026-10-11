@@ -381,7 +381,7 @@ na.rm=TRUE, method=NULL, ...)
 
   Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
   Comparison of Receiver Operating Characteristic Curves''. \emph{The
-  Stata journal} \bold{9}, 1.
+  Stata journal} \bold{9}(1), 1--16. DOI: \doi{10.1177/1536867X0900900101}.
   
   Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
   (2009) ``Combination of protein biomarkers''. \emph{useR! 2009}, Rennes.
