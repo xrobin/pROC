@@ -269,6 +269,21 @@ bootstrap.replicates.parallel <- function(cluster, boot.n, FUN, ...) {
   # smoothing call each replicate has to make -- and do.call() would otherwise
   # evaluate them here instead of passing them on.
   worker <- function(i) {
+    # The cluster may be the user's, its generator seeded for their own work
+    # (clusterSetRNGStream()): leave it as it was, as on the master.
+    had.seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+    if (had.seed) {
+      worker.seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
+    }
+    worker.kind <- RNGkind()
+    on.exit({
+      suppressWarnings(RNGkind(worker.kind[1], worker.kind[2], worker.kind[3]))
+      if (had.seed) {
+        assign(".Random.seed", worker.seed, envir = globalenv())
+      } else {
+        rm(".Random.seed", envir = globalenv())
+      }
+    })
     assign(".Random.seed", rng.streams[[i]], envir = globalenv())
     do.call(fun, c(list(i), fun.args), quote = TRUE)
   }
