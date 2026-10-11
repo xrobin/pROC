@@ -912,3 +912,7 @@ roc_utils_unsmooth <- function(smooth.roc) {
 roc_utils_plot_roc <- function(curve, ..., x) {
   plot.roc(curve, ...)
 }
+
+# Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
+# where they end up in smoothing.args
+roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")

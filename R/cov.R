@@ -64,7 +64,9 @@ cov.roc <- function(roc1, roc2,
   # store which objects are smoothed, and how
   smoothing.args <- list()
   if ("smooth.roc" %in% class(roc1)) {
-    smoothing.args$roc1 <- roc1$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc1$smooth <- TRUE
     if (is.null(attr(roc1, "roc"))) { # built directly from densities
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
@@ -75,7 +77,9 @@ cov.roc <- function(roc1, roc2,
     smoothing.args$roc1 <- list(smooth = FALSE)
   }
   if ("smooth.roc" %in% class(roc2)) {
-    smoothing.args$roc2 <- roc2$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc2$smooth <- TRUE
     if (is.null(attr(roc2, "roc"))) { # built directly from densities
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
