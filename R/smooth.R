@@ -107,6 +107,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   if (!is.null(roc$ci) && reuse.ci) {
     args <- attributes(roc$ci)
     args$roc <- NULL
+    args$method <- NULL # smoothed curves are always bootstrapped
     args$smooth.roc <- sesp
     sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
   }
