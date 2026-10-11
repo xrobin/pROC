@@ -302,3 +302,16 @@ test_that("roc(smooth = TRUE) keeps only the smoothing arguments for the replays
   ci.plotmath <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", plot = TRUE, main = title, quiet = TRUE)$ci
   expect_equal(as.numeric(ci.plotmath), expected)
 })
+
+test_that("the graphical adj argument does not change density smoothing", {
+  pdf(NULL)
+  on.exit(dev.off())
+  s <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0.5, quiet = TRUE)
+  expect_equal(s.adj$sensitivities, s$sensitivities)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", adj = 0.5, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+})
