@@ -134,3 +134,38 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
   }
   invisible(x)
 }
+
+# Draw a ci.coords on the axes of a ROC plot (x = specificity, y = sensitivity).
+# plot.ci.coords draws attr(x, "x") horizontally and the first 'ret' vertically,
+# which is right on a ROC plot only for input = specificity, ret = sensitivity.
+roc_utils_plot_ci_coords_on_roc <- function(x, type, col, ...) {
+  se.names <- c("sensitivity", "tpr", "recall")
+  sp.names <- c("specificity", "tnr")
+  input <- attr(x, "input")
+  ret.se <- intersect(names(x), se.names)[1]
+  ret.sp <- intersect(names(x), sp.names)[1]
+  if (input %in% sp.names && !is.na(ret.se)) {
+    # Sensitivity along the specificity axis: keep only the sensitivity
+    x[setdiff(names(x), ret.se)] <- NULL
+    plot.ci.coords(x, type = type, col = col, ...)
+  } else if (input %in% se.names && !is.na(ret.sp)) {
+    # Specificity along the sensitivity axis: draw as the equivalent ci.sp
+    ci <- x[[ret.sp]]
+    attr(ci, "sensitivities") <- attr(x, "x")
+    attr(ci, "roc") <- attr(x, "roc")
+    class(ci) <- c("ci.sp", "ci", class(ci))
+    plot.ci.sp(ci, type = type, col = col, no.roc = TRUE, ...)
+  } else if (!is.na(ret.se) && !is.na(ret.sp)) {
+    # Other input (threshold, "best", ...): draw as ci.thresholds does
+    ci <- list(specificity = x[[ret.sp]], sensitivity = x[[ret.se]])
+    attr(ci, "roc") <- attr(x, "roc")
+    class(ci) <- c("ci.thresholds", "ci", "list")
+    plot.ci.thresholds(ci, col = col, ...)
+  } else {
+    warning(sprintf(
+      "'ci.coords' of '%s' with input '%s' cannot be drawn on a ROC curve and was not plotted.",
+      paste(names(x), collapse = "', '"), input
+    ))
+  }
+  invisible(x)
+}
