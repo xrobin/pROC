@@ -129,6 +129,7 @@
   * ci.se() and ci.sp() of a smoothed curve no longer fail with "length of 'dimnames' [1] not equal to array extent" when no bootstrap resample can be smoothed; they return an NA interval with a warning like ci.auc() and ci.coords().
   * Fixed 'print' of 'multiclass.roc' objects built from a formula passed in a variable (twin of issue #101)
   * 'smooth' with method = "fitdistr", "logcondens" or "logcondens.smooth" now fails with a clear 'ROC curve not smoothable' error when the controls or the cases take a single distinct value, instead of an error from optim or logcondens, and with a clear error when a parameter of a "normal", "lognormal", "exponential", "poisson" or "geometric" density is passed to be held fixed, instead of 'formal argument matched by multiple actual arguments'
+  * Fixed 'power.roc.test' asking for an 'auc' that was given (or that the list method does not take) when the power or the sample size was missing
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for smoothed curves returned by 'roc.test'
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
