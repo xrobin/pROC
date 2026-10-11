@@ -841,3 +841,24 @@ test_that("coords partial AUC window keeps curve points within float error of th
   co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
   expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc))
 })
+
+test_that("local maximas with a partial AUC are the local maximas of the curve within the range", {
+  controls <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+  cases <- c(4.5, 6.5, 8.5, 11, 12)
+  # 9.5 (sp 0.9, se 0.4) lies on the flat segment from 8.75 to 10.5
+  rp <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE, partial.auc = c(0.9, 0.5))
+  expect_equal(coords(rp, "local maximas")$threshold, c(6.25, 8.25))
+  expect_equal(coords(rp, "local maximas", ignore.partial.auc = TRUE)$threshold, c(4.25, 6.25, 8.25, 10.5))
+  expect_equal(as.vector(attr(ci.thresholds(rp, boot.n = 2, progress = "none"), "thresholds")), c(6.25, 8.25))
+  # no local maxima in the range
+  rp$auc <- auc(rp, partial.auc = c(0.95, 0.85))
+  expect_warning(expect_null(coords(rp, "local maximas")), "No coordinates found")
+
+  # se focus on aSAH
+  r <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(.75, .6), partial.auc.focus = "se")
+  all.maximas <- coords(r, "local maximas", ignore.partial.auc = TRUE)
+  expect_equal(
+    coords(r, "local maximas")$threshold,
+    all.maximas$threshold[all.maximas$sensitivity <= .75 & all.maximas$sensitivity >= .6]
+  )
+})
