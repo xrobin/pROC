@@ -101,7 +101,11 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{ret}{for \code{roc.data.frame} only, whether to return the
 	threshold sensitivity and specificity at all thresholds (\dQuote{coords}),
 	all the coordinates at all thresholds (\dQuote{all_coords}) or the
-	\code{roc} object (\dQuote{roc}).}
+	\code{roc} object (\dQuote{roc}). As it has the same name, the \code{ret}
+	argument of \code{\link{ci.coords}} cannot be passed through
+	\code{roc.data.frame} and \code{roc_} (use
+	\code{roc(response ~ predictor, data, ci=TRUE, of="coords", ret=\dots)}
+	instead).}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
   }
