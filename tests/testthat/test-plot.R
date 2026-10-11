@@ -273,3 +273,35 @@ test_that("percent print.thres labels keep 3 decimals for the threshold", {
   labels <- display_list_texts(capture_display_list(plot(r.percent, print.thres = "local maximas")))
   expect_identical(labels[2:3], c("0.065 (13.9%, 97.6%)", "0.075 (22.2%, 90.2%)"))
 })
+
+test_that("CI shapes are drawn in increasing order whatever order the CI was computed in", {
+  ci_sp <- suppressWarnings(ci.sp(r.s100b, sensitivities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none"))
+  o <- order(attr(ci_sp, "sensitivities"))
+  poly <- display_list_polygons(capture_display_list({
+    plot(r.s100b)
+    suppressWarnings(plot(ci_sp, type = "shape", no.roc = TRUE))
+  }))
+  expect_length(poly, 1)
+  expect_equal(poly[[1]]$y, c(0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0))
+  expect_equal(poly[[1]]$x, unname(c(1, ci_sp[o, 1], 0, rev(ci_sp[o, 3]), 1)))
+
+  ci_se <- suppressWarnings(ci.se(r.s100b, specificities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none"))
+  o <- order(attr(ci_se, "specificities"))
+  poly <- display_list_polygons(capture_display_list({
+    plot(r.s100b)
+    suppressWarnings(plot(ci_se, type = "shape", no.roc = TRUE))
+  }))
+  expect_length(poly, 1)
+  expect_equal(poly[[1]]$x, c(0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0))
+  expect_equal(poly[[1]]$y, unname(c(1, ci_se[o, 1], 0, rev(ci_se[o, 3]), 1)))
+
+  ci_co <- suppressWarnings(ci.coords(r.s100b, x = c(0.75, 0.25, 0.5), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none"))
+  o <- order(attr(ci_co, "x"))
+  poly <- display_list_polygons(capture_display_list({
+    plot(r.s100b)
+    suppressWarnings(plot(ci_co, type = "shape"))
+  }))
+  expect_length(poly, 1)
+  expect_equal(poly[[1]]$x, c(0.25, 0.5, 0.75, 0.75, 0.5, 0.25))
+  expect_equal(poly[[1]]$y, unname(c(ci_co[[1]][o, 1], rev(ci_co[[1]][o, 3]))))
+})
