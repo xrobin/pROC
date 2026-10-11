@@ -332,57 +332,38 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
   ordered(thr_levels, levels = thr_levels)
 }
 
-# Find all the local maximas of the ROC curve. Returns a logical vector
-roc_utils_max_thresholds_idx <- function(thresholds, sp, se) {
-  reversed <- FALSE
-  if (is.unsorted(sp)) {
-    # make sure SP is sorted increasingly, and sort thresholds accordingly
-    thresholds <- rev(thresholds)
+# Find all the local maximas of the ROC curve: its upper angles, where the
+# curve makes a strict convex (clockwise) turn. Collinear points (ties on a
+# straight segment, flat parts of the bottom edge) are not angles. The ends
+# of the curve are compared to the border of the ROC space, as if the curve
+# came along the top edge before its first point and went down the right
+# edge after its last point. Must be given the whole curve.
+# Returns a logical vector
+roc_utils_max_thresholds_idx <- function(sp, se, percent = FALSE) {
+  reversed <- is.unsorted(sp)
+  if (reversed) {
+    # make sure SP is sorted increasingly
     sp <- rev(sp)
     se <- rev(se)
-    reversed <- TRUE
   }
-  # TODO: find whether the duplicate check is still needed.
-  # Should have been fixed by passing only c(controls, cases)
-  # instead of whole 'predictor' to roc_utils_thresholds in roc.default
-  # but are there other potential issues like that?
-  dup <- duplicated(data.frame(sp, se))
-  thresholds <- thresholds[!dup]
-  sp <- sp[!dup]
-  se <- se[!dup]
-  # Find the local maximas
-  if (length(thresholds) == 1) {
-    local.maximas <- TRUE # let's consider that if there is only 1 point, we should print it.
-  } else if (length(thresholds) == 2) {
-    local.maximas <- c(se[1] > se[2], sp[2] > sp[1])
-  } else {
-    local.maximas <- se[1] > se[2]
-    for (i in 2:(length(thresholds) - 1)) {
-      if (sp[i] > sp[i - 1] & se[i] > se[i + 1]) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else if (sp[i] > sp[i - 1] & se[i] == 0) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else if (se[i] > se[i - 1] & sp[i] == 1) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else {
-        local.maximas <- c(local.maximas, FALSE)
-      }
-    }
-    local.maximas <- c(local.maximas, sp[length(thresholds)] > sp[length(thresholds) - 1])
-  }
-  if (any(dup)) {
-    lms <- rep(FALSE, length(dup))
-    lms[!dup] <- local.maximas
-    local.maximas <- lms
-  }
+  scale <- ifelse(percent, 100, 1)
+  tol <- roc_utils_coords_tol(scale)
+  # Only the first of duplicated points (consecutive on a sorted curve) can be a maxima
+  keep <- c(TRUE, abs(diff(sp)) > tol | abs(diff(se)) > tol)
+  x <- sp[keep]
+  y <- se[keep]
+  # Segments into and out of each point, with the borders at the ends
+  dx.in <- c(scale, diff(x))
+  dy.in <- c(0, diff(y))
+  dx.out <- c(diff(x), 0)
+  dy.out <- c(diff(y), -scale)
+  # Cross product < 0: the curve turns clockwise (an upper angle)
+  cross <- dx.in * dy.out - dy.in * dx.out
+  local.maximas <- rep(FALSE, length(sp))
+  local.maximas[keep] <- cross < -roc_utils_coords_tol(scale^2)
   if (reversed) {
-    rev(local.maximas)
+    local.maximas <- rev(local.maximas)
   }
-
-  # Remove +-Inf at the limits of the curve
-  # local.maximas <- local.maximas & is.finite(thresholds)
-  # Question: why did I do that? It breaks coords.roc when partial.auc contains only the extreme point
-
   return(local.maximas)
 }
 
