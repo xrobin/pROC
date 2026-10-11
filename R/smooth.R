@@ -214,6 +214,27 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
   }
 
+  # Discrete distributions of counts: their ROC curve is built from the
+  # CDFs at integer thresholds below, which cannot be combined with another
+  # (continuous) distribution
+  discrete.densfuns <- c("geometric", "negative binomial", "poisson")
+  is.discrete <- c(
+    controls = is.character(densfun.controls) && densfun.controls %in% discrete.densfuns,
+    cases = is.character(densfun.cases) && densfun.cases %in% discrete.densfuns
+  )
+  if (any(is.discrete) && !all(is.discrete)) {
+    stop("Discrete densities (\"geometric\", \"negative binomial\", \"poisson\") must be used for both controls and cases.")
+  }
+  if (all(is.discrete)) {
+    values <- c(roc$controls, roc$cases)
+    if (any(values < 0 | values != round(values))) {
+      stop(sprintf(
+        "Density %s requires non-negative integer (count) values.",
+        paste0("\"", unique(c(densfun.controls, densfun.cases)), "\"", collapse = " and ")
+      ))
+    }
+  }
+
   # Only pass the arguments of densfun or optim to fitdistr: when called
   # from roc(), ... also contains the arguments of auc, ci and plot
   fitdistr.dots <- function(densfun) {
@@ -241,8 +262,8 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     "beta", "cauchy", "chi-squared", "exponential", "f", "gamma",
     "log-normal", "lognormal", "logistic", "normal", "weibull"
   )
-  if (is.character(densfun.controls) && is.character(densfun.cases) &&
-    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns)) {
+  if (all(is.discrete) || (is.character(densfun.controls) && is.character(densfun.cases) &&
+    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns))) {
     fitted.fun <- function(prefix, densfun, fit) {
       f <- match.fun(sub("^d", prefix, densfuns.list[[densfun]]))
       dots <- list(...)[names(list(...)) %in% setdiff(names(formals(f)), c("q", "p", "lower.tail", "log.p"))]
@@ -254,6 +275,14 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
       fitted.fun("q", densfun.controls, fit.controls)(p[seq(1, n, by = 2)]),
       fitted.fun("q", densfun.cases, fit.cases)(p[seq_len(n %/% 2) * 2])
     ))
+    if (all(is.discrete)) {
+      # The quantiles are integers: the vertices of the curve are at every
+      # integer threshold t (cases are above t for "<", at or below t for ">")
+      thresholds <- unique(c(min(thresholds) - 1, thresholds))
+      if (max(thresholds) - min(thresholds) < n) {
+        thresholds <- seq(min(thresholds), max(thresholds))
+      }
+    }
     cdf.controls <- fitted.fun("p", densfun.controls, fit.controls)(thresholds)
     cdf.cases <- fitted.fun("p", densfun.cases, fit.cases)(thresholds)
     if (roc$direction == "<") {
