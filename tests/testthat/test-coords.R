@@ -815,3 +815,29 @@ test_that("coords counts are integers and match exact points", {
   expect_equal(coords(r, 15, input = "tp", ret = c("threshold", "specificity", "sensitivity")), expected)
   expect_equal(coords(r, 7, input = "fn", ret = c("threshold", "specificity", "sensitivity")), expected)
 })
+
+test_that("coords partial AUC window keeps curve points within float error of the limits", {
+  trapezoid <- function(x, y) {
+    o <- order(x, -y)
+    x <- x[o]
+    y <- y[o]
+    sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
+  }
+  # (57 / 100) * 100 is 57 - 7e-15: se = 57 % is a flat segment from sp = 0 to 50 %
+  r <- roc(controls = c(43.3, 43.6, 80, 120), cases = 1:100, percent = TRUE, direction = "<", quiet = TRUE)
+  r$auc <- auc(r, partial.auc = c(100, 57), partial.auc.focus = "se", partial.auc.correct = FALSE)
+  co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
+  expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc) * 100)
+  # Same window as the fraction curve, where 57 / 100 == 0.57 exactly
+  r.fraction <- roc(controls = c(43.3, 43.6, 80, 120), cases = 1:100, direction = "<", quiet = TRUE)
+  r.fraction$auc <- auc(r.fraction, partial.auc = c(1, .57), partial.auc.focus = "se", partial.auc.correct = FALSE)
+  co.fraction <- coords(r.fraction, "all", ret = c("threshold", "sensitivity", "specificity"))
+  expect_equal(co$threshold, co.fraction$threshold)
+  expect_equal(co$specificity, co.fraction$specificity * 100)
+
+  # seq(0, 1, .1)[7] is 0.6000000000000001 on a curve with a point at 0.6
+  r <- roc(c(1, 0, 1, 1, 1, 0, 0, 1), c(5, 1, 1, 3, 5, 4, 3, 2), direction = ">", quiet = TRUE)
+  r$auc <- auc(r, partial.auc = seq(0, 1, .1)[c(9, 7)], partial.auc.focus = "se", partial.auc.correct = FALSE)
+  co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
+  expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc))
+})
