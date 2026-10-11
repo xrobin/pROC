@@ -907,3 +907,77 @@ roc_utils_plot_roc <- function(curve, ..., x) {
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+
+# The smoothing arguments that can change a smoothed curve, sorted by name, to
+# compare how two curves were smoothed. smoothing.args can also hold arguments
+# that the smoothers ignore (passed to smooth() directly, or the arguments of
+# plot and ci stored by roc(..., smooth = TRUE) in older versions).
+# The arguments are normalised so that the same smoothing spelled differently
+# compares identical: the defaults of the smoothers are filled in and integers
+# are stored as doubles (n = 512L is n = 512).
+roc_utils_relevant_smoothing_args <- function(smoothing.args) {
+  relevant <- roc_utils_smoothing_arg_names(smoothing.args$method, smoothing.args[c("density.controls", "density.cases")])
+  if (identical(smoothing.args$method, "density")) {
+    defaults <- formals(smooth_roc_density)[c("cut", "adjust")]
+    for (arg in names(defaults)) {
+      if (is.null(smoothing.args[[arg]])) {
+        smoothing.args[[arg]] <- defaults[[arg]]
+      }
+    }
+    # window is only the default of kernel
+    if (is.null(smoothing.args$kernel)) {
+      smoothing.args$kernel <- if (is.null(smoothing.args$window)) formals(smooth_roc_density)$window else smoothing.args$window
+    }
+    smoothing.args$window <- NULL
+    # density() matches the kernel partially ("e" is "epanechnikov")
+    if (is.character(smoothing.args$kernel) && length(smoothing.args$kernel) == 1) {
+      kernels <- eval(formals(stats::density.default)$kernel)
+      kernel <- pmatch(smoothing.args$kernel, kernels)
+      if (!is.na(kernel)) {
+        smoothing.args$kernel <- kernels[kernel]
+      }
+    }
+  } else if (identical(smoothing.args$method, "fitdistr")) {
+    for (arg in c("density.controls", "density.cases")) {
+      # NULL densities are fitted as "normal"
+      if (is.null(smoothing.args[[arg]])) {
+        smoothing.args[[arg]] <- "normal"
+      }
+      # Density names are matched partially, and some are aliases
+      # ("lognormal" and "log-normal"): compare the density functions
+      if (is.character(smoothing.args[[arg]]) && length(smoothing.args[[arg]]) == 1) {
+        densfun <- pmatch(smoothing.args[[arg]], names(smooth_roc_fitdistr_densfuns))
+        if (!is.na(densfun)) {
+          smoothing.args[[arg]] <- smooth_roc_fitdistr_densfuns[[densfun]]
+        }
+      }
+    }
+  }
+  smoothing.args <- lapply(smoothing.args, function(arg) {
+    if (is.integer(arg)) {
+      storage.mode(arg) <- "double"
+    }
+    arg
+  })
+  smoothing.args[sort(intersect(names(smoothing.args), relevant))]
+}
+
+# The names of the arguments that can change a curve smoothed with 'method'
+# (already matched), given the density.controls and density.cases arguments
+roc_utils_smoothing_arg_names <- function(method, densfuns) {
+  relevant <- c("smooth", "method", "n", "bw", "density.controls", "density.cases", "start.controls", "start.cases")
+  densfuns <- Filter(is.function, densfuns)
+  if (identical(method, "density")) {
+    # arguments taken by smooth_roc_density or passed to the density functions
+    densfuns <- c(densfuns, stats::density.default)
+    relevant <- c(relevant, names(formals(smooth_roc_density)))
+  } else if (identical(method, "fitdistr")) {
+    # arguments passed to the density functions or to optim by fitdistr
+    densfuns <- c(densfuns, lapply(smooth_roc_fitdistr_densfuns, match.fun))
+    relevant <- c(relevant, "gr", "lower", "upper", "control")
+  }
+  for (densfun in densfuns) {
+    relevant <- c(relevant, names(formals(densfun)))
+  }
+  relevant
+}
