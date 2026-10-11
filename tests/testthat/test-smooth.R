@@ -208,3 +208,63 @@ test_that("fitdistr smoothing with a density function accepts other ... argument
   expect_equal(s$sensitivities, expected$sensitivities)
   expect_equal(s$specificities, expected$specificities)
 })
+
+test_that("fitdistr smoothing of a single case gives an NA curve", {
+  testthat::skip_if_not_installed("MASS")
+  # fitdistr estimates an NA sd for a single observation, as in 1.19.1
+  r <- roc(controls = c(0.5, 0.5, 0.5, 1.5), cases = 2.5, quiet = TRUE)
+  for (density in c("normal", "lognormal")) {
+    s <- smooth(r, method = "fitdistr", density = density)
+    expect_true(anyNA(s$sensitivities))
+    expect_true(is.na(s$auc))
+  }
+  # Also for a single control, and one observation in each class (not an AUC of 0.5)
+  for (r in list(roc(controls = 1, cases = 2, quiet = TRUE), roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE))) {
+    for (density in c("normal", "lognormal")) {
+      s <- smooth(r, method = "fitdistr", density = density)
+      expect_true(anyNA(s$sensitivities))
+      expect_true(is.na(s$auc))
+    }
+  }
+  # Constant classes have an sd of 0, not NA
+  expect_equal(as.numeric(smooth(roc(controls = c(1, 1, 1), cases = c(2, 2, 2), quiet = TRUE), method = "fitdistr")$auc), 1)
+  set.seed(1)
+  r <- roc(controls = c(1, 1, 1), cases = rnorm(20, 3), quiet = TRUE)
+  expect_equal(as.numeric(smooth(r, method = "fitdistr")$auc), 0.994585999818758, tolerance = 1e-12)
+})
+
+test_that("logcondens smoothing of a class with a single value is not smoothable", {
+  skip_if_not_installed("logcondens")
+  one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
+  flat <- roc(controls = c(1, 2, 3), cases = c(4, 4, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (logcondens needs at least two distinct values in each class)."
+  for (r in list(one, flat)) {
+    expect_error(smooth(r, method = "logcondens"), msg, fixed = TRUE)
+    expect_error(smooth(r, method = "logcondens.smooth"), msg, fixed = TRUE)
+  }
+})
+
+test_that("fitdistr smoothing of a constant class is not smoothable", {
+  skip_if_not_installed("MASS")
+  flat <- roc(controls = c(1, 1, 1), cases = c(2, 3, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (fitdistr could not estimate the distribution parameters)."
+  # optim() tries a negative scale on the constant class: dlogis() gives NaNs
+  expect_warning(expect_error(smooth(flat, method = "fitdistr", density = "logistic"), msg, fixed = TRUE), "NaNs produced")
+  expect_error(smooth(flat, method = "fitdistr", density = "weibull"), msg, fixed = TRUE)
+  # Errors unrelated to a constant class are kept
+  expect_error(smooth(r.s100b, method = "fitdistr", density = dnorm), "'start' must be a named list")
+})
+
+test_that("fitdistr smoothing rejects fixed parameters of closed-form densities", {
+  skip_if_not_installed("MASS")
+  # fitdistr estimates all the parameters of these densities, ignoring the fixed ones
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "normal", mean = 0.2), "'mean' cannot be held fixed with density \"normal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density.controls = "normal", density.cases = "lognormal", sdlog = 1), "'sdlog' cannot be held fixed with density \"lognormal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "exponential", rate = 2), "'rate' cannot be held fixed with density \"exponential\"")
+  # Parameters held fixed by fitdistr are still accepted
+  # (lower: optim() warns that Nelder-Mead is unreliable in one dimension)
+  s <- smooth(r.s100b, method = "fitdistr", density = dnorm, start = list(sd = 0.1), mean = 0.2, lower = 0.001)
+  expect_named(s$fit.controls$estimate, "sd")
+  s <- smooth(r.s100b, method = "fitdistr", density = "weibull", shape = 2, lower = 0.001)
+  expect_named(s$fit.controls$estimate, "scale")
+})
