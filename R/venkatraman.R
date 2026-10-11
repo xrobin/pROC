@@ -57,9 +57,11 @@ venkatraman.paired.permutation <- function(n, R, S, D, levels, ties.method) {
 }
 
 venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, mp, ties.method) {
-  # Break ties
-  R <- R + runif(length(D1)) - 0.5 # Add small amount of random but keep same mean
-  S <- S + runif(length(D2)) - 0.5
+  # Put both curves on the common scale of the statistic before exchanging
+  # observations between them (ranks of curves of different sizes or case
+  # mixes are not comparable). This also breaks ties.
+  R <- venkatraman.mixture.position(R, D1, levels1, mp)
+  S <- venkatraman.mixture.position(S, D2, levels2, mp)
 
   R.controls <- R[D1 == levels1[1]]
   R.cases <- R[D1 == levels1[2]]
@@ -75,6 +77,19 @@ venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, 
   S[D2 == levels2[2]] <- cases[(length(R.cases) + 1):length(cases)]
 
   return(venkatraman.unpaired.stat(rank(R, ties.method = ties.method), rank(S, ties.method = ties.method), D1, D2, levels1, levels2, mp))
+}
+
+# Position of each observation on the mixture CDF of its curve,
+# p = mp * F_cases + (1 - mp) * F_controls: a random point of the step of
+# the CDF at its rank (tied ranks share the step of the whole group).
+venkatraman.mixture.position <- function(R, D, levels, mp) {
+  cases <- sort(R[D == levels[2]])
+  controls <- sort(R[D == levels[1]])
+  below <- mp * findInterval(R, cases, left.open = TRUE) / length(cases) +
+    (1 - mp) * findInterval(R, controls, left.open = TRUE) / length(controls)
+  upto <- mp * findInterval(R, cases) / length(cases) +
+    (1 - mp) * findInterval(R, controls) / length(controls)
+  return(below + runif(length(R)) * (upto - below))
 }
 
 venkatraman.paired.stat <- function(R, S, D, levels) {
