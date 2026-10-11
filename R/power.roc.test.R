@@ -617,7 +617,7 @@ covvar <- function(roc1, roc2, method, kappa = NULL, ...) {
   }
   if (identical(method, "obuchowski")) {
     covvar$cov0 <- cov0.roc.obuchowski(roc1, roc2, kappa)
-  } else if (covvar$var2 > 0) {
+  } else if (isTRUE(covvar$var2 > 0)) {
     # Under the null hypothesis both AUCs have the variance of roc1: keep the
     # observed correlation of the two AUCs, cov0 = cor12 * var1
     covvar$cov0 <- covvar$cov12 * sqrt(covvar$var1 / covvar$var2)

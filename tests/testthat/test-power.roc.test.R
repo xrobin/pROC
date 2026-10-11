@@ -501,3 +501,14 @@ test_that("power.roc.test warns that kappa does not enter the bootstrap variance
   )
   expect_true(any(grepl("'kappa' cannot be taken into account", warnings)))
 })
+
+test_that("power.roc.test with two ROC curves returns NA with a single case", {
+  # The DeLong variance is undefined (NA) with one case or control
+  resp <- c(0, 1, 0, 0)
+  r1 <- roc(resp, c(0.1, 0.25, 0.2, 0.3), direction = "<", quiet = TRUE)
+  r2 <- roc(resp, c(0.3, 0.25, 0.1, 0.2), direction = "<", quiet = TRUE)
+  expect_true(is.na(power.roc.test(r1, r2, power = 0.8)$ncases))
+  expect_true(is.na(power.roc.test(r1, r2)$power))
+  expect_true(is.na(power.roc.test(r1, r2, power = 0.8, sig.level = NULL)$sig.level))
+  expect_true(is.na(power.roc.test(r1, r2, power = 0.8, kappa = 2)$ncases))
+})
