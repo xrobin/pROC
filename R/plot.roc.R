@@ -229,7 +229,11 @@ plot.roc.roc <- function(x,
   if (ci && !methods::is(x$ci, "ci.auc")) {
     ci.type <- match.arg(ci.type)
     if (ci.type == "shape") {
-      plot(x$ci, type = "shape", col = ci.col, no.roc = TRUE, ...)
+      if (methods::is(x$ci, "ci.coords")) {
+        roc_utils_plot_ci_coords_on_roc(x$ci, type = "shape", col = ci.col, ...)
+      } else {
+        plot(x$ci, type = "shape", col = ci.col, no.roc = TRUE, ...)
+      }
     }
   }
   # Plot the polygon displaying the actual area
@@ -247,7 +251,11 @@ plot.roc.roc <- function(x,
   # Plot the ci bars
   if (ci && !methods::is(x$ci, "ci.auc")) {
     if (ci.type == "bars") {
-      plot(x$ci, type = "bars", col = ci.col, ...)
+      if (methods::is(x$ci, "ci.coords")) {
+        roc_utils_plot_ci_coords_on_roc(x$ci, type = "bars", col = ci.col, ...)
+      } else {
+        plot(x$ci, type = "bars", col = ci.col, ...)
+      }
     }
   }
   if (is.null(print.thres.pattern)) {
