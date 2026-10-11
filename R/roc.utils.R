@@ -932,3 +932,22 @@ roc_utils_set_call_names <- function(roc, call, predictor.name = NULL, response.
   }
   roc
 }
+
+
+# Labels of the thresholds marked by plot.roc(print.thres = ...) and
+# geom_roc_threshold: threshold (the level for ordered predictors),
+# specificity, sensitivity. With the default pattern (NULL), the threshold is
+# shown as R prints a number, each one on its own (format() of the vector
+# would pad them to common decimals); a custom pattern gets the number.
+roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitivity, percent) {
+  if (is.ordered(threshold) || is.character(threshold)) {
+    threshold <- as.character(threshold)
+  }
+  if (is.null(pattern)) {
+    pattern <- if (percent) "%s (%.1f%%, %.1f%%)" else "%s (%.3f, %.3f)"
+    if (is.numeric(threshold)) {
+      threshold <- vapply(threshold, format, "")
+    }
+  }
+  sprintf(pattern, threshold, specificity, sensitivity)
+}

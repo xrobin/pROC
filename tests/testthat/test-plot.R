@@ -265,3 +265,29 @@ test_that("lines.roc default/formula return the NA/NaN of roc() with a warning, 
   expect_warning(r <- withVisible(plot.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
   expect_identical(r, list(value = NaN, visible = FALSE))
 })
+
+test_that("default print.thres labels show the threshold as R prints it", {
+  labels <- function(r, pattern = NULL) {
+    co <- coords(r, "best", transpose = FALSE)
+    pROC:::roc_utils_threshold_labels(pattern, co$threshold, co$specificity, co$sensitivity, r$percent)
+  }
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  expect_identical(labels(r.s100b), "0.205 (0.806, 0.634)")
+  expect_identical(labels(r.percent), "0.205 (80.6%, 63.4%)")
+  # Each threshold on its own, not padded to common decimals
+  expect_identical(
+    pROC:::roc_utils_threshold_labels(NULL, c(0.205, 11.08, 1234.5, 0.0000155, -Inf), 0.5, 0.5, FALSE),
+    c("0.205 (0.500, 0.500)", "11.08 (0.500, 0.500)", "1234.5 (0.500, 0.500)", "1.55e-05 (0.500, 0.500)", "-Inf (0.500, 0.500)")
+  )
+  # A custom pattern gets the number
+  expect_identical(labels(r.percent, "%.4f (%.1f%%, %.1f%%)"), "0.2050 (80.6%, 63.4%)")
+  # Ordered predictors show the level
+  expect_identical(labels(r.wfns), "4 (0.833, 0.634)")
+})
+
+test_that("percent print.thres labels show the threshold as non-percent ones", {
+  skip_if(getRversion() < "4.1")
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-percent-print-thres-best", function() plot(r.percent, print.thres = "best"))
+  expect_doppelganger("plot-percent-print-thres-local-maximas", function() plot(r.percent, print.thres = "local maximas"))
+})
