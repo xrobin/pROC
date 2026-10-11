@@ -254,7 +254,7 @@ plot.roc.roc <- function(x,
     print.thres.pattern <- if (!methods::is(x, "smooth.roc") && roc_utils_is_ordered_roc(x)) {
       ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
     } else {
-      ifelse(x$percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
+      ifelse(x$percent, "%.3f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
     }
   }
 
