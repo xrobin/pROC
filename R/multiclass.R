@@ -172,6 +172,13 @@ multiclass.roc.default <- function(response, predictor,
     stop("'response' must be a vector or factor, not a data.frame or list.")
   }
 
+  # smooth = TRUE would smooth the pairwise curves, whose AUCs then fail.
+  # Look only at 'smooth': other arguments in ... (e.g. subset) must not be evaluated here
+  smooth.requested <- function(..., smooth = FALSE) isTRUE(smooth)
+  if (smooth.requested(...)) {
+    stop("Smoothing of a multiclass ROC curve not implemented")
+  }
+
   # We need at least two levels in response
   if (length(unique(response[!is.na(response)])) < 2) {
     stop("'response' must have at least two levels")
