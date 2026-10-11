@@ -224,3 +224,43 @@ test_that("fitdistr smoothing with a density function accepts other ... argument
   ))
   expect_equal(as.numeric(r2$auc), as.numeric(auc(expected, partial.auc = c(1, .8))))
 })
+
+test_that("fitdistr smoothing with discrete distributions gives the ROC curve of the fitted distributions", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  r <- roc(response, counts, quiet = TRUE)
+  expect_silent(s <- smooth(r, method = "fitdistr", density = "poisson"))
+  lc <- s$fit.controls$estimate[["lambda"]]
+  la <- s$fit.cases$estimate[["lambda"]]
+  # P(case > control) + P(case = control) / 2
+  k <- 0:100
+  expect_equal(as.numeric(s$auc), sum(dpois(k, la) * (ppois(k - 1, lc) + dpois(k, lc) / 2)), tolerance = 1e-8)
+  # vertices at integer thresholds
+  t <- 2:6
+  expect_equal(coords(s, ppois(t, lc), input = "specificity", ret = "sensitivity")$sensitivity, 1 - ppois(t, la))
+  # direction ">"
+  r2 <- roc(response, 20 - counts, quiet = TRUE)
+  s2 <- smooth(r2, method = "fitdistr", density = "geometric")
+  pc <- s2$fit.controls$estimate[["prob"]]
+  pa <- s2$fit.cases$estimate[["prob"]]
+  expect_equal(coords(s2, 1 - pgeom(t, pc), input = "specificity", ret = "sensitivity")$sensitivity, pgeom(t, pa))
+})
+
+test_that("fitdistr smoothing with discrete distributions needs counts in controls and cases", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  expect_error(
+    smooth(roc(response, counts + 0.5, quiet = TRUE), method = "fitdistr", density = "poisson"),
+    "non-negative integer"
+  )
+  expect_error(
+    smooth(roc(response, counts - 2, quiet = TRUE), method = "fitdistr", density = "negative binomial"),
+    "non-negative integer"
+  )
+  expect_error(
+    smooth(roc(response, counts, quiet = TRUE), method = "fitdistr", density.controls = "poisson", density.cases = "normal"),
+    "both controls and cases"
+  )
+})
