@@ -203,15 +203,17 @@ smooth_roc_binormal <- function(roc, n) {
   ))
 }
 
+smooth_roc_fitdistr_densfuns <- list(
+  beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
+  gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
+  logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
+  t = "dt_location_scale", weibull = "dweibull"
+)
+
 smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
   load.suggested.package("MASS")
 
-  densfuns.list <- list(
-    beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
-    gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
-    logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
-    t = "dt_location_scale", weibull = "dweibull"
-  )
+  densfuns.list <- smooth_roc_fitdistr_densfuns
 
   if (is.null(densfun.controls)) {
     densfun.controls <- "normal"
