@@ -69,3 +69,32 @@ test_that("roc_utils_match_coords_ret_args works", {
   # Ignoring for now
   # expect_error(pROC:::roc_utils_match_coords_ret_args(c("sensitivity", "blah")))
 })
+
+test_that("internal error diagnostics are saved in tempdir(), not the working directory", {
+  wd <- tempfile("pROC_wd")
+  dir.create(wd)
+  old.wd <- setwd(wd)
+  on.exit({
+    setwd(old.wd)
+    unlink(wd, recursive = TRUE)
+  })
+  saved.file <- function(e) sub(".*Diagnostic data saved in (.*)\\. Please report.*", "\\1", conditionMessage(e))
+
+  # DeLong theta inconsistent with the AUC
+  r <- r.s100b
+  r$auc[] <- 0.1
+  e <- tryCatch(pROC:::delongPlacements(r), error = function(e) e)
+  expect_s3_class(e, "error")
+  expect_equal(normalizePath(dirname(saved.file(e))), normalizePath(tempdir()))
+  expect_true(file.exists(saved.file(e)))
+  expect_length(list.files(wd, all.files = TRUE, no.. = TRUE), 0)
+  unlink(saved.file(e))
+
+  # Fast algorithm given the wrong number of thresholds
+  e <- tryCatch(pROC:::roc_utils_perfs_all(c(-Inf, 1.5, Inf), 1:3, 4:6, "<"), error = function(e) e)
+  expect_s3_class(e, "error")
+  expect_equal(normalizePath(dirname(saved.file(e))), normalizePath(tempdir()))
+  expect_true(file.exists(saved.file(e)))
+  expect_length(list.files(wd, all.files = TRUE, no.. = TRUE), 0)
+  unlink(saved.file(e))
+})
