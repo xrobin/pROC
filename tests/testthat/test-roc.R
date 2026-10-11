@@ -526,3 +526,10 @@ test_that("roc with densities, direction = 'auto' and a corrected partial AUC be
   r.gt <- roc(density.controls = dnorm(x, 2), density.cases = dnorm(x, 0), partial.auc = c(1, .8), partial.auc.correct = TRUE, direction = ">")
   expect_equal(as.numeric(r$auc), as.numeric(r.gt$auc))
 })
+
+test_that("a data.frame response gives a clear error", {
+  set.seed(42)
+  expect_error(auc(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+})
