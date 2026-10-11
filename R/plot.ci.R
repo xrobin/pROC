@@ -45,7 +45,9 @@ plot.ci.sp <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
     if (length(x[, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[, 1], 0, rev(x[, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), c(0, attr(x, "sensitivities"), 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "sensitivities")), 0), col = col, ...))
+    # Draw the band by increasing sensitivity, whatever order the CI was computed in
+    o <- order(attr(x, "sensitivities"))
+    suppressWarnings(polygon(c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[o, 1], 0, rev(x[o, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), c(0, attr(x, "sensitivities")[o], 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "sensitivities")[o]), 0), col = col, ...))
     if (!no.roc) {
       plot(attr(x, "roc"), add = TRUE)
     }
@@ -68,7 +70,9 @@ plot.ci.se <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
     if (length(x[, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(0, attr(x, "specificities"), 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "specificities")), 0), c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[, 1], 0, rev(x[, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), col = col, ...))
+    # Draw the band by increasing specificity, whatever order the CI was computed in
+    o <- order(attr(x, "specificities"))
+    suppressWarnings(polygon(c(0, attr(x, "specificities")[o], 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "specificities")[o]), 0), c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[o, 1], 0, rev(x[o, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), col = col, ...))
     if (!no.roc) {
       plot(attr(x, "roc"), add = TRUE)
     }
@@ -124,7 +128,9 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
     if (length(x[[1]][, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(attr(x, "x"), rev(attr(x, "x"))), c(x[[1]][, 1], rev(x[[1]][, 3])), col = col, ...))
+    # Draw the band by increasing x, whatever order the CI was computed in
+    o <- order(attr(x, "x"))
+    suppressWarnings(polygon(c(attr(x, "x")[o], rev(attr(x, "x")[o])), c(x[[1]][o, 1], rev(x[[1]][o, 3])), col = col, ...))
   }
   invisible(x)
 }
