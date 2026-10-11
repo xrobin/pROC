@@ -394,3 +394,20 @@ test_that("plot.roc and lines.roc default methods keep the variable names of smo
   expect_identical(dataline(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
   expect_identical(dataline(lines.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
 })
+
+test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve", {
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.85), quiet = TRUE)
+  co <- coords(r, "all")
+  expect_true(anyNA(co$threshold)) # interpolated window limit
+  dl <- capture_display_list(plot(r, print.thres = "all"))
+  labels <- display_list_texts(dl)
+  expect_length(labels, sum(!is.na(co$threshold)))
+  expect_false(any(startsWith(labels, "NA")))
+  points <- display_list_calls(dl, "plotXY")
+  # Last plotXY call: the threshold points
+  expect_length(points[[length(points)]]$args[[1]]$x, sum(!is.na(co$threshold)))
+
+  r2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), partial.auc.focus = "se", quiet = TRUE)
+  labels <- display_list_texts(capture_display_list(plot(r2, print.thres = "all")))
+  expect_identical(labels[length(labels)], "0.075 (0.222, 0.902)")
+})
