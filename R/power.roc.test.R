@@ -204,7 +204,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   # Determine number of patients (sample size)
   else if (is.null(ncases) && is.null(ncontrols)) {
     if (is.null(power)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'power' or 'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(kappa)) {
       stop("'kappa' must be provided.")
     } else if (is.null(auc)) {
@@ -229,7 +229,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   # Determine power
   else if (is.null(power)) {
     if (is.null(ncontrols) || is.null(ncases)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(auc)) {
       stop("'auc' or 'power' must be provided.")
     } else if (is.null(sig.level)) {
@@ -253,7 +253,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
   # Determine sig.level
   else if (is.null(sig.level)) {
     if (is.null(ncontrols) || is.null(ncases)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(auc)) {
       stop("'auc' or 'sig.level' must be provided.")
     } else if (is.null(power)) {
@@ -342,7 +342,7 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
   # Determine number of patients (sample size)
   if (is.null(ncases) && is.null(ncontrols)) {
     if (is.null(power)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'power' or 'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(kappa)) {
       stop("'kappa' must be provided.")
     } else if (is.null(sig.level)) {
@@ -358,7 +358,7 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
   # Determine power
   else if (is.null(power)) {
     if (is.null(ncontrols) || is.null(ncases)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(sig.level)) {
       stop("'sig.level' or 'power' must be provided.")
     }
@@ -372,7 +372,7 @@ power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.l
   # Determine sig.level
   else if (is.null(sig.level)) {
     if (is.null(ncontrols) || is.null(ncases)) {
-      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.")
+      stop("'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.")
     } else if (is.null(power)) {
       stop("'power' or 'sig.level' must be provided.")
     }
