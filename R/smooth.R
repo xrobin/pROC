@@ -215,8 +215,33 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
   }
 
-  fit.controls <- MASS::fitdistr(roc$controls, densfun.controls, start.controls, ...)
-  fit.cases <- MASS::fitdistr(roc$cases, densfun.cases, start.cases, ...)
+  # A class with a single distinct value (one observation or constant
+  # values) has no spread to estimate: optim fails inside fitdistr for most
+  # densities. Return NULL then, and keep any other error as it is.
+  fit <- function(values, densfun, start) {
+    tryCatch(
+      MASS::fitdistr(values, densfun, start, ...),
+      error = function(e) if (length(unique(values)) < 2) NULL else stop(e)
+    )
+  }
+  fit.controls <- fit(roc$controls, densfun.controls, start.controls)
+  fit.cases <- if (!is.null(fit.controls)) fit(roc$cases, densfun.cases, start.cases)
+  if (is.null(fit.cases)) {
+    stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
+  }
+  # Parameters in ... are held fixed by fitdistr, except for the densities it
+  # fits in closed form (normal, log-normal, exponential, Poisson, geometric):
+  # it estimates them anyway, and the fit and the fixed value would then
+  # both be passed to the distribution functions
+  for (fitted in list(list(fit.controls, densfun.controls), list(fit.cases, densfun.cases))) {
+    fixed <- intersect(names(fitted[[1]]$estimate), names(list(...)))
+    if (is.character(fitted[[2]]) && length(fixed) > 0) {
+      stop(sprintf(
+        "Parameter(s) %s cannot be held fixed with density \"%s\": MASS::fitdistr estimates all its parameters. Use a density function with 'start' instead.",
+        paste0("'", fixed, "'", collapse = ", "), fitted[[2]]
+      ))
+    }
+  }
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function") {
@@ -298,6 +323,10 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
 
 smooth_roc_logcondens <- function(roc, n) {
   load.suggested.package("logcondens")
+  # logConROC fails inside logcondens on a class with a single distinct value
+  if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
+    stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
+  }
 
   sp <- seq(0, 1, 1 / (n - 1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
@@ -317,6 +346,10 @@ smooth_roc_logcondens <- function(roc, n) {
 
 smooth_roc_logcondens_smooth <- function(roc, n) {
   load.suggested.package("logcondens")
+  # logConROC fails inside logcondens on a class with a single distinct value
+  if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
+    stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
+  }
 
   sp <- seq(0, 1, 1 / (n - 1))
   logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
