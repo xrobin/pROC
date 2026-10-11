@@ -51,3 +51,14 @@ test_that("geom_roc_threshold percent labels keep 3 decimals for the threshold",
   text_i <- match("GeomText", layer_geom_classes(p))
   expect_identical(p@layers[[text_i]]$data$label, "0.205 (80.6%, 63.4%)")
 })
+
+test_that("geom_roc_threshold('all') marks only real thresholds on a partial AUC curve", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.85), quiet = TRUE)
+  co <- coords(r, "all")
+  p <- ggroc(r) + geom_roc_threshold(r, thresholds = "all")
+  labels <- p@layers[[match("GeomText", layer_geom_classes(p))]]$data$label
+  expect_length(labels, sum(!is.na(co$threshold)))
+  expect_false(any(startsWith(labels, "NA")))
+  expect_equal(nrow(p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data), sum(!is.na(co$threshold)))
+})
