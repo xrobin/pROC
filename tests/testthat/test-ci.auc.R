@@ -87,3 +87,18 @@ test_that("ci.auc of a smoothed percent curve with a corrected partial AUC is 10
   expect_false(anyNA(ci.percent))
   expect_equal(as.numeric(ci.percent), 100 * as.numeric(ci.fraction))
 })
+
+test_that("ci.auc and ci formula/default methods with smooth = TRUE can recompute the AUC", {
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE))
+  seed <- sample.int(1e6, 1)
+  set.seed(seed)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, reuse.auc = FALSE, progress = "none"))
+  set.seed(seed)
+  expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(seed)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(seed)
+  expect_equal(as.numeric(ci(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(seed)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+})
