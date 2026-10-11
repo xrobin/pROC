@@ -44,7 +44,7 @@ ci.coords.formula <- function(formula, data, ...) {
 }
 
 ci.coords.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
     stop("'ci.coords' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
