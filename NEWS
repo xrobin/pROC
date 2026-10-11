@@ -136,6 +136,7 @@
   * coords(input = "threshold") again uses the names of x as row names when ret includes derived coordinates such as accuracy or ppv (lost in the development version since the data.frame refactor; kept in 1.19.1).
   * roc.test() with unpaired DeLong now returns D = 0 and p = 1 instead of NaN when both AUCs are equal with zero variance (e.g. AUC = 1), like the paired DeLong and bootstrap tests.
   * multiclass.roc() now gives a clear error when the response is a data.frame, as roc() does.
+  * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
