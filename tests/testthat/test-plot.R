@@ -322,6 +322,16 @@ test_that("plot.roc and lines.roc default methods keep the variable names of smo
   expect_identical(dataline(lines.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
 })
 
+test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve", {
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.85), quiet = TRUE)
+  co <- coords(r, "all")
+  expect_true(anyNA(co$threshold)) # interpolated window limit
+  r2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), partial.auc.focus = "se", quiet = TRUE)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-print-thres-all-partial-auc-sp", function() plot(r, print.thres = "all"))
+  expect_doppelganger("plot-print-thres-all-partial-auc-se", function() plot(r2, print.thres = "all"))
+})
+
 test_that("print.auc does not print the CI of another AUC specification", {
   skip_if(getRversion() < "4.1")
   r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)

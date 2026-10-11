@@ -18,6 +18,11 @@ geom_roc_threshold.roc <- function(data,
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
   co <- coords(data, thresholds)
+  # Only mark real thresholds: with a partial AUC, coords(data, "all") also
+  # returns the interpolated limits of the window, with an NA threshold
+  if (!methods::is(data, "smooth.roc") && !is.null(co)) {
+    co <- co[!is.na(co$threshold), , drop = FALSE]
+  }
   co <- ggroc_add_one_or_hundred(co, percent)
   if (is.null(co$threshold)) {
     co$threshold <- NA_real_

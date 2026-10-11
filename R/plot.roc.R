@@ -273,6 +273,11 @@ plot.roc.roc <- function(x,
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
+    # Only mark real thresholds: with a partial AUC, coords(x, "all") also
+    # returns the interpolated limits of the window, with an NA threshold
+    if (identical(print.thres, "all") && !is.null(co)) {
+      co <- co[!is.na(co$threshold), , drop = FALSE]
+    }
     suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
     suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
   }
