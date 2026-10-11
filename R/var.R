@@ -120,6 +120,9 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl
     smoothing.args <- roc$smoothing.args
     smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")
+    # smooth.roc() would recompute its auc on each replicate (and warn if a
+    # corrected partial AUC is not defined): the replicate AUC is auc.call's
+    non.smoothed.roc$auc <- NULL
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
     smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), roc$smoothing.args))
     auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
