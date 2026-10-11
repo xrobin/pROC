@@ -167,6 +167,11 @@ multiclass.roc.default <- function(response, predictor,
                                    percent = FALSE, # Must sensitivities, specificities and AUC be reported in percent? Note that if TRUE, and you want a partial area, you must pass it in percent also (partial.area=c(100, 80)),
                                    direction = c("auto", "<", ">"),
                                    ...) {
+  # A data.frame (e.g. one selected column) would fail in as.factor() for the levels
+  if (is.list(response)) {
+    stop("'response' must be a vector or factor, not a data.frame or list.")
+  }
+
   # We need at least two levels in response
   if (length(unique(response[!is.na(response)])) < 2) {
     stop("'response' must have at least two levels")

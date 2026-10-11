@@ -358,3 +358,11 @@ test_that("CI functions give a clear error for multivariate multiclass curves", 
     expect_error(match.fun(f)(mv.auc), "not available for multiclass ROC curves")
   }
 })
+
+test_that("multiclass.roc with a data.frame response gives a clear error", {
+  d <- data.frame(y = factor(rep(c("a", "b", "c"), each = 4)), x = c(1:4, 3:6, 5:8))
+  expect_error(multiclass.roc(d["y"], d$x), "'response' must be a vector or factor")
+  expect_error(multiclass.roc(list(d$y), d$x), "'response' must be a vector or factor")
+  # A data.frame predictor (multivariate) is still accepted
+  expect_s3_class(multiclass.roc(d$y, data.frame(a = d$x, b = -d$x, c = d$x)), "mv.multiclass.roc")
+})
