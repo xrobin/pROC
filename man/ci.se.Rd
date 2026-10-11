@@ -24,7 +24,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
 cl = NULL, parallel=FALSE, ...)
-\S3method{ci.se}{formula}(formula, data, subset, na.action, ...)
+\S3method{ci.se}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.se}{default}(response, predictor, ...)
 }
 		   

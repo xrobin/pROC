@@ -25,7 +25,7 @@ auc(...)
 allow.invalid.partial.auc.correct = FALSE, ...)
 \S3method{auc}{smooth.roc}(smooth.roc, ...)
 \S3method{auc}{multiclass.roc}(multiclass.roc, ...)
-\S3method{auc}{formula}(formula, data, subset, na.action, ...)
+\S3method{auc}{formula}(formula, data, ..., subset, na.action)
 \S3method{auc}{default}(response, predictor, ...)
 }
 
