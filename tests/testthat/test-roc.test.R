@@ -513,3 +513,23 @@ test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
     expect_equal(t$statistic, expected$statistic)
   }
 })
+
+test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 0, p = 1", {
+  # AUC == 1: all placements are 1, the variance is exactly 0
+  r1 <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 6), quiet = TRUE)
+  r3 <- roc(c(0, 0, 0, 0, 1, 1, 1, 1), c(1, 2, 3, 4, 5, 6, 7, 8), quiet = TRUE)
+  expect_warning(t <- roc.test(r1, r3), "AUC == 1")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  expect_true(is.finite(t$parameter))
+  expect_warning(t <- roc.test(r1, r3, alternative = "greater"), "AUC == 1")
+  expect_equal(t$p.value, 0.5)
+  # Same as the paired test
+  expect_warning(t.paired <- roc.test(r1, r1), "AUC == 1")
+  expect_equal(unname(t.paired$statistic), 0)
+  expect_equal(t.paired$p.value, 1)
+  # A single case: the variance is undefined, p-value stays NA
+  r.single <- roc(c(0, 0, 0, 1), c(1, 2, 3, 4), quiet = TRUE)
+  expect_warning(t <- roc.test(r.single, r1, paired = FALSE), "AUC == 1")
+  expect_true(is.na(t$p.value))
+})
