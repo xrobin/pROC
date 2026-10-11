@@ -220,13 +220,41 @@ plot.roc.roc <- function(x,
     panel.first
   }
 
-  # Plot the polygon displaying the maximal area
-  if (max.auc.polygon) {
+  # The polygons, thresholds and AUC text below get some graphical parameters
+  # from the dedicated arguments (max.auc.polygon.density, print.thres.cex,
+  # print.auc.adj...). The same parameters in ... (e.g. a global cex = 0.8)
+  # would be supplied twice: these wrappers drop them (unused formals are never
+  # forced), so the dedicated arguments take precedence. Their own arguments
+  # come after ... so that they are only matched exactly (lab is not labels).
+  draw.max.auc.polygon <- function(..., density, angle, border) {
     roc_utils_draw_max_auc_polygon(x$auc,
       col = max.auc.polygon.col, lty = max.auc.polygon.lty,
       density = max.auc.polygon.density, angle = max.auc.polygon.angle,
       border = max.auc.polygon.border, ...
     )
+  }
+  draw.auc.polygon <- function(..., density, angle, border) {
+    roc_utils_draw_auc_polygon(x, x$auc,
+      col = auc.polygon.col, lty = auc.polygon.lty,
+      density = auc.polygon.density, angle = auc.polygon.angle,
+      border = auc.polygon.border, ...
+    )
+  }
+  draw.thres <- function(..., co, labels, pch, cex, adj) {
+    suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
+    suppressWarnings(text(co$specificity, co$sensitivity, labels = labels, adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+  }
+  draw.auc.text <- function(..., ci.auc.obj, adj, cex) {
+    roc_utils_draw_auc_text(x$auc,
+      ci = ci.auc.obj, pattern = print.auc.pattern,
+      xy = c(print.auc.x, print.auc.y), adj = print.auc.adj,
+      col = print.auc.col, cex = print.auc.cex, ...
+    )
+  }
+
+  # Plot the polygon displaying the maximal area
+  if (max.auc.polygon) {
+    draw.max.auc.polygon(...)
   }
   # Plot the ci shape
   if (ci && !methods::is(x$ci, "ci.auc")) {
@@ -241,11 +269,7 @@ plot.roc.roc <- function(x,
   }
   # Plot the polygon displaying the actual area
   if (auc.polygon) {
-    roc_utils_draw_auc_polygon(x, x$auc,
-      col = auc.polygon.col, lty = auc.polygon.lty,
-      density = auc.polygon.density, angle = auc.polygon.angle,
-      border = auc.polygon.border, ...
-    )
+    draw.auc.polygon(...)
   }
   # Identity line
   if (identity) suppressWarnings(abline(ifelse(percent, 100, 1), -1, col = identity.col, lwd = identity.lwd, lty = identity.lty, ...))
@@ -286,8 +310,7 @@ plot.roc.roc <- function(x,
       stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.")
     } else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
-      suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-      suppressWarnings(text(co$specificity, co$sensitivity, labels = sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      draw.thres(co = co, labels = sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), ...)
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
@@ -296,9 +319,8 @@ plot.roc.roc <- function(x,
     if (identical(print.thres, "all") && !is.null(co)) {
       co <- co[!is.na(co$threshold), , drop = FALSE]
     }
-    suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
     thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) as.character(co$threshold) else co$threshold
-    suppressWarnings(text(co$specificity, co$sensitivity, labels = sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+    draw.thres(co = co, labels = sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), ...)
   }
 
   # Print the AUC on the plot
@@ -311,11 +333,7 @@ plot.roc.roc <- function(x,
       !identical(auc.spec(attr(ci.auc.obj, "auc")), auc.spec(x$auc))) {
       ci.auc.obj <- NULL
     }
-    roc_utils_draw_auc_text(x$auc,
-      ci = ci.auc.obj, pattern = print.auc.pattern,
-      xy = c(print.auc.x, print.auc.y), adj = print.auc.adj,
-      col = print.auc.col, cex = print.auc.cex, ...
-    )
+    draw.auc.text(ci.auc.obj = ci.auc.obj, ...)
   }
 
   # panel.last: drawn on top of everything plot.roc draws, for symmetry with

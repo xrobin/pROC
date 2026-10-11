@@ -423,3 +423,21 @@ test_that("the lab graphical parameter sets the number of ticks", {
   dl <- capture_display_list(plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE))
   expect_identical(display_list_texts(dl), c("0.205 (0.806, 0.634)", "AUC: 0.731"))
 })
+
+test_that("graphical parameters in ... don't clash with the print.thres, print.auc and polygon arguments", {
+  dl <- capture_display_list(plot(r.s100b, print.auc = TRUE, cex = 0.8))
+  expect_identical(display_list_texts(dl), "AUC: 0.731")
+  dl <- capture_display_list(plot(r.s100b, print.thres = 0.205, cex = 0.8, pch = 3, adj = 0))
+  expect_identical(display_list_texts(dl), "0.205 (0.806, 0.634)")
+  dl <- capture_display_list(plot(r.s100b, print.thres = 0.205, print.thres.pch = 4, print.auc = TRUE, print.auc.cex = 2, cex = 0.8, pch = 3, adj = 0))
+  points <- display_list_calls(dl, "plotXY")
+  expect_equal(points[[length(points)]]$args[[3]], 4) # pch: the dedicated print.thres.pch
+  auc.text <- display_list_calls(dl, "text")[[2]]
+  expect_identical(auc.text$args[[2]], "AUC: 0.731")
+  dl <- capture_display_list(roc(aSAH$outcome, aSAH$s100b, plot = TRUE, print.auc = TRUE, cex = 1.2, quiet = TRUE))
+  expect_identical(display_list_texts(dl), "AUC: 0.731")
+  dl <- capture_display_list(plot(smooth(r.s100b), print.auc = TRUE, cex = 0.8))
+  expect_length(display_list_texts(dl), 1)
+  dl <- capture_display_list(plot(r.s100b, auc.polygon = TRUE, max.auc.polygon = TRUE, border = "red", density = 10, angle = 30))
+  expect_length(display_list_polygons(dl), 2)
+})
