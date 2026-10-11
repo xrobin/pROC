@@ -29,9 +29,9 @@ geom_text_auc.auc <- function(data, ci = NULL, x = NULL, y = NULL, pattern = NUL
   )
 }
 
-geom_text_auc.roc <- function(data, ...) {
+geom_text_auc.roc <- function(data, ci = data$ci, ...) {
   roc_utils_stop_if_no_auc(data, "data")
-  geom_text_auc(data$auc, ci = data$ci, ...)
+  geom_text_auc(data$auc, ci = ci, ...)
 }
 
 geom_text_auc.smooth.roc <- geom_text_auc.roc
