@@ -189,6 +189,11 @@ roc.default <- function(response, predictor,
     original.predictor <- predictor # store a copy of the original predictor (before removing NA)
     original.response <- response # store a copy of the original response (before removing NAs / unused levels)
 
+    # A data.frame (e.g. one selected column) would fail in as.factor() for the levels
+    if (is.list(response)) {
+      stop("'response' must be a vector or factor, not a data.frame or list.")
+    }
+
     # Validate levels
     if (missing(levels)) {
       if (length(levels) > 2) {
