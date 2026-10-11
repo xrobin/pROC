@@ -40,3 +40,13 @@ for (stratified in c(TRUE, FALSE)) {
     })
   }
 }
+
+test_that("ci.sp of a smoothed curve gives an NA interval when no resample can be smoothed", {
+  s <- smooth(r.s100b)
+  # Every resample fails to smooth
+  s$smoothing.args$method <- "density"
+  s$smoothing.args$density.controls <- function(x, ...) stop("not smoothable")
+  expect_warning(obtained <- ci.sp(s, sensitivities = c(0.5, 0.9), boot.n = 3, progress = "none"), "NA value")
+  expect_equal(dim(obtained), c(2, 3))
+  expect_true(all(is.na(obtained)))
+})

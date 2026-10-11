@@ -46,3 +46,13 @@ test_that("ci.se names itself in the multiclass error", {
   mc <- multiclass.roc(aSAH$gos6, aSAH$s100b, quiet = TRUE)
   expect_error(ci.se(mc), "'ci.se' not available for multiclass ROC curves.", fixed = TRUE)
 })
+
+test_that("ci.se of a smoothed curve gives an NA interval when no resample can be smoothed", {
+  s <- smooth(r.s100b)
+  # Every resample fails to smooth
+  s$smoothing.args$method <- "density"
+  s$smoothing.args$density.controls <- function(x, ...) stop("not smoothable")
+  expect_warning(obtained <- ci.se(s, specificities = c(0.5, 0.9), boot.n = 3, progress = "none"), "NA value")
+  expect_equal(dim(obtained), c(2, 3))
+  expect_true(all(is.na(obtained)))
+})
