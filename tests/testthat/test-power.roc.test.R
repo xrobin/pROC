@@ -493,3 +493,17 @@ test_that("power.roc.test with two ROC curves returns NA with a single case", {
   expect_true(is.na(power.roc.test(r1, r2, power = 0.8, sig.level = NULL)$sig.level))
   expect_true(is.na(power.roc.test(r1, r2, power = 0.8, kappa = 2)$ncases))
 })
+
+test_that("power.roc.test names the missing arguments", {
+  pl <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6, delta = 0.037)
+  # neither power nor sample size: auc is given (numeric) or does not exist (list)
+  expect_error(power.roc.test(auc = 0.8), "'power' or 'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  expect_error(power.roc.test(pl), "'power' or 'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  # incomplete sample size without kappa
+  expect_error(power.roc.test(auc = 0.8, ncases = 10, kappa = NULL), "'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  expect_error(power.roc.test(pl, ncases = 10, kappa = NULL), "'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  expect_error(power.roc.test(auc = 0.8, ncases = 10, kappa = NULL, power = 0.8, sig.level = NULL), "'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  expect_error(power.roc.test(pl, ncases = 10, kappa = NULL, power = 0.8, sig.level = NULL), "'ncontrols' and 'ncases' (or one of these with 'kappa') must be provided.", fixed = TRUE)
+  # the AUC can be determined without it
+  expect_error(power.roc.test(power = 0.8), "'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.", fixed = TRUE)
+})
