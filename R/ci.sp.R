@@ -85,6 +85,9 @@ ci.sp.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate (and
+  # warn if a corrected partial AUC is not defined), but it is not used
+  roc$auc <- NULL
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
