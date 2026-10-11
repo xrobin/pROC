@@ -98,7 +98,9 @@ na.rm=TRUE, method=NULL, ...)
     \dQuote{random}, so that the result does not depend on the order of
     the observations in the data (with \dQuote{first}, tied observations
     are ranked by position, and the same data sorted differently can
-    give very different p-values). Set the seed with
+    give very different p-values). With paired curves, the ties of both
+    predictors are broken with the same random order of the observations,
+    so that identical predictors give identical ranks. Set the seed with
     \code{\link{set.seed}} for reproducible results.
   }
   \item{progress}{whether to display a text progress bar during the

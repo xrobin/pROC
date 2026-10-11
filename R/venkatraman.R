@@ -20,8 +20,18 @@
 venkatraman.paired.test <- function(roc1, roc2, boot.n, ties.method = "random") {
   X <- roc1$predictor
   Y <- roc2$predictor
-  R <- rank(X, ties.method = ties.method)
-  S <- rank(Y, ties.method = ties.method)
+  if (identical(ties.method, "random")) {
+    # Break the ties of both predictors with the same random order of the
+    # observations, so that an observation tied in both curves is ranked the
+    # same way in both: identical predictors give identical ranks (E = 0).
+    o <- sample.int(length(X))
+    R <- S <- numeric(length(X))
+    R[o] <- rank(X[o], ties.method = "first")
+    S[o] <- rank(Y[o], ties.method = "first")
+  } else {
+    R <- rank(X, ties.method = ties.method)
+    S <- rank(Y, ties.method = ties.method)
+  }
   D <- roc1$response # because roc1&roc2 are paired
 
   E <- venkatraman.paired.stat(R, S, D, roc1$levels)
