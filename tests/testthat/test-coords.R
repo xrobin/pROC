@@ -770,3 +770,12 @@ test_that("deprecated coords forms keep numeric coordinates on ordered curves", 
   expect_warning(res <- coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE), "'as.list' is deprecated")
   expect_identical(res, apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
 })
+
+test_that("coords keeps the names of threshold x as row names whatever ret", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2.5, 4, 5), quiet = TRUE)
+  x <- c(low = 1.5, high = 3.5)
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "sensitivity"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = "all")), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"), best.weights = c(2, 0.3))), c("low", "high"))
+})
