@@ -123,6 +123,7 @@
   * roc.test(method = "specificity"/"sensitivity") now returns D = 0 (p = 1 two-sided) instead of NaN when the tested values of both curves are identical in the sample and all bootstrap replicates.
   * roc.test() with DeLong's method now returns NA when a curve has a single case or control, instead of failing ("missing value where TRUE/FALSE needed") or, for some curves with a single control, returning p = 1.
   * auc(), ci(), ci.auc(), ci.se(), ci.sp(), ci.coords() and ci.thresholds() called with response and predictor (or a formula) now return NA or NaN when roc() does (NA values with na.rm = FALSE, or infinite predictor values) instead of failing with unrelated errors; lines.roc() returns them with a warning that nothing was plotted, like plot.roc(); roc.test() stops with a clear error.
+  * Fixed a partial argument match warning in 'ggroc' with options(warnPartialMatchArgs = TRUE) (issue #87).
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
