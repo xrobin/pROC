@@ -44,6 +44,11 @@ ci.auc.formula <- function(formula, data, ...) {
 }
 
 ci.auc.default <- function(response, predictor, ...) {
+  if (inherits(response, "mv.multiclass.roc")) {
+    stop("CI of a multiclass ROC curve not implemented")
+  } else if (inherits(response, "mv.multiclass.auc")) {
+    stop("CI of a multiclass AUC not implemented")
+  }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
   if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
