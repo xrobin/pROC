@@ -305,3 +305,20 @@ test_that("CI shapes are drawn in increasing order whatever order the CI was com
   expect_equal(poly[[1]]$x, c(0.25, 0.5, 0.75, 0.75, 0.5, 0.25))
   expect_equal(poly[[1]]$y, unname(c(ci_co[[1]][o, 1], rev(ci_co[[1]][o, 3]))))
 })
+
+test_that("print.auc does not print the CI of another AUC specification", {
+  r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
+  expect_identical(
+    display_list_texts(capture_display_list(plot(r.ci, print.auc = TRUE, reuse.auc = FALSE, partial.auc = c(1, 0.8)))),
+    "Partial AUC: 0.081"
+  )
+  # Same specification: the stored CI is still printed
+  expect_identical(
+    display_list_texts(capture_display_list(plot(r.ci, print.auc = TRUE, reuse.auc = FALSE))),
+    "AUC: 0.731 (0.630–0.833)"
+  )
+  expect_identical(
+    display_list_texts(capture_display_list(plot(r.ci, print.auc = TRUE))),
+    "AUC: 0.731 (0.630–0.833)"
+  )
+})

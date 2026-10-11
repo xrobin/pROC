@@ -288,6 +288,13 @@ plot.roc.roc <- function(x,
   # Print the AUC on the plot
   if (print.auc) {
     ci.auc.obj <- if (ci && methods::is(x$ci, "ci.auc")) x$ci else NULL
+    # The AUC may have been recomputed with another specification
+    # (reuse.auc = FALSE): don't print a CI that belongs to a different AUC
+    auc.spec <- function(a) attributes(a)[c("partial.auc", "partial.auc.focus", "partial.auc.correct")]
+    if (!is.null(ci.auc.obj) && !is.null(attr(ci.auc.obj, "auc")) &&
+      !identical(auc.spec(attr(ci.auc.obj, "auc")), auc.spec(x$auc))) {
+      ci.auc.obj <- NULL
+    }
     roc_utils_draw_auc_text(x$auc,
       ci = ci.auc.obj, pattern = print.auc.pattern,
       xy = c(print.auc.x, print.auc.y), adj = print.auc.adj,
