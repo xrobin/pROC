@@ -121,6 +121,7 @@
   * pROC now requires R >= 4.0.0
   * smooth(method = "fitdistr") with a density function and another argument in ... (an optim() argument such as control, or partial.auc passed through roc()) no longer fails with "unused argument (`NA` = NULL)".
   * roc.test(method = "specificity"/"sensitivity") now returns D = 0 (p = 1 two-sided) instead of NaN when the tested values of both curves are identical in the sample and all bootstrap replicates.
+  * roc.test() with DeLong's method now returns NA when a curve has a single case or control, instead of failing ("missing value where TRUE/FALSE needed") or, for some curves with a single control, returning p = 1.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

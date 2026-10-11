@@ -460,6 +460,35 @@ test_that("bootstrap se/sp tests give D = 0 when the tested values never differ"
   expect_equal(t$p.value, 1)
 })
 
+test_that("DeLong roc.test with a single case or control returns NA", {
+  resp <- c(0, 1, 0, 0) # 1 case, 3 controls
+  r1 <- roc(resp, c(0.1, 0.25, 0.2, 0.3), direction = "<", quiet = TRUE) # AUC 2/3
+  r2 <- roc(resp, c(0.3, 0.25, 0.1, 0.2), direction = "<", quiet = TRUE) # AUC 2/3
+  r3 <- roc(resp, c(0.4, 0.5, 0.6, 0.9), direction = "<", quiet = TRUE) # AUC 1/3
+  t12 <- roc.test(r1, r2)
+  expect_true(is.na(t12$p.value))
+  expect_true(is.na(t12$statistic))
+  expect_true(is.na(roc.test(r1, r1)$p.value))
+  expect_true(is.na(roc.test(r1, r3)$p.value))
+
+  resp2 <- c(1, 0, 1, 1) # 1 control, 3 cases
+  r4 <- roc(resp2, c(0.6, 0.65, 0.7, 0.8), direction = "<", quiet = TRUE)
+  r5 <- roc(resp2, c(0.9, 0.65, 0.3, 0.7), direction = "<", quiet = TRUE)
+  expect_true(is.na(roc.test(r4, r5)$p.value))
+
+  # A single control: the 0/0 variance could round to +Inf (Z = 0, p = 1)
+  resp3 <- c(0, 1, 1, 1, 1, 1, 1)
+  rA <- roc(resp3, c(0.5, 0.1, 0.2, 0.6, 0.7, 0.8, 0.9), direction = "<", quiet = TRUE) # AUC 4/6
+  rB <- roc(resp3, c(0.5, 0.1, 0.2, 0.3, 0.4, 0.45, 0.9), direction = "<", quiet = TRUE) # AUC 1/6
+  rC <- roc(resp3, c(0.5, 0.15, 0.25, 0.65, 0.75, 0.85, 0.95), direction = "<", quiet = TRUE) # AUC 4/6
+  for (paired in c(TRUE, FALSE)) {
+    for (t in list(roc.test(rA, rB, paired = paired), roc.test(rA, rC, paired = paired))) {
+      expect_true(is.na(t$statistic))
+      expect_true(is.na(t$p.value))
+    }
+  }
+})
+
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)

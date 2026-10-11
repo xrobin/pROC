@@ -38,6 +38,11 @@ delong.unpaired.test <- function(roc1, roc2) {
   nS <- length(roc2$controls)
   mS <- length(roc2$cases)
 
+  # A single case or control: the variance is undefined (as in ci_auc_delong)
+  if (min(mR, nR, mS, nS) <= 1) {
+    return(c(NA_real_, NA_real_))
+  }
+
   VR <- delongPlacements(roc1)
   VS <- delongPlacements(roc2)
 
@@ -133,6 +138,10 @@ delong.paired.calculations <- function(roc1, roc2) {
   L <- c(1, -1)
   sig <- sqrt(L %*% S %*% L)
   d <- VR$theta - VS$theta
+  # A single case or control: the variance is undefined (as in ci_auc_delong)
+  if (m <= 1 || n <= 1) {
+    return(list("d" = d, "sig" = NA_real_))
+  }
   return(list("d" = d, "sig" = sig[[1]]))
 }
 
