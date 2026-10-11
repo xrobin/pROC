@@ -14,14 +14,14 @@
 \usage{
 \S3method{geom_text_auc}{auc}(data, ci = NULL, x = NULL, y = NULL, pattern = NULL,
       hjust = 0, vjust = 1, ...)
-\S3method{geom_text_auc}{roc}(data, ...)
-\S3method{geom_text_auc}{smooth.roc}(data, ...)
+\S3method{geom_text_auc}{roc}(data, ci = data$ci, ...)
+\S3method{geom_text_auc}{smooth.roc}(data, ci = data$ci, ...)
 }
 
 \arguments{
   \item{data}{a \code{\link{roc}} or \code{\link{auc}} object.
   }
-  \item{ci}{optional \code{\link{ci.auc}} object. Taken from
+  \item{ci}{optional \code{\link{ci.auc}} object. Defaults to
     \code{data$ci} when \code{data} is a ROC curve.
   }
   \item{x, y}{position in plot coordinates. Defaults to the centre of
