@@ -238,6 +238,10 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   }
   fit.controls <- do.call(MASS::fitdistr, c(list(roc$controls, densfun.controls, start.controls), fitdistr.dots(densfun.controls)))
   fit.cases <- do.call(MASS::fitdistr, c(list(roc$cases, densfun.cases, start.cases), fitdistr.dots(densfun.cases)))
+  # fitdistr gives an NA sd for a normal or log-normal fit of a single observation
+  if (!all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
+    stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
+  }
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function") {

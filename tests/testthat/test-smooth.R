@@ -245,3 +245,21 @@ test_that("density smoothing passes only density arguments from roc() to density
   expect_equal(s2$sensitivities, s$sensitivities)
   expect_equal(s$sensitivities, r$sensitivities)
 })
+
+test_that("fitdistr smoothing of a class with a single observation fails", {
+  testthat::skip_if_not_installed("MASS")
+  # fitdistr estimates an NA sd for a single observation
+  r <- roc(controls = c(0.5, 0.5, 0.5, 1.5), cases = 2.5, quiet = TRUE)
+  expect_error(smooth(r, method = "fitdistr"), "not smoothable")
+  expect_error(smooth(r, method = "fitdistr", density = "lognormal"), "not smoothable")
+  r <- roc(controls = 0.5, cases = c(1.5, 2.5, 3), quiet = TRUE)
+  expect_error(smooth(r, method = "fitdistr"), "not smoothable")
+})
+
+test_that("non-stratified bootstraps of fitdistr smoothed curves ignore resamples with a single case or control", {
+  testthat::skip_if_not_installed("MASS")
+  s <- smooth(roc(c(0, 0, 1, 1, 1), c(0.5, 1.5, 1.0, 2.5, 3.1), quiet = TRUE), method = "fitdistr")
+  expect_error(suppressWarnings(ci.sp(s, 0.5, boot.n = 20, boot.stratified = FALSE)), NA)
+  expect_error(suppressWarnings(ci.coords(s, 0.5, input = "sensitivity", ret = "specificity", boot.n = 20, boot.stratified = FALSE)), NA)
+  expect_error(suppressWarnings(roc.test(s, s, method = "sensitivity", sensitivity = 0.5, boot.n = 20, boot.stratified = FALSE)), NA)
+})
