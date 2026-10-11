@@ -106,9 +106,11 @@ coords.smooth.roc <- function(smooth.roc,
         se <- smooth.roc$sensitivities
         sp <- smooth.roc$specificities
       } else {
+        # Keep points within floating-point error of the limits (as roc_utils_near_any)
+        tol <- roc_utils_coords_tol(ifelse(smooth.roc$percent, 100, 1))
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
+          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] + tol & smooth.roc$sensitivities >= partial.auc[2] - tol]
+          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] + tol & smooth.roc$sensitivities >= partial.auc[2] - tol]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
           if (!roc_utils_near_any(partial.auc.limits[1], se, smooth.roc$percent)) {
             se <- c(partial.auc.limits[1], se)
@@ -119,8 +121,8 @@ coords.smooth.roc <- function(smooth.roc,
             sp <- c(sp, coords(smooth.roc, x = partial.auc.limits[2], input = "sensitivity", ret = "specificity")[1, 1])
           }
         } else {
-          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
+          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] + tol & smooth.roc$specificities >= partial.auc[2] - tol]
+          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] + tol & smooth.roc$specificities >= partial.auc[2] - tol]
           partial.auc.limits <- attr(smooth.roc$auc, "partial.auc")
           if (!roc_utils_near_any(partial.auc.limits[1], sp, smooth.roc$percent)) {
             se <- c(se, coords(smooth.roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
@@ -295,10 +297,12 @@ coords.roc <- function(roc,
         sp <- roc$specificities
         thres <- roc$thresholds
       } else {
+        # Keep points within floating-point error of the limits (as roc_utils_near_any)
+        tol <- roc_utils_coords_tol(ifelse(roc$percent, 100, 1))
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
+          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
+          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
+          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
           partial.auc.limits <- attr(roc$auc, "partial.auc")
           if (!roc_utils_near_any(partial.auc.limits[1], se, roc$percent)) {
             se <- c(partial.auc.limits[1], se)
@@ -311,9 +315,9 @@ coords.roc <- function(roc,
             thres <- roc_utils_c_thresholds(thres, roc_utils_na_thresholds(1L, roc$thresholds))
           }
         } else {
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
+          se <- roc$sensitivities[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
+          sp <- roc$specificities[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
+          thres <- roc$thresholds[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
           partial.auc.limits <- attr(roc$auc, "partial.auc")
           if (!roc_utils_near_any(partial.auc.limits[1], sp, roc$percent)) {
             se <- c(se, coords(roc, x = partial.auc.limits[1], input = "specificity", ret = "sensitivity")[1, 1])
