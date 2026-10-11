@@ -438,3 +438,20 @@ test_that("roc.test data.name is a single string for long calls", {
   expect_length(t6$data.name, 1)
   expect_match(t6$data.name, "s100b and ndka in data.frame(s100b = aSAH$s100b", fixed = TRUE)
 })
+
+test_that("paired DeLong roc.test with a single case or control returns NA", {
+  resp <- c(0, 1, 0, 0) # 1 case, 3 controls
+  r1 <- roc(resp, c(0.1, 0.25, 0.2, 0.3), direction = "<", quiet = TRUE) # AUC 2/3
+  r2 <- roc(resp, c(0.3, 0.25, 0.1, 0.2), direction = "<", quiet = TRUE) # AUC 2/3
+  r3 <- roc(resp, c(0.4, 0.5, 0.6, 0.9), direction = "<", quiet = TRUE) # AUC 1/3
+  t12 <- roc.test(r1, r2)
+  expect_true(is.na(t12$p.value))
+  expect_true(is.nan(t12$statistic))
+  expect_true(is.na(roc.test(r1, r1)$p.value))
+  expect_true(is.na(roc.test(r1, r3)$p.value))
+
+  resp2 <- c(1, 0, 1, 1) # 1 control, 3 cases
+  r4 <- roc(resp2, c(0.6, 0.65, 0.7, 0.8), direction = "<", quiet = TRUE)
+  r5 <- roc(resp2, c(0.9, 0.65, 0.3, 0.7), direction = "<", quiet = TRUE)
+  expect_true(is.na(roc.test(r4, r5)$p.value))
+})
