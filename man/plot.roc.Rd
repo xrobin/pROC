@@ -158,8 +158,9 @@ panel.last=NULL,
   \item{print.thres.pattern}{the text pattern for the thresholds, as a
     \link{sprintf} format. Three values are passed to sprintf:
     threshold, specificity, sensitivity. If \code{NULL}, a reasonable
-    default is used: \code{\%f} for numeric ROC curves, \code{\%s} for
-    ordered predictors.
+    default is used: \code{"\%.3f (\%.3f, \%.3f)"} (or
+    \code{"\%.3f (\%.1f\%\%, \%.1f\%\%)"} with \code{percent}), with
+    \code{\%s} for the threshold of ordered predictors.
   }
   \item{print.thres.pattern.cex}{the character expansion factor (cex) for the
     threshold text pattern. See \link{par} for more details.

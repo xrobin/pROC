@@ -27,7 +27,7 @@ geom_roc_threshold.roc <- function(data,
     pattern <- if (ordered_roc) {
       ifelse(percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
     } else {
-      ifelse(percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
+      ifelse(percent, "%.3f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
     }
   }
   co <- coords(data, thresholds)
