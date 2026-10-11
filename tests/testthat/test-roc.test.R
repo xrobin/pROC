@@ -445,6 +445,21 @@ test_that("roc.test data.name is a single string for long calls", {
   expect_match(t6$data.name, "s100b and ndka in data.frame(s100b = aSAH$s100b", fixed = TRUE)
 })
 
+test_that("bootstrap se/sp tests give D = 0 when the tested values never differ", {
+  set.seed(42)
+  # se = 1 at sp = 0 and sp = 1 at se = 0 in every resample: zero variance
+  t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, boot.n = 20, progress = "none")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  t <- roc.test(r.s100b, r.ndka, method = "sensitivity", sensitivity = 0, boot.n = 20, progress = "none")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  # unpaired
+  expect_warning(t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, paired = FALSE, boot.n = 20, progress = "none"))
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+})
+
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
   r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
