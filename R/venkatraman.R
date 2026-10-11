@@ -109,14 +109,29 @@ venkatraman.unpaired.stat <- function(R, S, D1, D2, levels1, levels2, mp) {
   R.exp <- mp * R.fx + (1 - mp) * (1 - R.gx)
   S.exp <- mp * S.fx + (1 - mp) * (1 - S.gx)
 
-  # Do the integration
-  x <- sort(c(R.p, S.p))
-  R.f <- approxfun(R.p, R.exp)
-  S.f <- approxfun(S.p, S.exp)
-  f <- function(x) abs(R.f(x) - S.f(x))
-  y <- f(x)
-  # trapezoid integration:
-  idx <- 2:length(x)
-  integral <- sum(((y[idx] + y[idx - 1]) * (x[idx] - x[idx - 1])) / 2, na.rm = TRUE) # remove NA that can appear in the borders
+  # The error curves start at p = 0 with an error of 1 - mp (no observation
+  # below the threshold) and end at p = 1 with mp. Repeated p values (tied
+  # ranks) are the same point.
+  R.p <- c(0, R.p)
+  R.exp <- c(1 - mp, R.exp)
+  S.p <- c(0, S.p)
+  S.exp <- c(1 - mp, S.exp)
+  R.keep <- !duplicated(R.p)
+  S.keep <- !duplicated(S.p)
+
+  # Do the integration of |R - S| over [0, 1]: the difference is linear
+  # between the points of both curves
+  x <- sort(unique(c(R.p, S.p)))
+  # rule = 2: the last p of each curve is 1 up to floating-point error
+  d <- approx(R.p[R.keep], R.exp[R.keep], x, rule = 2)$y - approx(S.p[S.keep], S.exp[S.keep], x, rule = 2)$y
+  dx <- diff(x)
+  d0 <- d[-length(d)]
+  d1 <- d[-1]
+  # If the curves cross inside an interval, integrate both sides of the crossing
+  crossing <- d0 * d1 < 0
+  integral <- sum(ifelse(crossing,
+    (d0^2 + d1^2) / (abs(d0) + abs(d1)) / 2,
+    abs(d0 + d1) / 2
+  ) * dx)
   return(integral)
 }
