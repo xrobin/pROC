@@ -366,3 +366,11 @@ test_that("multiclass.roc with a data.frame response gives a clear error", {
   # A data.frame predictor (multivariate) is still accepted
   expect_s3_class(multiclass.roc(d$y, data.frame(a = d$x, b = -d$x, c = d$x)), "mv.multiclass.roc")
 })
+
+test_that("multiclass.roc with smooth = TRUE gives a clear error", {
+  gos <- droplevels(aSAH$gos6)
+  expect_error(multiclass.roc(gos, aSAH$s100b, smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  m <- cbind("1" = aSAH$s100b, "3" = aSAH$ndka, "4" = aSAH$age, "5" = as.numeric(aSAH$wfns))
+  expect_error(multiclass.roc(gos, m, smooth = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+})
