@@ -510,7 +510,12 @@ coords.roc <- function(roc,
 
   if (any(!ret %in% colnames(res))) {
     # Deduce additional tn, tp, fn, fp, npv, ppv
+    # Keep the row names (names of a threshold 'x'), if any
+    res.rownames <- if (.row_names_info(res) > 0) rownames(res)
     res <- roc_utils_calc_coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights)
+    if (!is.null(res.rownames)) {
+      rownames(res) <- res.rownames
+    }
   }
 
   if (as.list) {

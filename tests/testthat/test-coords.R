@@ -863,3 +863,12 @@ test_that("coords best and local maximas keep curve points within float error of
   s$auc <- auc(s, partial.auc = c(100, s$specificities[k] + 1e-11))
   expect_equal(coords(s, "best")$specificity, s$specificities[k])
 })
+
+test_that("coords keeps the names of threshold x as row names whatever ret", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2.5, 4, 5), quiet = TRUE)
+  x <- c(low = 1.5, high = 3.5)
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "sensitivity"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = "all")), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"), best.weights = c(2, 0.3))), c("low", "high"))
+})
