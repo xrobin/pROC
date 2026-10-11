@@ -220,3 +220,32 @@ test_that("ci.coords 'best' on smoothed curves ignores resamples with no point i
   sp <- as.numeric(ci$specificity)
   expect_true(all(is.na(sp) | (sp >= 0.899 - 1e-6 & sp <= 0.9 + 1e-6)))
 })
+
+test_that("ci.coords of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  set.seed(42)
+  # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
+  # Each value twice (once shifted by 0.05), so that nearly all the resamples can be smoothed
+  controls <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9)
+  cases <- c(0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  resp <- rep(0:1, each = 16)
+  pred <- c(controls, controls + 0.05, cases, cases + 0.05)
+  s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
+  expect_no_warning(ci.coords(s, x = 0.95, boot.n = 50), message = "Partial AUC correction not defined")
+})
+
+test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
+  set.seed(42)
+  # The resamples lost the partial AUC range and returned the global best
+  s <- smooth(r.s100b.partial)
+  s2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), smooth = TRUE, quiet = TRUE)
+  for (curve in list(s, s2)) {
+    ci <- ci.coords(curve, "best", boot.n = 20, progress = "none")
+    sp <- as.numeric(ci$specificity)
+    expect_true(all(sp >= 0.9 - 1e-6 & sp <= 1 + 1e-6))
+  }
+  # Focus on sensitivity, in percent
+  s3 <- smooth(r.s100b.percent.partial2)
+  ci <- ci.coords(s3, "best", boot.n = 20, progress = "none")
+  se <- as.numeric(ci$sensitivity)
+  expect_true(all(se >= 90 - 1e-4 & se <= 99 + 1e-4))
+})

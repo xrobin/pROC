@@ -96,6 +96,14 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate (and
+  # warn if a corrected partial AUC is not defined). Only the partial AUC range
+  # is needed (for "best"): bootstrap.smooth.coords() restores it.
+  roc$auc <- NULL
+  auc.args <- NULL
+  if (!is.null(smooth.roc$auc) && !identical(attr(smooth.roc$auc, "partial.auc"), FALSE)) {
+    auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
+  }
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
@@ -103,7 +111,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    smooth.roc.call = smooth.roc.call, best.policy = best.policy,
+    smooth.roc.call = smooth.roc.call, best.policy = best.policy, auc.args = auc.args,
     simplify = "list", progress = progress, cl = cl
   )
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
