@@ -95,7 +95,13 @@ is more subject to bugs. Please report them if you find one.
   }
   \item{predictor}{the predictor vector, matrix or data.frame as passed in argument.
   }
-  \item{levels}{the levels of the response as defined in argument.}
+  \item{levels}{the levels of the response used to build the curves: the
+    levels defined in argument, without those that were ignored (see
+    \sQuote{Warnings}).}
+  \item{rocs}{the pairwise ROC curves: a list of \dQuote{\link{roc}}
+    objects (univariate), or a list named by pair of levels (such as
+    \dQuote{a/b}) of two \dQuote{\link{roc}} objects each, built on the
+    predictor columns of the two levels (multivariate).}
   \item{percent}{if the sensitivities, specificities and AUC are
     reported in percent, as defined in argument.
   }
@@ -106,7 +112,9 @@ is more subject to bugs. Please report them if you find one.
 
 \section{Warnings}{
   If one of the levels specified in \code{levels} has no observation in
-  \code{response}, a warning is issued and the level is ignored.
+  \code{response}, or only observations with a \code{NA} predictor
+  (removed by \code{\link{roc}} with \code{na.rm=TRUE}, the default), a
+  warning is issued and the level is ignored.
 }
 
 \references{

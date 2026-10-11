@@ -374,3 +374,19 @@ test_that("multiclass.roc with smooth = TRUE gives a clear error", {
   expect_error(multiclass.roc(gos, m, smooth = TRUE), "Smoothing of a multiclass ROC curve not implemented")
   expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
 })
+
+test_that("multiclass.roc drops a level whose observations all have an NA predictor", {
+  resp <- c("a", "a", "b", "b", "c", "c", "d")
+  pred <- c(1, 2, 3, 4, 5, 6, NA)
+  expect_warning(mr <- multiclass.roc(resp, pred, quiet = TRUE), "No observation for response level\\(s\\): d")
+  expect_equal(mr$levels, c("a", "b", "c"))
+  expect_equal(as.numeric(mr$auc), as.numeric(multiclass.roc(resp[1:6], pred[1:6], quiet = TRUE)$auc))
+
+  P <- cbind(
+    a = c(.8, .7, .1, .2, .1, .1, NA), b = c(.1, .2, .8, .6, .2, .1, NA),
+    c = c(.1, .1, .1, .2, .7, .8, NA), d = c(0, 0, 0, 0, 0, 0, NA)
+  )
+  expect_warning(mv <- multiclass.roc(resp, P), "No observation for response level\\(s\\): d")
+  expect_equal(mv$levels, c("a", "b", "c"))
+  expect_equal(as.numeric(mv$auc), as.numeric(multiclass.roc(resp[1:6], P[1:6, 1:3])$auc))
+})
