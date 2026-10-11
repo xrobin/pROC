@@ -150,8 +150,9 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
     sessionInfo <- sessionInfo()
-    save(thresholds, controls, cases, direction, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", utils::packageDescription("pROC")$BugReports))
+    bug.file <- tempfile("pROC_bug", fileext = ".RData")
+    save(thresholds, controls, cases, direction, sessionInfo, file = bug.file)
+    stop(sprintf("pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Diagnostic data saved in %s. Please report this bug to <%s>.", bug.file, utils::packageDescription("pROC")$BugReports))
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
@@ -283,8 +284,9 @@ roc_utils_thresholds <- function(predictor, direction) {
           thresholds[tie.idx] <- unique.candidates[tie.idx - 1]
         } else {
           sessionInfo <- sessionInfo()
-          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
-          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+          bug.file <- tempfile("pROC_bug", fileext = ".RData")
+          save(predictor, direction, sessionInfo, file = bug.file)
+          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in %s. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, bug.file, utils::packageDescription("pROC")$BugReports))
         }
       }
     } else if (direction == "<") {
@@ -303,8 +305,9 @@ roc_utils_thresholds <- function(predictor, direction) {
           # We're already good, nothing to do
         } else {
           sessionInfo <- sessionInfo()
-          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
-          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+          bug.file <- tempfile("pROC_bug", fileext = ".RData")
+          save(predictor, direction, sessionInfo, file = bug.file)
+          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in %s. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, bug.file, utils::packageDescription("pROC")$BugReports))
         }
       }
     }
