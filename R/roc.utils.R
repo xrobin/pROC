@@ -397,7 +397,7 @@ detect.env.true <- function(x) {
 
 # sort roc curve. Make sure specificities are increasing.
 sort_roc <- function(roc) {
-  if (is.unsorted(roc$specificities)) {
+  if (is.unsorted(roc$specificities, na.rm = TRUE)) {
     roc$sensitivities <- rev(roc$sensitivities)
     roc$specificities <- rev(roc$specificities)
     roc$thresholds <- rev(roc$thresholds)
@@ -407,7 +407,7 @@ sort_roc <- function(roc) {
 
 # sort smoothed roc curve. Make sure specificities are increasing.
 sort_smooth_roc <- function(roc) {
-  if (is.unsorted(roc$specificities)) {
+  if (is.unsorted(roc$specificities, na.rm = TRUE)) {
     roc$sensitivities <- rev(roc$sensitivities)
     roc$specificities <- rev(roc$specificities)
   }
