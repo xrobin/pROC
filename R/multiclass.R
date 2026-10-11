@@ -35,6 +35,9 @@ multiclass.roc.formula <- function(formula, data, ...) {
   }
   multiclass.roc <- multiclass.roc.default(response, predictors, ...)
   multiclass.roc$call <- call
+  # the call may hold the formula in a variable: keep the names for print
+  multiclass.roc$predictor.name <- roc.data$predictor.names
+  multiclass.roc$response.name <- roc.data$response.name
   if (!data.missing) {
     multiclass.roc$data <- data
   }
