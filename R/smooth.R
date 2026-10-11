@@ -281,12 +281,12 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
 
   # ... that should be passed to densfun
   if (length(list(...)) > 0 && any(names(list(...)) %in% names(formals(densfun.controls)))) {
-    dots.controls <- list(...)[names(formals(densfun.controls))[match(names(list(...)), names(formals(densfun.controls)))]]
+    dots.controls <- list(...)[names(list(...)) %in% names(formals(densfun.controls))]
   } else {
     dots.controls <- list()
   }
   if (length(list(...)) > 0 && any(names(list(...)) %in% names(formals(densfun.cases)))) {
-    dots.cases <- list(...)[names(formals(densfun.cases))[match(names(list(...)), names(formals(densfun.cases)))]]
+    dots.cases <- list(...)[names(list(...)) %in% names(formals(densfun.cases))]
   } else {
     dots.cases <- list()
   }
