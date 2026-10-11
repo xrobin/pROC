@@ -292,3 +292,16 @@ test_that("CI shapes are drawn in increasing order whatever order the CI was com
     expect_warning(plot(ci_co, type = "shape"), "Low definition shape")
   })
 })
+
+test_that("print.auc does not print the CI of another AUC specification", {
+  skip_if(getRversion() < "4.1")
+  r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-print-auc-partial-auc-without-stored-ci", function() {
+    plot(r.ci, print.auc = TRUE, reuse.auc = FALSE, partial.auc = c(1, 0.8))
+  })
+  # Same specification: the stored CI is still printed
+  expect_doppelganger("plot-print-auc-reuse-auc-false-with-stored-ci", function() {
+    plot(r.ci, print.auc = TRUE, reuse.auc = FALSE)
+  })
+  expect_doppelganger("plot-print-auc-with-stored-ci", function() plot(r.ci, print.auc = TRUE))
+})
