@@ -75,6 +75,11 @@ ci(...)
 The return value of the specific \code{ci} functions
 \code{\link{ci.auc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}}, depending on the
 \code{of} argument.
+
+With \code{response} and \code{predictor} (or a \code{formula}),
+\code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
+returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
+predictor values).
 }
 
 \references{

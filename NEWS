@@ -126,6 +126,7 @@
   * smooth(method = "fitdistr") with a density function and another argument in ... (an optim() argument such as control, or partial.auc passed through roc()) no longer fails with "unused argument (`NA` = NULL)".
   * roc.test(method = "specificity"/"sensitivity") now returns D = 0 and p = 1 instead of NaN when the tested values of both curves are identical in the sample and all bootstrap replicates.
   * roc.test() with paired DeLong no longer fails with "missing value where TRUE/FALSE needed" when one group has a single observation and both AUCs are equal: it returns an NA p-value, as when the AUCs differ.
+  * auc(), ci(), ci.auc(), ci.se(), ci.sp(), ci.coords() and ci.thresholds() called with response and predictor (or a formula) now return NA or NaN when roc() does (NA values with na.rm = FALSE, or infinite predictor values) instead of failing with unrelated errors; lines.roc() returns them with a warning that nothing was plotted, like plot.roc(); roc.test() stops with a clear error.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
