@@ -339,30 +339,25 @@ coords.roc <- function(roc,
       }
       res <- roc_utils_coords_basic(thres, sp, se)
     } else if (x == "local maximas") {
-      # Pre-filter thresholds based on partial.auc
-      if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
-        se <- roc$sensitivities
-        sp <- roc$specificities
-        thres <- roc$thresholds
-      } else {
+      # Local maximas of the whole curve: the ends of a partial AUC range
+      # are not angles of the curve
+      lm.idx <- roc_utils_max_thresholds_idx(roc$specificities, roc$sensitivities, roc$percent)
+      # Keep those within partial.auc
+      if (!(is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc)) {
         # Keep points within floating-point error of the limits (as for x = "all")
         tol <- roc_utils_coords_tol(ifelse(roc$percent, 100, 1))
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol]
+          in.range <- roc$sensitivities <= partial.auc[1] + tol & roc$sensitivities >= partial.auc[2] - tol
         } else {
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol]
+          in.range <- roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol
         }
+        lm.idx <- lm.idx & in.range
       }
-      if (length(thres) == 0) {
+      if (!any(lm.idx)) {
         warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
         return(NULL)
       }
-      lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se)
-      res <- roc_utils_coords_basic(thres[lm.idx], sp[lm.idx], se[lm.idx])
+      res <- roc_utils_coords_basic(roc$thresholds[lm.idx], roc$specificities[lm.idx], roc$sensitivities[lm.idx])
     } else { # x == "best"
       # cheat: allow the user to pass "topleft"
       best.method <- match.arg(best.method[1], c("youden", "closest.topleft", "topleft"))
