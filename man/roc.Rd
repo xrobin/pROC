@@ -222,7 +222,10 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 }
 \value{
   If the data contained any \code{NA} value and \code{na.rm=FALSE}, \code{NA} is
-  returned. Otherwise, if \code{smooth=FALSE}, a list of class
+  returned. The functions that build the curve from \code{response} and
+  \code{predictor} (or a \code{formula}), such as \code{\link{auc}},
+  \code{\link{ci}} and \code{\link{plot.roc}}, return \code{NA} (or
+  \code{NaN}) too in that case. Otherwise, if \code{smooth=FALSE}, a list of class
   \dQuote{roc} with the following fields: 
   \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
     defined in \code{\link{auc}}.
