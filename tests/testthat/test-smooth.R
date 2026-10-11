@@ -224,3 +224,24 @@ test_that("fitdistr smoothing with a density function accepts other ... argument
   ))
   expect_equal(as.numeric(r2$auc), as.numeric(auc(expected, partial.auc = c(1, .8))))
 })
+
+test_that("density smoothing passes only density arguments from roc() to density", {
+  response <- rep(0:1, each = 10)
+  predictor <- c(1, 2, 2.5, 3, 3.5, 4, 5, 5.5, 6, 8, 3, 4.5, 5, 6, 6.5, 7, 7.5, 8, 9, 10)
+  r <- smooth(roc(response, predictor, quiet = TRUE), method = "density", adjust = 2)
+  set.seed(42)
+  expected <- ci.coords(r, x = 0.9, input = "specificity", ret = "se", boot.n = 3)
+  # ci.coords' x must not reach density() as its data
+  set.seed(42)
+  obtained <- ci.coords(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  set.seed(42)
+  obtained <- roc(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, ci = TRUE, of = "coords", x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)$ci
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  # same with a density function
+  dens <- function(x, ...) stats::density(x, ...)
+  s <- smooth(roc(response, predictor, quiet = TRUE), method = "density", density = dens, adjust = 2)
+  s2 <- roc(response, predictor, quiet = TRUE, smooth = TRUE, smooth.method = "density", density = dens, adjust = 2, x = 0.9, of = "coords")
+  expect_equal(s2$sensitivities, s$sensitivities)
+  expect_equal(s$sensitivities, r$sensitivities)
+})
