@@ -893,6 +893,13 @@ roc_utils_plot_roc <- function(curve, ..., x) {
   plot.roc(curve, ...)
 }
 
+# axis() for plot.roc() without explicit labels. The 'lab' graphical parameter
+# (number of ticks, used by plot()) would partially match the 'labels' argument
+# of axis(): capture it here so it is not forwarded.
+roc_utils_axis <- function(..., lab) {
+  axis(...)
+}
+
 # smooth.roc() for roc(..., smooth = TRUE). roc() forwards its ... to auc, ci
 # and plot.roc too, but smooth.roc() forces all its dots (list(...)) and stores
 # them in smoothing.args, where they are evaluated again when the smoothing is
