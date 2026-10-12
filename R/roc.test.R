@@ -319,7 +319,9 @@ roc.test.roc <- function(roc1, roc2,
       # A logical counts as a number, as in t.test()
       if (!is.numeric(conf.level) && !is.logical(conf.level)) {
         stop("conf.level must be numeric between 0 and 1.")
-      } else if (anyNA(conf.level) || any(0 > conf.level | 1 < conf.level)) {
+      } else if (!roc_utils_is_single_number(conf.level)) {
+        stop("conf.level must be a single number between 0 and 1.")
+      } else if (0 > conf.level || 1 < conf.level) {
         stop("conf.level must be between 0 and 1.")
       }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
