@@ -195,6 +195,7 @@
   * `ci.coords()` with `ret = "all"` and a numeric `x` of a non-threshold `input` returns the CIs of all coordinates but the threshold, instead of failing.
   * `roc.test()`, `cov()`, `power.roc.test()`, `are.paired()` and `multiclass.roc()` treat the NA level of an ordered predictor as a missing value, as `roc()` does.
   * `roc()` ignores an NA level of the response (`addNA()`, `factor(exclude = NULL)`) when choosing the default `levels`, instead of warning about more than two levels or failing with "No control observation.".
+  * smooth(reuse.ci = TRUE) now recomputes a stored ci.coords of the best point instead of dropping it with a warning when its ret does not include "threshold".
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

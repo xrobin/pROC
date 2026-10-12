@@ -108,12 +108,18 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     if (methods::is(roc$ci, "ci.thresholds")) {
       warning("'ci.thresholds' is not available for smoothed ROC curves: the CI is not re-used.")
     } else if (methods::is(roc$ci, "ci.coords") &&
-      (identical(attr(roc$ci, "input"), "threshold") || "threshold" %in% attr(roc$ci, "ret"))) {
+      ((identical(attr(roc$ci, "input"), "threshold") && !identical(attr(roc$ci, "x"), "best")) ||
+        "threshold" %in% attr(roc$ci, "ret"))) {
       # A smoothed curve has no thresholds
       warning("'ci.coords' of thresholds is not available for smoothed ROC curves: the CI is not re-used.")
     } else {
       args <- attributes(roc$ci)
       args$roc <- NULL
+      if (methods::is(roc$ci, "ci.coords") && identical(args$x, "best")) {
+        # input is ignored for x = "best" (and "threshold" is not a valid
+        # input on a smoothed curve)
+        args$input <- NULL
+      }
       args$smooth.roc <- sesp
       sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
     }

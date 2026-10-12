@@ -366,3 +366,19 @@ test_that("smooth with reuse.ci skips a stored ci.coords of thresholds", {
   s <- smooth(r, reuse.ci = TRUE)
   expect_s3_class(s$ci, "ci.coords")
 })
+
+test_that("smooth with reuse.ci recomputes a stored ci.coords of the best point", {
+  r <- r.s100b
+  # x = "best": the default input = "threshold" is irrelevant
+  r$ci <- ci.coords(r, "best", ret = c("specificity", "sensitivity"), best.policy = "random", boot.n = 2, progress = "none")
+  expect_identical(attr(r$ci, "input"), "threshold")
+  warnings <- character(0)
+  s <- withCallingHandlers(smooth(r, reuse.ci = TRUE), warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  expect_false(any(grepl("not re-used", warnings, fixed = TRUE)))
+  expect_s3_class(s$ci, "ci.coords")
+  expect_identical(attr(s$ci, "x"), "best")
+  expect_identical(names(s$ci), c("specificity", "sensitivity"))
+})
