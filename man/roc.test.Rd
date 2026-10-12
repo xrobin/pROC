@@ -85,10 +85,12 @@ na.rm=TRUE, method=NULL, ...)
     test. See the \emph{AUC specification} section for more details.
 
   }
-  \item{boot.n}{for \code{method="bootstrap"} and \code{method="venkatraman"} only: the number of
+  \item{boot.n}{for \code{method="bootstrap"}, \code{"sensitivity"},
+    \code{"specificity"} and \code{"venkatraman"} only: the number of
     bootstrap replicates or permutations. Default: \var{2000}.
   }
-  \item{boot.stratified}{for \code{method="bootstrap"} only:
+  \item{boot.stratified}{for \code{method="bootstrap"},
+    \code{"sensitivity"} and \code{"specificity"} only:
     should the bootstrap be stratified (same number 
     of cases/controls in each replicate than in the original sample) or
     not. Ignored with \code{method="venkatraman"}. Default: \var{TRUE}.
@@ -279,10 +281,9 @@ na.rm=TRUE, method=NULL, ...)
   \code{"epanechnikov"}) counts as a difference.
 
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
-  ROC curves have a different differ in the value of
-  \code{direction}, the warning \dQuote{(DeLong|Venkatraman)'s test should not be
-    applied to ROC curves with different directions.} is
-  printed. However, the spurious test is enforced.
+  ROC curves have a different value of
+  \code{direction}, a warning is issued. However, the spurious test is
+  enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
@@ -343,10 +344,9 @@ na.rm=TRUE, method=NULL, ...)
     hypothesis, that is 0.}
   \item{estimate}{the AUC of the two ROC curves (with paired curves,
     the curves rebuilt on the observations complete in both, see
-    Details), or with
-    \code{method="sensitivity"} and \code{method="specificity"}, the
-    specificity and sensitivity of the two curves at the given
-    sensitivity or specificity.}
+    Details), or the specificities (\code{method="sensitivity"}) or
+    sensitivities (\code{method="specificity"}) of the two curves at
+    the given value. Not returned with \code{method="venkatraman"}.}
   \item{data.name}{the names of the data that was used.}
   \item{roc1, roc2}{the two ROC curves that were compared (with paired
     curves, rebuilt on the observations complete in both, see Details).}
