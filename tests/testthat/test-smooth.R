@@ -350,3 +350,19 @@ test_that("smooth with reuse.ci skips a stored ci.thresholds", {
   expect_null(s$ci)
   expect_equal(as.numeric(s$auc), as.numeric(smooth(r.s100b)$auc))
 })
+
+test_that("smooth with reuse.ci skips a stored ci.coords of thresholds", {
+  r <- r.s100b
+  # default x = "best": input = "threshold"
+  r$ci <- ci.coords(r, "best", best.policy = "random", boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  r$ci <- ci.coords(r, 0.2, input = "threshold", ret = c("se", "sp"), boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_null(s$ci)
+  # other inputs are still recomputed
+  r$ci <- ci.coords(r, 0.9, input = "specificity", ret = "se", boot.n = 2, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_s3_class(s$ci, "ci.coords")
+})
