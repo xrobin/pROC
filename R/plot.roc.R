@@ -194,8 +194,8 @@ plot.roc.roc <- function(x,
         lab.at <- axTicks(side = 2)
         suppressWarnings(axis(side = 2, at = lab.at, labels = format(lab.at, trim = TRUE), ...))
       } else {
-        suppressWarnings(axis(side = 1, ...))
-        suppressWarnings(axis(side = 2, ...))
+        suppressWarnings(roc_utils_axis(side = 1, ...))
+        suppressWarnings(roc_utils_axis(side = 2, ...))
       }
     }
   }
@@ -287,7 +287,7 @@ plot.roc.roc <- function(x,
     } else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
       suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-      suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      suppressWarnings(text(co$specificity, co$sensitivity, labels = sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
@@ -298,7 +298,7 @@ plot.roc.roc <- function(x,
     }
     suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
     thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) as.character(co$threshold) else co$threshold
-    suppressWarnings(text(co$specificity, co$sensitivity, sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+    suppressWarnings(text(co$specificity, co$sensitivity, labels = sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
   }
 
   # Print the AUC on the plot

@@ -155,6 +155,7 @@
   * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
   * Fixed the name of a fitdistr density function recorded and printed as "density.controls"/"density.cases" with 'roc(..., smooth=TRUE, smooth.method="fitdistr", density=<function>)'
   * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
+  * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

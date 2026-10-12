@@ -411,3 +411,15 @@ test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve
   labels <- display_list_texts(capture_display_list(plot(r2, print.thres = "all")))
   expect_identical(labels[length(labels)], "0.075 (0.222, 0.902)")
 })
+
+test_that("the lab graphical parameter sets the number of ticks", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b, lab = c(10, 10, 7))
+  expect_equal(par("xaxp")[3], 10)
+  expect_equal(par("yaxp")[3], 10)
+  r <- roc(aSAH$outcome, aSAH$s100b, plot = TRUE, lab = c(10, 10, 7), quiet = TRUE)
+  expect_equal(par("xaxp")[3], 10)
+  dl <- capture_display_list(plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE))
+  expect_identical(display_list_texts(dl), c("0.205 (0.806, 0.634)", "AUC: 0.731"))
+})
