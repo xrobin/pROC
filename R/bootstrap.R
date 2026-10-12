@@ -163,16 +163,27 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   if (test == "sp") {
     coord1 <- coords(roc1, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
     coord2 <- coords(roc2, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
-    D <- (coord1 - coord2) / sd(diffs)
+    estimate.diff <- coord1 - coord2
   } else if (test == "se") {
     coord1 <- coords(roc1, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
     coord2 <- coords(roc2, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
-    D <- (coord1 - coord2) / sd(diffs)
+    estimate.diff <- coord1 - coord2
   } else {
-    D <- (roc1$auc - roc2$auc) / sd(diffs)
+    estimate.diff <- roc1$auc - roc2$auc
   }
-  estimates.equal <- if (test %in% c("sp", "se")) coord1 == coord2 else roc1$auc == roc2$auc
-  if (is.nan(D) && all(diffs == 0) && estimates.equal) {
+  # Equal (partial) AUCs or coordinates computed from different points can
+  # differ by floating-point residues, and so can the resampled differences:
+  # treat both as exact zeros, otherwise D is an arbitrary ratio of residues.
+  tol <- roc_utils_coords_tol(ifelse(roc1$percent || roc2$percent, 100, 1))
+  if (isTRUE(abs(estimate.diff) <= tol)) {
+    estimate.diff <- 0
+  }
+  sd.diffs <- sd(diffs)
+  if (isTRUE(sd.diffs <= tol)) {
+    sd.diffs <- 0
+  }
+  D <- estimate.diff / sd.diffs
+  if (is.nan(D) && all(abs(diffs) <= tol)) {
     D <- 0
   } # special case: no difference between the tested values produces a NaN
   if (test %in% c("sp", "se")) {
