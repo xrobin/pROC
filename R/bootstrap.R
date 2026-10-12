@@ -406,8 +406,8 @@ roc_utils_resample <- function(roc, stratified) {
     # Subset rather than split(): a class missing from the resample must give
     # an empty vector of the predictor's type (split() gives NULL), so that
     # ordered predictors can still be combined and the replicate dropped
-    controls <- predictor[response == roc$levels[1]]
-    cases <- predictor[response == roc$levels[2]]
+    controls <- predictor[response %in% roc$levels[1]]
+    cases <- predictor[response %in% roc$levels[2]]
   }
   list(controls = controls, cases = cases, predictor = predictor, response = response)
 }
