@@ -33,6 +33,44 @@ are.paired.roc <- function(roc1, roc2,
                            return.paired.rocs = FALSE,
                            reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
                            ...) {
+  # Curves built from controls and cases have a synthetic response (the
+  # controls, then the cases): nothing says they come from the same patients,
+  # unless they are built on the same data (e.g. a curve and its smoothed or
+  # partial AUC version)
+  base1 <- roc_utils_unwrap_roc(roc1)
+  base2 <- roc_utils_unwrap_roc(roc2)
+  cc1 <- roc_utils_is_controls_cases_roc(base1)
+  cc2 <- roc_utils_is_controls_cases_roc(base2)
+  if ((cc1 || cc2) && !(cc1 && cc2 && identical(base1$original.predictor, base2$original.predictor))) {
+    return(FALSE)
+  }
+  roc_utils_are_paired(roc1, roc2,
+    return.paired.rocs = return.paired.rocs,
+    reuse.auc = reuse.auc, reuse.ci = reuse.ci, reuse.smooth = reuse.smooth
+  )
+}
+
+# The curve of an auc, or the curve a smoothed curve was built from
+roc_utils_unwrap_roc <- function(roc) {
+  if (methods::is(roc, "auc")) {
+    roc <- attr(roc, "roc")
+  }
+  if (methods::is(roc, "smooth.roc") && !is.null(attr(roc, "roc"))) {
+    roc <- attr(roc, "roc")
+  }
+  roc
+}
+
+# Was the curve built with roc(controls =, cases =)?
+roc_utils_is_controls_cases_roc <- function(roc) {
+  all(c("controls", "cases") %in% names(roc$call))
+}
+
+# are.paired.roc without the controls/cases check: pairs the observations
+# of controls/cases curves by their position (roc.test(paired = TRUE))
+roc_utils_are_paired <- function(roc1, roc2,
+                                 return.paired.rocs = FALSE,
+                                 reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE) {
   # check return.paired.rocs
   if (!is.logical(return.paired.rocs) || length(return.paired.rocs) != 1) {
     stop("'return.paired.rocs' must be either TRUE or FALSE.")

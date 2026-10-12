@@ -125,12 +125,9 @@ alternative = c("two.sided", "one.sided"), ...)
   (see \code{\link{are.paired}}). The AUCs, variances, covariance and
   numbers of cases and controls are then those of the rebuilt curves.
 
-  Two curves built with \code{controls} and \code{cases} with the same
-  numbers of controls and of cases are always considered paired, and
-  their observations are matched by their position in the
-  \code{controls} and \code{cases} vectors (see
-  \code{\link{are.paired}}): only use them if they were measured on
-  the same patients, given in the same order.
+  Curves built with \code{controls} and \code{cases} are not
+  considered paired, unless both were built on the same data (see
+  \code{\link{are.paired}}), and cannot be used here.
 
   For the sample size, \code{ncases} is computed directly from formula 2
   and ncontrols is deduced with \code{kappa} (defaults to the
