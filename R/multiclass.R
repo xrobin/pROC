@@ -200,6 +200,9 @@ multiclass.roc.default <- function(response, predictor,
   if (is.list(response)) {
     stop("'response' must be a vector or factor, not a data.frame or list.")
   }
+  # An NA level of the response (addNA()) codes missing values: it is not a
+  # class that can be compared
+  levels <- levels[!is.na(levels)]
 
   # smooth = TRUE would smooth the pairwise curves, whose AUCs then fail.
   # Look only at 'smooth': other arguments in ... (e.g. subset) must not be evaluated here
