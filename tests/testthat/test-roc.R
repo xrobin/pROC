@@ -574,3 +574,10 @@ test_that("roc with na.rm = FALSE accepts a haven_labelled-like response", {
   yl[1] <- NA
   expect_identical(roc(yl, aSAH$s100b, na.rm = FALSE, quiet = TRUE), NA)
 })
+
+test_that("duplicated levels give a clear error", {
+  expect_error(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Good"), quiet = TRUE), "'levels' must contain two different values")
+  y <- as.numeric(aSAH$outcome == "Poor")
+  expect_error(roc(y, aSAH$s100b, levels = c(0, 0), quiet = TRUE), "'levels' must contain two different values")
+  expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
+})
