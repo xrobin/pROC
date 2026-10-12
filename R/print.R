@@ -231,7 +231,12 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   colnames.grid <- expand.grid(c("low", "median", "high"), attr(x, "ret"))
   colnames.vec <- paste(colnames.grid$Var2, colnames.grid$Var1, sep = ".")
   colnames(table) <- c(attr(x, "input"), colnames.vec)
-  rownames(table) <- attr(x, "x")
+  if (anyDuplicated(attr(x, "x"))) {
+    # data.frame row names must be unique (x can be repeated)
+    rownames(table) <- NULL
+  } else {
+    rownames(table) <- attr(x, "x")
+  }
 
   print(table, row.names = length(attr(x, "ret")) > 1)
   invisible(x)
