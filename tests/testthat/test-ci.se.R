@@ -67,3 +67,7 @@ test_that("ci.se of a smoothed curve with a corrected partial AUC does not warn 
   s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
   expect_no_warning(ci.se(s, boot.n = 50), message = "Partial AUC correction not defined")
 })
+
+test_that("ci.se with NA specificities gives a clear error", {
+  expect_error(ci.se(r.s100b, specificities = c(0.5, NA), boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+})
