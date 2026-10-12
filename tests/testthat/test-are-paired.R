@@ -203,3 +203,25 @@ test_that("explicit numeric or factor levels pair with the default character lev
   # different levels are still unpaired
   expect_false(are.paired(roc(y, aSAH$s100b, levels = c(1, 0), quiet = TRUE), r.default))
 })
+
+test_that("re-paired curves print the data of the input curves", {
+  y <- c(0, 0, 0, 0, 1, 1, 1, 1)
+  a <- c(1, NA, 3, 4, 2, 5, 6, 7)
+  b <- c(2, 1, 4, NA, 3, 6, 5, 8)
+  ra <- roc(y, a, quiet = TRUE)
+  rb <- roc(y, b, quiet = TRUE)
+  printed <- function(x) paste(capture.output(print(x)), collapse = "\n")
+  pair <- are.paired(ra, rb, return.paired.rocs = TRUE)
+  expect_false(grepl("idx.exclude", printed(attr(pair, "roc1"))))
+  expect_match(printed(attr(pair, "roc1")), "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
+  expect_match(printed(attr(pair, "roc2")), "Data: b in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
+  expect_match(printed(roc.test(ra, rb)$roc1), "roc.default(response = y, predictor = a, quiet = TRUE)", fixed = TRUE)
+  # formula and smoothed curves
+  d <- data.frame(y = y, a = a, b = b)
+  rf <- roc(y ~ a, d, quiet = TRUE)
+  expect_match(printed(attr(are.paired(rf, rb, return.paired.rocs = TRUE), "roc1")), "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
+  s <- smooth(ra, method = "density")
+  out <- printed(attr(are.paired(s, rb, return.paired.rocs = TRUE), "roc1"))
+  expect_false(grepl("paired|idx.exclude", out))
+  expect_match(out, "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
+})
