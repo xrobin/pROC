@@ -169,23 +169,27 @@ ci.coords.roc <- function(roc,
 
   input <- roc_utils_match_coords_input_args(input)
 
-  if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
-    # Don't show NA thresholds by default (including ordered curves, where
-    # a threshold interval cannot be computed).
-    ret <- roc_utils_match_coords_ret_args(setdiff(ret, "threshold"), threshold = FALSE)
-  } else {
-    ret <- roc_utils_match_coords_ret_args(ret)
-    if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
-      warning("A confidence interval for 'threshold' is not available for ordered ROC curves.")
-    }
-  }
-
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = roc)
   if (!is.na(special)) {
     x <- special
     if (x == "all" || x == "local maximas") {
       stop("'all' and 'local maximas' are not available for confidence intervals.")
+    }
+  }
+
+  if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
+    # Don't show NA thresholds by default (including ordered curves, where
+    # a threshold interval cannot be computed).
+    ret <- roc_utils_match_coords_ret_args(setdiff(ret, "threshold"), threshold = FALSE)
+  } else if (identical(ret, "all") && !(identical(x, "best") || input == "threshold")) {
+    # No threshold interval for a non-threshold input (see the check below):
+    # "all" means all the other coordinates, as for smoothed curves
+    ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
+  } else {
+    ret <- roc_utils_match_coords_ret_args(ret)
+    if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
+      warning("A confidence interval for 'threshold' is not available for ordered ROC curves.")
     }
   }
 
