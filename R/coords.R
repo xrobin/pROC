@@ -135,7 +135,7 @@ coords.smooth.roc <- function(smooth.roc,
         }
       }
       if (length(se) == 0) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
 
@@ -174,7 +174,7 @@ coords.smooth.roc <- function(smooth.roc,
           smooth.roc$specificities <= partial.auc[1] + tol & smooth.roc$specificities >= partial.auc[2] - tol
         }
         if (!any(in.window)) { # no point in the window: max() below would be -Inf
-          warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+          warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
           return(NULL)
         }
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
@@ -190,7 +190,7 @@ coords.smooth.roc <- function(smooth.roc,
         }
       }
       if (length(se) == 0) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
 
@@ -344,7 +344,7 @@ coords.roc <- function(roc,
         }
       }
       if (length(thres) == 0) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
       res <- roc_utils_coords_basic(thres, sp, se)
@@ -368,7 +368,7 @@ coords.roc <- function(roc,
         }
       }
       if (length(thres) == 0) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
       lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se)
@@ -400,7 +400,7 @@ coords.roc <- function(roc,
           roc$specificities <= partial.auc[1] + tol & roc$specificities >= partial.auc[2] - tol
         }
         if (!any(in.window)) { # no point in the window: max() below would be -Inf
-          warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+          warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
           return(NULL)
         }
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
@@ -418,7 +418,7 @@ coords.roc <- function(roc,
         }
       }
       if (length(thres) == 0) {
-        warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
       extra <- list()
