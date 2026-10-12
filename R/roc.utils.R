@@ -61,6 +61,19 @@ roc_utils_ordered_na_level <- function(x) {
   x
 }
 
+# integer64 (bit64, e.g. from data.table::fread) passes is.numeric(), but
+# its values are stored as raw bits in a double: use its numeric values
+# through bit64's as.double method (which warns if precision is lost)
+roc_utils_integer64_as_numeric <- function(x) {
+  if (inherits(x, "integer64")) {
+    if (is.null(utils::getS3method("as.double", "integer64", optional = TRUE))) {
+      stop("Load the bit64 package or convert the integer64 predictor with as.numeric().")
+    }
+    x <- as.numeric(x)
+  }
+  x
+}
+
 # Concatenate predictors, preserving ordered class when needed.
 roc_utils_combine_predictor <- function(...) {
   args <- list(...)

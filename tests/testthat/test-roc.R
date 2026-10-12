@@ -601,3 +601,35 @@ test_that("duplicated levels give a clear error", {
   expect_error(roc(y, aSAH$s100b, levels = c(0, 0), quiet = TRUE), "'levels' must contain two different values")
   expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
 })
+
+# Emulates bit64::integer64, which stores the 64 bits of the integer in a
+# double: here the storage is the negated value, so that using it directly
+# gives a wrong curve
+fake_integer64 <- function(x) structure(-x, class = "integer64")
+
+test_that("an integer64 predictor is used by its numeric values", {
+  skip_if_not_installed("testthat", "3.2.0") # local_mocked_s3_method
+  local_mocked_s3_method("as.double", "integer64", function(x, ...) -unclass(x))
+  wfns <- as.integer(aSAH$wfns) - 3L # with negative values
+  expected <- roc(aSAH$outcome, wfns, quiet = TRUE)
+  r <- roc(aSAH$outcome, fake_integer64(wfns), quiet = TRUE)
+  expect_equal(r$direction, expected$direction)
+  expect_equal(r$thresholds, expected$thresholds)
+  expect_equal(r$sensitivities, expected$sensitivities)
+  expect_equal(r$specificities, expected$specificities)
+  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
+  expect_equal(coords(r, "best"), coords(expected, "best"))
+  controls <- wfns[aSAH$outcome == "Good"]
+  cases <- wfns[aSAH$outcome == "Poor"]
+  r <- roc(controls = fake_integer64(controls), cases = fake_integer64(cases), quiet = TRUE)
+  expect_equal(r$thresholds, expected$thresholds)
+  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
+})
+
+test_that("an integer64 predictor without bit64 gives a clear error", {
+  # bit64 registers its as.double method when it is loaded
+  skip_if_not(is.null(utils::getS3method("as.double", "integer64", optional = TRUE)))
+  wfns <- as.integer(aSAH$wfns)
+  expect_error(roc(aSAH$outcome, fake_integer64(wfns), quiet = TRUE), "convert the integer64 predictor with as.numeric")
+  expect_error(roc(controls = fake_integer64(1:3), cases = fake_integer64(2:5), quiet = TRUE), "convert the integer64 predictor with as.numeric")
+})
