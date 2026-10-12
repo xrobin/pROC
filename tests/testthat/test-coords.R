@@ -779,3 +779,30 @@ test_that("coords keeps the names of threshold x as row names whatever ret", {
   expect_equal(rownames(coords(r, x, input = "threshold", ret = "all")), c("low", "high"))
   expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"), best.weights = c(2, 0.3))), c("low", "high"))
 })
+
+test_that("coords warns about unknown or misspelt 'ret' elements", {
+  expect_warning(
+    res <- coords(r.s100b, "best", ret = c("threshold", "specifcity", "sensitivity")),
+    "specifcity"
+  )
+  expect_equal(res, coords(r.s100b, "best", ret = c("threshold", "sensitivity")))
+  expect_warning(
+    coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "ppv", "npV")),
+    "npV"
+  )
+  expect_warning(
+    coords(smooth(r.s100b), "best", ret = c("threshold", "sensitivity")),
+    "threshold"
+  )
+  # nothing matches: a clear error, naming the calling function
+  expect_error(coords(r.s100b, "best", ret = c("bogus", "x")), "Invalid coordinate(s) in 'ret': 'bogus', 'x'.", fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", ret = "threshold"), "Invalid coordinate(s) in 'ret': 'threshold'.", fixed = TRUE)
+  e <- tryCatch(coords(r.s100b, "best", ret = "specifcity"), error = identity)
+  expect_identical(e$call[[1]], as.name("coords.roc"))
+  w <- tryCatch(coords(r.s100b, "best", ret = c("specifcity", "se")), warning = identity)
+  expect_identical(conditionMessage(w), "Invalid coordinate(s) in 'ret' ignored: 'specifcity'.")
+  expect_identical(w$call[[1]], as.name("coords.roc"))
+  # valid, abbreviated and alias elements don't warn
+  expect_no_warning(coords(r.s100b, "best", ret = c("t", "se", "sp", "npe", "topleft")))
+  expect_no_warning(coords(r.s100b, "best", ret = "all"))
+})

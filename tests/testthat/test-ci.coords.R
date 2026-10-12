@@ -233,6 +233,26 @@ test_that("ci.coords of a smoothed curve with a corrected partial AUC does not w
   expect_no_warning(ci.coords(s, x = 0.95, boot.n = 50), message = "Partial AUC correction not defined")
 })
 
+test_that("ci.coords warns about unknown or misspelt 'ret' elements", {
+  set.seed(42)
+  expect_warning(
+    res <- ci.coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "Youden"), boot.n = 3),
+    "Youden"
+  )
+  expect_equal(names(res), "sensitivity")
+  w <- tryCatch(ci.coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "Youden"), boot.n = 3), warning = identity)
+  expect_identical(conditionMessage(w), "Invalid coordinate(s) in 'ret' ignored: 'Youden'.")
+  expect_identical(w$call[[1]], as.name("ci.coords.roc"))
+  # nothing matches: a clear error
+  expect_error(ci.coords(r.s100b, 0.9, input = "specificity", ret = "bogus", boot.n = 3), "Invalid coordinate(s) in 'ret': 'bogus'.", fixed = TRUE)
+  expect_error(ci.coords(smooth(r.s100b), "best", ret = "threshold", boot.n = 3), "Invalid coordinate(s) in 'ret': 'threshold'.", fixed = TRUE)
+  # the default ret does not warn when the threshold is dropped
+  expect_no_warning(
+    ci.coords(r.s100b, 0.9, input = "specificity", boot.n = 3),
+    message = "'ret'"
+  )
+})
+
 test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
   set.seed(42)
   # The resamples lost the partial AUC range and returned the global best
