@@ -164,6 +164,7 @@
   * Fixed the graphical parameter 'adj' partially matching the 'adjust' argument of density smoothing in 'roc(..., smooth=TRUE, smooth.method="density", plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE, ...)' (silently changed curve, or error)
   * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
   * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
+  * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
