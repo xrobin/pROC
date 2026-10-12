@@ -507,3 +507,18 @@ test_that("power.roc.test names the missing arguments", {
   # the AUC can be determined without it
   expect_error(power.roc.test(power = 0.8), "'ncontrols' and 'ncases' (or one of these with 'kappa') or 'auc' must be provided.", fixed = TRUE)
 })
+
+test_that("power.roc.test rejects missing or vector arguments", {
+  expect_error(power.roc.test(auc = 0.8, ncases = NA, ncontrols = 50), "'ncases' must be a single positive number", fixed = TRUE)
+  expect_error(power.roc.test(auc = 0.8, ncases = 40, ncontrols = c(50, 60)), "'ncontrols' must be a single positive number", fixed = TRUE)
+  expect_error(power.roc.test(auc = 0.8, ncases = 40, kappa = NA), "'kappa' must be a single positive number", fixed = TRUE)
+  expect_error(power.roc.test(auc = 0.8, ncases = 40, ncontrols = 50, sig.level = NA), "'sig.level' must be a single number ranging from 0 to 1", fixed = TRUE)
+  expect_error(power.roc.test(auc = 0.8, power = c(0.8, 0.9)), "'power' must be a single number ranging from 0 to 1", fixed = TRUE)
+  expect_error(power.roc.test(r.s100b, kappa = NA), "'kappa' must be a single positive number", fixed = TRUE)
+  expect_error(power.roc.test(r.s100b, sig.level = NA), "'sig.level' must be a single number ranging from 0 to 1", fixed = TRUE)
+  expect_error(power.roc.test(r.s100b, r.ndka, power = NA), "'power' must be a single number ranging from 0 to 1", fixed = TRUE)
+  parslist <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6, delta = 0.037, FPR11 = 0, FPR12 = 0.2, FPR21 = 0, FPR22 = 0.2)
+  expect_error(power.roc.test(parslist, ncases = NA, power = 0.9), "'ncases' must be a single positive number", fixed = TRUE)
+  # A logical is a number, as in base R arithmetic
+  expect_identical(power.roc.test(auc = 0.8, ncases = 40, ncontrols = 50, sig.level = TRUE)$power, power.roc.test(auc = 0.8, ncases = 40, ncontrols = 50, sig.level = 1)$power)
+})
