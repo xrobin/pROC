@@ -268,7 +268,7 @@ roc.default <- function(response, predictor,
 
     # Check infinities
     if (!is.ordered(predictor) && any(is.infinite(predictor))) {
-      warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
+      warning("Infinite value(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
       return(NaN)
     }
   }
@@ -310,7 +310,7 @@ roc.default <- function(response, predictor,
 
     # Check infinities
     if (!is.ordered(predictor) && any(is.infinite(predictor))) {
-      warning("Infinite values(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
+      warning("Infinite value(s) in predictor, cannot build a valid ROC curve. NaN returned instead.")
       return(NaN)
     }
 
