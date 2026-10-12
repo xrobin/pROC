@@ -225,7 +225,7 @@ roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
     case_i <- as.integer(cases)
     ctrl_i <- as.integer(controls)
     offset <- as.integer(direction == ">")
-    for (i in seq_len(nthr)) {
+    for (i in which(!is.na(thresholds))) { # a missing threshold stays NA
       out[, i] <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
     }
   } else {
@@ -608,11 +608,18 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 # We need to be careful to assign x to the right thresholds around exact data point
 # values. This means this function cannot look at the ROC thresholds themselves
 # but must instead use the predictor values to assess the thresholds exactly.
-# Returns the indices of the thresholds x.
+# Returns the indices of the thresholds x, NA for a missing x.
 # @param roc: the roc curve
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
 roc_utils_thr_idx <- function(roc, x) {
+  missing.x <- is.na(x)
+  if (any(missing.x)) {
+    # A missing threshold gives a NA row, as a missing value of any other input
+    thr_idx <- rep(NA_integer_, length(x))
+    thr_idx[!missing.x] <- roc_utils_thr_idx(roc, x[!missing.x])
+    return(thr_idx)
+  }
   if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
   }
@@ -646,9 +653,6 @@ roc_utils_thr_idx <- function(roc, x) {
 
 roc_utils_thr_idx_ordered <- function(roc, x) {
   ch <- as.character(x)
-  if (anyNA(ch)) {
-    stop("Missing values are not allowed in 'x'.")
-  }
   x_pos <- match(ch, levels(roc$thresholds))
   if (anyNA(x_pos)) {
     unknown <- unique(ch[is.na(x_pos)])

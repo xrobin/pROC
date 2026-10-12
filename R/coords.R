@@ -422,6 +422,9 @@ coords.roc <- function(roc,
     }
     for (i in seq_along(x)) {
       value <- x[i]
+      if (is.na(value)) {
+        next # Missing value: keep the NA row
+      }
       if (value < min(input_values) || value > max(input_values)) {
         stop(sprintf(
           "Input %s (%s) not in range (%s-%s)", input, value,

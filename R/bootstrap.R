@@ -397,9 +397,12 @@ roc_utils_resampled_roc <- function(roc, stratified) {
 # statistics of cov and roc.test). A replicate is always dropped whole, so
 # that paired statistics stay aligned -- getting this margin wrong silently
 # discarded a whole statistic instead of a replicate.
-roc_utils_drop_na_replicates <- function(x, margin = 1L) {
+# 'ignore' flags, along the other dimension, the statistics that are NA in
+# every replicate because they were requested for a missing value (NA 'x' in
+# ci.se, ci.sp or ci.thresholds): they do not make a replicate NA.
+roc_utils_drop_na_replicates <- function(x, margin = 1L, ignore = FALSE) {
   if (is.matrix(x)) {
-    bad <- apply(x, margin, anyNA)
+    bad <- apply(x, margin, function(replicate) anyNA(replicate[!ignore]))
   } else {
     bad <- is.na(x)
   }

@@ -91,9 +91,9 @@ ci.sp.smooth.roc <- function(smooth.roc,
     resmooth = resmooth, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.sp", "ci", class(ci))
@@ -128,9 +128,9 @@ ci.sp.roc <- function(roc,
     roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.sp", "ci", class(ci))

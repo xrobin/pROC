@@ -615,6 +615,25 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
   )
 })
 
+test_that("coords with NA thresholds gives NA rows", {
+  ret <- c("threshold", "specificity", "sensitivity")
+  res <- coords(r.s100b, c(0.5, NA), input = "threshold", ret = ret)
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "threshold", ret = ret))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "threshold", ret = ret))))
+  r.rev <- roc(aSAH$outcome, aSAH$s100b, direction = ">", quiet = TRUE)
+  expect_true(all(is.na(coords(r.rev, NA_real_, input = "threshold", ret = ret))))
+  # Ordered predictor
+  res <- coords(r.wfns, c("3", NA), input = "threshold", ret = ret)
+  expect_identical(res$specificity[1], coords(r.wfns, "3", input = "threshold", ret = "specificity")$specificity)
+  expect_true(all(is.na(res[2, ])))
+  # ci.thresholds of an ordered curve, as of a numeric one
+  set.seed(42)
+  ci <- ci.thresholds(r.wfns, thresholds = c("3", NA), boot.n = 5)
+  expect_true(all(is.na(ci$sensitivity[2, ])))
+  expect_false(anyNA(ci$sensitivity[1, ]))
+})
+
 test_that("coords 'best' returns the right youden and closest.topleft with a specificity partial AUC", {
   resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
   pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
@@ -813,4 +832,18 @@ test_that("coords of a smoothed curve with numeric x uses best.weights", {
   res <- coords(s, 0.9, input = "specificity", ret = c("se", "sp", "youden", "closest.topleft"), best.weights = w)
   expect_equal(res$youden, res$sensitivity + 2 * res$specificity)
   expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
+})
+
+test_that("coords with NA in a numeric non-threshold x gives NA rows", {
+  res <- coords(r.s100b, c(0.5, NA), input = "sensitivity")
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "sensitivity"))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "specificity"))))
+  res <- coords(r.s100b, c(NA, 0.5), input = "fpr", ret = "all")
+  expect_true(all(is.na(res[1, ])))
+  expect_false(anyNA(res[2, colnames(res) != "threshold"]))
+  s <- smooth(r.s100b)
+  res <- coords(s, c(0.5, NA), input = "specificity")
+  expect_identical(res[1, ], coords(s, 0.5, input = "specificity"))
+  expect_true(all(is.na(res[2, ])))
 })
