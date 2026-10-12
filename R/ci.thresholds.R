@@ -106,6 +106,7 @@ ci.thresholds.roc <- function(roc,
 
   # One 2 x length(thresholds) matrix per replicate, stacked into a
   # 2 x length(thresholds) x boot.n array.
+  boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
     roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
     simplify = "columns", progress = progress, cl = cl

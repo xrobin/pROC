@@ -361,6 +361,7 @@ roc.test.roc <- function(roc1, roc2,
       htest$p.value <- pval
     }
   } else if (method == "venkatraman") {
+    boot.n <- roc_utils_check_boot_n(boot.n)
     if (paired) {
       stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method)
       htest$method <- "Venkatraman's test for two paired ROC curves"
@@ -379,6 +380,7 @@ roc.test.roc <- function(roc1, roc2,
     names(htest$null.value) <- "difference in at least one ROC operating point"
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
+    boot.n <- roc_utils_check_boot_n(boot.n)
     if (method == "specificity") {
       if (!is.numeric(specificity) || length(specificity) != 1) {
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")

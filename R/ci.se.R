@@ -86,6 +86,7 @@ ci.se.smooth.roc <- function(smooth.roc,
   smoothing.args <- smooth.roc$smoothing.args
   resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
 
+  boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.se,
     roc = roc, stratified = boot.stratified, sp = specificities,
     resmooth = resmooth, simplify = "rows", progress = progress, cl = cl
@@ -124,6 +125,7 @@ ci.se.roc <- function(roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
+  boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.se,
     roc = roc, stratified = boot.stratified, sp = specificities, simplify = "rows", progress = progress, cl = cl
   )

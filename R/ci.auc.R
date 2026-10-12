@@ -115,6 +115,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   auc.args$allow.invalid.partial.auc.correct <- TRUE
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
+  boot.n <- roc_utils_check_boot_n(boot.n)
   aucs <- roc_utils_drop_na_replicates(
     bootstrap.replicates(boot.n, bootstrap.smooth.auc,
       roc = roc, stratified = boot.stratified,
@@ -194,6 +195,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong") {
     ci <- ci_auc_delong(roc, conf.level)
   } else {
+    boot.n <- roc_utils_check_boot_n(boot.n)
     ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }
 
