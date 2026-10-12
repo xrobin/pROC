@@ -71,7 +71,8 @@ are.paired.roc <- function(roc1, roc2,
   } else {
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
-    if (identical(roc1$original.response, roc2$original.response)) {
+    # An NA level of the response is missing too (as in roc())
+    if (identical(roc_utils_response_na_level(roc1$original.response), roc_utils_response_na_level(roc2$original.response))) {
       retval <- TRUE
       if (!return.paired.rocs) {
         return(retval)
