@@ -81,7 +81,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # A smoothed curve has no thresholds, hence threshold = FALSE, as in
   # coords.smooth.roc().
   input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
-  ret <- roc_utils_match_coords_ret_args(ret)
+  ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = smooth.roc)
   if (!is.na(special)) {
