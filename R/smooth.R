@@ -278,6 +278,19 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     !all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
     stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
   }
+  # Parameters in ... are held fixed by fitdistr, except for the densities it
+  # fits in closed form (normal, log-normal, exponential, Poisson, geometric):
+  # it estimates them anyway, and the fit and the fixed value would then
+  # both be passed to the distribution functions
+  for (fitted in list(list(fit.controls, densfun.controls), list(fit.cases, densfun.cases))) {
+    fixed <- intersect(names(fitted[[1]]$estimate), names(list(...)))
+    if (is.character(fitted[[2]]) && length(fixed) > 0) {
+      stop(sprintf(
+        "Parameter(s) %s cannot be held fixed with density \"%s\": MASS::fitdistr estimates all its parameters. Use a density function with 'start' instead.",
+        paste0("'", fixed, "'", collapse = ", "), fitted[[2]]
+      ))
+    }
+  }
 
   # store function name in fitting results
   if (mode(densfun.controls) != "function") {

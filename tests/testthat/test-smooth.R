@@ -403,3 +403,16 @@ test_that("fitdistr smoothing of a constant class is not smoothable", {
   # Errors unrelated to a constant class are kept
   expect_error(smooth(r.s100b, method = "fitdistr", density = dnorm), "'start' must be a named list")
 })
+
+test_that("fitdistr smoothing rejects fixed parameters of closed-form densities", {
+  skip_if_not_installed("MASS")
+  # fitdistr estimates all the parameters of these densities, ignoring the fixed ones
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "normal", mean = 0.2), "'mean' cannot be held fixed with density \"normal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density.controls = "normal", density.cases = "lognormal", sdlog = 1), "'sdlog' cannot be held fixed with density \"lognormal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "exponential", rate = 2), "'rate' cannot be held fixed with density \"exponential\"")
+  # Parameters held fixed by fitdistr are still accepted
+  s <- suppressWarnings(smooth(r.s100b, method = "fitdistr", density = dnorm, start = list(sd = 0.1), mean = 0.2))
+  expect_named(s$fit.controls$estimate, "sd")
+  s <- suppressWarnings(smooth(r.s100b, method = "fitdistr", density = "weibull", shape = 2))
+  expect_named(s$fit.controls$estimate, "scale")
+})
