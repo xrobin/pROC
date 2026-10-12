@@ -192,6 +192,7 @@
   * `smooth(reuse.ci = TRUE)` on a curve with a stored `ci.coords` of thresholds (such as the default `x = "best"`) now returns the smoothed curve without the CI (with a warning) instead of failing.
   * The smoothed curves returned by `roc.test()` keep the call of the input curves, instead of printing the whole deparsed curve as their call.
   * `roc.test()` and `cov()` no longer warn about different smoothing parameters when the same density kernel is abbreviated (`kernel = "e"`) or the same fitdistr density is spelled differently (`"lognormal"` and `"log-normal"`).
+  * `ci.coords()` with `ret = "all"` and a numeric `x` of a non-threshold `input` returns the CIs of all coordinates but the threshold, instead of failing.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
