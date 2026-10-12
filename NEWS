@@ -157,6 +157,7 @@
   * Fixed 'panel.first' and 'panel.last' being evaluated before the plot (error or drawn on the previous plot) in 'roc(..., smooth=TRUE, plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE)'
   * Fixed 'plot.roc' and 'lines.roc' default methods with 'smooth=TRUE' returning a curve that prints internal variable names
   * Fixed 'plot.roc(print.thres="all")' and 'geom_roc_threshold(thresholds="all")' marking the interpolated limits of the partial AUC as thresholds labelled "NA"
+  * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
