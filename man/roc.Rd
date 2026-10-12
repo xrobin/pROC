@@ -61,11 +61,15 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
-    \code{data} and \code{subset}, but not \code{na.action} are supported, see 
+    \code{data}, \code{subset} and \code{na.action} are supported, see
     \code{\link{model.frame}} for more details.
   }
   \item{subset, na.action}{arguments for \code{\link{model.frame}}
-    with \code{formula} and \code{data} (see above).
+    with \code{formula} and \code{data}. \code{na.action} defaults to
+    \code{\link{na.pass}}, so that \code{NA} values are handled by
+    \code{na.rm}; values other than \code{na.pass} and \code{na.fail}
+    give a warning, as they break the pairing detection of
+    \code{\link{roc.test}} and \code{\link{are.paired}}.
   }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of
@@ -123,7 +127,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{smooth.method, smooth.n, ci.method}{in \code{roc.formula} and
 	\code{roc.default}, the \code{method} and \code{n} arguments to
-	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and
+	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
+	\code{method} argument to \code{\link{ci.auc}} (if \code{ci=TRUE} and
 	\code{of="auc"}) must be passed as
 	\code{smooth.method}, \code{smooth.n} and \code{ci.method} to avoid confusions.
   }
