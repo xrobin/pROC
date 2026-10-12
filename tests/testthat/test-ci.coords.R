@@ -275,6 +275,14 @@ test_that("ci.coords on a smoothed curve has no threshold column, as coords", {
   expect_error(coords(s, 0.9, input = "specificity", ret = "threshold"))
 })
 
+test_that("ci.coords of a smoothed curve with numeric x uses best.weights", {
+  s <- smooth(r.s100b)
+  set.seed(42)
+  res <- ci.coords(s, 0.9, input = "specificity", ret = c("sensitivity", "youden"), best.weights = c(2, 0.2), boot.n = 5)
+  # youden = se + r * sp with r = 2 and sp = 0.9 in every replicate
+  expect_equal(res$youden, res$sensitivity + 2 * 0.9, ignore_attr = TRUE)
+})
+
 test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
   # The resamples lost the partial AUC range and returned the global best
   s <- smooth(r.s100b.partial)
