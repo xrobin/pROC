@@ -193,6 +193,8 @@ roc.default <- function(response, predictor,
     if (is.list(response)) {
       stop("'response' must be a vector or factor, not a data.frame or list.")
     }
+    # Before the default levels are computed from it
+    response <- roc_utils_response_na_level(response)
 
     # Validate levels
     if (missing(levels)) {
