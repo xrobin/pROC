@@ -533,3 +533,10 @@ test_that("a data.frame response gives a clear error", {
   expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
   expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
 })
+
+test_that("duplicated levels give a clear error", {
+  expect_error(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Good"), quiet = TRUE), "'levels' must contain two different values")
+  y <- as.numeric(aSAH$outcome == "Poor")
+  expect_error(roc(y, aSAH$s100b, levels = c(0, 0), quiet = TRUE), "'levels' must contain two different values")
+  expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
+})
