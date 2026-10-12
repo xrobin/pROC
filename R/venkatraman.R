@@ -53,7 +53,7 @@ venkatraman.unpaired.test <- function(roc1, roc2, boot.n, ties.method = "random"
   S <- venkatraman.rank(Y, ties.method)
   D1 <- roc1$response
   D2 <- roc2$response
-  mp <- (sum(D1 == roc1$levels[2]) + sum(D2 == roc2$levels[2])) / (length(D1) + length(D2)) # mixing proportion, kappa
+  mp <- (sum(D1 %in% roc1$levels[2]) + sum(D2 %in% roc2$levels[2])) / (length(D1) + length(D2)) # mixing proportion, kappa
 
   E <- venkatraman.unpaired.stat(R, S, D1, D2, roc1$levels, roc2$levels, mp)
   EP <- vapply(seq_len(boot.n), venkatraman.unpaired.permutation, FUN.VALUE = double(1L), R = R, S = S, D1 = D1, D2 = D2, levels1 = roc1$levels, levels2 = roc2$levels, mp = mp, ties.method = ties.method)
@@ -78,18 +78,18 @@ venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, 
   R <- R + runif(length(D1)) - 0.5 # Add small amount of random but keep same mean
   S <- S + runif(length(D2)) - 0.5
 
-  R.controls <- R[D1 == levels1[1]]
-  R.cases <- R[D1 == levels1[2]]
-  S.controls <- S[D2 == levels2[1]]
-  S.cases <- S[D2 == levels2[2]]
+  R.controls <- R[D1 %in% levels1[1]]
+  R.cases <- R[D1 %in% levels1[2]]
+  S.controls <- S[D2 %in% levels2[1]]
+  S.cases <- S[D2 %in% levels2[2]]
 
   # Permutation
   controls <- sample(c(R.controls, S.controls))
   cases <- sample(c(R.cases, S.cases))
-  R[D1 == levels1[1]] <- controls[1:length(R.controls)]
-  S[D2 == levels2[1]] <- controls[(length(R.controls) + 1):length(controls)]
-  R[D1 == levels1[2]] <- cases[1:length(R.cases)]
-  S[D2 == levels2[2]] <- cases[(length(R.cases) + 1):length(cases)]
+  R[D1 %in% levels1[1]] <- controls[1:length(R.controls)]
+  S[D2 %in% levels2[1]] <- controls[(length(R.controls) + 1):length(controls)]
+  R[D1 %in% levels1[2]] <- cases[1:length(R.cases)]
+  S[D2 %in% levels2[2]] <- cases[(length(R.cases) + 1):length(cases)]
 
   return(venkatraman.unpaired.stat(venkatraman.rank(R, ties.method), venkatraman.rank(S, ties.method), D1, D2, levels1, levels2, mp))
 }
@@ -105,10 +105,10 @@ venkatraman.rank <- function(x, ties.method) {
 }
 
 venkatraman.paired.stat <- function(R, S, D, levels) {
-  R.controls <- R[D == levels[1]]
-  R.cases <- R[D == levels[2]]
-  S.controls <- S[D == levels[1]]
-  S.cases <- S[D == levels[2]]
+  R.controls <- R[D %in% levels[1]]
+  R.cases <- R[D %in% levels[2]]
+  S.controls <- S[D %in% levels[1]]
+  S.cases <- S[D %in% levels[2]]
   n <- length(D)
 
   R.fn <- sapply(1:n, function(x) sum(R.cases <= x))
@@ -120,10 +120,10 @@ venkatraman.paired.stat <- function(R, S, D, levels) {
 }
 
 venkatraman.unpaired.stat <- function(R, S, D1, D2, levels1, levels2, mp) {
-  R.controls <- R[D1 == levels1[1]]
-  R.cases <- R[D1 == levels1[2]]
-  S.controls <- S[D2 == levels2[1]]
-  S.cases <- S[D2 == levels2[2]]
+  R.controls <- R[D1 %in% levels1[1]]
+  R.cases <- R[D1 %in% levels1[2]]
+  S.controls <- S[D2 %in% levels2[1]]
+  S.cases <- S[D2 %in% levels2[2]]
   n <- length(D1)
   m <- length(D2)
 
