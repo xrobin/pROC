@@ -50,6 +50,16 @@ are.paired(...)
 
   It can raise false positives if the responses are identical but correspond
   to different patients.
+
+  Curves built with \code{controls} and \code{cases} (see
+  \code{\link{roc}}) carry no information on which observations come
+  from the same patients: their \code{response} is made of the controls
+  followed by the cases. Two such curves with the same numbers of
+  controls and of cases are therefore always considered paired, and
+  their observations are matched by their position in the
+  \code{controls} and \code{cases} vectors, even if they come from
+  independent samples. Use \code{paired=FALSE} in \code{\link{roc.test}}
+  for independent samples.
 }
 
 \value{
