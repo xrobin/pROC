@@ -367,3 +367,8 @@ test_that("multiclass.roc drops a level whose observations all have an NA predic
   expect_equal(mv$levels, c("a", "b", "c"))
   expect_equal(as.numeric(mv$auc), as.numeric(multiclass.roc(resp[1:6], P[1:6, 1:3])$auc))
 })
+
+test_that("univariate multiclass.roc rejects duplicated levels", {
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
+})
