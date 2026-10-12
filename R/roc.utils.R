@@ -51,6 +51,16 @@ roc_utils_c_ordered <- function(...) {
   ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
 }
 
+# An NA level of an ordered predictor (addNA(), factor(exclude = NULL))
+# codes missing values, not a value above or below the others: make them
+# real NAs, removed with na.rm = TRUE like any missing predictor value.
+roc_utils_ordered_na_level <- function(x) {
+  if (is.ordered(x) && anyNA(levels(x))) {
+    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = TRUE)
+  }
+  x
+}
+
 # Concatenate predictors, preserving ordered class when needed.
 roc_utils_combine_predictor <- function(...) {
   args <- list(...)
