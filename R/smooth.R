@@ -159,6 +159,23 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
   if (length(density.controls) != length(density.cases)) {
     stop("Length of 'density.controls' and 'density.cases' differ.")
   }
+  # Even tiny negative values (e.g. -1e-17 from KernSmooth::bkde) make
+  # the curve non-monotonic and the AUC wrong.
+  # density() sets the negative values of its FFT result to 0 with
+  # pmax.int(0, y), as they can only be rounding errors. Do the same, but
+  # only for negative values that do not change the total density (the
+  # sum of the positive values) in double precision: larger negative
+  # values are an error.
+  valid.density <- function(dens) {
+    if (anyNA(dens) || any(is.infinite(dens)) ||
+      any(dens < 0 & sum(dens[dens > 0]) + dens != sum(dens[dens > 0])) ||
+      sum(dens) == 0) {
+      stop("'density.controls' and 'density.cases' must be finite, non-negative and not all zero.")
+    }
+    pmax.int(0, dens)
+  }
+  density.controls <- valid.density(density.controls)
+  density.cases <- valid.density(density.cases)
 
   perfs <- sapply((1:length(density.controls)) + .5, roc_utils_perfs_dens, x = (1:length(density.controls)) + .5, dens.controls = density.controls, dens.cases = density.cases, direction = direction)
 
