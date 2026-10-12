@@ -114,8 +114,8 @@ panel.last=NULL,
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} object
     contains an \dQuote{auc} field, re-use these specifications for the
-    plot (specifically \code{print.auc}, \code{auc.polygon} and
-    \code{max.auc.polygon} arguments). See details.
+    plot (specifically \code{print.auc}, \code{auc.polygon},
+    \code{max.auc.polygon} and \code{print.thres} arguments). See details.
   }
   \item{axes}{a logical indicating if the plot axes must be drawn.}
   \item{legacy.axes}{a logical indicating if the specificity axis (x
@@ -298,7 +298,10 @@ panel.last=NULL,
   For \code{print.auc}, \code{auc.polygon} and \code{max.auc.polygon}
   arguments, an AUC specification is
   required. By default, the total AUC is plotted, but you may want a
-  partial AUCs. The specification is defined by:
+  partial AUCs. The specification is also used for \code{print.thres}:
+  with a partial AUC, the \dQuote{best}, \dQuote{all} and
+  \dQuote{local maximas} thresholds are looked for only inside its
+  window (see \code{\link{coords}}). The specification is defined by:
   \enumerate{
     \item the \dQuote{auc} field in the \dQuote{\link{roc}} object if
     \code{reuse.auc} is set to \code{TRUE} (default). It is naturally
