@@ -382,3 +382,29 @@ test_that("smooth with reuse.ci recomputes a stored ci.coords of the best point"
   expect_identical(attr(s$ci, "x"), "best")
   expect_identical(names(s$ci), c("specificity", "sensitivity"))
 })
+
+test_that("smooth with reuse.ci keeps the best.method, best.weights and best.policy of a stored ci.coords", {
+  r <- r.s100b
+  r$ci <- ci.coords(r, "best",
+    input = "specificity", ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  expect_identical(attr(r$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(r$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(r$ci, "best.policy"), "random")
+  set.seed(1)
+  s <- suppressWarnings(smooth(r, reuse.ci = TRUE))
+  expect_identical(attr(s$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(s$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(s$ci, "best.policy"), "random")
+  # same as the specification given directly on the smoothed curve
+  set.seed(1)
+  direct <- suppressWarnings(ci.coords(smooth(r), "best",
+    ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  ))
+  expect_equal(s$ci$specificity, direct$specificity)
+  expect_equal(s$ci$sensitivity, direct$sensitivity)
+})

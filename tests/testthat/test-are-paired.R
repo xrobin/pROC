@@ -240,3 +240,23 @@ test_that("an NA level of the response pairs with real NAs", {
   expect_equal(roc.test(r1.na.level, r2)$p.value, roc.test(r1, r2)$p.value)
   expect_equal(roc.test(r1.na.level, r2)$method, "DeLong's test for two correlated ROC curves")
 })
+
+test_that("re-paired curves keep the best.method, best.weights and best.policy of a stored ci.coords", {
+  a <- aSAH$s100b
+  a[1] <- NA
+  b <- aSAH$ndka
+  b[2] <- NA
+  ra <- roc(aSAH$outcome, a, quiet = TRUE)
+  rb <- roc(aSAH$outcome, b, quiet = TRUE)
+  ra$ci <- ci.coords(ra, "best",
+    input = "specificity", ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  pair <- suppressWarnings(are.paired(ra, rb, return.paired.rocs = TRUE, reuse.ci = TRUE))
+  ci <- attr(pair, "roc1")$ci
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "best.method"), "closest.topleft")
+  expect_identical(attr(ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(ci, "best.policy"), "random")
+})
