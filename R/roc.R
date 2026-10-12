@@ -224,6 +224,7 @@ roc.default <- function(response, predictor,
       stop("Response and predictor must be vectors of the same length.")
     }
     predictor <- roc_utils_ordered_na_level(predictor)
+    predictor <- roc_utils_integer64_as_numeric(predictor)
     # remove NAs if requested
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor)
@@ -273,8 +274,8 @@ roc.default <- function(response, predictor,
     if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
       stop("'density.*' arguments incompatible with 'cases/controls'.")
     }
-    controls <- roc_utils_ordered_na_level(controls)
-    cases <- roc_utils_ordered_na_level(cases)
+    controls <- roc_utils_integer64_as_numeric(roc_utils_ordered_na_level(controls))
+    cases <- roc_utils_integer64_as_numeric(roc_utils_ordered_na_level(cases))
     # remove nas
     if (na.rm) {
       if (any(is.na(controls))) {
