@@ -199,6 +199,7 @@
   * roc() with na.rm = FALSE now returns NA for a response with an NA level (addNA()), as for missing responses, and lists those observations in the na.action attribute with na.rm = TRUE.
   * are.paired() and roc.test() now pair curves whose responses differ only in an NA level (addNA()) and missing values.
   * The bootstrap test of 'roc.test()' no longer reports a significant difference between two equal (partial) AUCs or coordinates that differ only by floating-point rounding.
+  * 'coords(x = "best")', 'plot.roc(print.thres = ...)' and 'geom_roc_threshold()' no longer emit base warnings or fail when no point of the curve is in the partial AUC window.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
