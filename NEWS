@@ -157,6 +157,7 @@
   * `ci.auc()`, `var()`, `cov()` and `power.roc.test()` failed with "Cannot convert ci.coords object" on a percent curve built with `ci = TRUE, of = "coords"`.
   * `coords()` and `ci.coords()` now warn about unknown or misspelt elements of `ret`, which were silently dropped.
   * `ci.coords()` on a smoothed curve returned wrong, shifted CIs with `ret = "all"` or a `ret` containing "threshold" (smoothed curves have no thresholds; "threshold" is now ignored with a warning, as in `coords()`).
+  * `coords()` and `ci.coords()` on a smoothed curve with a numeric `x` ignored `best.weights` for the "youden" and "closest.topleft" coordinates.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
