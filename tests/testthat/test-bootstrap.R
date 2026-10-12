@@ -283,3 +283,68 @@ test_that("non-stratified bootstraps of ordered predictors drop the resamples th
   expect_warning(ci <- ci.coords(r, "b", input = "threshold", boot.stratified = FALSE, boot.n = 200), na.warning)
   expect_s3_class(ci, "ci.coords")
 })
+
+test_that("boot.n must be a non-negative number", {
+  set.seed(42)
+  msg <- "'boot.n' must be a non-negative number."
+  for (boot.n in list(-1, NA, Inf, "a", numeric(0))) {
+    # A string that is not a number also gives as.numeric()'s warning, as in seq_len()
+    expect_boot.n_error <- function(expr) {
+      if (is.character(boot.n)) {
+        expect_warning(expect_error(expr, msg, fixed = TRUE), "NAs introduced by coercion", fixed = TRUE)
+      } else {
+        expect_error(expr, msg, fixed = TRUE)
+      }
+    }
+    expect_boot.n_error(ci.auc(r.s100b, method = "bootstrap", boot.n = boot.n))
+    expect_boot.n_error(ci.auc(smooth(r.s100b), boot.n = boot.n))
+    expect_boot.n_error(var(r.s100b, method = "bootstrap", boot.n = boot.n))
+    expect_boot.n_error(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n))
+    expect_boot.n_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n))
+    expect_boot.n_error(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = boot.n))
+    expect_boot.n_error(ci.se(r.s100b, boot.n = boot.n))
+    expect_boot.n_error(ci.sp(r.s100b, boot.n = boot.n))
+    expect_boot.n_error(ci.thresholds(r.s100b, boot.n = boot.n))
+    expect_boot.n_error(ci.coords(r.s100b, "best", boot.n = boot.n))
+  }
+  # DeLong ignores boot.n
+  expect_identical(as.numeric(ci.auc(r.s100b, method = "delong", boot.n = NA)), as.numeric(ci.auc(r.s100b, method = "delong")))
+  # An integer-valued double or an integer is fine
+  expect_equal(attr(ci.auc(r.s100b, method = "bootstrap", boot.n = 2L), "boot.n"), 2L)
+})
+
+test_that("boot.n is read as seq_len() does", {
+  # A fraction is truncated
+  set.seed(42)
+  a <- ci.auc(r.s100b, method = "bootstrap", boot.n = 2.5)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  set.seed(42)
+  t <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2.5)
+  set.seed(42)
+  t2 <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2)
+  expect_identical(t$parameter, t2$parameter)
+  expect_identical(t$p.value, t2$p.value)
+  # Every function reports the number of replicates it ran
+  s <- smooth(r.s100b)
+  expect_equal(attr(a, "boot.n"), 2)
+  expect_equal(attr(ci.auc(s, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.se(r.s100b, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.se(s, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.sp(r.s100b, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.sp(s, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.thresholds(r.s100b, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.coords(r.s100b, "best", best.policy = "random", boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.coords(s, "best", boot.n = 2.5), "boot.n"), 2)
+  expect_equal(unname(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 2.5)$parameter["boot.n"]), 2)
+  expect_equal(unname(t$parameter), 2)
+  # A vector uses its first element, with one warning
+  set.seed(42)
+  expect_warning(a <- ci.auc(r.s100b, method = "bootstrap", boot.n = c(2, 10)), "first element used of 'boot.n' argument", fixed = TRUE)
+  expect_equal(attr(a, "boot.n"), 2)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  # boot.n = 0 runs no replicate: a NA CI or p-value, as before
+  expect_identical(as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 0)), rep(NA_real_, 3))
+  expect_identical(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 0)$p.value, NaN)
+})

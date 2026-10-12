@@ -104,6 +104,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   smoothing.args <- smooth.roc$smoothing.args
   resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
 
+  boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
@@ -186,6 +187,7 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
+  boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
