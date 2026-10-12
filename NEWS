@@ -162,6 +162,7 @@
   * Fixed the name of a fitdistr density function recorded and printed as "density.controls"/"density.cases" with 'roc(..., smooth=TRUE, smooth.method="fitdistr", density=<function>)'
   * Fixed plotmath plot arguments (e.g. 'main=quote(...)') of 'roc(..., smooth=TRUE, plot=TRUE)' being stored with the smoothing arguments and evaluated again in bootstrap CIs (all NA), 'var', 'cov' and 'roc.test' (error)
   * Fixed the graphical parameter 'adj' partially matching the 'adjust' argument of density smoothing in 'roc(..., smooth=TRUE, smooth.method="density", plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE, ...)' (silently changed curve, or error)
+  * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
