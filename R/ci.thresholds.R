@@ -78,6 +78,12 @@ ci.thresholds.roc <- function(roc,
   if (!is.na(special)) {
     thresholds <- special
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
+    # With a partial AUC, coords(x = "all") also returns the interpolated
+    # limits of the window, with an NA threshold: they are not thresholds
+    thresholds.num <- thresholds.num[!is.na(thresholds.num)]
+    if (length(thresholds.num) == 0) {
+      stop("No threshold of the ROC curve in the partial AUC range. Use 'ignore.partial.auc = TRUE' to consider all thresholds.")
+    }
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
     if (anyNA(thresholds)) {

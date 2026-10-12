@@ -200,6 +200,7 @@
   * are.paired() and roc.test() now pair curves whose responses differ only in an NA level (addNA()) and missing values.
   * The bootstrap test of 'roc.test()' no longer reports a significant difference between two equal (partial) AUCs or coordinates that differ only by floating-point rounding.
   * 'coords(x = "best")', 'plot.roc(print.thres = ...)' and 'geom_roc_threshold()' no longer emit base warnings or fail when no point of the curve is in the partial AUC window.
+  * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer returns an all-NA, unprintable CI, and gives a clear error when no threshold is in the partial AUC window.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
