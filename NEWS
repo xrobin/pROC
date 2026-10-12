@@ -156,6 +156,7 @@
   * Fixed the name of a fitdistr density function recorded and printed as "density.controls"/"density.cases" with 'roc(..., smooth=TRUE, smooth.method="fitdistr", density=<function>)'
   * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
   * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
+  * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
