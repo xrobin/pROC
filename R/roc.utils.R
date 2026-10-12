@@ -711,6 +711,21 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 }
 
 
+# Check the best.weights argument
+# @param weights: see coords(best.weights=)
+# @param arg: the name of the argument, for the error messages
+roc_utils_check_best_weights <- function(weights, arg = "best.weights") {
+  if (!is.numeric(weights) || length(weights) != 2) {
+    stop(sprintf("'%s' must be a numeric vector of length 2", arg))
+  }
+  if (is.na(weights[1]) || weights[1] <= 0) {
+    stop(sprintf("cost ('%s[1]') must be positive.", arg))
+  }
+  if (is.na(weights[2]) || weights[2] <= 0 || weights[2] >= 1) {
+    stop(sprintf("prevalence ('%s[2]') must be in the interval ]0,1[.", arg))
+  }
+}
+
 # Get optimal criteria Youden or Closest Topleft
 # @param se, sp: the roc curve
 # @param max: the maximum value, 1 or 100, based on percent. Namely ifelse(percent, 100, 1)
@@ -718,14 +733,8 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 # @param method: youden or closest.topleft coords(best.method=)
 # @return numeric vector along roc$thresholds/roc$se/roc$sp.
 roc_utils_optim_crit <- function(se, sp, max, weights, method) {
-  if (is.numeric(weights) && length(weights) == 2) {
-    r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
-  } else {
-    stop("'best.weights' must be a numeric vector of length 2")
-  }
-  if (weights[2] <= 0 || weights[2] >= 1) {
-    stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
-  }
+  roc_utils_check_best_weights(weights)
+  r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
 
   if (method == "youden") {
     optim.crit <- se + r * sp
