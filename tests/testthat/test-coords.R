@@ -781,3 +781,24 @@ test_that("coords keeps the names of threshold x as row names whatever ret", {
   expect_equal(rownames(coords(r, x, input = "threshold", ret = "all")), c("low", "high"))
   expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"), best.weights = c(2, 0.3))), c("low", "high"))
 })
+
+test_that("coords warns about unknown or misspelt 'ret' elements", {
+  expect_warning(
+    res <- coords(r.s100b, "best", ret = c("threshold", "specifcity", "sensitivity")),
+    "specifcity"
+  )
+  expect_equal(res, coords(r.s100b, "best", ret = c("threshold", "sensitivity")))
+  expect_warning(
+    coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "ppv", "npV")),
+    "npV"
+  )
+  expect_warning(
+    coords(smooth(r.s100b), "best", ret = c("threshold", "sensitivity")),
+    "threshold"
+  )
+  # nothing matches: still an error
+  expect_error(coords(r.s100b, "best", ret = "specifcity"))
+  # valid, abbreviated and alias elements don't warn
+  expect_no_warning(coords(r.s100b, "best", ret = c("t", "se", "sp", "npe", "topleft")))
+  expect_no_warning(coords(r.s100b, "best", ret = "all"))
+})
