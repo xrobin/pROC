@@ -191,6 +191,7 @@
   * `roc(smooth = TRUE)` no longer passes the `x` of `ci.coords()` or the graphical `log` argument to the smoother: they caused spurious "Different smoothing parameters" warnings in `roc.test()` and `cov()`, and an error with `smooth.method = "fitdistr"` and some densities.
   * `smooth(reuse.ci = TRUE)` on a curve with a stored `ci.coords` of thresholds (such as the default `x = "best"`) now returns the smoothed curve without the CI (with a warning) instead of failing.
   * The smoothed curves returned by `roc.test()` keep the call of the input curves, instead of printing the whole deparsed curve as their call.
+  * `roc.test()` and `cov()` no longer warn about different smoothing parameters when the same density kernel is abbreviated (`kernel = "e"`) or the same fitdistr density is spelled differently (`"lognormal"` and `"log-normal"`).
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

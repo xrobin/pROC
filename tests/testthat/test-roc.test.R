@@ -619,3 +619,23 @@ test_that("roc.test returns the smoothed curves with the call of the input curve
   expect_s3_class(t$roc1, "smooth.roc")
   expect_equal(t$roc1$sensitivities, s1$sensitivities)
 })
+
+test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
+  warnings.of <- function(expr) {
+    warnings <- character(0)
+    withCallingHandlers(expr, warning = function(w) {
+      warnings <<- c(warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
+    warnings
+  }
+  smoothing.warned <- function(expr) any(grepl("Different smoothing parameters", warnings.of(expr)))
+  # density() matches the kernel partially
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density", kernel = "epanechnikov"), boot.n = 2)))
+  expect_false(smoothing.warned(cov(smooth(r.s100b, method = "density", window = "rect"), smooth(r.ndka, method = "density", kernel = "rectangular"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density"), boot.n = 2)))
+  skip_if_not_installed("MASS")
+  # "lognormal" and "log-normal" are the same density
+  expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2)))
+  expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
+})

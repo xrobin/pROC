@@ -1015,11 +1015,27 @@ roc_utils_relevant_smoothing_args <- function(smoothing.args) {
       smoothing.args$kernel <- if (is.null(smoothing.args$window)) formals(smooth_roc_density)$window else smoothing.args$window
     }
     smoothing.args$window <- NULL
+    # density() matches the kernel partially ("e" is "epanechnikov")
+    if (is.character(smoothing.args$kernel) && length(smoothing.args$kernel) == 1) {
+      kernels <- eval(formals(stats::density.default)$kernel)
+      kernel <- pmatch(smoothing.args$kernel, kernels)
+      if (!is.na(kernel)) {
+        smoothing.args$kernel <- kernels[kernel]
+      }
+    }
   } else if (identical(smoothing.args$method, "fitdistr")) {
-    # NULL densities are fitted as "normal"
     for (arg in c("density.controls", "density.cases")) {
+      # NULL densities are fitted as "normal"
       if (is.null(smoothing.args[[arg]])) {
         smoothing.args[[arg]] <- "normal"
+      }
+      # Density names are matched partially, and some are aliases
+      # ("lognormal" and "log-normal"): compare the density functions
+      if (is.character(smoothing.args[[arg]]) && length(smoothing.args[[arg]]) == 1) {
+        densfun <- pmatch(smoothing.args[[arg]], names(smooth_roc_fitdistr_densfuns))
+        if (!is.na(densfun)) {
+          smoothing.args[[arg]] <- smooth_roc_fitdistr_densfuns[[densfun]]
+        }
       }
     }
   }
