@@ -917,8 +917,10 @@ roc_utils_plot_roc <- function(curve, ..., x) {
 # (list(...)), which would evaluate the panel.first/panel.last expressions
 # that roc() also forwards to plot.roc() before the plot exists: capture them
 # here so they are not forwarded (formals that are never used are never forced).
-roc_utils_smooth_roc <- function(roc, ..., panel.first, panel.last) {
-  smooth.roc(roc, ...)
+# The method of ci.auc() (ci.auc(response, predictor, smooth = TRUE, method =
+# "bootstrap")) is captured too: the smoothing method is smooth.method.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ..., method, panel.first, panel.last) {
+  smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
 }
 
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
