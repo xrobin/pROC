@@ -639,3 +639,21 @@ test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdi
   expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2)))
   expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
 })
+
+test_that("bootstrap roc.test of two equal partial AUCs gives D = 0", {
+  # Two perfect curves: both pAUCs are the window maximum in every resample,
+  # but are summed from different points and differ by rounding residues
+  y <- c(0, 0, 0, 0, 0, 0, 0, 1, 1, 1)
+  x1 <- c(0, 0, 0, -1, -1, 1, 0, 2, 2, 2)
+  x2 <- c(0.5, 0.5, 0.5, 0.5, 1, 1, -1, 2, 1.5, 1.5)
+  for (percent in c(FALSE, TRUE)) {
+    window <- c(0.75, 0) * ifelse(percent, 100, 1)
+    r1 <- roc(y, x1, percent = percent, partial.auc = window, quiet = TRUE)
+    r2 <- roc(y, x2, percent = percent, partial.auc = window, quiet = TRUE)
+    for (paired in c(TRUE, FALSE)) {
+      t <- suppressWarnings(roc.test(r1, r2, method = "bootstrap", paired = paired, boot.n = 50))
+      expect_equal(unname(t$statistic), 0)
+      expect_equal(t$p.value, 1)
+    }
+  }
+})
