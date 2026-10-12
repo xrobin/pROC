@@ -342,6 +342,47 @@ test_that("a single density value is rejected", {
   expect_s3_class(roc(density.controls = c(0.8, 0.2), density.cases = c(0.2, 0.8)), "smooth.roc")
 })
 
+test_that("smooth with reuse.ci skips a stored ci.thresholds", {
+  r <- r.s100b
+  r$ci <- ci.thresholds(r, thresholds = 0.5, boot.n = 2)
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  expect_equal(as.numeric(s$auc), as.numeric(smooth(r.s100b)$auc))
+})
+
+test_that("smooth with reuse.ci skips a stored ci.coords of thresholds", {
+  r <- r.s100b
+  # default x = "best": input = "threshold"
+  r$ci <- ci.coords(r, "best", best.policy = "random", boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  r$ci <- ci.coords(r, 0.2, input = "threshold", ret = c("se", "sp"), boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_null(s$ci)
+  # other inputs are still recomputed
+  r$ci <- ci.coords(r, 0.9, input = "specificity", ret = "se", boot.n = 2, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_s3_class(s$ci, "ci.coords")
+})
+
+test_that("smooth with reuse.ci recomputes a stored ci.coords of the best point", {
+  r <- r.s100b
+  # x = "best": the default input = "threshold" is irrelevant
+  r$ci <- ci.coords(r, "best", ret = c("specificity", "sensitivity"), best.policy = "random", boot.n = 2, progress = "none")
+  expect_identical(attr(r$ci, "input"), "threshold")
+  warnings <- character(0)
+  s <- withCallingHandlers(smooth(r, reuse.ci = TRUE), warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  expect_false(any(grepl("not re-used", warnings, fixed = TRUE)))
+  expect_s3_class(s$ci, "ci.coords")
+  expect_identical(attr(s$ci, "x"), "best")
+  expect_identical(names(s$ci), c("specificity", "sensitivity"))
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)

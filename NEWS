@@ -176,6 +176,7 @@
   * `ci.auc()`, `ci.se()`, `ci.sp()`, `ci.thresholds()`, `ci.coords()`, `roc.test()` and `power.roc.test()` now give a clear error for a missing (`NA`) or vector `conf.level`, `power`, `sig.level`, `ncases`, `ncontrols` or `kappa`.
   * `auc()` with `partial.auc.correct = 1` now prints the corrected partial AUC as corrected, and integer `partial.auc` bounds no longer trigger a "Different AUC specifications" warning in `roc.test()` and `cov()`.
   * `smooth(method = "density")` and `roc(density.controls, density.cases)` now reject densities with a single value, which gave a diagonal curve with AUC 0.5 (e.g. `density = 3`).
+  * `smooth(reuse.ci = TRUE)` on a curve with a stored `ci.thresholds` now returns the smoothed curve without the CI (with a warning) instead of failing.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
