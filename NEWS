@@ -171,6 +171,7 @@
   * `coords()` (any numeric `input`), `ci.se()`, `ci.sp()`, `ci.coords()` and `ci.thresholds()` now fail with a clear error message for missing values in `x`, `specificities`, `sensitivities` or `thresholds`.
   * `print()` of a `ci.coords` object with repeated `x` values failed with "duplicate 'row.names' are not allowed".
   * `coords()`, `ci.coords()` and `plot.roc()` now reject a non-positive or missing cost (`best.weights[1]`) and a missing prevalence, which returned all-NA rows or the worst threshold. The `plot.roc()` error names `print.thres.best.weights`.
+  * The curves returned by `roc.test()` and `are.paired(return.paired.rocs = TRUE)` for paired curves with missing values now print the call and variable names of the input curves instead of pROC internals.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
