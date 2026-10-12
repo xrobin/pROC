@@ -48,7 +48,8 @@ roc_utils_c_ordered <- function(...) {
       stop("Levels of cases and controls differ.")
     }
   }
-  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
+  # exclude = NULL: an NA level is a level like the others, as in base R
+  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls, exclude = NULL)
 }
 
 # Concatenate predictors, preserving ordered class when needed.
@@ -323,7 +324,7 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
     }
     thr_levels <- c("-Inf", user_levels)
   }
-  ordered(thr_levels, levels = thr_levels)
+  ordered(thr_levels, levels = thr_levels, exclude = NULL)
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
