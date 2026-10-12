@@ -103,8 +103,9 @@ panel.last=NULL,
 		   
 \arguments{
   \item{x}{a roc object from the \link{roc} function (for plot.roc.roc),
-    a formula (for plot.roc.formula) or a response vector (for
-    plot.roc.default).
+    a smooth.roc object from the \link[=smooth.roc]{smooth} function (for
+    plot.roc.smooth.roc), a formula (for plot.roc.formula) or a response
+    vector (for plot.roc.default).
   }
   \item{predictor, data}{arguments for the \link{roc} function.}
   \item{subset,na.action}{arguments for \code{\link{model.frame}}}
@@ -157,8 +158,9 @@ panel.last=NULL,
   \item{print.thres.pattern}{the text pattern for the thresholds, as a
     \link{sprintf} format. Three values are passed to sprintf:
     threshold, specificity, sensitivity. If \code{NULL}, a reasonable
-    default is used: \code{\%f} for numeric ROC curves, \code{\%s} for
-    ordered predictors.
+    default is used: \code{"\%.3f (\%.3f, \%.3f)"} (or
+    \code{"\%.3f (\%.1f\%\%, \%.1f\%\%)"} with \code{percent}), with
+    \code{\%s} for the threshold of ordered predictors.
   }
   \item{print.thres.pattern.cex}{the character expansion factor (cex) for the
     threshold text pattern. See \link{par} for more details.
@@ -219,7 +221,11 @@ panel.last=NULL,
     (lty), density, angle and border for the maximum AUC polygon. See
     \code{\link{polygon}} and \code{\link{par}} for more details.
   }
-  \item{ci}{boolean. Should we plot the confidence intervals?}
+  \item{ci}{boolean. Should we plot the confidence intervals? Defaults to
+    \code{TRUE} if \code{x} has a \code{ci} field; \code{ci=TRUE} on a curve
+    without one is an error. A \code{\link{ci.coords}} CI is drawn only if
+    its \code{input} and \code{ret} give both the sensitivity and the
+    specificity; otherwise it is skipped with a warning.}
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
@@ -320,7 +326,9 @@ panel.last=NULL,
 }
 
 \value{
-This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for more details.
+This function returns the ROC curve invisibly: a list of class \dQuote{roc},
+or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
+\code{\link[=smooth.roc]{smooth}} for more details.
 }
 
 \references{
