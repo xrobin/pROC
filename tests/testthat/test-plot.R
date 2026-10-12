@@ -328,6 +328,18 @@ test_that("plot.roc names print.thres.best.weights in its errors", {
   expect_no_error(plot(r.s100b, print.thres = "best", print.thres.best.weights = c(0, 0.5)))
 })
 
+test_that("plot.roc draws no threshold when none is in the partial AUC window", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  expect_warning(plot(r, print.thres = TRUE), "No coordinates found")
+  expect_warning(plot(r, print.thres = "local maximas"), "No coordinates found")
+  expect_s3_class(plot(r, print.thres = "all"), "roc")
+  r2 <- roc(controls = c(1, 3, 5, 2, 4), cases = c(2, 4, 6, 7, 5), partial.auc = c(0.80001, 0.8), quiet = TRUE)
+  s <- smooth(r2, n = 10)
+  expect_warning(plot(s, print.thres = "best"), "No coordinates found")
+})
+
 test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
   pdf(NULL)
   on.exit(dev.off())
