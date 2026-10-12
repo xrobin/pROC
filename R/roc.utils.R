@@ -1047,7 +1047,9 @@ roc_utils_smoothing_arg_names <- function(method, densfuns) {
     relevant <- c(relevant, "gr", "lower", "upper", "control")
   }
   for (densfun in densfuns) {
-    relevant <- c(relevant, names(formals(densfun)))
+    # Not the arguments the smoothers set themselves: the data (first
+    # argument), from/to of density() and log of fitdistr
+    relevant <- c(relevant, setdiff(names(formals(densfun))[-1], c("from", "to", "log")))
   }
   relevant
 }
