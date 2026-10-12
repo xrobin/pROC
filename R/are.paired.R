@@ -54,7 +54,9 @@ are.paired.roc <- function(roc1, roc2,
     roc2 <- attr(roc2, "roc")
   }
   # Check if the levels are the same. Otherwise it is not paired.
-  if (!identical(roc1$levels, roc2$levels)) {
+  # Compare them as character: levels given explicitly are stored as given
+  # (numeric, factor...) while the default levels are character
+  if (!identical(as.character(roc1$levels), as.character(roc2$levels))) {
     return(FALSE)
   }
   # check if responses of roc 1 and 2 are identical. Ignore the names (a
