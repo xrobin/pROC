@@ -298,3 +298,21 @@ test_that("unknown and missing threshold labels have clear messages", {
 test_that("coords on a numeric ROC restores the match.arg error", {
   expect_error(coords(r.ndka, "foo"), "arg")
 })
+
+test_that("an NA level of an ordered predictor is a missing value", {
+  resp <- c(0, 0, 0, 1, 1, 1, 1)
+  pred <- ordered(c("a", "b", NA, "a", "b", "c", "c"))
+  o <- addNA(pred)
+  expected <- roc(resp, pred, quiet = TRUE)
+  r <- roc(resp, o, quiet = TRUE)
+  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
+  expect_equal(r$thresholds, expected$thresholds)
+  expect_equal(r$sensitivities, expected$sensitivities)
+  expect_equal(r$specificities, expected$specificities)
+  expect_equal(coords(r, "all"), coords(expected, "all"))
+  rcc <- roc(controls = o[1:3], cases = o[4:7], quiet = TRUE)
+  expect_equal(as.numeric(auc(rcc)), as.numeric(auc(expected)))
+  expect_equal(rcc$thresholds, expected$thresholds)
+  expect_identical(roc(resp, o, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc(controls = o[1:3], cases = o[4:7], na.rm = FALSE, quiet = TRUE), NA)
+})
