@@ -63,3 +63,7 @@ test_that("ci.sp of a smoothed curve with a corrected partial AUC does not warn 
   })
   expect_false(any(grepl("Partial AUC correction not defined", warnings)))
 })
+
+test_that("ci.sp with NA sensitivities gives a clear error", {
+  expect_error(ci.sp(r.s100b, sensitivities = c(0.5, NA), boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+})
