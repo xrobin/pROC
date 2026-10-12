@@ -691,6 +691,11 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 }
 
 
+# Whether x is a single non-missing number, to validate arguments
+roc_utils_is_single_number <- function(x) {
+  is.numeric(x) && length(x) == 1 && !is.na(x)
+}
+
 # Check the best.weights argument
 # @param weights: see coords(best.weights=)
 # @param arg: the name of the argument, for the error messages
