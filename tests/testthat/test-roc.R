@@ -585,3 +585,12 @@ test_that("a data.frame response gives a clear error", {
   expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
   expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
 })
+
+test_that("roc with na.rm = FALSE accepts a haven_labelled-like response", {
+  labelled <- local_fake_labelled()
+  y <- as.numeric(aSAH$outcome == "Poor")
+  yl <- labelled(y)
+  expect_equal(as.numeric(auc(roc(yl, aSAH$s100b, na.rm = FALSE, quiet = TRUE))), as.numeric(auc(r.s100b)))
+  yl[1] <- NA
+  expect_identical(roc(yl, aSAH$s100b, na.rm = FALSE, quiet = TRUE), NA)
+})

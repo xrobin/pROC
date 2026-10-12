@@ -232,8 +232,8 @@ roc.default <- function(response, predictor,
         predictor <- predictor[!nas]
         attr(predictor, "na.action") <- na.action
       }
-    } else if (any(is.na(predictor[response == levels[1]])) ||
-      any(is.na(predictor[response == levels[2]])) ||
+    } else if (any(is.na(predictor[response %in% levels[1]])) ||
+      any(is.na(predictor[response %in% levels[2]])) ||
       any(is.na(response))) { # Unable to compute anything if there is any NA in the response or in the predictor data we want to consider !
       return(NA)
     }
