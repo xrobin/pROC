@@ -170,6 +170,11 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
   if (length(density.controls) != length(density.cases)) {
     stop("Length of 'density.controls' and 'density.cases' differ.")
   }
+  # A single density value is one bin: controls and cases are then
+  # indistinguishable, which is not a density curve
+  if (length(density.controls) < 2) {
+    stop("'density.controls' and 'density.cases' must contain at least two density values.")
+  }
   # Even tiny negative values (e.g. -1e-17 from KernSmooth::bkde) make
   # the curve non-monotonic and the AUC wrong
   for (dens in list(density.controls, density.cases)) {
