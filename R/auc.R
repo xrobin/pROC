@@ -120,6 +120,10 @@ auc.roc <- function(roc,
     if (any(partial.auc < 0 | partial.auc > ifelse(percent, 100, 1))) {
       stop(sprintf("partial.auc must be within [0, %s]", ifelse(percent, 100, 1)))
     }
+    # Store the specification in a canonical form, so that the same
+    # specification compares identical (partial.auc.correct = 1, integer bounds)
+    partial.auc.correct <- as.logical(partial.auc.correct)
+    partial.auc <- as.numeric(partial.auc)
     if (isTRUE(partial.auc.correct) && partial.auc[1] == partial.auc[2]) {
       stop("partial.auc.correct requires two different partial.auc bounds")
     }
