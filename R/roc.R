@@ -193,9 +193,14 @@ roc.default <- function(response, predictor,
     if (is.list(response)) {
       stop("'response' must be a vector or factor, not a data.frame or list.")
     }
+    # Before the default levels are computed from it
+    response <- roc_utils_response_na_level(response)
 
     # Validate levels
     if (missing(levels)) {
+      # An NA level of the response (addNA()) codes missing values: it is not
+      # a class (as in multiclass.roc)
+      levels <- levels[!is.na(levels)]
       if (length(levels) > 2) {
         warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
         levels <- levels[1:2]
