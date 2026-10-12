@@ -61,6 +61,16 @@ roc_utils_ordered_na_level <- function(x) {
   x
 }
 
+# An NA level of a response factor (addNA(), factor(exclude = NULL)) codes
+# missing responses, not a class: make them real NAs, so that they are
+# handled by na.rm like any missing response.
+roc_utils_response_na_level <- function(x) {
+  if (is.factor(x) && anyNA(levels(x))) {
+    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = is.ordered(x))
+  }
+  x
+}
+
 # Concatenate predictors, preserving ordered class when needed.
 roc_utils_combine_predictor <- function(...) {
   args <- list(...)
