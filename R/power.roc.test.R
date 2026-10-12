@@ -26,11 +26,11 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
                                reuse.auc = TRUE, method = c("delong", "bootstrap", "obuchowski"),
                                ...) {
   # Basic sanity checks
-  if (!is.null(power) && (power < 0 || power > 1)) {
-    stop("'power' must range from 0 to 1")
+  if (!is.null(power) && (!roc_utils_is_single_number(power) || power < 0 || power > 1)) {
+    stop("'power' must be a single number ranging from 0 to 1")
   }
-  if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
-    stop("'sig.level' must range from 0 to 1")
+  if (!is.null(sig.level) && (!roc_utils_is_single_number(sig.level) || sig.level < 0 || sig.level > 1)) {
+    stop("'sig.level' must be a single number ranging from 0 to 1")
   }
   # Let cov and var choose the method if missing (ie bootstrap for partial AUC)
   if (missing(method) || is.null(method)) {
@@ -143,20 +143,20 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
 
 power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, alternative = c("two.sided", "one.sided"), ...) {
   # basic sanity checks
-  if (!is.null(ncases) && ncases < 0) {
-    stop("'ncases' must be positive")
+  if (!is.null(ncases) && (!roc_utils_is_single_number(ncases) || ncases < 0)) {
+    stop("'ncases' must be a single positive number")
   }
-  if (!is.null(ncontrols) && ncontrols < 0) {
-    stop("'ncontrols' must be positive")
+  if (!is.null(ncontrols) && (!roc_utils_is_single_number(ncontrols) || ncontrols < 0)) {
+    stop("'ncontrols' must be a single positive number")
   }
-  if (!is.null(kappa) && kappa < 0) {
-    stop("'kappa' must be positive")
+  if (!is.null(kappa) && (!roc_utils_is_single_number(kappa) || kappa < 0)) {
+    stop("'kappa' must be a single positive number")
   }
-  if (!is.null(power) && (power < 0 || power > 1)) {
-    stop("'power' must range from 0 to 1")
+  if (!is.null(power) && (!roc_utils_is_single_number(power) || power < 0 || power > 1)) {
+    stop("'power' must be a single number ranging from 0 to 1")
   }
-  if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
-    stop("'sig.level' must range from 0 to 1")
+  if (!is.null(sig.level) && (!roc_utils_is_single_number(sig.level) || sig.level < 0 || sig.level > 1)) {
+    stop("'sig.level' must be a single number ranging from 0 to 1")
   }
   if (!is.null(auc)) {
     if (methods::is(auc, "auc")) {
@@ -284,20 +284,20 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
 
 power.roc.test.list <- function(parslist, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, alternative = c("two.sided", "one.sided"), ...) {
   # basic sanity checks
-  if (!is.null(ncases) && ncases < 0) {
-    stop("'ncases' must be positive")
+  if (!is.null(ncases) && (!roc_utils_is_single_number(ncases) || ncases < 0)) {
+    stop("'ncases' must be a single positive number")
   }
-  if (!is.null(ncontrols) && ncontrols < 0) {
-    stop("'ncontrols' must be positive")
+  if (!is.null(ncontrols) && (!roc_utils_is_single_number(ncontrols) || ncontrols < 0)) {
+    stop("'ncontrols' must be a single positive number")
   }
-  if (!is.null(kappa) && kappa < 0) {
-    stop("'kappa' must be positive")
+  if (!is.null(kappa) && (!roc_utils_is_single_number(kappa) || kappa < 0)) {
+    stop("'kappa' must be a single positive number")
   }
-  if (!is.null(power) && (power < 0 || power > 1)) {
-    stop("'power' must range from 0 to 1")
+  if (!is.null(power) && (!roc_utils_is_single_number(power) || power < 0 || power > 1)) {
+    stop("'power' must be a single number ranging from 0 to 1")
   }
-  if (!is.null(sig.level) && (sig.level < 0 || sig.level > 1)) {
-    stop("'sig.level' must range from 0 to 1")
+  if (!is.null(sig.level) && (!roc_utils_is_single_number(sig.level) || sig.level < 0 || sig.level > 1)) {
+    stop("'sig.level' must be a single number ranging from 0 to 1")
   }
 
 

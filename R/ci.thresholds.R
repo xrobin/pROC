@@ -63,8 +63,8 @@ ci.thresholds.roc <- function(roc,
                               cl = NULL,
                               parallel = FALSE,
                               ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
