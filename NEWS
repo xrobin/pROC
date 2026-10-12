@@ -171,6 +171,7 @@
   * `print()` of a `ci.coords` object with repeated `x` values failed with "duplicate 'row.names' are not allowed".
   * `coords()`, `ci.coords()` and `plot.roc()` now reject a non-positive cost (`best.weights[1]`), which returned all-NA rows or the worst threshold, and fail with a clear error for a missing prevalence. A missing cost still gives NA. The `plot.roc()` error names `print.thres.best.weights`.
   * The curves returned by `roc.test()` and `are.paired(return.paired.rocs = TRUE)` for paired curves with missing values now print the call and variable names of the input curves instead of pROC internals.
+  * All functions with a `boot.n` argument now fail with a clear error for a NA, negative, infinite or non-numeric `boot.n`, and read it as `seq_len()` does: a fraction is truncated (the Venkatraman test of `roc.test()` used the fraction as the number of permutations in its p-value) and a vector uses its first element with a warning.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

@@ -201,6 +201,7 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
 bootstrap.replicates <- function(boot.n, FUN, ...,
                                  simplify = c("list", "vector", "columns", "rows"),
                                  progress = FALSE, cl = NULL) {
+  boot.n <- roc_utils_check_boot_n(boot.n)
   simplify <- match.arg(simplify)
   force(FUN)
   cluster <- roc_utils_resolve_cluster(cl)
@@ -226,6 +227,22 @@ bootstrap.replicates <- function(boot.n, FUN, ...,
     columns = simplify2array(replicates),
     rows = do.call(rbind, replicates)
   )
+}
+
+# boot.n is a replicate count, read as seq_len() does: a fraction is
+# truncated, a vector uses its first element with a warning, and boot.n = 0
+# runs no replicate. Values that seq_len() rejects (NA, negative, infinite or
+# not a number) stop with a clear error. Values that seq_len() coerces (such
+# as "10") are accepted. Returns the number of replicates.
+roc_utils_check_boot_n <- function(boot.n) {
+  n <- if (length(boot.n) >= 1 && is.atomic(boot.n)) suppressWarnings(as.numeric(boot.n[1])) else NA
+  if (!is.finite(n) || n < 0) {
+    stop("'boot.n' must be a non-negative number.")
+  }
+  if (length(boot.n) > 1) {
+    warning("first element used of 'boot.n' argument")
+  }
+  trunc(n)
 }
 
 # As above, with a text progress bar.
