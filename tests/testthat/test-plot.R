@@ -312,6 +312,22 @@ test_that("CI shapes are drawn in increasing order whatever order the CI was com
   })
 })
 
+test_that("plot.roc names print.thres.best.weights in its errors", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(
+    plot(r.s100b, print.thres = "best", print.thres.best.weights = c(1, 2)),
+    "prevalence ('print.thres.best.weights[2]') must be in the interval ]0,1[.",
+    fixed = TRUE
+  )
+  expect_error(
+    plot(r.s100b, print.thres = TRUE, print.thres.best.weights = c(-1, 0.5)),
+    "cost ('print.thres.best.weights[1]')",
+    fixed = TRUE
+  )
+  expect_no_error(plot(r.s100b, print.thres = "best", print.thres.best.weights = c(0, 0.5)))
+})
+
 test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
   pdf(NULL)
   on.exit(dev.off())
