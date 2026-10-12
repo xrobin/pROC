@@ -82,3 +82,25 @@ test_that("ci.thresholds with NA thresholds gives a clear error", {
   expect_error(ci.thresholds(r.s100b, thresholds = NA, boot.n = 2), msg, fixed = TRUE)
   expect_error(ci.thresholds(r.s100b, thresholds = c(TRUE, NA, rep(FALSE, length(r.s100b$thresholds) - 2)), boot.n = 2), msg, fixed = TRUE)
 })
+
+test_that("ci.thresholds 'all' on a partial AUC curve skips the window limits", {
+  # coords(r, "all") adds the interpolated window end with an NA threshold
+  r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(3, 4, 5, 6, 7), partial.auc = c(1, 0.7), quiet = TRUE)
+  ci <- ci.thresholds(r, boot.n = 10, thresholds = "all")
+  expect_identical(rownames(ci$sensitivity), c("4.5", "5.5", "6.5", "Inf"))
+  expect_identical(rownames(ci$specificity), c("4.5", "5.5", "6.5", "Inf"))
+  expect_false(anyNA(ci$sensitivity))
+  expect_false(anyNA(ci$specificity))
+  expect_output(print(ci), "6.5")
+})
+
+test_that("ci.thresholds gives a clear error with no threshold in the partial AUC window", {
+  # specificities 0, 0.5, 0.5, 1, 1: none in [0.6, 0.8]
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  for (thresholds in c("local maximas", "all", "best")) {
+    expect_error(
+      suppressWarnings(ci.thresholds(r, boot.n = 2, thresholds = thresholds)),
+      "No threshold of the ROC curve in the partial AUC range"
+    )
+  }
+})

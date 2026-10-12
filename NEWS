@@ -181,6 +181,7 @@
   * `ci.coords()` with `ret = "all"` and a numeric `x` of a non-threshold `input` returns the CIs of all coordinates but the threshold, instead of failing.
   * `roc()` ignores an NA level of the response (`addNA()`, `factor(exclude = NULL)`) when choosing the default `levels`, instead of warning about more than two levels or failing with "No control observation.".
   * 'coords(x = "best")', 'plot.roc(print.thres = ...)' and 'geom_roc_threshold()' no longer emit base warnings or fail when no point of the curve is in the partial AUC window.
+  * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer returns an all-NA, unprintable CI, and gives a clear error when no threshold is in the partial AUC window.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
