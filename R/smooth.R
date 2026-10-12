@@ -105,10 +105,14 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     sesp$auc <- do.call("auc.smooth.roc", args)
   }
   if (!is.null(roc$ci) && reuse.ci) {
-    args <- attributes(roc$ci)
-    args$roc <- NULL
-    args$smooth.roc <- sesp
-    sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
+    if (methods::is(roc$ci, "ci.thresholds")) {
+      warning("'ci.thresholds' is not available for smoothed ROC curves: the CI is not re-used.")
+    } else {
+      args <- attributes(roc$ci)
+      args$roc <- NULL
+      args$smooth.roc <- sesp
+      sesp$ci <- do.call(paste(class(roc$ci)[1], "smooth.roc", sep = "."), args)
+    }
   }
 
   return(sesp)
