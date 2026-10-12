@@ -259,6 +259,6 @@ print_dataline <- function(x) {
     } else {
       response.name <- "(unknown)"
     }
-    cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", x$levels[1], ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", x$levels[2], ").\n", sep = "")
+    cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", as.character(x$levels[1]), ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", as.character(x$levels[2]), ").\n", sep = "")
   }
 }
