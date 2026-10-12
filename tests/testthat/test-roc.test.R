@@ -568,6 +568,15 @@ test_that("roc.test and cov do not warn for the same smoothing spelled different
   expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
 })
 
+test_that("roc.test rejects a missing or vector conf.level", {
+  set.seed(42)
+  msg <- "conf.level must be a single number between 0 and 1."
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = NA_real_), msg, fixed = TRUE)
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = c(0.9, 0.95)), msg, fixed = TRUE)
+  # Not checked where it is not used
+  expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = c(0.9, 0.95)), "htest")
+})
+
 test_that("roc.test returns the smoothed curves with the call of the input curves", {
   set.seed(42)
   # do.call() stored the whole deparsed curve as the call
