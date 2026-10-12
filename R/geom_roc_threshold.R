@@ -36,6 +36,9 @@ geom_roc_threshold.roc <- function(data,
   if (!methods::is(data, "smooth.roc") && !is.null(co)) {
     co <- co[!is.na(co$threshold), , drop = FALSE]
   }
+  if (is.null(co)) { # no coordinates (e.g. no point in the partial AUC window): empty layer
+    co <- data.frame(threshold = numeric(0), specificity = numeric(0), sensitivity = numeric(0))
+  }
   co <- ggroc_add_one_or_hundred(co, percent)
   if (is.null(co$threshold)) {
     co$threshold <- NA_real_
