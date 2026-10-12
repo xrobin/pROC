@@ -159,6 +159,7 @@
   * Fixed 'plot.roc(print.thres="all")' and 'geom_roc_threshold(thresholds="all")' marking the interpolated limits of the partial AUC as thresholds labelled "NA"
   * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
   * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' and 'method' failing ("matched by multiple actual arguments")
+  * Fixed the name of a fitdistr density function recorded and printed as "density.controls"/"density.cases" with 'roc(..., smooth=TRUE, smooth.method="fitdistr", density=<function>)'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
