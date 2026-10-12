@@ -78,7 +78,8 @@ na.rm=TRUE, method=NULL, ...)
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
     If \code{TRUE} but the paired status cannot be assessed by \code{\link{are.paired}}
-    will produce an error.
+    will produce an error. Curves built with \code{controls} and
+    \code{cases} are paired only with \code{paired=TRUE} (see Details).
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -165,15 +166,17 @@ na.rm=TRUE, method=NULL, ...)
   \code{roc.test.default}). This detection is unlikely to raise false positives, but
   this possibility cannot be excluded entirely. It would require equal sample sizes
   and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
-  However, curves built with \code{controls} and \code{cases} (see
+  Curves built with \code{controls} and \code{cases} (see
   \code{\link{roc}}) carry no information on which observations come
-  from the same patients: two such curves with the same numbers of
-  controls and of cases are always detected as paired, and their
-  observations are matched by their position in the \code{controls} and
-  \code{cases} vectors. Pass \code{paired=FALSE} if they come from
-  independent samples (the warning that the curves \dQuote{seem to be
-  paired} can then be ignored).
-  If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
+  from the same patients, and are not detected as paired (unless both
+  curves were built on the same \code{controls} and \code{cases}, for
+  instance a curve and its smoothed version). If they were
+  measured on the same patients, given in the same order, pass
+  \code{paired=TRUE}: their observations are then matched by their
+  position in the \code{controls} and \code{cases} vectors (this requires
+  the same numbers of controls and of cases).
+  If you know the ROC curves are paired you can pass \code{paired=TRUE}. Except for
+  curves built with \code{controls} and \code{cases}, this is
   useless as it will be tested anyway.
 
   If paired curves do not have the same missing (\code{NA}) predictor

@@ -199,8 +199,9 @@ roc.test.roc <- function(roc1, roc2,
       roc2 <- roc2
     }
   } else if (paired) {
-    # make sure the rocs are really paired
-    rocs.are.paired <- rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+    # make sure the rocs are really paired. Curves built from controls and
+    # cases are paired by position when asked explicitly
+    rocs.are.paired <- roc_utils_are_paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
     if (!rocs.are.paired) {
       stop("The paired ROC test cannot be applied to unpaired curves.")
     }

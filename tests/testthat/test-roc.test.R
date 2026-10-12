@@ -657,3 +657,38 @@ test_that("bootstrap roc.test of two equal partial AUCs gives D = 0", {
     }
   }
 })
+
+test_that("curves built from controls and cases are not auto-paired", {
+  # Their response is synthetic (controls, then cases): two such curves with
+  # the same class sizes were always paired, by position
+  controls1 <- c(0.1, 0.5, 0.2, 0.9, 0.4)
+  cases1 <- c(0.8, 0.6, 1.2, 0.3, 1.5, 0.7)
+  controls2 <- c(0.3, 0.2, 0.6, 0.1, 0.7)
+  cases2 <- c(0.5, 1.1, 0.4, 0.9, 1.3, 0.8)
+  r1 <- roc(controls = controls1, cases = cases1, quiet = TRUE)
+  r2 <- roc(controls = controls2, cases = cases2, quiet = TRUE)
+  expect_false(are.paired(r1, r2))
+  expect_false(are.paired(auc(r1), auc(r2)))
+  expect_identical(roc.test(r1, r2)$method, "DeLong's test for two ROC curves")
+  expect_no_warning(roc.test(r1, r2, paired = FALSE))
+  expect_message(expect_identical(cov(r1, r2), 0), "ROC curves are unpaired.")
+  # Pairing by position is still available on request
+  response <- c(rep(0, 5), rep(1, 6))
+  rp1 <- roc(response, c(controls1, cases1), quiet = TRUE)
+  rp2 <- roc(response, c(controls2, cases2), quiet = TRUE)
+  expect_true(are.paired(rp1, rp2))
+  t.paired <- roc.test(r1, r2, paired = TRUE)
+  expect_identical(t.paired$method, "DeLong's test for two correlated ROC curves")
+  expect_equal(t.paired$p.value, roc.test(rp1, rp2)$p.value)
+  # A response/predictor curve whose response happens to be sorted is not
+  # paired with a controls/cases curve either
+  expect_false(are.paired(r1, rp2))
+  expect_false(are.paired(rp1, r2))
+})
+
+test_that("a controls/cases curve is still paired with itself and its smoothed version", {
+  r <- roc(controls = qnorm(ppoints(30)), cases = 1 + qnorm(ppoints(30)), quiet = TRUE)
+  expect_true(are.paired(r, r))
+  expect_true(are.paired(r, smooth(r)))
+  expect_equal(cov(r, r), var(r))
+})
