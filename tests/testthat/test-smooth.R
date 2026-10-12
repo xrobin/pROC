@@ -316,6 +316,23 @@ test_that("the graphical adj argument does not change density smoothing", {
   expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
 })
 
+test_that("invalid density values give a clear error", {
+  x <- seq(-4, 6, length.out = 200)
+  dc <- dnorm(x)
+  dk <- dnorm(x, 1.5)
+  msg <- "'density.controls' and 'density.cases' must be finite, non-negative and not all zero"
+  # tiny negative values, like those of FFT-based estimators, also make the AUC wrong
+  tiny.negative <- ifelse(dc < 1e-6, -1e-17, dc)
+  invalid <- list(c(NA, dc[-1]), c(NaN, dc[-1]), c(Inf, dc[-1]), 0 * dc, dc - 0.01, tiny.negative)
+  for (d in invalid) {
+    expect_error(roc(density.controls = d, density.cases = dk), msg)
+    expect_error(roc(density.controls = dc, density.cases = d), msg)
+    expect_error(roc(density.controls = dc, density.cases = d, direction = "<"), msg)
+    expect_error(smooth(r.s100b, method = "density", density.controls = dc, density.cases = d), msg)
+    expect_error(smooth(r.s100b, method = "density", density.controls = d, density.cases = dk), msg)
+  }
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
