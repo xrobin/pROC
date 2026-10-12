@@ -62,3 +62,19 @@ test_that("geom_roc_threshold('all') marks only real thresholds on a partial AUC
   expect_false(any(startsWith(labels, "NA")))
   expect_equal(nrow(p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data), sum(!is.na(co$threshold)))
 })
+
+test_that("geom_roc_threshold uses best.method and best.weights as plot.roc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  point.data <- function(layer) {
+    p <- ggroc(r.wfns) + layer
+    p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data
+  }
+  layer <- geom_roc_threshold(r.wfns, thresholds = "best", best.method = "closest.topleft")
+  # not passed to the geoms ("Ignoring unknown parameters")
+  expect_no_warning(d <- point.data(layer))
+  expect_identical(as.character(d$threshold), as.character(coords(r.wfns, "best", best.method = "closest.topleft")$threshold))
+  layer <- geom_roc_threshold(r.wfns, thresholds = "best", best.weights = c(5, 0.2))
+  expect_identical(as.character(point.data(layer)$threshold), as.character(coords(r.wfns, "best", best.weights = c(5, 0.2))$threshold))
+  # the default is still Youden's point
+  expect_identical(as.character(point.data(geom_roc_threshold(r.wfns))$threshold), as.character(coords(r.wfns, "best")$threshold))
+})
