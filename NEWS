@@ -179,6 +179,7 @@
   * `coords()` (any numeric `input`), `ci.se()`, `ci.sp()`, `ci.coords()` and `ci.thresholds()` now fail with a clear error message for missing values in `x`, `specificities`, `sensitivities` or `thresholds`.
   * `print()` of a `ci.coords` object with repeated `x` values failed with "duplicate 'row.names' are not allowed".
   * `coords()`, `ci.coords()` and `plot.roc()` now reject a non-positive or missing cost (`best.weights[1]`) and a missing prevalence, which returned all-NA rows or the worst threshold. The `plot.roc()` error names `print.thres.best.weights`.
+  * `roc.test()` and `cov()` no longer warn about "Different smoothing parameters" when the same smoothing is spelled differently, such as an integer `n` or a default given explicitly (`adjust = 1`, `density = "normal"`).
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
