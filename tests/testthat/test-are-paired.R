@@ -188,3 +188,18 @@ test_that("are.paired return.paired.rocs returns smoothed curves with their AUC"
     as.numeric(roc(aSAH$outcome[-1], aSAH$wfns[-1], smooth = TRUE, partial.auc = c(1, 0.8), quiet = TRUE)$auc)
   )
 })
+
+test_that("explicit numeric or factor levels pair with the default character levels", {
+  y <- as.numeric(aSAH$outcome == "Poor")
+  r.default <- roc(y, aSAH$ndka, quiet = TRUE)
+  r.numeric <- roc(y, aSAH$s100b, levels = c(0, 1), quiet = TRUE)
+  expect_true(are.paired(r.numeric, r.default))
+  expect_true(are.paired(r.default, r.numeric))
+  expect_equal(roc.test(r.numeric, r.default)$method, "DeLong's test for two correlated ROC curves")
+  expect_equal(cov(r.numeric, r.default), cov(r.s100b, r.ndka))
+  expect_equal(power.roc.test(r.numeric, r.default)$power, power.roc.test(r.s100b, r.ndka)$power)
+  r.factor <- roc(aSAH$outcome, aSAH$s100b, levels = unique(aSAH$outcome), quiet = TRUE)
+  expect_true(are.paired(r.factor, r.ndka))
+  # different levels are still unpaired
+  expect_false(are.paired(roc(y, aSAH$s100b, levels = c(1, 0), quiet = TRUE), r.default))
+})
