@@ -466,7 +466,16 @@ roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
   x <- replace(x, x == "t", "threshold")
   x <- replace(x, x == "npe", "1-npv")
   x <- replace(x, x == "ppe", "1-ppv")
-  return(match.arg(x, valid.ret.args, several.ok = TRUE))
+  # match.arg(several.ok = TRUE) silently drops the elements that don't match
+  unknown <- x[is.na(pmatch(x, valid.ret.args, duplicates.ok = TRUE))]
+  matched <- match.arg(x, valid.ret.args, several.ok = TRUE)
+  if (length(unknown) > 0) {
+    warning(sprintf(
+      "Unknown or ambiguous coordinate(s) in 'ret' ignored: %s.",
+      paste0("'", unknown, "'", collapse = ", ")
+    ))
+  }
+  return(matched)
 }
 
 # Arguments which can be used as input for coords
