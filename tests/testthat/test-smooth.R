@@ -333,6 +333,15 @@ test_that("invalid density values give a clear error", {
   }
 })
 
+test_that("a single density value is rejected", {
+  msg <- "'density.controls' and 'density.cases' must contain at least two density values."
+  expect_error(smooth(r.s100b, method = "density", density = 3), msg, fixed = TRUE)
+  expect_error(smooth(r.s100b, method = "density", density.controls = 0.2, density.cases = 0.5), msg, fixed = TRUE)
+  expect_error(roc(density.controls = 0.2, density.cases = 0.5), msg, fixed = TRUE)
+  # two values are still a (coarse) density
+  expect_s3_class(roc(density.controls = c(0.8, 0.2), density.cases = c(0.2, 0.8)), "smooth.roc")
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
