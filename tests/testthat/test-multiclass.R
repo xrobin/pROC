@@ -356,3 +356,18 @@ test_that("univariate multiclass.roc rejects duplicated levels", {
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
 })
+
+test_that("auc of a multiclass.roc computes each pairwise AUC once", {
+  y <- factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c"))
+  x <- c(1, 2, 3, 2, 3, 4, 4, 5, 6)
+  mr <- multiclass.roc(y, x, direction = ">", quiet = TRUE)
+  # one warning per pairwise curve (3), not two
+  expect_identical(
+    capture_warnings(a <- auc(mr, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)),
+    rep("Partial AUC correction not defined for ROC curves below the diagonal.", 3)
+  )
+  expect_true(is.na(a))
+  expect_true(attr(a, "partial.auc.correct"))
+  mr2 <- multiclass.roc(y, x, quiet = TRUE)
+  expect_equal(as.numeric(auc(mr2)), mean(sapply(mr2$rocs, function(r) as.numeric(auc(r)))))
+})
