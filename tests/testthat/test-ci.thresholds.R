@@ -75,3 +75,10 @@ test_that("ci.thresholds rejects character thresholds on a numeric ROC", {
     "'thresholds' of class character must be of length 1"
   )
 })
+
+test_that("ci.thresholds with NA thresholds gives a clear error", {
+  msg <- "Missing values are not allowed in 'thresholds'."
+  expect_error(ci.thresholds(r.s100b, thresholds = c(0.5, NA), boot.n = 2), msg, fixed = TRUE)
+  expect_error(ci.thresholds(r.s100b, thresholds = NA, boot.n = 2), msg, fixed = TRUE)
+  expect_error(ci.thresholds(r.s100b, thresholds = c(TRUE, NA, rep(FALSE, length(r.s100b$thresholds) - 2)), boot.n = 2), msg, fixed = TRUE)
+})

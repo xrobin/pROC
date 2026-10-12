@@ -412,6 +412,9 @@ coords.roc <- function(roc,
     thr_col <- if (roc_utils_is_ordered_roc(roc)) roc$thresholds[thr_idx] else x
     res <- roc_utils_coords_basic(thr_col, roc$specificities[thr_idx], roc$sensitivities[thr_idx])
   } else if (is.numeric(x)) {
+    if (anyNA(x)) {
+      stop("Missing values are not allowed in 'x'.")
+    }
     # Arbitrary coord given in input.
     # We could be tempted to use all_coords directly.
     # However any non monotone coordinate in ret will be inaccurate
