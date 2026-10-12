@@ -420,3 +420,8 @@ test_that("multivariate multiclass.roc accepts a haven_labelled-like response", 
   expect_equal(as.numeric(auc(mc)), as.numeric(auc(expected)))
   expect_equal(mc$levels, expected$levels)
 })
+
+test_that("univariate multiclass.roc rejects duplicated levels", {
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
+})

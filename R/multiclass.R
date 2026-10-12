@@ -52,6 +52,10 @@ multiclass_roc_univariate <- function(response, predictor,
                                       # auc=TRUE, # call auc.roc on the current object
                                       # ci=FALSE, # call ci.roc on the current object
                                       ...) {
+  # A duplicated level would compare a class with itself
+  if (anyDuplicated(as.character(levels))) {
+    stop("'levels' must not contain duplicated values.")
+  }
   multiclass.roc <- list(
     response = response,
     predictor = predictor,
