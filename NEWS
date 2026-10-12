@@ -160,6 +160,7 @@
   * `coords()` and `ci.coords()` on a smoothed curve with a numeric `x` ignored `best.weights` for the "youden" and "closest.topleft" coordinates.
   * `coords()` (numeric `input` other than "threshold"), `ci.se()`, `ci.sp()`, `ci.coords()` and `ci.thresholds()` now return NA rows for missing values in `x`, `specificities`, `sensitivities` or `thresholds`, instead of failing with "missing value where TRUE/FALSE needed" or an error in `quantile()`.
   * `print()` of a `ci.coords` object with repeated `x` values failed with "duplicate 'row.names' are not allowed".
+  * `coords()`, `ci.coords()` and `plot.roc()` now reject a non-positive cost (`best.weights[1]`), which returned all-NA rows or the worst threshold, and fail with a clear error for a missing prevalence. A missing cost still gives NA. The `plot.roc()` error names `print.thres.best.weights`.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
