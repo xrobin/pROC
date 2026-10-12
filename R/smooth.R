@@ -170,6 +170,13 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
   if (length(density.controls) != length(density.cases)) {
     stop("Length of 'density.controls' and 'density.cases' differ.")
   }
+  # Even tiny negative values (e.g. -1e-17 from KernSmooth::bkde) make
+  # the curve non-monotonic and the AUC wrong
+  for (dens in list(density.controls, density.cases)) {
+    if (anyNA(dens) || any(is.infinite(dens)) || any(dens < 0) || sum(dens) == 0) {
+      stop("'density.controls' and 'density.cases' must be finite, non-negative and not all zero.")
+    }
+  }
 
   perfs <- sapply((1:length(density.controls)) + .5, roc_utils_perfs_dens, x = (1:length(density.controls)) + .5, dens.controls = density.controls, dens.cases = density.cases, direction = direction)
 
