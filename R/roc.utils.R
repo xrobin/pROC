@@ -438,7 +438,17 @@ roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
   x <- replace(x, x == "t", "threshold")
   x <- replace(x, x == "npe", "1-npv")
   x <- replace(x, x == "ppe", "1-ppv")
-  return(match.arg(x, valid.ret.args, several.ok = TRUE))
+  # match.arg(several.ok = TRUE) silently drops the elements that don't match
+  unknown <- x[is.na(pmatch(x, valid.ret.args, duplicates.ok = TRUE))]
+  if (length(unknown) > 0) {
+    quoted <- paste0("'", unknown, "'", collapse = ", ")
+    if (length(unknown) == length(x)) {
+      stop(simpleError(sprintf("Invalid coordinate(s) in 'ret': %s.", quoted), sys.call(-1)))
+    }
+    warning(simpleWarning(sprintf("Invalid coordinate(s) in 'ret' ignored: %s.", quoted), sys.call(-1)))
+  }
+  matched <- match.arg(x, valid.ret.args, several.ok = TRUE)
+  return(matched)
 }
 
 # Arguments which can be used as input for coords

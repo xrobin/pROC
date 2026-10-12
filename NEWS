@@ -56,6 +56,7 @@
   * Fixed 'power.roc.test' with two paired ROC curves with NAs at different positions, which failed or computed the power on misaligned observations
   * Fixed 'cov(method="obuchowski")' returning NaN for 'percent=TRUE' curves with a partial AUC
   * `ci.auc()`, `var()`, `cov()` and `power.roc.test()` failed with "Cannot convert ci.coords object" on a percent curve built with `ci = TRUE, of = "coords"`.
+  * `coords()` and `ci.coords()` now warn about invalid elements of `ret` (misspelt, or "threshold" on smoothed curves), which were silently dropped, and give a clear error when no element is valid.
   * The 'var(method="obuchowski")' errors no longer claim to use the bootstrap instead
   * Fixed 'cov' failing or returning a wrong value for paired curves with NA values at different positions
   * 'roc.test' now gives the 'Missing argument predictor2' error also when 'predictor2 = NULL' is passed explicitly
