@@ -323,3 +323,17 @@ test_that("ci.coords 'best' on smoothed curves searches every resample within th
   se <- as.numeric(ci$sensitivity)
   expect_true(all(se >= 90 - 1e-4 & se <= 99 + 1e-4))
 })
+
+test_that("ci.coords accepts ret = 'all' with a numeric non-threshold input", {
+  set.seed(42)
+  # "all" included the threshold, which is only available for x = "best" or a threshold input
+  ci <- ci.coords(r.s100b, 0.5, input = "specificity", ret = "all", boot.n = 5, progress = "none")
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(names(ci), setdiff(colnames(coords(r.s100b, 0.5, input = "specificity", ret = "all")), "threshold"))
+  expect_equal(as.numeric(ci$specificity), c(0.5, 0.5, 0.5))
+  # the threshold asked explicitly is still an error
+  expect_error(ci.coords(r.s100b, 0.5, input = "specificity", ret = "threshold", boot.n = 5, progress = "none"), "only supported")
+  # with a threshold input, "all" still has the threshold
+  ci <- ci.coords(r.s100b, 0.5, input = "threshold", ret = "all", boot.n = 5, progress = "none")
+  expect_identical(names(ci)[1], "threshold")
+})
