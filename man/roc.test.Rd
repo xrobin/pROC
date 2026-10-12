@@ -165,6 +165,14 @@ na.rm=TRUE, method=NULL, ...)
   \code{roc.test.default}). This detection is unlikely to raise false positives, but
   this possibility cannot be excluded entirely. It would require equal sample sizes
   and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
+  However, curves built with \code{controls} and \code{cases} (see
+  \code{\link{roc}}) carry no information on which observations come
+  from the same patients: two such curves with the same numbers of
+  controls and of cases are always detected as paired, and their
+  observations are matched by their position in the \code{controls} and
+  \code{cases} vectors. Pass \code{paired=FALSE} if they come from
+  independent samples (the warning that the curves \dQuote{seem to be
+  paired} can then be ignored).
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
 

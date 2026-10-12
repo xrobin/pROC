@@ -91,6 +91,14 @@ cov(...)
   rebuilt on the observations they have in common (see
   \code{\link{are.paired}}).
 
+  Two curves built with \code{controls} and \code{cases} with the same
+  numbers of controls and of cases are always considered paired, and
+  their observations are matched by their position in the
+  \code{controls} and \code{cases} vectors (see
+  \code{\link{are.paired}}). The covariance of such curves is only
+  meaningful if they were measured on the same patients, given in the
+  same order. For independent samples it is \code{0}.
+
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
