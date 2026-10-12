@@ -49,7 +49,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{density, density.controls, density.cases}{if
     \code{method="density"}, a numeric value of density (over the y
     axis) or a function returning a density (such as
-    \code{\link{density}}. If \code{method="fitdistr"}, a \code{densfun}
+    \code{\link{density}}. Negative density values are set to 0, as
+    \code{\link{density}} does. If \code{method="fitdistr"}, a \code{densfun}
     argument for \code{\link[MASS]{fitdistr}}.
     If the value is different for control and case observations,
     \code{density.controls} and \code{density.cases} can be employed
