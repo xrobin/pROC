@@ -338,6 +338,8 @@ roc.default <- function(response, predictor,
 
   # smooth with densities, but only density was provided, not density.controls/cases
   if (smooth) {
+    # Name of the density function for fitdistr: smooth.roc() only sees the variables below
+    density.name <- deparse(substitute(density))
     if (missing(density.controls)) {
       density.controls <- density
     }
@@ -360,6 +362,10 @@ roc.default <- function(response, predictor,
 
   roc$call <- match.call()
   if (smooth) {
+    if (identical(roc$smoothing.args$method, "fitdistr") && is.function(density)) {
+      roc$fit.controls$densfun <- density.name
+      roc$fit.cases$densfun <- density.name
+    }
     attr(roc, "roc")$call <- roc$call
     attr(roc, "roc")$original.predictor <- original.predictor
     attr(roc, "roc")$original.response <- original.response
