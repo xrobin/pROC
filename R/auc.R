@@ -53,7 +53,8 @@ auc.smooth.roc <- function(smooth.roc, ...) {
 }
 
 auc.multiclass.roc <- function(multiclass.roc, ...) {
-  sum <- sum(sapply(multiclass.roc$rocs, auc, ...))
+  aucs <- lapply(multiclass.roc$rocs, auc, ...) # keep individual AUCs in a list for later
+  sum <- sum(sapply(aucs, as.numeric))
   count <- length(multiclass.roc$levels)
   # Hand & Till formula:
   auc <- (2 * sum) / (count * (count - 1))
@@ -64,7 +65,6 @@ auc.multiclass.roc <- function(multiclass.roc, ...) {
   attr(auc, "roc") <- multiclass.roc
   # Get partial auc details from first computed auc
   # TODO: find a better way to recover partial.auc!
-  aucs <- lapply(multiclass.roc$rocs, auc, ...) # keep individual AUCs in a list for later
   attr(auc, "partial.auc") <- attr(aucs[[1]], "partial.auc")
   if (!identical(attr(aucs[[1]], "partial.auc"), FALSE)) {
     attr(auc, "partial.auc.focus") <- attr(aucs[[1]], "partial.auc.focus")

@@ -442,3 +442,20 @@ test_that("multiclass.roc ignores an NA level of the response", {
   expect_no_warning(mc <- multiclass.roc(addNA(factor(y)), m))
   expect_equal(as.numeric(auc(mc)), as.numeric(auc(multiclass.roc(factor(y), m))))
 })
+
+test_that("auc of a multiclass.roc computes each pairwise AUC once", {
+  y <- factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c"))
+  x <- c(1, 2, 3, 2, 3, 4, 4, 5, 6)
+  mr <- multiclass.roc(y, x, direction = ">", quiet = TRUE)
+  warnings <- character(0)
+  a <- withCallingHandlers(auc(mr, partial.auc = c(1, 0.8), partial.auc.correct = TRUE), warning = function(w) {
+    warnings <<- c(warnings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  # one warning per pairwise curve (3), not two
+  expect_identical(warnings, rep("Partial AUC correction not defined for ROC curves below the diagonal.", 3))
+  expect_true(is.na(a))
+  expect_true(attr(a, "partial.auc.correct"))
+  mr2 <- multiclass.roc(y, x, quiet = TRUE)
+  expect_equal(as.numeric(auc(mr2)), mean(sapply(mr2$rocs, function(r) as.numeric(auc(r)))))
+})
