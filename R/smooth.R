@@ -262,10 +262,20 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     allowed <- setdiff(c(names(formals(densfun)), "gr", "lower", "upper", "control"), c("x", "..."))
     list(...)[names(list(...)) %in% allowed]
   }
-  fit.controls <- do.call(MASS::fitdistr, c(list(roc$controls, densfun.controls, start.controls), fitdistr.dots(densfun.controls)))
-  fit.cases <- do.call(MASS::fitdistr, c(list(roc$cases, densfun.cases, start.cases), fitdistr.dots(densfun.cases)))
+  # A class with a single distinct value (one observation or constant
+  # values) has no spread to estimate: optim fails inside fitdistr for most
+  # densities. Return NULL then, and keep any other error as it is.
+  fit <- function(values, densfun, start) {
+    tryCatch(
+      do.call(MASS::fitdistr, c(list(values, densfun, start), fitdistr.dots(densfun))),
+      error = function(e) if (length(unique(values)) < 2) NULL else stop(e)
+    )
+  }
+  fit.controls <- fit(roc$controls, densfun.controls, start.controls)
+  fit.cases <- if (!is.null(fit.controls)) fit(roc$cases, densfun.cases, start.cases)
   # fitdistr gives an NA sd for a normal or log-normal fit of a single observation
-  if (!all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
+  if (is.null(fit.cases) ||
+    !all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
     stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
   }
 
@@ -349,6 +359,10 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
 
 smooth_roc_logcondens <- function(roc, n) {
   load.suggested.package("logcondens")
+  # logConROC fails inside logcondens on a class with a single distinct value
+  if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
+    stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
+  }
 
   sp <- seq(0, 1, 1 / (n - 1))
   # logConROC assumes cases > controls: negate the values for direction ">"
@@ -365,6 +379,10 @@ smooth_roc_logcondens <- function(roc, n) {
 
 smooth_roc_logcondens_smooth <- function(roc, n) {
   load.suggested.package("logcondens")
+  # logConROC fails inside logcondens on a class with a single distinct value
+  if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
+    stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
+  }
 
   sp <- seq(0, 1, 1 / (n - 1))
   # logConROC assumes cases > controls: negate the values for direction ">"

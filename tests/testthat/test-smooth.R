@@ -382,3 +382,24 @@ test_that("smooth with reuse.ci recomputes a stored ci.coords of the best point"
   expect_identical(attr(s$ci, "x"), "best")
   expect_identical(names(s$ci), c("specificity", "sensitivity"))
 })
+
+test_that("logcondens smoothing of a class with a single value is not smoothable", {
+  skip_if_not_installed("logcondens")
+  one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
+  flat <- roc(controls = c(1, 2, 3), cases = c(4, 4, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (logcondens needs at least two distinct values in each class)."
+  for (r in list(one, flat)) {
+    expect_error(smooth(r, method = "logcondens"), msg, fixed = TRUE)
+    expect_error(smooth(r, method = "logcondens.smooth"), msg, fixed = TRUE)
+  }
+})
+
+test_that("fitdistr smoothing of a constant class is not smoothable", {
+  skip_if_not_installed("MASS")
+  flat <- roc(controls = c(1, 1, 1), cases = c(2, 3, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (fitdistr could not estimate the distribution parameters)."
+  expect_error(suppressWarnings(smooth(flat, method = "fitdistr", density = "logistic")), msg, fixed = TRUE)
+  expect_error(smooth(flat, method = "fitdistr", density = "weibull"), msg, fixed = TRUE)
+  # Errors unrelated to a constant class are kept
+  expect_error(smooth(r.s100b, method = "fitdistr", density = dnorm), "'start' must be a named list")
+})
