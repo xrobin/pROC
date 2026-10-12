@@ -41,6 +41,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
 		Numeric \code{x} is not allowed with \code{input="threshold"} on
 		an ordered ROC curve; pass the level as character or ordered.
+		A missing value (\code{NA}) in \code{x} gives a row of \code{NA},
+		whatever the \code{input}.
     }
   \item{input}{
   	If \code{x} is numeric, the kind of input coordinate (x).

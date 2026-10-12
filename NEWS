@@ -145,6 +145,7 @@
   * In 'roc' and 'smooth', negative 'density.controls'/'density.cases' values (such as the -1e-17 rounding errors of FFT-based estimators like 'KernSmooth::bkde') are set to 0, as 'density' does, instead of giving a wrong (negative) AUC. Missing, infinite or all-zero values give a NA/NaN AUC also with 'direction="auto"', which failed
   * `ci.coords()` on a smoothed curve now ignores "threshold" in `ret` with a warning, as `coords()` does, instead of returning a column of NA.
   * `coords()` on a smoothed curve with a numeric `x` ignored `best.weights` for the "youden" and "closest.topleft" coordinates.
+  * `coords()`, `ci.se()`, `ci.sp()`, `ci.coords()` and `ci.thresholds()` now return NA rows for missing values in `x`, `specificities`, `sensitivities` or `thresholds`, instead of failing with "missing value where TRUE/FALSE needed" or an error in `quantile()`.
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for smoothed curves returned by 'roc.test'
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again

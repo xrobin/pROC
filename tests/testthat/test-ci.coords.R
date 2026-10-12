@@ -283,6 +283,16 @@ test_that("ci.coords of a smoothed curve with numeric x uses best.weights", {
   expect_equal(res$youden, res$sensitivity + 2 * 0.9, ignore_attr = TRUE)
 })
 
+test_that("ci.coords with NA in a numeric x gives NA rows", {
+  set.seed(42)
+  ci <- ci.coords(r.s100b, x = c(0.5, NA), input = "specificity", ret = "sensitivity", boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10)
+  expect_identical(ci$sensitivity[1, ], ci1$sensitivity[1, ])
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
+})
+
 test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
   set.seed(42)
   # The resamples lost the partial AUC range and returned the global best

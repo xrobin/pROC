@@ -75,3 +75,19 @@ test_that("ci.thresholds rejects character thresholds on a numeric ROC", {
     "'thresholds' of class character must be of length 1"
   )
 })
+
+test_that("ci.thresholds with NA thresholds gives NA rows", {
+  set.seed(42)
+  ci <- ci.thresholds(r.s100b, thresholds = c(0.5, NA), boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.thresholds(r.s100b, thresholds = 0.5, boot.n = 10)
+  expect_identical(ci$specificity[1, ], ci1$specificity[1, ])
+  expect_identical(ci$sensitivity[1, ], ci1$sensitivity[1, ])
+  expect_identical(unname(ci$specificity[2, ]), rep(NA_real_, 3))
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
+  # A logical NA selects a NA threshold, as in base R indexing
+  ci <- ci.thresholds(r.s100b, thresholds = c(TRUE, NA, rep(FALSE, length(r.s100b$thresholds) - 2)), boot.n = 2)
+  expect_identical(as.vector(attr(ci, "thresholds")), c(r.s100b$thresholds[1], NA))
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+})
