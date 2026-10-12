@@ -77,7 +77,8 @@ are.paired.roc <- function(roc1, roc2,
         return(retval)
       }
       # else prepare paired ROCs
-      idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
+      # The NA level of an ordered predictor is missing too (as in roc())
+      idx.exclude <- is.na(roc_utils_ordered_na_level(roc1$original.predictor)) | is.na(roc_utils_ordered_na_level(roc2$original.predictor)) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
       # Print the data as the input curves, not as the expressions above

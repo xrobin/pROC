@@ -66,7 +66,7 @@ multiclass_roc_univariate <- function(response, predictor,
   # a level with only such observations has no observation either
   observed <- response
   if (multiclass_na_rm(...)) {
-    observed <- response[!is.na(predictor)]
+    observed <- response[!is.na(roc_utils_ordered_na_level(predictor))]
   }
   missing.levels.requested <- levels[!(levels %in% observed)]
   if (length(missing.levels.requested) > 0) {

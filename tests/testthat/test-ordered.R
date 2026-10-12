@@ -316,3 +316,24 @@ test_that("an NA level of an ordered predictor is a missing value", {
   expect_identical(roc(resp, o, na.rm = FALSE, quiet = TRUE), NA)
   expect_identical(roc(controls = o[1:3], cases = o[4:7], na.rm = FALSE, quiet = TRUE), NA)
 })
+
+test_that("an NA level of an ordered predictor is a missing value in paired functions and multiclass.roc", {
+  resp <- c(0, 0, 0, 0, 1, 1, 1, 1)
+  o.na <- ordered(c("a", "b", NA, "a", "b", "c", "c", "b"))
+  o <- addNA(o.na) # NA kept as a level
+  b <- c(1, 3, 2, 5, 4, 6, 7, 8)
+  ro <- roc(resp, o, quiet = TRUE)
+  ro.na <- roc(resp, o.na, quiet = TRUE)
+  rb <- roc(resp, b, quiet = TRUE)
+  # are.paired rebuilt the curves on the observations with a real NA only
+  paired <- are.paired(ro, rb, return.paired.rocs = TRUE)
+  expect_true(paired)
+  expect_equal(attr(paired, "roc1")$sensitivities, attr(are.paired(ro.na, rb, return.paired.rocs = TRUE), "roc1")$sensitivities)
+  expect_equal(roc.test(ro, rb)$p.value, roc.test(ro.na, rb)$p.value)
+  expect_equal(cov(ro, rb), cov(ro.na, rb))
+  expect_equal(power.roc.test(ro, rb, power = 0.9)$ncases, power.roc.test(ro.na, rb, power = 0.9)$ncases)
+  # multiclass: level 2 has only missing predictor values
+  y3 <- c(0, 0, 1, 1, 2, 2)
+  expect_warning(mc <- multiclass.roc(y3, addNA(ordered(c("a", "b", "b", "c", NA, NA)))), "No observation for response level(s): 2", fixed = TRUE)
+  expect_equal(as.numeric(mc$auc), as.numeric(suppressWarnings(multiclass.roc(y3, ordered(c("a", "b", "b", "c", NA, NA))))$auc))
+})

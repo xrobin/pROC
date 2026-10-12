@@ -193,6 +193,7 @@
   * The smoothed curves returned by `roc.test()` keep the call of the input curves, instead of printing the whole deparsed curve as their call.
   * `roc.test()` and `cov()` no longer warn about different smoothing parameters when the same density kernel is abbreviated (`kernel = "e"`) or the same fitdistr density is spelled differently (`"lognormal"` and `"log-normal"`).
   * `ci.coords()` with `ret = "all"` and a numeric `x` of a non-threshold `input` returns the CIs of all coordinates but the threshold, instead of failing.
+  * `roc.test()`, `cov()`, `power.roc.test()`, `are.paired()` and `multiclass.roc()` treat the NA level of an ordered predictor as a missing value, as `roc()` does.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
