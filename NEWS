@@ -168,6 +168,7 @@
   * `ci.coords()` on a smoothed curve returned wrong, shifted CIs with `ret = "all"` or a `ret` containing "threshold" (smoothed curves have no thresholds; "threshold" is now ignored with a warning, as in `coords()`).
   * `coords()` and `ci.coords()` on a smoothed curve with a numeric `x` ignored `best.weights` for the "youden" and "closest.topleft" coordinates.
   * `coords()` (numeric `input` other than "threshold"), `ci.se()`, `ci.sp()`, `ci.coords()` and `ci.thresholds()` now return NA rows for missing values in `x`, `specificities`, `sensitivities` or `thresholds`, instead of failing with "missing value where TRUE/FALSE needed" or an error in `quantile()`.
+  * `print()` of a `ci.coords` object with repeated `x` values failed with "duplicate 'row.names' are not allowed".
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

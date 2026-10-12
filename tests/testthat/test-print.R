@@ -242,3 +242,16 @@ test_that("print shows the labels of factor levels", {
   r <- roc(aSAH$outcome, aSAH$s100b, levels = unique(aSAH$outcome), quiet = TRUE)
   expect_output(print(r), "controls \\(aSAH\\$outcome Good\\) < 41 cases \\(aSAH\\$outcome Poor\\)")
 })
+
+test_that("print.ci.coords works with a repeated x", {
+  set.seed(42)
+  ci <- ci.coords(r.s100b, c(0.9, 0.9), input = "specificity", ret = "sensitivity", boot.n = 3)
+  out <- capture.output(print(ci))
+  expect_length(out, 4) # header + column names + 2 rows
+  expect_equal(sum(grepl("^ *0\\.9 ", out)), 2)
+  set.seed(42)
+  ci2 <- ci.coords(r.s100b, c(0.9, 0.9), input = "specificity", ret = c("sensitivity", "accuracy"), boot.n = 3)
+  out2 <- capture.output(print(ci2))
+  expect_true(any(grepl("accuracy.high", out2)))
+  expect_false(any(grepl("X0.9", out2, fixed = TRUE)))
+})
