@@ -603,6 +603,17 @@ test_that("roc(smooth = TRUE) does not take the x of ci.coords or the log of plo
   expect_null(g$smoothing.args$log)
 })
 
+test_that("roc.test returns the smoothed curves with the call of the input curves", {
+  # do.call() stored the whole deparsed curve as the call
+  s1 <- smooth(r.s100b)
+  s2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, quiet = TRUE)
+  t <- roc.test(s1, s2, boot.n = 5, progress = "none")
+  expect_identical(t$roc1$call, s1$call)
+  expect_identical(t$roc2$call, s2$call)
+  expect_s3_class(t$roc1, "smooth.roc")
+  expect_equal(t$roc1$sensitivities, s1$sensitivities)
+})
+
 test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
   warnings.of <- function(expr) {
     warnings <- character(0)
