@@ -88,7 +88,9 @@ ci.auc.smooth.roc <- function(smooth.roc,
 
   # We need an auc
   if (is.null(smooth.roc$auc) | !reuse.auc) {
-    smooth.roc$auc <- auc(smooth.roc, ...)
+    # Named: smooth = TRUE in ... (from ci.auc.default/formula) would
+    # partially match the smooth.roc argument of auc.smooth.roc
+    smooth.roc$auc <- auc(smooth.roc = smooth.roc, ...)
   }
 
   # Check if called with density.cases or density.controls
