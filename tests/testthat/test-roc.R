@@ -608,7 +608,7 @@ test_that("duplicated levels give a clear error", {
 fake_integer64 <- function(x) structure(-x, class = "integer64")
 
 test_that("an integer64 predictor is used by its numeric values", {
-  skip_if_not_installed("testthat", "3.2.0") # local_mocked_s3_method
+  skip_if_no_mocked_s3_method()
   local_mocked_s3_method("as.double", "integer64", function(x, ...) -unclass(x))
   wfns <- as.integer(aSAH$wfns) - 3L # with negative values
   expected <- roc(aSAH$outcome, wfns, quiet = TRUE)
