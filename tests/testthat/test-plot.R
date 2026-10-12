@@ -428,3 +428,18 @@ test_that("graphical parameters in ... don't clash with the print.thres, print.a
     plot(r.s100b, auc.polygon = TRUE, max.auc.polygon = TRUE, border = "red", density = 10, angle = 30)
   })
 })
+
+test_that("plot.roc names print.thres.best.weights in its errors", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(
+    plot(r.s100b, print.thres = "best", print.thres.best.weights = c(1, 2)),
+    "prevalence ('print.thres.best.weights[2]') must be in the interval ]0,1[.",
+    fixed = TRUE
+  )
+  expect_error(
+    plot(r.s100b, print.thres = TRUE, print.thres.best.weights = c(0, 0.5)),
+    "cost ('print.thres.best.weights[1]')",
+    fixed = TRUE
+  )
+})

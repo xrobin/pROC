@@ -824,3 +824,18 @@ test_that("coords with NA in a numeric non-threshold x gives NA rows", {
   expect_identical(res[1, ], coords(s, 0.5, input = "specificity"))
   expect_true(all(is.na(res[2, ])))
 })
+
+test_that("coords rejects an invalid best.weights cost or prevalence", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2, 3, 4), quiet = TRUE)
+  cost.msg <- "cost ('best.weights[1]') must be positive."
+  prev.msg <- "prevalence ('best.weights[2]') must be in the interval ]0,1[."
+  expect_error(coords(r, "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(-1, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(1, NA)), prev.msg, fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  # An infinite cost is valid: maximize the sensitivity
+  expect_true(all(coords(r, "best", best.weights = c(Inf, 0.5))$sensitivity == 1))
+  # A NA cost gives NA
+  expect_true(all(is.na(coords(r, "best", best.weights = c(NA, 0.5)))))
+  expect_true(all(is.na(coords(r, 0.5, input = "specificity", ret = c("youden", "closest.topleft"), best.weights = c(NA, 0.5)))))
+})

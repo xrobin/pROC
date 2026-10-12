@@ -301,6 +301,9 @@ plot.roc.roc <- function(x,
   if (!is.na(special.thres)) {
     print.thres <- special.thres
   }
+  if (identical(print.thres, "best")) {
+    roc_utils_check_best_weights(print.thres.best.weights, "print.thres.best.weights")
+  }
   if (identical(print.thres, "no") || identical(print.thres, FALSE)) {
     # do nothing
   } else if (methods::is(x, "smooth.roc")) {
