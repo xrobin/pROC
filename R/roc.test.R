@@ -155,6 +155,7 @@ roc.test.roc <- function(roc1, roc2,
     # The AUC specification is kept in the auc of the unsmoothed curve, not in
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
+    smooth.call1 <- roc1$call
     roc1 <- roc_utils_unsmooth(roc1)
   }
   smooth2 <- methods::is(roc2, "smooth.roc")
@@ -163,6 +164,7 @@ roc.test.roc <- function(roc1, roc2,
     # The AUC specification is kept in the auc of the unsmoothed curve, not in
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
+    smooth.call2 <- roc2$call
     roc2 <- roc_utils_unsmooth(roc2)
   }
 
@@ -448,9 +450,13 @@ roc.test.roc <- function(roc1, roc2,
   # Restore smoothing if necessary
   if (smooth1) {
     htest$roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
+    # do.call() put the whole curve in the call: print the call of the input curve
+    htest$roc1$call <- smooth.call1
   }
   if (smooth2) {
     htest$roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
+    # do.call() put the whole curve in the call: print the call of the input curve
+    htest$roc2$call <- smooth.call2
   }
   return(htest)
 }
