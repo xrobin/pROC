@@ -225,3 +225,18 @@ test_that("re-paired curves print the data of the input curves", {
   expect_false(grepl("paired|idx.exclude", out))
   expect_match(out, "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
 })
+
+
+test_that("an NA level of the response pairs with real NAs", {
+  y <- aSAH$outcome
+  y[c(3, 10)] <- NA
+  x1 <- aSAH$s100b
+  x1[5] <- NA
+  r1 <- roc(y, x1, quiet = TRUE)
+  r1.na.level <- roc(addNA(y), x1, quiet = TRUE)
+  r2 <- roc(y, aSAH$ndka, quiet = TRUE)
+  expect_true(are.paired(r1.na.level, r2))
+  expect_true(are.paired(r2, r1.na.level))
+  expect_equal(roc.test(r1.na.level, r2)$p.value, roc.test(r1, r2)$p.value)
+  expect_equal(roc.test(r1.na.level, r2)$method, "DeLong's test for two correlated ROC curves")
+})

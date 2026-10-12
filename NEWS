@@ -197,6 +197,7 @@
   * `roc()` ignores an NA level of the response (`addNA()`, `factor(exclude = NULL)`) when choosing the default `levels`, instead of warning about more than two levels or failing with "No control observation.".
   * smooth(reuse.ci = TRUE) now recomputes a stored ci.coords of the best point instead of dropping it with a warning when its ret does not include "threshold".
   * roc() with na.rm = FALSE now returns NA for a response with an NA level (addNA()), as for missing responses, and lists those observations in the na.action attribute with na.rm = TRUE.
+  * are.paired() and roc.test() now pair curves whose responses differ only in an NA level (addNA()) and missing values.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
