@@ -341,3 +341,12 @@ test_that("a single density value is rejected", {
   # two values are still a (coarse) density
   expect_s3_class(roc(density.controls = c(0.8, 0.2), density.cases = c(0.2, 0.8)), "smooth.roc")
 })
+
+test_that("smooth with reuse.ci skips a stored ci.thresholds", {
+  r <- r.s100b
+  r$ci <- ci.thresholds(r, thresholds = 0.5, boot.n = 2)
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  expect_equal(as.numeric(s$auc), as.numeric(smooth(r.s100b)$auc))
+})
