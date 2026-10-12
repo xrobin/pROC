@@ -233,6 +233,53 @@ test_that("fitdistr smoothing of a single case gives an NA curve", {
   expect_equal(as.numeric(smooth(r, method = "fitdistr")$auc), 0.994585999818758, tolerance = 1e-12)
 })
 
+test_that("missing, infinite or all-zero density values give a NA/NaN AUC", {
+  x <- seq(-4, 6, length.out = 200)
+  dc <- dnorm(x)
+  dk <- dnorm(x, 1.5)
+  aucs <- function(d) {
+    c(
+      roc(density.controls = dc, density.cases = d)$auc,
+      roc(density.controls = dc, density.cases = d, direction = "<")$auc,
+      smooth(r.s100b, method = "density", density.controls = dc, density.cases = d)$auc,
+      smooth(r.s100b, method = "density", density.controls = d, density.cases = dk)$auc
+    )
+  }
+  expect_true(all(is.na(aucs(c(NA, dc[-1])))))
+  # An all-negative density becomes all zero
+  for (d in list(c(NaN, dc[-1]), c(Inf, dc[-1]), 0 * dc, -dc)) {
+    expect_true(all(is.nan(aucs(d))))
+  }
+  # -Inf is a negative value: it becomes 0
+  expect_identical(aucs(c(-Inf, dc[-1])), aucs(c(0, dc[-1])))
+  expect_equal(aucs(c(-Inf, dc[-1])), c(0.5, 0.5, 0.5, 0.8555), tolerance = 1e-4)
+})
+
+test_that("negative density values are set to 0, as density() does", {
+  d1 <- dnorm(seq(-3, 3, length.out = 512))
+  d2 <- dnorm(seq(-2, 4, length.out = 512))
+  with.value <- function(v) {
+    d <- d2
+    d[100] <- v
+    d
+  }
+  ref <- roc(density.controls = d1, density.cases = with.value(0))
+  # 1.19.1's AUC for the rounding-sized values
+  for (v in c(-1e-17, -1e-14, -1e-12, -0.05)) {
+    r <- roc(density.controls = d1, density.cases = with.value(v))
+    expect_identical(r$direction, ref$direction)
+    expect_identical(r$sensitivities, ref$sensitivities)
+    expect_identical(r$specificities, ref$specificities)
+    expect_identical(as.numeric(r$auc), as.numeric(ref$auc))
+  }
+  expect_equal(as.numeric(ref$auc), 0.7547, tolerance = 1e-4)
+  # Also through smooth()
+  s <- smooth(r.s100b, method = "density", density.controls = d1, density.cases = with.value(-1e-14))
+  s.ref <- smooth(r.s100b, method = "density", density.controls = d1, density.cases = with.value(0))
+  expect_identical(s$sensitivities, s.ref$sensitivities)
+  expect_identical(s$specificities, s.ref$specificities)
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)

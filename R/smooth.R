@@ -159,6 +159,11 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
   if (length(density.controls) != length(density.cases)) {
     stop("Length of 'density.controls' and 'density.cases' differ.")
   }
+  # Negative values (e.g. -1e-17 from KernSmooth::bkde) make the curve
+  # non-monotonic and the AUC wrong: set them to 0, as density() does with
+  # pmax.int(0, y).
+  density.controls <- pmax.int(0, density.controls)
+  density.cases <- pmax.int(0, density.cases)
 
   perfs <- sapply((1:length(density.controls)) + .5, roc_utils_perfs_dens, x = (1:length(density.controls)) + .5, dens.controls = density.controls, dens.cases = density.cases, direction = direction)
 

@@ -57,7 +57,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{density.controls, density.cases}{a smoothed ROC curve can be
     built directly from two densities on identical \code{x} points, as in
-    \code{\link[=smooth.roc]{smooth}}.
+    \code{\link[=smooth.roc]{smooth}}. Negative values are set to 0, as
+    \code{\link{density}} does.
   }
   \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
