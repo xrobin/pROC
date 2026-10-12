@@ -37,7 +37,11 @@ roc_utils_unpercent.roc <- function(x) {
     if (!is.null(x$call)) {
       x$call$percent <- FALSE
     }
-    if (!is.null(x$ci)) {
+    if (methods::is(x$ci, "ci.coords")) {
+      # A ci.coords cannot be converted: drop it (it is not used by the
+      # callers, which compute on the curve)
+      x$ci <- NULL
+    } else if (!is.null(x$ci)) {
       x$ci <- roc_utils_unpercent(x$ci)
     }
   }
@@ -53,7 +57,11 @@ roc_utils_unpercent.smooth.roc <- function(x) {
     x$sensitivities <- x$sensitivities / 100
     x$specificities <- x$specificities / 100
     x$percent <- FALSE
-    if (!is.null(x$ci)) {
+    if (methods::is(x$ci, "ci.coords")) {
+      # A ci.coords cannot be converted: drop it (it is not used by the
+      # callers, which compute on the curve)
+      x$ci <- NULL
+    } else if (!is.null(x$ci)) {
       x$ci <- roc_utils_unpercent(x$ci)
     }
     if (!is.null(attr(x, "roc"))) {
@@ -137,7 +145,11 @@ roc_utils_topercent.roc <- function(x) {
     if (!is.null(x$call)) {
       x$call$percent <- TRUE
     }
-    if (!is.null(x$ci)) {
+    if (methods::is(x$ci, "ci.coords")) {
+      # A ci.coords cannot be converted: drop it (it is not used by the
+      # callers, which compute on the curve)
+      x$ci <- NULL
+    } else if (!is.null(x$ci)) {
       x$ci <- roc_utils_topercent(x$ci)
     }
   }
@@ -153,7 +165,11 @@ roc_utils_topercent.smooth.roc <- function(x) {
     x$sensitivities <- x$sensitivities * 100
     x$specificities <- x$specificities * 100
     x$percent <- TRUE
-    if (!is.null(x$ci)) {
+    if (methods::is(x$ci, "ci.coords")) {
+      # A ci.coords cannot be converted: drop it (it is not used by the
+      # callers, which compute on the curve)
+      x$ci <- NULL
+    } else if (!is.null(x$ci)) {
       x$ci <- roc_utils_topercent(x$ci)
     }
     if (!is.null(attr(x, "roc"))) {
