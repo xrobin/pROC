@@ -237,6 +237,7 @@ coords.smooth.roc <- function(smooth.roc,
   return(withCallingHandlers(
     coords.roc(smooth.roc,
       x = x, input = input, ret = ret, as.list = as.list, drop = drop,
+      best.weights = best.weights,
       transpose = transpose, as.matrix = as.matrix, ...
     ),
     warning = function(w) {

@@ -893,3 +893,11 @@ test_that("coords warns about unknown or misspelt 'ret' elements", {
   expect_no_warning(coords(r.s100b, "best", ret = c("t", "se", "sp", "npe", "topleft")))
   expect_no_warning(coords(r.s100b, "best", ret = "all"))
 })
+
+test_that("coords of a smoothed curve with numeric x uses best.weights", {
+  s <- smooth(r.s100b)
+  w <- c(2, 0.2) # r = (1 - 0.2) / (2 * 0.2) = 2
+  res <- coords(s, 0.9, input = "specificity", ret = c("se", "sp", "youden", "closest.topleft"), best.weights = w)
+  expect_equal(res$youden, res$sensitivity + 2 * res$specificity)
+  expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
+})
