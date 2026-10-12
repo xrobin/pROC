@@ -113,12 +113,12 @@ ci.thresholds.roc <- function(roc,
   # Drop the replicates with NA (a class can vanish from a non-stratified
   # resample): one column per replicate, then back to the array
   perfs.dim <- dim(perfs)
-  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L)
+  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L, ignore = rep(is.na(thresholds.num), each = perfs.dim[1]))
   perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)
-  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs)
+  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs, na.rm = TRUE)
 
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])
