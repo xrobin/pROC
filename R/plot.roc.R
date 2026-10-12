@@ -241,6 +241,9 @@ plot.roc.roc <- function(x,
     )
   }
   draw.thres <- function(..., co, labels, pch, cex, adj) {
+    if (is.null(co) || nrow(co) == 0) {
+      return(invisible()) # no threshold to mark (e.g. none in the partial AUC window)
+    }
     suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
     suppressWarnings(text(co$specificity, co$sensitivity, labels = labels, adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
   }
