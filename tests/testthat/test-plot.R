@@ -320,6 +320,42 @@ test_that("plot.roc draws no threshold when none is in the partial AUC window", 
   expect_warning(plot(s, print.thres = "best"), "No coordinates found")
 })
 
+test_that("plot.roc applies the AUC specification of ... to print.thres", {
+  y <- c(0, 0, 0, 0, 1, 1, 1, 1)
+  x <- c(1, 2, 3, 6, 4, 5, 7, 8)
+  r <- roc(y, x, quiet = TRUE)
+  r.noauc <- roc(y, x, auc = FALSE, quiet = TRUE)
+  pdf(NULL)
+  on.exit(dev.off())
+  # The thresholds are those of the returned AUC, with or without print.auc
+  for (print.thres in list(TRUE, "best", "all", "local maximas")) {
+    expect_equal(
+      plot(r, print.thres = print.thres, partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc,
+      plot(r, print.thres = print.thres, partial.auc = c(1, 0.9), reuse.auc = FALSE, print.auc = TRUE)$auc
+    )
+  }
+  expect_equal(as.numeric(plot(r.noauc, print.thres = "best", partial.auc = c(1, 0.9))$auc), 0.05)
+  expect_equal(as.numeric(plot(r, print.thres = 3.5, partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc), 0.05)
+  # No AUC is needed without print.thres or the AUC flags
+  expect_null(plot(r.noauc)$auc)
+  expect_null(plot(r.noauc, print.thres = "no")$auc)
+  expect_null(plot(r.noauc, print.thres = NULL)$auc)
+  # Smoothed curves
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE))
+  expect_equal(
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc,
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE, print.auc = TRUE)$auc
+  )
+  # Same threshold as roc(y, x, partial.auc = c(1, 0.9)): 6.5, the best inside the window
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-print-thres-best-reuse-auc-false-partial-auc", function() {
+    plot(r, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)
+  })
+  expect_doppelganger("plot-smooth-print-thres-best-reuse-auc-false-partial-auc", function() {
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)
+  })
+})
+
 test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
   pdf(NULL)
   on.exit(dev.off())
