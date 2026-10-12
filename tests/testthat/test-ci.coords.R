@@ -201,7 +201,11 @@ test_that("ci.coords 'best' ignores resamples with no point in the partial AUC r
 
 test_that("ci.coords 'best' on smoothed curves ignores resamples with no point in the partial AUC range", {
   s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.899)))
-  expect_s3_class(suppressWarnings(ci.coords(s, "best", boot.n = 30, progress = "none")), "ci.coords")
+  ci <- suppressWarnings(ci.coords(s, "best", boot.n = 30, progress = "none"))
+  expect_s3_class(ci, "ci.coords")
+  # Every resample is restricted to the (tiny) range, or NA if it has no point in it
+  sp <- as.numeric(ci$specificity)
+  expect_true(all(is.na(sp) | (sp >= 0.899 - 1e-6 & sp <= 0.9 + 1e-6)))
 })
 
 test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide with plot.roc's 'x'", {
@@ -281,4 +285,20 @@ test_that("ci.coords of a smoothed curve with numeric x uses best.weights", {
 
 test_that("ci.coords with NA in a numeric x gives a clear error", {
   expect_error(ci.coords(r.s100b, x = c(0.5, NA), input = "specificity", boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+})
+
+test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
+  # The resamples lost the partial AUC range and returned the global best
+  s <- smooth(r.s100b.partial)
+  s2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), smooth = TRUE, quiet = TRUE)
+  for (curve in list(s, s2)) {
+    ci <- suppressWarnings(ci.coords(curve, "best", boot.n = 20, progress = "none"))
+    sp <- as.numeric(ci$specificity)
+    expect_true(all(sp >= 0.9 - 1e-6 & sp <= 1 + 1e-6))
+  }
+  # Focus on sensitivity, in percent
+  s3 <- smooth(r.s100b.percent.partial2)
+  ci <- suppressWarnings(ci.coords(s3, "best", boot.n = 20, progress = "none"))
+  se <- as.numeric(ci$sensitivity)
+  expect_true(all(se >= 90 - 1e-4 & se <= 99 + 1e-4))
 })
