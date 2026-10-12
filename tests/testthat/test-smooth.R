@@ -268,6 +268,23 @@ test_that("non-stratified bootstraps of fitdistr smoothed curves ignore resample
   expect_warning(roc.test(s, s, method = "sensitivity", sensitivity = 0.5, boot.n = 20, boot.stratified = FALSE), na.warning)
 })
 
+test_that("roc(smooth = TRUE) records the name of a fitdistr density function", {
+  testthat::skip_if_not_installed("MASS")
+  st <- list(meanlog = -2, sdlog = 1)
+  # lower keeps sdlog > 0 in optim(): no NaNs produced
+  s <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = dlnorm, start.controls = st, start.cases = st, lower = c(-Inf, 0.001), quiet = TRUE
+  )
+  expect_identical(s$fit.controls$densfun, "dlnorm")
+  expect_identical(s$fit.cases$densfun, "dlnorm")
+  s <- roc(outcome ~ s100b, data = aSAH,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = dlnorm, start.controls = st, start.cases = st, lower = c(-Inf, 0.001), quiet = TRUE
+  )
+  expect_true(any(grepl("fitting dlnorm distribution for controls", capture.output(print(s)))))
+})
+
 test_that("roc(smooth = TRUE) keeps only the smoothing arguments for the replays", {
   pdf(NULL)
   on.exit(dev.off())
