@@ -237,3 +237,8 @@ test_that("print.multiclass.roc works with a formula passed as variable", {
   fo.mv <- resp ~ x + y + z
   expect_output(print(multiclass.roc(fo.mv, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
 })
+
+test_that("print shows the labels of factor levels", {
+  r <- roc(aSAH$outcome, aSAH$s100b, levels = unique(aSAH$outcome), quiet = TRUE)
+  expect_output(print(r), "controls \\(aSAH\\$outcome Good\\) < 41 cases \\(aSAH\\$outcome Poor\\)")
+})
