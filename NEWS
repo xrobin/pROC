@@ -165,6 +165,7 @@
   * Fixed integer64 (bit64) predictors, for instance from 'data.table::fread', being used by their internal representation (wrong thresholds, internal error with negative values)
   * Fixed 'multiclass.roc' failing with "No case observation." when the response has an NA level (e.g. from 'addNA()'): this level is now ignored
   * `ci.auc()`, `var()`, `cov()` and `power.roc.test()` failed with "Cannot convert ci.coords object" on a percent curve built with `ci = TRUE, of = "coords"`.
+  * `coords()` and `ci.coords()` now warn about unknown or misspelt elements of `ret`, which were silently dropped.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

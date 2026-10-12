@@ -172,7 +172,7 @@ ci.coords.roc <- function(roc,
   if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
     # Don't show NA thresholds by default (including ordered curves, where
     # a threshold interval cannot be computed).
-    ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
+    ret <- roc_utils_match_coords_ret_args(setdiff(ret, "threshold"), threshold = FALSE)
   } else {
     ret <- roc_utils_match_coords_ret_args(ret)
     if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
