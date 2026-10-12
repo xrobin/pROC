@@ -106,9 +106,8 @@ cl = NULL, parallel=FALSE, ...)
 }
 
 \section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-  curves smoothed with density.controls and density.cases.} is issued.
+  If the ROC curve was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 }
 
 \value{
