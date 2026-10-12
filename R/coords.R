@@ -204,7 +204,8 @@ coords.smooth.roc <- function(smooth.roc,
     # the top of this function, and the result is formatted below
     smooth.roc$thresholds <- rep(NA, length(smooth.roc$specificities))
     res <- coords.roc(smooth.roc,
-      x = x, input = input, ret = ret, drop = FALSE, ...
+      x = x, input = input, ret = ret, drop = FALSE,
+      best.weights = best.weights, ...
     )
   }
 
