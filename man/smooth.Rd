@@ -57,8 +57,12 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{density.controls} and \code{density.cases}.
   }
   \item{start, start.controls, start.cases}{if
-    \code{method="fitdistr"}, optional \code{start}
-    arguments for \code{\link[MASS]{fitdistr}}. \code{start.controls}
+    \code{method="fitdistr"}, \code{start}
+    arguments for \code{\link[MASS]{fitdistr}}. They can be omitted for
+    some of the distributions named by a character \code{density}, but
+    are required when \code{density} is a function (and for the
+    \dQuote{beta}, \dQuote{chi-squared} and \dQuote{f} distributions).
+    \code{start.controls}
     and \code{start.cases} allow to specify different start values for
     controls and cases.
   }
@@ -128,8 +132,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   If \code{method="fitdistr"}, the \code{\link[MASS]{fitdistr}}
   function from the \pkg{MASS} package is employed to fit parameters for
-  the density function \code{density} with optional start parameters
-  \code{start}. The density function are fitted
+  the density function \code{density} with start parameters
+  \code{start} (required when \code{density} is a function). The density function are fitted
   separately in control (\code{density.controls}, \code{start.controls})
   and case observations (\code{density.cases},
   \code{start.cases}). \code{density} can be one of the character values
