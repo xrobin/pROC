@@ -214,6 +214,35 @@ test_that("fitdistr smoothing of a single case gives an NA curve", {
   }
 })
 
+test_that("invalid density values give a clear error", {
+  x <- seq(-4, 6, length.out = 200)
+  dc <- dnorm(x)
+  dk <- dnorm(x, 1.5)
+  msg <- "'density.controls' and 'density.cases' must be finite, non-negative and not all zero"
+  invalid <- list(c(NA, dc[-1]), c(NaN, dc[-1]), c(Inf, dc[-1]), 0 * dc, dc - 0.01, c(-1e-10, dc[-1]))
+  for (d in invalid) {
+    expect_error(roc(density.controls = d, density.cases = dk), msg)
+    expect_error(roc(density.controls = dc, density.cases = d), msg)
+    expect_error(roc(density.controls = dc, density.cases = d, direction = "<"), msg)
+    expect_error(smooth(r.s100b, method = "density", density.controls = dc, density.cases = d), msg)
+    expect_error(smooth(r.s100b, method = "density", density.controls = d, density.cases = dk), msg)
+  }
+  # Tiny negative values, the rounding errors of FFT-based estimators such
+  # as KernSmooth::bkde, are set to 0, as density() does
+  tiny.negative <- function(d) ifelse(d < 1e-6, -1e-17, d)
+  zero <- function(d) ifelse(d < 1e-6, 0, d)
+  r <- roc(density.controls = tiny.negative(dc), density.cases = tiny.negative(dk))
+  ref <- roc(density.controls = zero(dc), density.cases = zero(dk))
+  expect_identical(r$direction, "<")
+  expect_identical(r$sensitivities, ref$sensitivities)
+  expect_identical(r$specificities, ref$specificities)
+  expect_identical(as.numeric(r$auc), as.numeric(ref$auc))
+  s <- smooth(r.s100b, method = "density", density.controls = tiny.negative(dc), density.cases = tiny.negative(dk))
+  s.ref <- smooth(r.s100b, method = "density", density.controls = zero(dc), density.cases = zero(dk))
+  expect_identical(s$sensitivities, s.ref$sensitivities)
+  expect_identical(s$specificities, s.ref$specificities)
+})
+
 test_that("logcondens smoothing of a class with a single value is not smoothable", {
   skip_if_not_installed("logcondens")
   one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
