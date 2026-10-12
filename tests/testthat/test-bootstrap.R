@@ -289,3 +289,21 @@ test_that("non-stratified bootstraps accept a haven_labelled-like response", {
   set.seed(42)
   expect_equal(var(rl, method = "bootstrap", boot.stratified = FALSE, boot.n = 10), expected)
 })
+
+test_that("boot.n must be a single positive integer", {
+  msg <- "'boot.n' must be a single positive integer."
+  for (boot.n in list(0, -1, NA, 2.5, Inf, c(5, 10), "a")) {
+    expect_error(ci.auc(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.auc(smooth(r.s100b), boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(var(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.se(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.sp(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.thresholds(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.coords(r.s100b, "best", boot.n = boot.n), msg, fixed = TRUE)
+  }
+  # An integer-valued double or an integer is fine
+  expect_equal(attr(ci.auc(r.s100b, method = "bootstrap", boot.n = 2L), "boot.n"), 2L)
+})
