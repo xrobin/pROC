@@ -144,6 +144,7 @@
   * 'roc' and 'multiclass.roc' now give an error with duplicated 'levels' (e.g. 'levels=c(0, 0)') instead of comparing a class with itself
   * In 'roc' and 'smooth', negative 'density.controls'/'density.cases' values (such as the -1e-17 rounding errors of FFT-based estimators like 'KernSmooth::bkde') are set to 0, as 'density' does, instead of giving a wrong (negative) AUC. Missing, infinite or all-zero values give a NA/NaN AUC also with 'direction="auto"', which failed
   * `ci.coords()` on a smoothed curve now ignores "threshold" in `ret` with a warning, as `coords()` does, instead of returning a column of NA.
+  * `coords()` on a smoothed curve with a numeric `x` ignored `best.weights` for the "youden" and "closest.topleft" coordinates.
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for smoothed curves returned by 'roc.test'
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
