@@ -60,3 +60,36 @@ test_that("roc.utils.to/unpercent works with ci .thresholds, .sp, .se", {
     expect_equal_ignore_call(pROC:::roc_utils_topercent.roc(r), r.percent)
   }
 })
+
+test_that("a percent curve with a ci.coords can be used in ci.auc, var, cov and power.roc.test", {
+  r <- roc(aSAH$outcome, aSAH$s100b,
+    percent = TRUE, ci = TRUE, of = "coords",
+    x = 90, input = "specificity", ret = "sensitivity", boot.n = 10, quiet = TRUE
+  )
+  expect_s3_class(r$ci, "ci.coords")
+  expect_equal(as.numeric(ci.auc(r)), as.numeric(ci.auc(r.s100b.percent)))
+  expect_equal(var(r), var(r.s100b.percent))
+  expect_equal(var(r, method = "obuchowski"), var(r.s100b.percent, method = "obuchowski"))
+  expect_equal(
+    cov(r, r.ndka.percent, method = "obuchowski"),
+    cov(r.s100b.percent, r.ndka.percent, method = "obuchowski")
+  )
+  expect_equal(power.roc.test(r)$power, power.roc.test(r.s100b.percent)$power)
+  expect_equal(
+    power.roc.test(r, r.ndka.percent)$power,
+    power.roc.test(r.s100b.percent, r.ndka.percent)$power
+  )
+})
+
+test_that("a smoothed percent curve with a ci.coords can be used in var", {
+  s <- roc(aSAH$outcome, aSAH$s100b,
+    percent = TRUE, smooth = TRUE, ci = TRUE, of = "coords",
+    x = 90, input = "specificity", ret = "sensitivity", boot.n = 10, quiet = TRUE
+  )
+  expect_s3_class(s$ci, "ci.coords")
+  s.noci <- smooth(r.s100b.percent)
+  set.seed(42)
+  v <- var(s, boot.n = 10)
+  set.seed(42)
+  expect_equal(v, var(s.noci, boot.n = 10))
+})
