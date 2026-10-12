@@ -166,6 +166,7 @@ roc.test.roc <- function(roc1, roc2,
     if (is.null(attr(roc1, "roc"))) { # built directly from densities
       stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
     }
+    smooth.call1 <- roc1$call
     roc1 <- roc_utils_unsmooth(roc1)
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
@@ -178,6 +179,7 @@ roc.test.roc <- function(roc1, roc2,
     if (is.null(attr(roc2, "roc"))) { # built directly from densities
       stop("Cannot compute the statistic on ROC curves smoothed with numeric density.controls and density.cases.")
     }
+    smooth.call2 <- roc2$call
     roc2 <- roc_utils_unsmooth(roc2)
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
@@ -477,9 +479,13 @@ roc.test.roc <- function(roc1, roc2,
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth) {
     htest$roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
+    # do.call() put the whole curve in the call: print the call of the input curve
+    htest$roc1$call <- smooth.call1
   }
   if (smoothing.args$roc2$smooth) {
     htest$roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
+    # do.call() put the whole curve in the call: print the call of the input curve
+    htest$roc2$call <- smooth.call2
   }
   return(htest)
 }

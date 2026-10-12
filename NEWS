@@ -190,6 +190,7 @@
   * `ci.coords()` of a smoothed curve with a partial AUC searches the "best" point of each resample within the partial AUC range again (regression in the development version), also for curves built with `roc(smooth = TRUE, partial.auc = ...)` (always ignored the range).
   * `roc(smooth = TRUE)` no longer passes the `x` of `ci.coords()` or the graphical `log` argument to the smoother: they caused spurious "Different smoothing parameters" warnings in `roc.test()` and `cov()`, and an error with `smooth.method = "fitdistr"` and some densities.
   * `smooth(reuse.ci = TRUE)` on a curve with a stored `ci.coords` of thresholds (such as the default `x = "best"`) now returns the smoothed curve without the CI (with a warning) instead of failing.
+  * The smoothed curves returned by `roc.test()` keep the call of the input curves, instead of printing the whole deparsed curve as their call.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
