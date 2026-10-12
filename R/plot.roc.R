@@ -271,8 +271,10 @@ plot.roc.roc <- function(x,
       stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.")
     } else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
-      suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-      suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, NA, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      if (!is.null(co) && nrow(co) > 0) { # no threshold to mark (e.g. none in the partial AUC window)
+        suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
+        suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, NA, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+      }
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
@@ -281,8 +283,10 @@ plot.roc.roc <- function(x,
     if (identical(print.thres, "all") && !is.null(co)) {
       co <- co[!is.na(co$threshold), , drop = FALSE]
     }
-    suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-    suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+    if (!is.null(co) && nrow(co) > 0) { # no threshold to mark (e.g. none in the partial AUC window)
+      suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
+      suppressWarnings(text(co$specificity, co$sensitivity, roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+    }
   }
 
   # Print the AUC on the plot

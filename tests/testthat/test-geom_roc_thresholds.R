@@ -63,3 +63,15 @@ test_that("geom_roc_threshold('all') marks only real thresholds on a partial AUC
   expect_false(any(startsWith(labels, "NA")))
   expect_equal(nrow(p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data), sum(!is.na(co$threshold)))
 })
+
+test_that("geom_roc_threshold gives an empty layer when no threshold is in the partial AUC window", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  expect_warning(layer <- geom_roc_threshold(r), "No coordinates found")
+  p <- ggroc(r) + layer
+  expect_equal(nrow(p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data), 0)
+  expect_length(p@layers[[match("GeomText", layer_geom_classes(p))]]$data$label, 0)
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(print(p), NA)
+})
