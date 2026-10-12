@@ -148,6 +148,7 @@
   * Fixed 'plot.roc' and 'lines.roc' default methods with 'smooth=TRUE' returning a curve that prints internal variable names
   * Fixed 'plot.roc(print.thres="all")' and 'geom_roc_threshold(thresholds="all")' marking the interpolated limits of the partial AUC as thresholds labelled "NA"
   * Fixed the name of a fitdistr density function recorded and printed as "density.controls"/"density.cases" with 'roc(..., smooth=TRUE, smooth.method="fitdistr", density=<function>)'
+  * Fixed 'roc.test(method="venkatraman")', 'roc(na.rm=FALSE)' and multivariate 'multiclass.roc' failing with a haven_labelled response ("Can't combine `x` <character> and `y` <double>")
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
