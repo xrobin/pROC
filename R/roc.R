@@ -196,6 +196,9 @@ roc.default <- function(response, predictor,
 
     # Validate levels
     if (missing(levels)) {
+      # An NA level of the response (addNA()) codes missing values: it is not
+      # a class (as in multiclass.roc)
+      levels <- levels[!is.na(levels)]
       if (length(levels) > 2) {
         warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
         levels <- levels[1:2]

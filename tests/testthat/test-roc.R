@@ -633,3 +633,19 @@ test_that("an integer64 predictor without bit64 gives a clear error", {
   expect_error(roc(aSAH$outcome, fake_integer64(wfns), quiet = TRUE), "convert the integer64 predictor with as.numeric")
   expect_error(roc(controls = fake_integer64(1:3), cases = fake_integer64(2:5), quiet = TRUE), "convert the integer64 predictor with as.numeric")
 })
+
+test_that("roc ignores an NA level of the response", {
+  y <- c(0, 0, 0, 1, 1, 1, NA, NA)
+  x <- c(1, 2, 4, 3, 5, 6, 7, 8)
+  expected <- roc(y, x, quiet = TRUE)
+  # NA level last: spurious "more than two levels" warning
+  expect_no_warning(r <- roc(addNA(factor(y)), x, quiet = TRUE))
+  expect_identical(as.character(r$levels), c("0", "1"))
+  expect_equal(r$sensitivities, expected$sensitivities)
+  expect_equal(r$specificities, expected$specificities)
+  # NA level first: taken as the controls
+  f <- factor(y, levels = c(NA, 0, 1), exclude = NULL)
+  expect_no_warning(r <- roc(f, x, quiet = TRUE))
+  expect_identical(as.character(r$levels), c("0", "1"))
+  expect_equal(as.numeric(r$auc), as.numeric(expected$auc))
+})
