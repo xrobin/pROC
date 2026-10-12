@@ -157,6 +157,7 @@
   * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
   * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
   * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
+  * Fixed 'roc.test(method="venkatraman")', 'roc(na.rm=FALSE)' and multivariate 'multiclass.roc' failing with a haven_labelled response ("Can't combine `x` <character> and `y` <double>")
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

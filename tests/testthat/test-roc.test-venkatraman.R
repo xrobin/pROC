@@ -74,3 +74,23 @@ test_that("venkatraman rejects a partial AUC on either curve", {
   expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported")
   expect_error(suppressWarnings(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2)), "Partial AUC is not supported")
 })
+
+test_that("venkatraman accepts a haven_labelled-like response", {
+  labelled <- local_fake_labelled()
+  y <- as.numeric(aSAH$outcome == "Poor")
+  yl <- labelled(y)
+  # paired
+  set.seed(42)
+  expected <- roc.test(roc(y, aSAH$s100b, quiet = TRUE), roc(y, aSAH$ndka, quiet = TRUE), method = "venkatraman", boot.n = 10)
+  set.seed(42)
+  t <- roc.test(roc(yl, aSAH$s100b, quiet = TRUE), roc(yl, aSAH$ndka, quiet = TRUE), method = "venkatraman", boot.n = 10)
+  expect_equal(t$statistic, expected$statistic)
+  expect_equal(t$p.value, expected$p.value)
+  # unpaired
+  set.seed(42)
+  expected <- roc.test(roc(y[1:60], aSAH$s100b[1:60], quiet = TRUE), roc(y[61:113], aSAH$ndka[61:113], quiet = TRUE), method = "venkatraman", boot.n = 10)
+  set.seed(42)
+  t <- roc.test(roc(yl[1:60], aSAH$s100b[1:60], quiet = TRUE), roc(yl[61:113], aSAH$ndka[61:113], quiet = TRUE), method = "venkatraman", boot.n = 10)
+  expect_equal(t$statistic, expected$statistic)
+  expect_equal(t$p.value, expected$p.value)
+})
