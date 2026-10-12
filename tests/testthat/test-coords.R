@@ -824,3 +824,16 @@ test_that("coords with NA in a numeric non-threshold x gives a clear error", {
   expect_error(coords(r.s100b, NA_real_, input = "fpr"), msg, fixed = TRUE)
   expect_error(coords(smooth(r.s100b), c(0.5, NA), input = "specificity"), msg, fixed = TRUE)
 })
+
+test_that("coords rejects an invalid best.weights cost or prevalence", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2, 3, 4), quiet = TRUE)
+  cost.msg <- "cost ('best.weights[1]') must be positive."
+  prev.msg <- "prevalence ('best.weights[2]') must be in the interval ]0,1[."
+  expect_error(coords(r, "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(NA, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(-1, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(1, NA)), prev.msg, fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  # An infinite cost is valid: maximize the sensitivity
+  expect_true(all(coords(r, "best", best.weights = c(Inf, 0.5))$sensitivity == 1))
+})
