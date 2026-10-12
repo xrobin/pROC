@@ -351,3 +351,8 @@ test_that("multiclass.roc with a data.frame response gives a clear error", {
   # A data.frame predictor (multivariate) is still accepted
   expect_s3_class(multiclass.roc(d$y, data.frame(a = d$x, b = -d$x, c = d$x)), "mv.multiclass.roc")
 })
+
+test_that("univariate multiclass.roc rejects duplicated levels", {
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
+})
