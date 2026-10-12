@@ -570,3 +570,9 @@ test_that("roc.test and cov do not warn for the same smoothing spelled different
   expect_false(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "normal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
   expect_true(smoothing.warned(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2)))
 })
+
+test_that("roc.test rejects a missing or vector conf.level", {
+  msg <- "conf.level must be a single number between 0 and 1."
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = NA_real_), msg, fixed = TRUE)
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = c(0.9, 0.95)), msg, fixed = TRUE)
+})

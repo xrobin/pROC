@@ -182,6 +182,7 @@
   * `roc.test()` and `cov()` no longer warn about "Different smoothing parameters" when the same smoothing is spelled differently, such as an integer `n` or a default given explicitly (`adjust = 1`, `density = "normal"`).
   * The curves returned by `roc.test()` and `are.paired(return.paired.rocs = TRUE)` for paired curves with missing values now print the call and variable names of the input curves instead of pROC internals.
   * All functions with a `boot.n` argument now require a single positive integer, which gave an NA CI (`boot.n = 0` in `ci.auc()`), unrelated low-level errors, or a wrong replicate count in the printed result (vector `boot.n`).
+  * `ci.auc()`, `ci.se()`, `ci.sp()`, `ci.thresholds()`, `ci.coords()`, `roc.test()` and `power.roc.test()` now give a clear error for a missing (`NA`) or vector `conf.level`, `power`, `sig.level`, `ncases`, `ncontrols` or `kappa`.
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
