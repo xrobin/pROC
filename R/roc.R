@@ -205,6 +205,8 @@ roc.default <- function(response, predictor,
       ifelse(quiet, invisible, message)(sprintf("Setting levels: control = %s, case = %s", levels[1], levels[2]))
     } else if (length(levels) != 2) {
       stop("'levels' argument must have length 2")
+    } else if (anyDuplicated(as.character(levels))) {
+      stop("'levels' must contain two different values.")
     }
 
     # ensure predictor is numeric or ordered

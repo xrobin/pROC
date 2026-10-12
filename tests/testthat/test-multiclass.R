@@ -391,3 +391,8 @@ test_that("multiclass.roc with ci gives a clear error and ignores auc", {
   }
   expect_equal(as.numeric(multiclass.roc(gos, m, auc = TRUE, ci = FALSE)$auc), as.numeric(multiclass.roc(gos, m)$auc))
 })
+
+test_that("univariate multiclass.roc rejects duplicated levels", {
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
+})
