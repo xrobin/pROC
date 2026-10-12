@@ -118,6 +118,14 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   explicitly (the returned interval is \code{NA}). Intervals of the other
   \code{ret} coordinates are still computed.
 
+  With \code{boot.stratified=FALSE}, the numbers of controls and cases
+  change from one resample to the next. A count \code{input}
+  (\dQuote{tn}, \dQuote{tp}, \dQuote{fn} or \dQuote{fp}) is therefore
+  converted to the specificity (\dQuote{tn}, \dQuote{fp}) or sensitivity
+  (\dQuote{tp}, \dQuote{fn}) it has on the ROC curve, and this rate is
+  used in every resample. Counts requested in \code{ret} are those of
+  each resample.
+
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
 }

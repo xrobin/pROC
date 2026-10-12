@@ -315,3 +315,37 @@ test_that("ci.coords accepts ret = 'all' with a numeric non-threshold input", {
   ci <- ci.coords(r.s100b, 0.5, input = "threshold", ret = "all", boot.n = 5, progress = "none")
   expect_identical(names(ci)[1], "threshold")
 })
+
+test_that("ci.coords with a count input and boot.stratified = FALSE uses the rate of the curve", {
+  # Resamples with fewer controls or cases than the count aborted
+  # ("Input tn (72) not in range (0-70)"), smaller counts changed meaning
+  n.controls <- length(r.s100b$controls)
+  n.cases <- length(r.s100b$cases)
+  inputs <- list(
+    list(x = n.controls, input = "tn", rate.input = "specificity", rate = 1),
+    list(x = 10, input = "tn", rate.input = "specificity", rate = 10 / n.controls),
+    list(x = n.controls, input = "fp", rate.input = "specificity", rate = 0),
+    list(x = n.cases, input = "tp", rate.input = "sensitivity", rate = 1),
+    list(x = 5, input = "fn", rate.input = "sensitivity", rate = (n.cases - 5) / n.cases)
+  )
+  for (curve in list(r.s100b, r.s100b.percent)) {
+    scale <- if (curve$percent) 100 else 1
+    for (i in inputs) {
+      # Same resamples: the count and its rate on the curve give the same interval
+      seed <- sample.int(1e6, 1)
+      set.seed(seed)
+      ci.count <- ci.coords(curve, x = i$x, input = i$input, ret = c("specificity", "sensitivity"), boot.n = 10, boot.stratified = FALSE, progress = "none")
+      set.seed(seed)
+      ci.rate <- ci.coords(curve, x = i$rate * scale, input = i$rate.input, ret = c("specificity", "sensitivity"), boot.n = 10, boot.stratified = FALSE, progress = "none")
+      expect_equal(as.numeric(ci.count$specificity), as.numeric(ci.rate$specificity))
+      expect_equal(as.numeric(ci.count$sensitivity), as.numeric(ci.rate$sensitivity))
+      expect_identical(attr(ci.count, "input"), i$input)
+      expect_identical(attr(ci.count, "x"), i$x)
+    }
+  }
+  expect_error(
+    ci.coords(r.s100b, x = n.controls + 1, input = "tn", boot.n = 10, boot.stratified = FALSE, progress = "none"),
+    "Input tn (73) not in range (0-72)",
+    fixed = TRUE
+  )
+})

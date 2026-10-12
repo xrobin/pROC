@@ -197,8 +197,27 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
+  boot.x <- x
+  boot.input <- input
+  if (!boot.stratified && input %in% c("tn", "tp", "fn", "fp") && is.numeric(x)) {
+    # A count depends on the number of controls or cases, which changes in a
+    # non-stratified resample: use the specificity or sensitivity it has on
+    # the curve in every resample (the same quantity as a stratified resample)
+    n <- if (input %in% c("tn", "fp")) length(roc$controls) else length(roc$cases)
+    if (anyNA(x)) {
+      stop("Missing values are not allowed in 'x'.")
+    }
+    if (any(x < 0 | x > n)) {
+      value <- x[x < 0 | x > n][1]
+      stop(sprintf("Input %s (%s) not in range (0-%s)", input, value, n))
+    }
+    rate <- if (input %in% c("tn", "tp")) x / n else (n - x) / n
+    boot.x <- rate * ifelse(roc$percent, 100, 1)
+    boot.input <- if (input %in% c("tn", "fp")) "specificity" else "sensitivity"
+  }
+
   perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+    roc = roc, stratified = boot.stratified, x = boot.x, input = boot.input, ret = ret,
     best.method = best.method, best.weights = best.weights,
     best.policy = best.policy, simplify = "list", progress = progress, cl = cl
   )
