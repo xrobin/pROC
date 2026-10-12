@@ -397,3 +397,17 @@ test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve
   expect_doppelganger("plot-print-thres-all-partial-auc-sp", function() plot(r, print.thres = "all"))
   expect_doppelganger("plot-print-thres-all-partial-auc-se", function() plot(r2, print.thres = "all"))
 })
+
+test_that("the lab graphical parameter sets the number of ticks", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b, lab = c(10, 10, 7))
+  expect_equal(par("xaxp")[3], 10)
+  expect_equal(par("yaxp")[3], 10)
+  r <- roc(aSAH$outcome, aSAH$s100b, plot = TRUE, lab = c(10, 10, 7), quiet = TRUE)
+  expect_equal(par("xaxp")[3], 10)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-lab-with-print-thres-print-auc", function() {
+    plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE)
+  })
+})
