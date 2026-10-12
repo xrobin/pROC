@@ -278,3 +278,7 @@ test_that("ci.coords of a smoothed curve with numeric x uses best.weights", {
   # youden = se + r * sp with r = 2 and sp = 0.9 in every replicate
   expect_equal(res$youden, res$sensitivity + 2 * 0.9, ignore_attr = TRUE)
 })
+
+test_that("ci.coords with NA in a numeric x gives a clear error", {
+  expect_error(ci.coords(r.s100b, x = c(0.5, NA), input = "specificity", boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+})

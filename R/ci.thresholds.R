@@ -80,6 +80,9 @@ ci.thresholds.roc <- function(roc,
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
+    if (anyNA(thresholds)) {
+      stop("Missing values are not allowed in 'thresholds'.")
+    }
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
   } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
@@ -92,6 +95,9 @@ ci.thresholds.roc <- function(roc,
         stop("'thresholds' of class character must be of length 1.")
       }
       stop("'thresholds' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
+    }
+    if (anyNA(thresholds)) {
+      stop("Missing values are not allowed in 'thresholds'.")
     }
     thresholds.num <- thresholds
     if (ordered_roc) {

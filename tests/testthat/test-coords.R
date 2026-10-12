@@ -901,3 +901,11 @@ test_that("coords of a smoothed curve with numeric x uses best.weights", {
   expect_equal(res$youden, res$sensitivity + 2 * res$specificity)
   expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
 })
+
+test_that("coords with NA in a numeric non-threshold x gives a clear error", {
+  msg <- "Missing values are not allowed in 'x'."
+  expect_error(coords(r.s100b, c(0.5, NA), input = "sensitivity"), msg, fixed = TRUE)
+  expect_error(coords(r.s100b, NaN, input = "specificity"), msg, fixed = TRUE)
+  expect_error(coords(r.s100b, NA_real_, input = "fpr"), msg, fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), c(0.5, NA), input = "specificity"), msg, fixed = TRUE)
+})
