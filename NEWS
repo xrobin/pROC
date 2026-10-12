@@ -159,6 +159,7 @@
   * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
   * Fixed 'roc.test(method="venkatraman")', 'roc(na.rm=FALSE)' and multivariate 'multiclass.roc' failing with a haven_labelled response ("Can't combine `x` <character> and `y` <double>")
   * Fixed an internal error with an ordered predictor that has an NA level (e.g. from 'addNA()'): the observations of that level are now treated as missing values
+  * Fixed curves built with explicit numeric or factor 'levels' (e.g. 'levels=c(0, 1)') being considered unpaired with curves using the default levels in 'are.paired', 'roc.test', 'cov' and 'power.roc.test', and factor levels printed as integer codes
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
