@@ -383,6 +383,7 @@ roc.test.roc <- function(roc1, roc2,
       htest$p.value <- pval
     }
   } else if (method == "venkatraman") {
+    boot.n <- roc_utils_check_boot_n(boot.n)
     if (paired) {
       stats <- venkatraman.paired.test(roc1, roc2, boot.n, ties.method)
       htest$method <- "Venkatraman's test for two paired ROC curves"
