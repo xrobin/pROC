@@ -157,7 +157,22 @@ plot.roc.roc <- function(x,
     stop("'x' has no confidence interval; compute it with ci() first (or roc(..., ci = TRUE)), or set ci = FALSE.")
   }
 
-  if (max.auc.polygon | auc.polygon | print.auc) { # we need the auc here
+  # Print the thresholds on the curve if print.thres is TRUE
+  if (isTRUE(print.thres)) {
+    print.thres <- "best"
+  }
+  special.thres <- coords_special_x(print.thres, roc = x, keywords = c("no", "all", "local maximas", "best"))
+  if (!is.na(special.thres)) {
+    print.thres <- special.thres
+  }
+  if (identical(print.thres, "best")) {
+    roc_utils_check_best_weights(print.thres.best.weights, "print.thres.best.weights")
+  }
+  print.thres.requested <- !(is.null(print.thres) || identical(print.thres, "no") || identical(print.thres, FALSE))
+
+  # we need the auc here. The thresholds also depend on it: with a partial AUC,
+  # coords(x, "best"/"all"/"local maximas") only look inside its window
+  if (max.auc.polygon | auc.polygon | print.auc | print.thres.requested) {
     if (is.null(x$auc) | !reuse.auc) {
       x$auc <- auc(x, ...)
     }
@@ -251,18 +266,7 @@ plot.roc.roc <- function(x,
       }
     }
   }
-  # Print the thresholds on the curve if print.thres is TRUE
-  if (isTRUE(print.thres)) {
-    print.thres <- "best"
-  }
-  special.thres <- coords_special_x(print.thres, roc = x, keywords = c("no", "all", "local maximas", "best"))
-  if (!is.na(special.thres)) {
-    print.thres <- special.thres
-  }
-  if (identical(print.thres, "best")) {
-    roc_utils_check_best_weights(print.thres.best.weights, "print.thres.best.weights")
-  }
-  if (identical(print.thres, "no") || identical(print.thres, FALSE)) {
+  if (!print.thres.requested) {
     # do nothing
   } else if (methods::is(x, "smooth.roc")) {
     if (is.numeric(print.thres)) {
