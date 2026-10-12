@@ -198,6 +198,9 @@ multiclass.roc.default <- function(response, predictor,
   if (is.list(response)) {
     stop("'response' must be a vector or factor, not a data.frame or list.")
   }
+  # An NA level of the response (addNA()) codes missing values: it is not a
+  # class that can be compared
+  levels <- levels[!is.na(levels)]
 
   # We need at least two levels in response
   if (length(unique(response[!is.na(response)])) < 2) {

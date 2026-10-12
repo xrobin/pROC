@@ -372,3 +372,20 @@ test_that("univariate multiclass.roc rejects duplicated levels", {
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
 })
+
+test_that("multiclass.roc ignores an NA level of the response", {
+  gos <- addNA(factor(aSAH$gos6[-(1:3)]))
+  gos[1:3] <- NA
+  expected <- multiclass.roc(factor(aSAH$gos6[-(1:3)])[-(1:3)], aSAH$s100b[-(1:6)], quiet = TRUE)
+  mc <- multiclass.roc(gos, aSAH$s100b[-(1:3)], quiet = TRUE)
+  expect_equal(mc$levels, expected$levels)
+  expect_equal(as.numeric(auc(mc)), as.numeric(auc(expected)))
+  y <- c(0, 0, 0, 1, 1, 1, 2, 2, 2, NA)
+  m <- cbind(
+    "0" = c(0.8, 0.6, 0.3, 0.2, 0.1, 0.5, 0.1, 0.2, 0.3, 0.4),
+    "1" = c(0.1, 0.3, 0.4, 0.7, 0.6, 0.2, 0.3, 0.2, 0.1, 0.3),
+    "2" = c(0.1, 0.1, 0.3, 0.1, 0.3, 0.3, 0.6, 0.6, 0.6, 0.3)
+  )
+  expect_no_warning(mc <- multiclass.roc(addNA(factor(y)), m))
+  expect_equal(as.numeric(auc(mc)), as.numeric(auc(multiclass.roc(factor(y), m))))
+})
