@@ -253,6 +253,28 @@ test_that("ci.coords warns about unknown or misspelt 'ret' elements", {
   )
 })
 
+test_that("ci.coords on a smoothed curve has no threshold column, as coords", {
+  s <- smooth(r.s100b)
+  # ret = "all" expands without threshold
+  res <- ci.coords(s, 0.9, input = "specificity", ret = "all", boot.n = 5)
+  expect_equal(names(res), names(coords(s, 0.9, input = "specificity", ret = "all")))
+  expect_false("threshold" %in% names(res))
+  expect_true(all(res$sensitivity >= 0 & res$sensitivity <= 1))
+  expect_true(all(res$tp >= 0 & res$tp <= length(r.s100b$cases)))
+  # "threshold" is ignored with a warning, the other columns are unchanged
+  set.seed(42)
+  expect_warning(
+    res.thr <- ci.coords(s, 0.9, input = "specificity", ret = c("threshold", "sensitivity", "youden"), boot.n = 5),
+    "threshold"
+  )
+  set.seed(42)
+  res.nothr <- ci.coords(s, 0.9, input = "specificity", ret = c("sensitivity", "youden"), boot.n = 5)
+  expect_equal(res.thr, res.nothr)
+  # only "threshold": an error, as coords
+  expect_error(ci.coords(s, 0.9, input = "specificity", ret = "threshold", boot.n = 5))
+  expect_error(coords(s, 0.9, input = "specificity", ret = "threshold"))
+})
+
 test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
   set.seed(42)
   # The resamples lost the partial AUC range and returned the global best
