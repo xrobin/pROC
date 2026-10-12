@@ -164,6 +164,15 @@ coords.smooth.roc <- function(smooth.roc,
         sp <- smooth.roc$specificities[optim.crit == max(optim.crit)]
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
+        in.window <- if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
+          smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]
+        } else {
+          smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]
+        }
+        if (!any(in.window)) { # no point in the window: max() below would be -Inf
+          warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+          return(NULL)
+        }
         if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
           se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
@@ -375,6 +384,15 @@ coords.roc <- function(roc,
         thres <- roc$thresholds[optim.crit == max(optim.crit)]
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
+        in.window <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
+          roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]
+        } else {
+          roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]
+        }
+        if (!any(in.window)) { # no point in the window: max() below would be -Inf
+          warning("No coordinates found, returning NULL. This is possibly cased by a too small partial AUC interval.")
+          return(NULL)
+        }
         if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
           optim.crit <- (optim.crit)[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
           se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]

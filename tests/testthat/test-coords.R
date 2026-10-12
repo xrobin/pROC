@@ -837,3 +837,19 @@ test_that("coords rejects an invalid best.weights cost or prevalence", {
   # An infinite cost is valid: maximize the sensitivity
   expect_true(all(coords(r, "best", best.weights = c(Inf, 0.5))$sensitivity == 1))
 })
+
+test_that("coords 'best' with no point in the partial AUC window gives only pROC's warning", {
+  # specificities 0, 0.5, 0.5, 1, 1: none in [0.6, 0.8]
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  w <- capture_warnings(co <- coords(r, "best"))
+  expect_null(co)
+  expect_length(w, 1)
+  expect_match(w, "No coordinates found")
+  # smoothed curve with no point in a narrow window
+  r2 <- roc(controls = c(1, 3, 5, 2, 4), cases = c(2, 4, 6, 7, 5), partial.auc = c(0.80001, 0.8), quiet = TRUE)
+  s <- smooth(r2, n = 10)
+  w <- capture_warnings(co <- coords(s, "best"))
+  expect_null(co)
+  expect_length(w, 1)
+  expect_match(w, "No coordinates found")
+})
