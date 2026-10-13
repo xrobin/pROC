@@ -182,6 +182,7 @@
   * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer returns an all-NA, unprintable CI, and gives a clear error when no threshold is in the partial AUC window.
   * plot.roc() now applies the AUC specification given in "..." (e.g. "partial.auc" with "reuse.auc = FALSE") to "print.thres" too: the marked thresholds and the returned "auc" no longer depend on "print.auc", "auc.polygon" or "max.auc.polygon".
   * multiclass.roc() now says that only one column of a predictor matrix could be matched to the levels of the response, instead of asking for a vector.
+  * 'power.roc.test' with two ROC curves and the DeLong or bootstrap variance now computes the null variance with both AUCs at the variance of 'roc1', keeping their observed correlation (cov0 = cor12 * var1), instead of the covariance under the alternative
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
