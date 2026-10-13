@@ -347,7 +347,7 @@ roc.default <- function(response, predictor,
         }
       })
       if (direction == "auto" && ((correction.undefined && is.na(smooth.auc)) ||
-        isTRUE(smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc) - roc_utils_coords_tol(ifelse(percent, 100, 1))))) {
+        isTRUE(smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc)))) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...
