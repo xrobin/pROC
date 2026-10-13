@@ -124,7 +124,9 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
   m <- match(colnames(predictor), levels)
   missing.classes <- levels[setdiff(seq_along(levels), m)]
   levels <- colnames(predictor)[!is.na(m)]
-  if (length(levels) == 1) {
+  if (length(levels) == 1 && ncol(predictor) > 1) {
+    stop(sprintf("Only one column of 'predictor' (%s) could be matched to the levels of 'response'.", sQuote(levels, FALSE)))
+  } else if (length(levels) == 1) {
     stop("For a single decision value, please provide 'predictor' as a vector.")
   } else if (length(levels) == 0) {
     stop("The column names of 'predictor' could not be matched to the levels of 'response'.")
