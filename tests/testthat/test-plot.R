@@ -271,13 +271,10 @@ test_that("lines.roc default/formula return the NA/NaN of roc() with a warning, 
 })
 
 test_that("percent print.thres labels keep 3 decimals for the threshold", {
+  skip_if(getRversion() < "4.1")
   r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
-  expect_identical(
-    display_list_texts(capture_display_list(plot(r.percent, print.thres = "best"))),
-    "0.205 (80.6%, 63.4%)"
-  )
-  labels <- display_list_texts(capture_display_list(plot(r.percent, print.thres = "local maximas")))
-  expect_identical(labels[2:3], c("0.065 (13.9%, 97.6%)", "0.075 (22.2%, 90.2%)"))
+  expect_doppelganger("plot-percent-print-thres-best", function() plot(r.percent, print.thres = "best"))
+  expect_doppelganger("plot-percent-print-thres-local-maximas", function() plot(r.percent, print.thres = "local maximas"))
 })
 
 test_that("CI shapes are drawn in increasing order whatever order the CI was computed in", {
