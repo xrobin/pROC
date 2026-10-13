@@ -37,7 +37,7 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
   predictor <- roc.data$predictors[, 1]
 
   roc <- roc(response, predictor, plot = TRUE, ...)
-  if (inherits(roc, c("roc", "smooth.roc"))) {
+  if (roc_utils_is_curve(roc, plot = TRUE)) {
     roc$call <- match.call()
     roc$predictor.name <- roc.data$predictor.names
     roc$response.name <- roc.data$response.name
@@ -52,7 +52,7 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
-  if (inherits(roc, c("roc", "smooth.roc"))) {
+  if (roc_utils_is_curve(roc, plot = TRUE)) {
     roc$call <- match.call()
     if (methods::is(roc, "smooth.roc")) {
       attr(roc, "roc")$call <- roc$call

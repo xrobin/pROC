@@ -454,8 +454,10 @@ test_that("formula and data.frame interfaces return NA and NaN like roc.default"
   expect_identical(r, NaN)
   pdf(NULL)
   on.exit(dev.off())
-  expect_identical(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE), NA)
-  expect_identical(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_warning(r <- withVisible(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
 })
 
 test_that("roc with densities resolves direction = 'auto' even if auc = FALSE", {
