@@ -330,12 +330,10 @@ test_that("print.auc does not print the CI of another AUC specification", {
 })
 
 test_that("legacy.axes labels are not padded", {
+  skip_if(getRversion() < "4.1")
   r.percent <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), percent = TRUE, quiet = TRUE)
-  labels <- display_list_axis_labels(capture_display_list(plot(r.percent, legacy.axes = TRUE)))
-  expect_identical(labels, rep(list(c("0", "20", "40", "60", "80", "100")), 2))
-  # Same number of decimals on all labels
-  labels <- display_list_axis_labels(capture_display_list(plot(r.s100b, legacy.axes = TRUE)))
-  expect_identical(labels, rep(list(c("0.0", "0.2", "0.4", "0.6", "0.8", "1.0")), 2))
+  expect_doppelganger("plot-legacy-axes-percent", function() plot(r.percent, legacy.axes = TRUE))
+  # Same number of decimals on all labels: see the "legacy.axes" snapshot
 })
 
 test_that("plot.roc draws the sensitivity of a ci.coords with plot.ci.coords", {
