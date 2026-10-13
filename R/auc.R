@@ -34,7 +34,7 @@ auc.formula <- function(formula, data, subset, na.action, ...) {
   predictor <- roc.data$predictors[, 1]
 
   roc <- roc(response, predictor, auc = TRUE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   roc$auc
@@ -42,7 +42,7 @@ auc.formula <- function(formula, data, subset, na.action, ...) {
 
 auc.default <- function(response, predictor, ...) {
   roc <- roc.default(response, predictor, auc = TRUE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   roc$auc

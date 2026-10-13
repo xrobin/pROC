@@ -56,7 +56,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     if (dim(predictor1)[2] == 2 & length(response) == dim(predictor1)[1]) {
       roc1 <- roc(response, predictor1[, 1], ...)
       roc2 <- roc(response, predictor1[, 2], ...)
-      if (!inherits(roc1, c("roc", "smooth.roc")) || !inherits(roc2, c("roc", "smooth.roc"))) {
+      if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
         stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
       }
       if (!is.null(names(predictor1))) {
@@ -82,7 +82,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     }
     roc1 <- roc(response, predictor1, ...)
     roc2 <- roc(response, predictor2, ...)
-    if (!inherits(roc1, c("roc", "smooth.roc")) || !inherits(roc2, c("roc", "smooth.roc"))) {
+    if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
       stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
     }
     call <- match.call()

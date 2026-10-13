@@ -334,7 +334,7 @@ or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
 \code{\link[=smooth.roc]{smooth}} for more details.
 
 With \code{predictor} (or a \code{formula}), \code{NA} (or \code{NaN})
-is returned instead, and nothing is plotted, if \code{\link{roc}}
+is returned instead, with a warning, and nothing is plotted, if \code{\link{roc}}
 returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
 predictor values).
 }

@@ -33,7 +33,7 @@ ci.auc.formula <- function(formula, data, subset, na.action, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc.default(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {
@@ -50,7 +50,7 @@ ci.auc.default <- function(response, predictor, ...) {
     stop("CI of a multiclass AUC not implemented")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {

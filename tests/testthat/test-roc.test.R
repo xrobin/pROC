@@ -476,10 +476,10 @@ test_that("roc.test default/formula give a clear error when roc() returns NaN", 
     x1 = c(1, 2, Inf, 4, 5, 6),
     x2 = c(2, 1, 3, 5, 4, 6)
   )
-  expect_error(suppressWarnings(roc.test(d$y, d$x1, d$x2, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
-  expect_error(suppressWarnings(roc.test(d$y, d$x2, d$x1, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
-  expect_error(suppressWarnings(roc.test(d$y, d[c("x1", "x2")], quiet = TRUE)), "roc\\(\\) returned NA or NaN")
-  expect_error(suppressWarnings(roc.test(y ~ x1 + x2, d, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(d$y, d$x1, d$x2, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(d$y, d$x2, d$x1, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(d$y, d[c("x1", "x2")], quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(y ~ x1 + x2, d, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
 })
 
 test_that("roc.test works on curves smoothed in roc() with a partial AUC", {

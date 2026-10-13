@@ -249,7 +249,7 @@ test_that("plot with ci = TRUE on a curve without CI gives a clear error", {
   expect_error(plot(smooth(r.s100b), ci = TRUE), "has no confidence interval")
 })
 
-test_that("lines.roc default/formula give a clear error when roc() returns NA/NaN", {
+test_that("lines.roc default/formula return the NA/NaN of roc() with a warning, like plot.roc", {
   pdf(NULL)
   on.exit(dev.off())
   plot(r.s100b)
@@ -258,10 +258,16 @@ test_that("lines.roc default/formula give a clear error when roc() returns NA/Na
     xna = c(1, 2, NA, 4, 5, 6),
     xinf = c(1, 2, Inf, 4, 5, 6)
   )
-  expect_error(lines.roc(d$y, d$xna, na.rm = FALSE, quiet = TRUE), "roc\\(\\) returned NA or NaN")
-  expect_error(lines.roc(y ~ xna, d, na.rm = FALSE, quiet = TRUE), "roc\\(\\) returned NA or NaN")
-  expect_error(suppressWarnings(lines.roc(d$y, d$xinf, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
-  expect_error(suppressWarnings(lines.roc(y ~ xinf, d, quiet = TRUE)), "roc\\(\\) returned NA or NaN")
+  expect_warning(r <- withVisible(lines.roc(d$y, d$xna, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(y ~ xna, d, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(y ~ xinf, d, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
+  expect_warning(r <- withVisible(plot.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
 })
 
 test_that("percent print.thres labels keep 3 decimals for the threshold", {
