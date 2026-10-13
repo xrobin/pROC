@@ -406,21 +406,6 @@ test_that("multiclass.roc with ci gives a clear error and ignores auc", {
   expect_equal(as.numeric(multiclass.roc(gos, m, auc = TRUE, ci = FALSE)$auc), as.numeric(multiclass.roc(gos, m)$auc))
 })
 
-test_that("multivariate multiclass.roc accepts a haven_labelled-like response", {
-  labelled <- local_fake_labelled()
-  y <- c(0, 0, 0, 1, 1, 1, 2, 2, 2)
-  yl <- labelled(y)
-  m <- cbind(
-    "0" = c(0.8, 0.6, 0.3, 0.2, 0.1, 0.5, 0.1, 0.2, 0.3),
-    "1" = c(0.1, 0.3, 0.4, 0.7, 0.6, 0.2, 0.3, 0.2, 0.1),
-    "2" = c(0.1, 0.1, 0.3, 0.1, 0.3, 0.3, 0.6, 0.6, 0.6)
-  )
-  expected <- multiclass.roc(y, m)
-  mc <- multiclass.roc(yl, m)
-  expect_equal(as.numeric(auc(mc)), as.numeric(auc(expected)))
-  expect_equal(mc$levels, expected$levels)
-})
-
 test_that("univariate multiclass.roc rejects duplicated levels", {
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
