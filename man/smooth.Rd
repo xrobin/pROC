@@ -145,7 +145,10 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \dQuote{logistic}, \dQuote{normal} and \dQuote{weibull}), the smoothed
   curve is the exact ROC curve of the fitted distributions, computed from
   their cumulative distribution functions at \code{n} thresholds spread
-  over the quantiles of both fits. With a density function, the fitted
+  over the quantiles of both fits. With \dQuote{t} (the location-scale
+  t distribution fitted by \code{fitdistr}), with the discrete
+  distributions (\dQuote{geometric}, \dQuote{negative binomial} and
+  \dQuote{poisson}) or with a density function, the fitted
   densities are evaluated at \code{n} equally spaced points over the range of
   the observations only, so that the curve is an approximation that ignores
   the tails of the fitted distributions outside of this range.
