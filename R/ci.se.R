@@ -84,17 +84,12 @@ ci.se.smooth.roc <- function(smooth.roc,
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
-  # remove the auc too: smooth.roc() would recompute it on each replicate (and
-  # warn if a corrected partial AUC is not defined), but it is not used
-  roc$auc <- NULL
 
-  # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.se,
-    roc = roc, stratified = boot.stratified, sp = specificities,
-    smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress, cl = cl
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.se, na = rep(NA_real_, length(specificities)), sp = specificities,
+    smoother = bootstrap.smoother(smooth.roc$smoothing.args),
+    simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
@@ -130,8 +125,10 @@ ci.se.roc <- function(roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
-  perfs <- bootstrap.replicates(boot.n, bootstrap.se,
-    roc = roc, stratified = boot.stratified, sp = specificities, simplify = "rows", progress = progress, cl = cl
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.se, na = rep(NA_real_, length(specificities)), sp = specificities,
+    simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)

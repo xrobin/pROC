@@ -164,12 +164,7 @@ coords.smooth.roc <- function(smooth.roc,
         sp <- smooth.roc$specificities[optim.crit == max(optim.crit)]
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
-        in.window <- if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]
-        } else {
-          smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]
-        }
-        if (!any(in.window)) { # no point in the window: max() below would be -Inf
+        if (!any(roc_utils_in_partial_auc(smooth.roc))) { # no point in the window: max() below would be -Inf
           warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
           return(NULL)
         }
@@ -384,12 +379,7 @@ coords.roc <- function(roc,
         thres <- roc$thresholds[optim.crit == max(optim.crit)]
         optim.crit <- optim.crit[optim.crit == max(optim.crit)]
       } else {
-        in.window <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]
-        } else {
-          roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]
-        }
-        if (!any(in.window)) { # no point in the window: max() below would be -Inf
+        if (!any(roc_utils_in_partial_auc(roc))) { # no point in the window: max() below would be -Inf
           warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
           return(NULL)
         }

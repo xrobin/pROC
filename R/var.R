@@ -120,27 +120,21 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl
     if (is.null(roc$smoothing.args) || is.numeric(roc$smoothing.args$density.cases) || is.numeric(roc$smoothing.args$density.controls)) {
       stop("Cannot compute the variance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
-    smoothing.args <- roc$smoothing.args
-    smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")
-    # smooth.roc() would recompute its auc on each replicate (and warn if a
-    # corrected partial AUC is not defined): the replicate AUC is auc.call's
-    non.smoothed.roc$auc <- NULL
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
-    smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), roc$smoothing.args))
-    auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
-    auc.args$allow.invalid.partial.auc.correct <- TRUE
-    auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
-
-    aucs <- bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+    aucs <- bootstrap.replicates(boot.n, bootstrap.replicate,
       roc = non.smoothed.roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      statistic = bootstrap.auc, na = NA_real_, auc.args = bootstrap.auc.args(roc$auc),
+      smoother = bootstrap.smoother(roc$smoothing.args),
+      simplify = "vector", progress = progress, cl = cl
     )
   }
   ## Non smoothed ROC curves variance
   else {
-    aucs <- bootstrap.replicates(boot.n, bootstrap.auc,
-      roc = roc, stratified = boot.stratified, simplify = "vector", progress = progress, cl = cl
+    aucs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+      roc = roc, stratified = boot.stratified,
+      statistic = bootstrap.auc, na = NA_real_, auc.args = bootstrap.auc.args(roc$auc),
+      simplify = "vector", progress = progress, cl = cl
     )
   }
 

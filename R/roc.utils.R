@@ -1059,3 +1059,15 @@ roc_utils_smoothing_arg_names <- function(method, densfuns) {
   }
   relevant
 }
+
+# Which points of a curve (roc or smooth.roc) lie in the partial AUC range
+# of its auc: all of them without a partial AUC. coords(x = "best") has no
+# point to return when none does (and the bootstrap checks it beforehand).
+roc_utils_in_partial_auc <- function(roc) {
+  partial.auc <- attr(roc$auc, "partial.auc")
+  if (is.null(roc$auc) || identical(partial.auc, FALSE)) {
+    return(rep(TRUE, length(roc$sensitivities)))
+  }
+  values <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") roc$sensitivities else roc$specificities
+  values <= partial.auc[1] & values >= partial.auc[2]
+}

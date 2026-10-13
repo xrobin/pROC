@@ -98,23 +98,19 @@ ci.coords.smooth.roc <- function(smooth.roc,
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
-  # remove the auc too: smooth.roc() would recompute it on each replicate (and
-  # warn if a corrected partial AUC is not defined). Only the partial AUC range
-  # is needed (for "best"): bootstrap.smooth.coords() restores it.
-  roc$auc <- NULL
-  auc.args <- NULL
+  # Partial AUC range of the curve, where "best" is searched in each resample
+  window <- NULL
   if (!is.null(smooth.roc$auc) && !identical(attr(smooth.roc$auc, "partial.auc"), FALSE)) {
-    auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
+    window <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
   }
 
-  # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, na = bootstrap.coords.na(x, ret),
+    smoother = bootstrap.smoother(smooth.roc$smoothing.args),
+    x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    smooth.roc.call = smooth.roc.call, best.policy = best.policy, auc.args = auc.args,
+    best.policy = best.policy, window = window,
     simplify = "list", progress = progress, cl = cl
   )
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
@@ -197,8 +193,10 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
-  perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, na = bootstrap.coords.na(x, ret),
+    x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
     best.policy = best.policy, simplify = "list", progress = progress, cl = cl
   )

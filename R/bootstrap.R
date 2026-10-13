@@ -21,59 +21,12 @@
 
 bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args,
                           progress = FALSE, cl = NULL) {
-  # rename method into smooth.method for roc
-  smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
-  smoothing.args$roc1$method <- NULL
-  smoothing.args$roc2$smooth.method <- smoothing.args$roc2$method
-  smoothing.args$roc2$method <- NULL
-
-  # Prepare arguments for later calls to roc
-  auc1skeleton <- attributes(roc1$auc)
-  auc1skeleton$roc <- NULL
-  auc1skeleton$direction <- roc1$direction
-  auc1skeleton$class <- NULL
-  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
-  auc2skeleton <- attributes(roc2$auc)
-  auc2skeleton$roc <- NULL
-  auc2skeleton$direction <- roc2$direction
-  auc2skeleton$class <- NULL
-  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
-
-  auc1skeleton$auc <- auc2skeleton$auc <- TRUE
-
-  # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
-  # If this condition happen, it probably means we have a bug elsewhere.
-  # Rather than making a complicated processing to remove the duplicates,
-  # just throw an error and let us solve the bug when a user reports it.
-  duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
-  duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
-  if (any(duplicated.auc1skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-  if (any(duplicated.auc2skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-  if (!boot.stratified) {
-    # The non-stratified resample rebuilds each curve from response/predictor,
-    # so the skeletons need the levels and direction to do it without checks.
-    auc1skeleton$levels <- roc1$levels
-    auc1skeleton$direction <- roc1$direction
-    auc2skeleton$levels <- roc2$levels
-    auc2skeleton$direction <- roc2$direction
-  }
-  # One column per replicate, holding the statistic of each curve.
+  # One column per replicate, holding the AUC of each curve.
   resampled.values <- bootstrap.replicates(boot.n, bootstrap.test.replicate,
     roc1 = roc1, roc2 = roc2, stratified = boot.stratified, test = "boot",
     x = NULL, paired = TRUE,
-    auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton,
+    curve1 = bootstrap.curve.spec(roc1, smoothing.args$roc1),
+    curve2 = bootstrap.curve.spec(roc2, smoothing.args$roc2),
     simplify = "columns", progress = progress, cl = cl
   )
   resampled.values <- roc_utils_drop_na_replicates(resampled.values, margin = 2L)
@@ -88,60 +41,12 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
 # Bootstrap test, used by roc.test.roc
 bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args,
                            progress = FALSE, cl = NULL) {
-  # rename method into smooth.method for roc
-  smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
-  smoothing.args$roc1$method <- NULL
-  smoothing.args$roc2$smooth.method <- smoothing.args$roc2$method
-  smoothing.args$roc2$method <- NULL
-
-  # Prepare arguments for later calls to roc
-  auc1skeleton <- attributes(roc1$auc)
-  auc1skeleton$roc <- NULL
-  auc1skeleton$direction <- roc1$direction
-  auc1skeleton$class <- NULL
-  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
-  auc2skeleton <- attributes(roc2$auc)
-  auc2skeleton$roc <- NULL
-  auc2skeleton$direction <- roc2$direction
-  auc2skeleton$class <- NULL
-  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
-
-  auc1skeleton$auc <- auc2skeleton$auc <- test == "boot"
-
-  # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
-  # If this condition happen, it probably means we have a bug elsewhere.
-  # Rather than making a complicated processing to remove the duplicates,
-  # just throw an error and let us solve the bug when a user reports it.
-  duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
-  duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
-  if (any(duplicated.auc1skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-  if (any(duplicated.auc2skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-
-  if (!boot.stratified) {
-    # The non-stratified resample rebuilds each curve from response/predictor,
-    # so the skeletons need the levels and direction to do it without checks.
-    auc1skeleton$levels <- roc1$levels
-    auc1skeleton$direction <- roc1$direction
-    auc2skeleton$levels <- roc2$levels
-    auc2skeleton$direction <- roc2$direction
-  }
   # One column per replicate, holding the statistic of each curve.
   resampled.values <- bootstrap.replicates(boot.n, bootstrap.test.replicate,
     roc1 = roc1, roc2 = roc2, stratified = boot.stratified, test = test,
     x = x, paired = paired,
-    auc1skeleton = auc1skeleton, auc2skeleton = auc2skeleton,
+    curve1 = bootstrap.curve.spec(roc1, smoothing.args$roc1),
+    curve2 = bootstrap.curve.spec(roc2, smoothing.args$roc2),
     simplify = "columns", progress = progress, cl = cl
   )
 
@@ -152,11 +57,9 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
 
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth) {
-    smoothing.args$roc1$method <- smoothing.args$roc1$smooth.method
     roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
   }
   if (smoothing.args$roc2$smooth) {
-    smoothing.args$roc2$method <- smoothing.args$roc2$smooth.method
     roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
   }
 
@@ -396,25 +299,36 @@ roc_utils_normalise_progress <- function(progress) {
 
 ##########  Resampling  ##########
 
-# One bootstrap resample of a ROC curve's observations.
+# The indices of one bootstrap resample of a ROC curve's observations.
 #
 # A stratified resample draws controls and cases separately, so each class
 # keeps its original size; a non-stratified resample draws observations, so
 # the class sizes vary between replicates. See the "stratified bootstrap"
-# discussion in ?ci for which to prefer.
-roc_utils_resample <- function(roc, stratified) {
+# discussion in ?ci for which to prefer. Paired curves share these indices.
+roc_utils_resample_idx <- function(roc, stratified) {
   if (stratified) {
-    controls <- roc$controls[sample.int(length(roc$controls), replace = TRUE)]
-    cases <- roc$cases[sample.int(length(roc$cases), replace = TRUE)]
+    list(
+      controls = sample.int(length(roc$controls), replace = TRUE),
+      cases = sample.int(length(roc$cases), replace = TRUE)
+    )
+  } else {
+    list(observations = sample.int(length(roc$predictor), replace = TRUE))
+  }
+}
+
+# One bootstrap resample of a ROC curve's observations.
+roc_utils_resample <- function(roc, stratified, idx = roc_utils_resample_idx(roc, stratified)) {
+  if (stratified) {
+    controls <- roc$controls[idx$controls]
+    cases <- roc$cases[idx$cases]
     predictor <- roc_utils_combine_predictor(controls, cases)
     response <- c(
       rep(roc$levels[1], length(controls)),
       rep(roc$levels[2], length(cases))
     )
   } else {
-    idx <- sample.int(length(roc$predictor), replace = TRUE)
-    predictor <- roc$predictor[idx]
-    response <- roc$response[idx]
+    predictor <- roc$predictor[idx$observations]
+    response <- roc$response[idx$observations]
     # Subset rather than split(): a class missing from the resample must give
     # an empty vector of the predictor's type (split() gives NULL), so that
     # ordered predictors can still be combined and the replicate dropped
@@ -424,11 +338,9 @@ roc_utils_resample <- function(roc, stratified) {
   list(controls = controls, cases = cases, predictor = predictor, response = response)
 }
 
-# One bootstrap replicate of a ROC curve: resample the observations and
-# recompute the curve on them. Returns a 'roc' ready for auc(), coords() or
-# smooth(), with every field consistent with the resampled data.
-roc_utils_resampled_roc <- function(roc, stratified) {
-  resampled <- roc_utils_resample(roc, stratified)
+# The ROC curve of a resample, with every field consistent with the
+# resampled data. Returns a 'roc' ready for auc(), coords() or smooth().
+roc_utils_resampled_roc <- function(roc, resampled) {
   thresholds <- roc_utils_thresholds(
     roc_utils_combine_predictor(resampled$controls, resampled$cases),
     roc$direction
@@ -448,6 +360,66 @@ roc_utils_resampled_roc <- function(roc, stratified) {
   roc$sensitivities <- perfs$se * scale
   roc$specificities <- perfs$sp * scale
   roc
+}
+
+##########  One replicate  ##########
+
+# One bootstrap replicate of one curve: the only place where a replicate
+# can fail. Resamples 'roc', smooths the resample with 'smoother' if given,
+# and returns statistic(curve, ...). Returns 'na' -- NA values with the
+# shape of a successful replicate, given by the caller -- when:
+#  - a non-stratified resample lost a class (no control or no case);
+#  - the resample could not be smoothed (smoother() failed);
+#  - statistic() returned NULL (no value defined on this resample, such as
+#    coords "best" with no point in the partial AUC range).
+# The caller then drops the NA replicates once, with one warning
+# (roc_utils_drop_na_replicates()).
+# With curve = FALSE, statistic() gets the resampled observations
+# (roc_utils_resample()) instead of a curve, for ci.thresholds.
+bootstrap.replicate <- function(n, roc, stratified, statistic, na, smoother = NULL,
+                                curve = TRUE, ...) {
+  resampled <- bootstrap.resampled.curve(roc, stratified, smoother, curve = curve)
+  if (is.null(resampled)) {
+    return(na)
+  }
+  value <- statistic(resampled, ...)
+  if (is.null(value)) na else value
+}
+
+# The resampled curve of a replicate, or NULL if it cannot be built.
+# 'idx' lets paired curves share their resample (bootstrap.test.replicate).
+bootstrap.resampled.curve <- function(roc, stratified, smoother = NULL,
+                                      idx = roc_utils_resample_idx(roc, stratified),
+                                      curve = TRUE) {
+  resampled <- roc_utils_resample(roc, stratified, idx)
+  if (length(resampled$controls) == 0 || length(resampled$cases) == 0) {
+    return(NULL)
+  }
+  if (!curve) {
+    return(resampled)
+  }
+  resampled <- roc_utils_resampled_roc(roc, resampled)
+  if (is.null(smoother)) {
+    return(resampled)
+  }
+  # Smoothers fail on some resamples (too few distinct values, fits that do
+  # not converge): only the smoothing errors make the replicate NA
+  tryCatch(smoother(resampled), error = function(e) NULL)
+}
+
+# How a bootstrap replicate re-applies a curve's smoothing to its resample.
+# The replicate's statistic computes the AUC (or coordinates) itself, with
+# the settings of the original curve: smooth.roc() must not re-compute the
+# AUC or CI attached to the resample, which may not even be defined there
+# (BUG-048, BUG-149).
+bootstrap.smoother <- function(smoothing.args) {
+  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smoothing.args))
+  smooth.roc.call$reuse.auc <- FALSE
+  smooth.roc.call$reuse.ci <- FALSE
+  function(roc) {
+    smooth.roc.call$roc <- roc
+    eval(smooth.roc.call)
+  }
 }
 
 # Drop the replicates that produced NA and warn once.
@@ -483,60 +455,102 @@ roc_utils_drop_na_replicates <- function(x, margin = 1L) {
   }
 }
 
-##########  AUC of two ROC curves (roc.test, cov)  ##########
+##########  Statistics computed on each replicate  ##########
+
+# AUC (ci.auc, var, roc.test, cov). 'auc.args' are the partial AUC settings
+# of the original curve. auc.roc() also serves smoothed curves.
+bootstrap.auc <- function(curve, auc.args) {
+  # as.numeric() drops the 'roc' attribute auc.roc() attaches: it is the whole
+  # resampled curve, which no caller of a bootstrap replicate ever reads.
+  as.numeric(do.call(auc.roc, c(list(curve), auc.args, allow.invalid.partial.auc.correct = TRUE)))
+}
+
+# The partial AUC settings of a curve, as bootstrap.auc() takes them.
+bootstrap.auc.args <- function(auc) {
+  list(
+    partial.auc = attr(auc, "partial.auc"),
+    partial.auc.focus = attr(auc, "partial.auc.focus"),
+    partial.auc.correct = attr(auc, "partial.auc.correct")
+  )
+}
+
+# SE at given SP (ci.se) and SP at given SE (ci.sp)
+bootstrap.se <- function(curve, sp) {
+  coords(curve, sp, input = "specificity", ret = "sensitivity")[, 1]
+}
+bootstrap.sp <- function(curve, se) {
+  coords(curve, se, input = "sensitivity", ret = "specificity")[, 1]
+}
+
+# SE and SP at given thresholds (ci.thresholds): on the resampled
+# observations, without building the whole curve
+bootstrap.thresholds <- function(resampled, thresholds, direction) {
+  roc_utils_perfs_each(thresholds, resampled$controls, resampled$cases, direction)
+}
+
+# Coordinates (ci.coords). 'window' is the partial AUC range of a smoothed
+# curve, where "best" is searched: smooth.roc() does not set it on the
+# resample (bootstrap.smoother()). An empirical resample keeps the auc of
+# the original curve, and its range.
+bootstrap.coords <- function(curve, x, input, ret, best.method, best.weights,
+                             best.policy, window = NULL) {
+  if (!is.null(window)) {
+    # uncorrected: only the range is used
+    curve$auc <- do.call(auc.roc, c(list(curve), window))
+  }
+  if (identical(x, "best") && !any(roc_utils_in_partial_auc(curve))) {
+    # No point in the partial AUC range of this resample: NA replicate
+    return(NULL)
+  }
+  res <- coords(curve,
+    x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights
+  )
+  enforce.best.policy.if.needed(res, x, best.policy)
+}
+
+# The NA replicate of ci.coords
+bootstrap.coords.na <- function(x, ret) {
+  as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret)))
+}
+
+##########  Two curves (roc.test, cov)  ##########
+
+# What a replicate needs to rebuild one of the two curves
+bootstrap.curve.spec <- function(roc, smoothing.args) {
+  list(
+    smoother = if (isTRUE(smoothing.args$smooth)) {
+      bootstrap.smoother(smoothing.args[setdiff(names(smoothing.args), "smooth")])
+    },
+    auc.args = bootstrap.auc.args(roc$auc)
+  )
+}
 
 # One bootstrap replicate of a paired or unpaired comparison of two curves.
 # Returns the statistic for each curve, or c(NA, NA) if either resampled curve
 # could not be built.
 bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
-                                     auc1skeleton, auc2skeleton) {
-  if (stratified) {
-    # Resample controls and cases separately, keeping each class size.
-    idx.controls <- sample.int(length(roc1$controls), replace = TRUE)
-    idx.cases <- sample.int(length(roc1$cases), replace = TRUE)
-    auc1skeleton$controls <- roc1$controls[idx.controls]
-    auc1skeleton$cases <- roc1$cases[idx.cases]
-    if (paired) {
-      # Paired curves must see the same patients.
-      auc2skeleton$controls <- roc2$controls[idx.controls]
-      auc2skeleton$cases <- roc2$cases[idx.cases]
-    } else {
-      auc2skeleton$controls <- roc2$controls[sample.int(length(roc2$controls), replace = TRUE)]
-      auc2skeleton$cases <- roc2$cases[sample.int(length(roc2$cases), replace = TRUE)]
-    }
-    builder <- "roc_cc_nochecks"
-  } else {
-    idx <- sample.int(length(roc1$response), replace = TRUE)
-    auc1skeleton$response <- roc1$response[idx]
-    auc1skeleton$predictor <- roc1$predictor[idx]
-    if (paired) {
-      auc2skeleton$response <- roc2$response[idx]
-      auc2skeleton$predictor <- roc2$predictor[idx]
-    } else {
-      idx2 <- sample.int(length(roc2$response), replace = TRUE)
-      auc2skeleton$response <- roc2$response[idx2]
-      auc2skeleton$predictor <- roc2$predictor[idx2]
-    }
-    builder <- "roc_rp_nochecks"
-  }
-
-  boot.roc1 <- try(do.call(builder, auc1skeleton), silent = TRUE)
-  boot.roc2 <- try(do.call(builder, auc2skeleton), silent = TRUE)
-  # A resampled curve may not be smoothable: report the replicate as missing.
-  if (methods::is(boot.roc1, "try-error") || methods::is(boot.roc2, "try-error")) {
+                                     curve1, curve2) {
+  # Draw every index before building anything, so that the random stream
+  # does not depend on which replicates fail
+  idx1 <- roc_utils_resample_idx(roc1, stratified)
+  # Paired curves must see the same patients.
+  idx2 <- if (paired) idx1 else roc_utils_resample_idx(roc2, stratified)
+  boot.roc1 <- bootstrap.resampled.curve(roc1, stratified, curve1$smoother, idx1)
+  boot.roc2 <- bootstrap.resampled.curve(roc2, stratified, curve2$smoother, idx2)
+  if (is.null(boot.roc1) || is.null(boot.roc2)) {
     return(c(NA_real_, NA_real_))
   }
-
   switch(test,
     sp = c(
-      coords(boot.roc1, x = x, input = "specificity", ret = "sensitivity")[1, 1],
-      coords(boot.roc2, x = x, input = "specificity", ret = "sensitivity")[1, 1]
+      bootstrap.se(boot.roc1, x)[1],
+      bootstrap.se(boot.roc2, x)[1]
     ),
     se = c(
-      coords(boot.roc1, x = x, input = "sensitivity", ret = "specificity")[1, 1],
-      coords(boot.roc2, x = x, input = "sensitivity", ret = "specificity")[1, 1]
+      bootstrap.sp(boot.roc1, x)[1],
+      bootstrap.sp(boot.roc2, x)[1]
     ),
-    c(as.numeric(boot.roc1$auc), as.numeric(boot.roc2$auc))
+    c(bootstrap.auc(boot.roc1, curve1$auc.args), bootstrap.auc(boot.roc2, curve2$auc.args))
   )
 }
 
@@ -545,145 +559,14 @@ bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
 ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress = FALSE,
                              cl = NULL, ...) {
   aucs <- roc_utils_drop_na_replicates(
-    bootstrap.replicates(boot.n, bootstrap.auc,
-      roc = roc, stratified = boot.stratified, simplify = "vector",
-      progress = progress, cl = cl
+    bootstrap.replicates(boot.n, bootstrap.replicate,
+      roc = roc, stratified = boot.stratified,
+      statistic = bootstrap.auc, na = NA_real_, auc.args = bootstrap.auc.args(roc$auc),
+      simplify = "vector", progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
   quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
-}
-
-bootstrap.auc <- function(n, roc, stratified) {
-  resampled <- roc_utils_resampled_roc(roc, stratified)
-  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
-    # A non-stratified resample can lose a class: NA replicate
-    return(NA_real_)
-  }
-  # as.numeric() drops the 'roc' attribute auc.roc() attaches: it is the whole
-  # resampled curve, which no caller of a bootstrap replicate ever reads.
-  as.numeric(auc.roc(resampled,
-    partial.auc = attr(roc$auc, "partial.auc"),
-    partial.auc.focus = attr(roc$auc, "partial.auc.focus"),
-    partial.auc.correct = attr(roc$auc, "partial.auc.correct"),
-    allow.invalid.partial.auc.correct = TRUE
-  ))
-}
-
-##########  AUC of a smooth ROC curve (ci.auc, var)  ##########
-
-bootstrap.smooth.auc <- function(n, roc, stratified, smooth.roc.call, auc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
-  if (methods::is(auc.call$smooth.roc, "try-error")) {
-    return(NA_real_)
-  }
-  as.numeric(eval(auc.call))
-}
-
-##########  SE and SP of a ROC curve (ci.se, ci.sp)  ##########
-
-bootstrap.se <- function(n, roc, stratified, sp) {
-  resampled <- roc_utils_resampled_roc(roc, stratified)
-  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
-    # A non-stratified resample can lose a class: NA replicate
-    return(rep(NA_real_, length(sp)))
-  }
-  coords.roc(resampled, sp, input = "specificity", ret = "sensitivity")[, 1]
-}
-
-bootstrap.sp <- function(n, roc, stratified, se) {
-  resampled <- roc_utils_resampled_roc(roc, stratified)
-  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
-    # A non-stratified resample can lose a class: NA replicate
-    return(rep(NA_real_, length(se)))
-  }
-  coords.roc(resampled, se, input = "sensitivity", ret = "specificity")[, 1]
-}
-
-##########  SE and SP of a smooth ROC curve (ci.se, ci.sp)  ##########
-
-bootstrap.smooth.se <- function(n, roc, stratified, sp, smooth.roc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
-  if (methods::is(smooth.roc, "try-error")) {
-    # One NA per requested specificity, as bootstrap.se
-    return(rep(NA_real_, length(sp)))
-  }
-  coords.smooth.roc(smooth.roc, sp, input = "specificity", ret = "sensitivity")[, 1]
-}
-
-bootstrap.smooth.sp <- function(n, roc, stratified, se, smooth.roc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
-  if (methods::is(smooth.roc, "try-error")) {
-    # One NA per requested sensitivity, as bootstrap.sp
-    return(rep(NA_real_, length(se)))
-  }
-  coords.smooth.roc(smooth.roc, se, input = "sensitivity", ret = "specificity")[, 1]
-}
-
-##########  Thresholds of a ROC curve (ci.thresholds)  ##########
-
-bootstrap.thresholds <- function(n, roc, stratified, thresholds) {
-  resampled <- roc_utils_resample(roc, stratified)
-  roc_utils_perfs_each(thresholds, resampled$controls, resampled$cases, roc$direction)
-}
-
-##########  Coords of a ROC curve (ci.coords)  ##########
-
-bootstrap.coords <- function(n, roc, stratified, x, input, ret,
-                             best.method, best.weights, best.policy) {
-  resampled <- roc_utils_resampled_roc(roc, stratified)
-  if (length(resampled$cases) == 0 || length(resampled$controls) == 0) {
-    # A non-stratified resample can lose a class: NA replicate
-    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
-  }
-  # Silence the "No coordinates found" warnings of resamples with no point in
-  # the partial AUC range: ci.coords reports the NA replicates once.
-  res <- suppressWarnings(coords.roc(resampled,
-    x = x, input = input, ret = ret,
-    best.method = best.method, best.weights = best.weights
-  ))
-  if (is.null(res)) {
-    # x = "best" found no point in the partial AUC range of this resample:
-    # NA replicate, with the shape of a successful one
-    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
-  }
-  enforce.best.policy.if.needed(res, x, best.policy)
-}
-
-##########  Coords of a smooth ROC curve (ci.coords)  ##########
-
-bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
-                                    best.method, best.weights, smooth.roc.call,
-                                    best.policy, auc.args = NULL) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
-  if (methods::is(smooth.roc, "try-error")) {
-    # Same shape as a successful replicate, so ci.coords can reshape all the
-    # replicates into an array without shifting the values
-    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
-  }
-  if (!is.null(auc.args)) {
-    # Partial AUC range of the curve, where coords.smooth.roc() searches "best"
-    # (uncorrected: only the range is used)
-    smooth.roc$auc <- do.call(auc.smooth.roc, c(list(smooth.roc), auc.args))
-  }
-  # coords.smooth.roc(), not coords.roc(): a smoothed curve has no thresholds,
-  # and the smooth method is what fills them with NA and resolves x = "best"
-  # before delegating. Calling coords.roc() directly left the "best" search
-  # comparing against absent thresholds.
-  res <- suppressWarnings(coords.smooth.roc(smooth.roc,
-    x = x, input = input, ret = ret,
-    best.method = best.method, best.weights = best.weights
-  ))
-  if (is.null(res)) {
-    # x = "best" found no point in the partial AUC range of this resample:
-    # NA replicate, with the shape of a successful one
-    return(as.data.frame(matrix(NA_real_, length(x), length(ret), dimnames = list(NULL, ret))))
-  }
-  enforce.best.policy.if.needed(res, x, best.policy)
 }
 
 # "best" can match several points; the policy decides which one the replicate
