@@ -378,25 +378,28 @@ test_that("plot.roc skips with a warning a ci.coords that does not map onto the 
 })
 
 test_that("panel.first and panel.last are drawn on smoothed curves from roc() and plot.roc()", {
+  pdf(NULL)
+  on.exit(dev.off())
   n <- 0
-  dl <- capture_display_list(s <- roc(aSAH$outcome, aSAH$s100b,
+  s <- roc(aSAH$outcome, aSAH$s100b,
     smooth = TRUE, plot = TRUE, quiet = TRUE,
     panel.first = {
       n <- n + 1
       abline(h = 0.5)
     },
     panel.last = text(0.5, 0.5, "last")
-  ))
+  )
   expect_equal(n, 1)
-  # identity line and panel.first
-  expect_length(display_list_calls(dl, "abline"), 2)
-  expect_identical(display_list_texts(dl), "last")
   expect_s3_class(s, "smooth.roc")
   expect_null(s$smoothing.args$panel.first)
   expect_null(s$smoothing.args$panel.last)
-
-  dl <- capture_display_list(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE, panel.last = text(0.5, 0.5, "last")))
-  expect_identical(display_list_texts(dl), "last")
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("roc-smooth-plot-panel-first-panel-last", function() {
+    roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, plot = TRUE, quiet = TRUE, panel.first = abline(h = 0.5), panel.last = text(0.5, 0.5, "last"))
+  })
+  expect_doppelganger("plot-roc-default-smooth-panel-last", function() {
+    plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE, panel.last = text(0.5, 0.5, "last"))
+  })
 })
 
 test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
