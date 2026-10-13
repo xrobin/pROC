@@ -220,9 +220,10 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   of 0 or 1 (100\%). Any such attempt will fail with the error
   \dQuote{ROC curve not smoothable (not enough points).}.
 
-  If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} cannot
-  estimate the parameters of the distribution (for example the standard
-  deviation of a normal distribution with a single case or control), the
+  If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
+  estimate the parameters of the distribution because the controls or
+  the cases take a single distinct value (for example with a
+  \dQuote{weibull} or \dQuote{logistic} density), the
   error \dQuote{ROC curve not smoothable (fitdistr could not estimate the
   distribution parameters).} is issued.
   With the \dQuote{normal}, \dQuote{lognormal}, \dQuote{exponential},

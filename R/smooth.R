@@ -273,9 +273,7 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   }
   fit.controls <- fit(roc$controls, densfun.controls, start.controls)
   fit.cases <- if (!is.null(fit.controls)) fit(roc$cases, densfun.cases, start.cases)
-  # fitdistr gives an NA sd for a normal or log-normal fit of a single observation
-  if (is.null(fit.cases) ||
-    !all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
+  if (is.null(fit.cases)) {
     stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
   }
   # Parameters in ... are held fixed by fitdistr, except for the densities it
