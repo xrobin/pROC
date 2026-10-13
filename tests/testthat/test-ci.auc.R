@@ -103,14 +103,13 @@ test_that("ci.auc and ci formula/default methods with smooth = TRUE can recomput
 
 test_that("ci.auc and ci formula/default methods with smooth = TRUE take method", {
   s <- smooth(r.s100b)
-  seed <- sample.int(1e6, 1)
-  set.seed(seed)
+  set.seed(42)
   expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
-  set.seed(seed)
+  set.seed(42)
   expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
-  set.seed(seed)
+  set.seed(42)
   expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
-  set.seed(seed)
+  set.seed(42)
   expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
 })
 
