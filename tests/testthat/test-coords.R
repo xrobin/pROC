@@ -817,12 +817,18 @@ test_that("coords of a smoothed curve with numeric x uses best.weights", {
   expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
 })
 
-test_that("coords with NA in a numeric non-threshold x gives a clear error", {
-  msg <- "Missing values are not allowed in 'x'."
-  expect_error(coords(r.s100b, c(0.5, NA), input = "sensitivity"), msg, fixed = TRUE)
-  expect_error(coords(r.s100b, NaN, input = "specificity"), msg, fixed = TRUE)
-  expect_error(coords(r.s100b, NA_real_, input = "fpr"), msg, fixed = TRUE)
-  expect_error(coords(smooth(r.s100b), c(0.5, NA), input = "specificity"), msg, fixed = TRUE)
+test_that("coords with NA in a numeric non-threshold x gives NA rows", {
+  res <- coords(r.s100b, c(0.5, NA), input = "sensitivity")
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "sensitivity"))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "specificity"))))
+  res <- coords(r.s100b, c(NA, 0.5), input = "fpr", ret = "all")
+  expect_true(all(is.na(res[1, ])))
+  expect_false(anyNA(res[2, colnames(res) != "threshold"]))
+  s <- smooth(r.s100b)
+  res <- coords(s, c(0.5, NA), input = "specificity")
+  expect_identical(res[1, ], coords(s, 0.5, input = "specificity"))
+  expect_true(all(is.na(res[2, ])))
 })
 
 test_that("coords rejects an invalid best.weights cost or prevalence", {

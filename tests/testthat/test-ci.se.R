@@ -70,6 +70,12 @@ test_that("ci.se of a smoothed curve with a corrected partial AUC does not warn 
   expect_false(any(grepl("Partial AUC correction not defined", warnings)))
 })
 
-test_that("ci.se with NA specificities gives a clear error", {
-  expect_error(ci.se(r.s100b, specificities = c(0.5, NA), boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+test_that("ci.se with NA specificities gives NA rows", {
+  set.seed(42)
+  ci <- ci.se(r.s100b, specificities = c(0.5, NA), boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.se(r.s100b, specificities = 0.5, boot.n = 10)
+  expect_identical(unclass(ci)[1, ], unclass(ci1)[1, ])
+  expect_identical(unname(unclass(ci)[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
 })
