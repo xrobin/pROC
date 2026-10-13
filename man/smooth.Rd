@@ -215,10 +215,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   will be displayed if the returned value differ in length.
 
   Binormal smoothing cannot smooth ROC curve defined by only one
-  point, or whose points all have the same specificity (or the same
-  sensitivity), ignoring the points with a sensitivity or specificity
-  of 0 or 1 (100\%). Any such attempt will fail with the error
-  \dQuote{ROC curve not smoothable (not enough points).}.
+  point. Any such attempt will fail with the error \dQuote{ROC curve not
+    smoothable (not enough points).}.
 
   If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
   estimate the parameters of the distribution because the controls or
