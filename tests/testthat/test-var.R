@@ -76,13 +76,12 @@ test_that("var with unsupported obuchowski cases errors without claiming to use 
 test_that("var works on smoothed percent curves", {
   s <- smooth(r.s100b)
   s.percent <- smooth(r.s100b.percent)
-  seed <- sample.int(1e6, 1)
-  set.seed(seed)
+  set.seed(42)
   v <- var(s, boot.n = 20, progress = "none")
-  set.seed(seed)
+  set.seed(42)
   v.percent <- var(s.percent, boot.n = 20, progress = "none")
   expect_equal(v.percent, v * 100^2)
-  set.seed(seed)
+  set.seed(42)
   expect_equal(var(auc(s.percent), boot.n = 20, progress = "none"), v * 100^2)
 })
 
