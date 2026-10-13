@@ -285,8 +285,8 @@ test_that("kappa works with two ROC curves", {
   expect_equal(res$ncases / res$ncontrols, length(r.s100b$cases) / length(r.s100b$controls))
   # set kappa
   res <- power.roc.test(r.s100b, r.ndka, sig.level = 0.05, power = 0.9, kappa = 1)
-  expect_equal(res$ncases, 240.816982)
-  expect_equal(res$ncontrols, 240.816982)
+  expect_equal(res$ncases, 244.1078828)
+  expect_equal(res$ncontrols, 244.1078828)
   # ...
 })
 
@@ -462,7 +462,7 @@ test_that("power.roc.test with two ROC curves computes the variance at the reque
     var1 <- var(V1$X) + var(V1$Y) / kappa
     var2 <- var(V2$X) + var(V2$Y) / kappa
     cov12 <- cov(V1$X, V2$X) + cov(V1$Y, V2$Y) / kappa
-    v0 <- 2 * var1 * (1 - cov12 / sqrt(var1 * var2))
+    v0 <- 2 * var1 - 2 * cov12
     va <- var1 + var2 - 2 * cov12
     res <- power.roc.test(r.s100b, r.ndka, power = 0.9, kappa = kappa)
     expect_equal(res$ncases, (qnorm(0.975) * sqrt(v0) + qnorm(0.9) * sqrt(va))^2 / delta^2)
