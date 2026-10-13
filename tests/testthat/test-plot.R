@@ -281,35 +281,23 @@ test_that("percent print.thres labels keep 3 decimals for the threshold", {
 })
 
 test_that("CI shapes are drawn in increasing order whatever order the CI was computed in", {
-  ci_sp <- suppressWarnings(ci.sp(r.s100b, sensitivities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none"))
-  o <- order(attr(ci_sp, "sensitivities"))
-  poly <- display_list_polygons(capture_display_list({
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  ci_sp <- ci.sp(r.s100b, sensitivities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_se <- ci.se(r.s100b, specificities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_co <- ci.coords(r.s100b, x = c(0.75, 0.25, 0.5), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-ci-sp-shape-unordered-sensitivities", function() {
     plot(r.s100b)
-    suppressWarnings(plot(ci_sp, type = "shape", no.roc = TRUE))
-  }))
-  expect_length(poly, 1)
-  expect_equal(poly[[1]]$y, c(0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0))
-  expect_equal(poly[[1]]$x, unname(c(1, ci_sp[o, 1], 0, rev(ci_sp[o, 3]), 1)))
-
-  ci_se <- suppressWarnings(ci.se(r.s100b, specificities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none"))
-  o <- order(attr(ci_se, "specificities"))
-  poly <- display_list_polygons(capture_display_list({
+    expect_warning(plot(ci_sp, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-se-shape-unordered-specificities", function() {
     plot(r.s100b)
-    suppressWarnings(plot(ci_se, type = "shape", no.roc = TRUE))
-  }))
-  expect_length(poly, 1)
-  expect_equal(poly[[1]]$x, c(0, 0.25, 0.5, 0.75, 1, 0.75, 0.5, 0.25, 0))
-  expect_equal(poly[[1]]$y, unname(c(1, ci_se[o, 1], 0, rev(ci_se[o, 3]), 1)))
-
-  ci_co <- suppressWarnings(ci.coords(r.s100b, x = c(0.75, 0.25, 0.5), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none"))
-  o <- order(attr(ci_co, "x"))
-  poly <- display_list_polygons(capture_display_list({
+    expect_warning(plot(ci_se, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-coords-shape-unordered-x", function() {
     plot(r.s100b)
-    suppressWarnings(plot(ci_co, type = "shape"))
-  }))
-  expect_length(poly, 1)
-  expect_equal(poly[[1]]$x, c(0.25, 0.5, 0.75, 0.75, 0.5, 0.25))
-  expect_equal(poly[[1]]$y, unname(c(ci_co[[1]][o, 1], rev(ci_co[[1]][o, 3]))))
+    expect_warning(plot(ci_co, type = "shape"), "Low definition shape")
+  })
 })
 
 test_that("print.auc does not print the CI of another AUC specification", {
