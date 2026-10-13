@@ -371,3 +371,10 @@ test_that("auc of a multiclass.roc computes each pairwise AUC once", {
   mr2 <- multiclass.roc(y, x, quiet = TRUE)
   expect_equal(as.numeric(auc(mr2)), mean(sapply(mr2$rocs, function(r) as.numeric(auc(r)))))
 })
+
+test_that("multivariate multiclass.roc says when only one column matches a level", {
+  y <- factor(c("a", "a", "b", "b", "c", "c"))
+  p <- matrix(c(.9, .8, .1, .2, .1, .3, .1, .2, .8, .7, .1, .2, 0, 0, .1, .1, .8, .5), ncol = 3, dimnames = list(NULL, c("a", "B", "C")))
+  expect_error(multiclass.roc(y, p), "Only one column of 'predictor' ('a') could be matched", fixed = TRUE)
+  expect_error(multiclass.roc(y, p[, "a", drop = FALSE]), "For a single decision value, please provide 'predictor' as a vector.", fixed = TRUE)
+})
