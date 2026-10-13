@@ -434,8 +434,10 @@ test_that("the lab graphical parameter sets the number of ticks", {
   expect_equal(par("yaxp")[3], 10)
   r <- roc(aSAH$outcome, aSAH$s100b, plot = TRUE, lab = c(10, 10, 7), quiet = TRUE)
   expect_equal(par("xaxp")[3], 10)
-  dl <- capture_display_list(plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE))
-  expect_identical(display_list_texts(dl), c("0.205 (0.806, 0.634)", "AUC: 0.731"))
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-lab-with-print-thres-print-auc", function() {
+    plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE)
+  })
 })
 
 test_that("graphical parameters in ... don't clash with the print.thres, print.auc and polygon arguments", {
