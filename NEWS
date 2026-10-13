@@ -148,7 +148,7 @@
   * Fixed confidence shapes of 'plot.ci' (type="shape"), 'plot.roc(ci.type="shape")' and 'geom_polygon_ci' crossing themselves when the CI was computed at specificities, sensitivities or x not in increasing order
   * Fixed 'plot.roc(print.auc=TRUE, reuse.auc=FALSE, partial.auc=...)' printing the new partial AUC with the confidence interval of the stored AUC
   * Fixed axis labels of 'plot.roc(legacy.axes=TRUE)' with 'percent=TRUE' padded with spaces and drawn off-centre
-  * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"); CIs that cannot be drawn on a ROC curve are now skipped with a warning
+  * Fixed 'plot.roc' drawing a 'ci.coords' confidence interval on the wrong axes (input other than specificity) or failing (x="best"): only the sensitivity at given specificities is drawn, other coordinates are skipped with a warning
   * Fixed 'panel.first' and 'panel.last' being evaluated before the plot (error or drawn on the previous plot) in 'roc(..., smooth=TRUE, plot=TRUE)' and 'plot.roc(response, predictor, smooth=TRUE)'
   * Fixed 'plot.roc' and 'lines.roc' default methods with 'smooth=TRUE' returning a curve that prints internal variable names
   * Fixed 'plot.roc(print.thres="all")' and 'geom_roc_threshold(thresholds="all")' marking the interpolated limits of the partial AUC as thresholds labelled "NA"

@@ -60,9 +60,9 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   \code{x} are drawn on the horizontal axis and the confidence interval of
   the first \code{ret} coordinate on the vertical axis (a warning is
   issued if there are several): on a ROC plot this matches the axes only
-  for \code{input="specificity"} and \code{ret="sensitivity"} (to draw
-  other coordinates on a ROC curve, store the CI in the curve and use
-  \code{\link{plot.roc}(ci = TRUE)}). \code{x} must be numeric:
+  for \code{input="specificity"} and \code{ret="sensitivity"}, the only
+  coordinates that \code{\link{plot.roc}(ci = TRUE)} draws (it skips
+  other coordinates with a warning). \code{x} must be numeric:
   \dQuote{best} or level labels of an ordered predictor give an error.
 
   These functions must be called on an existing plot

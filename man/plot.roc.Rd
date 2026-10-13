@@ -223,9 +223,11 @@ panel.last=NULL,
   }
   \item{ci}{boolean. Should we plot the confidence intervals? Defaults to
     \code{TRUE} if \code{x} has a \code{ci} field; \code{ci=TRUE} on a curve
-    without one is an error. A \code{\link{ci.coords}} CI is drawn only if
-    its \code{input} and \code{ret} give both the sensitivity and the
-    specificity; otherwise it is skipped with a warning.}
+    without one is an error. A \code{\link{ci.coords}} CI is drawn with
+    \code{\link{plot.ci.coords}} only for the sensitivity at given
+    specificities (\code{input="specificity"}, \code{ret="sensitivity"}),
+    the only coordinates that map onto the ROC axes; other coordinates are
+    skipped with a warning.}
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
