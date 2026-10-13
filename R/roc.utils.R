@@ -695,7 +695,8 @@ roc_utils_check_best_weights <- function(weights, arg = "best.weights") {
   if (!is.numeric(weights) || length(weights) != 2) {
     stop(sprintf("'%s' must be a numeric vector of length 2", arg))
   }
-  if (is.na(weights[1]) || weights[1] <= 0) {
+  # A NA cost gives a NA criterion
+  if (!is.na(weights[1]) && weights[1] <= 0) {
     stop(sprintf("cost ('%s[1]') must be positive.", arg))
   }
   if (is.na(weights[2]) || weights[2] <= 0 || weights[2] >= 1) {
