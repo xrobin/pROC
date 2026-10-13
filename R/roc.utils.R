@@ -683,9 +683,10 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 }
 
 
-# Whether x is a single non-missing number, to validate arguments
+# Whether x is a single non-missing number, to validate arguments.
+# A logical counts as a number, as in base R arithmetic (and t.test(conf.level = TRUE))
 roc_utils_is_single_number <- function(x) {
-  is.numeric(x) && length(x) == 1 && !is.na(x)
+  (is.numeric(x) || is.logical(x)) && length(x) == 1 && !is.na(x)
 }
 
 # Check the best.weights argument

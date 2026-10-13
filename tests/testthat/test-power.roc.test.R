@@ -524,4 +524,6 @@ test_that("power.roc.test rejects missing or vector arguments", {
   expect_error(power.roc.test(r.s100b, r.ndka, power = NA), "'power' must be a single number ranging from 0 to 1", fixed = TRUE)
   parslist <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6, delta = 0.037, FPR11 = 0, FPR12 = 0.2, FPR21 = 0, FPR22 = 0.2)
   expect_error(power.roc.test(parslist, ncases = NA, power = 0.9), "'ncases' must be a single positive number", fixed = TRUE)
+  # A logical is a number, as in base R arithmetic
+  expect_identical(power.roc.test(auc = 0.8, ncases = 40, ncontrols = 50, sig.level = TRUE)$power, power.roc.test(auc = 0.8, ncases = 40, ncontrols = 50, sig.level = 1)$power)
 })

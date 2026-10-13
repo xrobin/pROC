@@ -125,4 +125,6 @@ test_that("ci functions reject a missing or vector conf.level", {
     expect_error(ci.coords(r.s100b, "best", conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
     expect_error(ci.coords(smooth(r.s100b), "best", conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
   }
+  # A logical is a number, as in base R (t.test(conf.level = TRUE))
+  expect_identical(as.numeric(ci.auc(r.s100b, conf.level = TRUE)), as.numeric(ci.auc(r.s100b, conf.level = 1)))
 })
