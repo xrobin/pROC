@@ -119,7 +119,6 @@
   * 'power.roc.test' with two ROC curves now computes the variance at the requested 'kappa' (DeLong and Obuchowski methods) instead of the ratio observed in the data, and warns that it cannot with the bootstrap
   * The deprecated 'coords(as.list=TRUE)' now returns numeric coordinates on curves of ordered predictors
   * 'plot.roc' with 'ci=TRUE' on a curve without confidence interval now gives a clear error
-  * coords() now finds exact points of the curve that were missed through floating-point rounding (percent curves, count inputs such as tp/fn and complements such as fpr), which returned an interpolated point with threshold NA, sometimes at the wrong end of a flat segment. This also affected ci.se(), ci.sp(), ci.coords() and roc.test(method = "sensitivity"/"specificity") on percent curves, and counts returned by coords() are now integers.
   * pROC's ggplot2 layers (geom_*) now stop with a clear error on ggplot2 < 4.0.0 instead of a cryptic '@' error
   * roc.test() now returns 'data.name' as a single string for long calls, which were printed garbled
   * geom_roc_threshold() now gives clear errors for 'local maximas' and numeric thresholds on smoothed curves

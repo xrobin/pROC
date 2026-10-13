@@ -131,8 +131,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
   For a numeric \code{x} with any other \code{input} than
   \dQuote{threshold} (\dQuote{specificity}, \dQuote{sensitivity},
   \dQuote{fpr}, \dQuote{tp}, ...), the function checks if the value is
-  one of the points of the ROC curve (up to floating-point error, for
-  example with \code{percent=TRUE} or counts). More than one point may
+  one of the points of the ROC curve. More than one point may
   match (in \emph{step} curves), then only the upper-left-most point
   coordinates are returned. Otherwise, the point is interpolated
   between the two neighbouring points of the curve and \code{NA} is returned
