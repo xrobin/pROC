@@ -66,12 +66,11 @@ test_that("ci formula and default methods work with smooth = TRUE", {
   )) {
     fun <- pair[[1]]
     args <- c(list(smooth = TRUE, boot.n = 5, quiet = TRUE), pair[[2]])
-    seed <- sample.int(1e6, 1)
-    set.seed(seed)
+    set.seed(42)
     obs.smooth <- do.call(fun, c(list(s), args[!names(args) %in% c("smooth", "quiet")]))
-    set.seed(seed)
+    set.seed(42)
     obs.default <- do.call(fun, c(list(response = aSAH$outcome, predictor = aSAH$s100b), args))
-    set.seed(seed)
+    set.seed(42)
     obs.formula <- do.call(fun, c(list(formula = outcome ~ s100b, data = aSAH), args))
     expect_s3_class(obs.default, pair[[3]])
     expect_s3_class(obs.formula, pair[[3]])
