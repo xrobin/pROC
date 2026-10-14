@@ -590,6 +590,8 @@ test_that("roc.test rejects a missing or vector conf.level", {
   msg <- "conf.level must be a single number between 0 and 1."
   expect_error(roc.test(r.s100b, r.ndka, conf.level = NA_real_), msg, fixed = TRUE)
   expect_error(roc.test(r.s100b, r.ndka, conf.level = c(0.9, 0.95)), msg, fixed = TRUE)
+  # Not checked where it is not used
+  expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = c(0.9, 0.95)), "htest")
 })
 
 test_that("roc(smooth = TRUE) does not take the x of ci.coords or the log of plot as smoothing arguments", {
