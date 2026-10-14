@@ -1,32 +1,5 @@
 context("plot.auc")
 
-# polygon area via the shoelace formula, used to cross-check that the
-# partial-AUC polygon vertices (the riskiest part of polygon_auc) enclose
-# exactly the AUC's own area. Only valid for uncorrected partial AUCs:
-# partial.auc.correct rescales the AUC value (McClish), so it is no longer
-# the geometric area of the drawn shape.
-polygon_area <- function(x, y) {
-  abs(sum(x * c(y[-1], y[1]) - c(x[-1], x[1]) * y)) / 2
-}
-
-# trace()'s tracer always runs in the global environment, so a plain local
-# `captured <<- ...` would silently create/update a *different* global
-# variable instead of the caller's local one. Go through an explicit,
-# dedicated global binding instead.
-capture_polygon_call <- function(expr) {
-  assign(".test_captured_polygon", NULL, envir = globalenv())
-  trace(graphics::polygon,
-    tracer = quote(assign(".test_captured_polygon", list(x = x, y = y), envir = globalenv())),
-    print = FALSE
-  )
-  on.exit({
-    suppressMessages(try(untrace(graphics::polygon), silent = TRUE))
-    rm(".test_captured_polygon", envir = globalenv())
-  })
-  force(expr)
-  get(".test_captured_polygon", envir = globalenv())
-}
-
 test_that("text(auc), text(ci.auc) and text(roc) match ggroc_auc_label()", {
   pdf(NULL)
   on.exit(dev.off())
@@ -57,23 +30,20 @@ test_that("text() ignores a non-ci.auc confidence interval", {
   expect_identical(text(roc_se_ci), ggroc_auc_label(roc_se_ci$auc))
 })
 
-test_that("polygon_auc partial polygon area matches the (uncorrected) partial AUC: focus sp", {
-  pdf(NULL)
-  on.exit(dev.off())
-
-  plot(r.s100b.partial1)
-  captured <- capture_polygon_call(polygon_auc(r.s100b.partial1))
-  expect_equal(polygon_area(captured$x, captured$y), as.numeric(r.s100b.partial1$auc))
+test_that("polygon_auc draws the partial AUC area: focus sp", {
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("polygon_auc-partial-focus-sp", function() {
+    plot(r.s100b.partial1)
+    polygon_auc(r.s100b.partial1)
+  })
 })
 
-test_that("polygon_auc partial polygon area matches the (uncorrected) partial AUC: focus se, percent", {
-  pdf(NULL)
-  on.exit(dev.off())
-
-  plot(r.s100b.percent.partial2)
-  captured <- capture_polygon_call(polygon_auc(r.s100b.percent.partial2))
-  # percent-scale coordinates: area is 100x the (already /100) auc value
-  expect_equal(polygon_area(captured$x, captured$y), as.numeric(r.s100b.percent.partial2$auc) * 100)
+test_that("polygon_auc draws the partial AUC area: focus se, percent", {
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("polygon_auc-partial-focus-se-percent", function() {
+    plot(r.s100b.percent.partial2)
+    polygon_auc(r.s100b.percent.partial2)
+  })
 })
 
 test_that("polygon_auc/polygon_max_auc/text work on 'auc', 'roc' and 'smooth.roc'", {
@@ -238,30 +208,19 @@ test_that("the target documentation example renders without error", {
 })
 
 test_that("polygon_ci() never redraws the curve, unlike plot.ci(type='shape', no.roc=FALSE)", {
-  pdf(NULL)
-  on.exit(dev.off())
-
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
   ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
-
-  assign(".test_call_count", 0L, envir = globalenv())
-  trace(pROC:::plot.roc.roc,
-    tracer = quote(assign(".test_call_count", get(".test_call_count", envir = globalenv()) + 1L, envir = globalenv())),
-    print = FALSE
-  )
-  on.exit({
-    suppressMessages(try(untrace(pROC:::plot.roc.roc), silent = TRUE))
-    rm(".test_call_count", envir = globalenv())
+  # Only the shape is drawn over the red curve: no default-styled redraw
+  expect_doppelganger("polygon_ci-no-redraw", function() {
+    plot(r.s100b, col = "red", lwd = 4)
+    polygon_ci(ci_se)
   })
-
-  plot(r.s100b) # counts too, since the trace is already active; reset after
-  assign(".test_call_count", 0L, envir = globalenv())
-  plot(ci_se, type = "shape")
-  expect_equal(get(".test_call_count", envir = globalenv()), 1) # default (no.roc=FALSE) redraws the curve once
-
-  plot(r.s100b)
-  assign(".test_call_count", 0L, envir = globalenv())
-  polygon_ci(ci_se)
-  expect_equal(get(".test_call_count", envir = globalenv()), 0) # polygon_ci() never redraws
+  # plot.ci(type = "shape") redraws the curve once, in the default style
+  expect_doppelganger("plot.ci-shape-redraws", function() {
+    plot(r.s100b, col = "red", lwd = 4)
+    plot(ci_se, type = "shape")
+  })
 })
 
 test_that("polygon_ci() preserves custom curve styling when used via panel.first", {
