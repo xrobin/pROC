@@ -132,15 +132,6 @@ roc.test.roc <- function(roc1, roc2,
                          conf.level = 0.95,
                          ...) {
   alternative <- match.arg(alternative)
-  # Check if conf.level is specified correctly. This is currently
-  # only used for the delong paired method, but the method may not be known yet.
-  if (!is.numeric(conf.level)) {
-    stop("conf.level must be numeric between 0 and 1.")
-  } else if (!roc_utils_is_single_number(conf.level)) {
-    stop("conf.level must be a single number between 0 and 1.")
-  } else if (0 > conf.level | 1 < conf.level) {
-    stop("conf.level must be between 0 and 1.")
-  }
   data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
@@ -345,6 +336,14 @@ roc.test.roc <- function(roc1, roc2,
 
   if (method == "delong") {
     if (paired) {
+      # Check if conf.level is specified correctly. It is only used here, for the
+      # CI of the paired test, whether the method was given or selected automatically.
+      # A logical counts as a number, as in t.test()
+      if (!is.numeric(conf.level) && !is.logical(conf.level)) {
+        stop("conf.level must be numeric between 0 and 1.")
+      } else if (anyNA(conf.level) || any(0 > conf.level | 1 < conf.level)) {
+        stop("conf.level must be between 0 and 1.")
+      }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
       stat <- delong.paired.test(delong.calcs)
       stat.ci <- ci_delong_paired(delong.calcs, conf.level)
