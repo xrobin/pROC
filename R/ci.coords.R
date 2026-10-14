@@ -21,25 +21,36 @@ ci.coords <- function(...) {
   UseMethod("ci.coords")
 }
 
-ci.coords.formula <- function(formula, data, ...) {
+ci.coords.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.coords'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.coords(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.coords(smooth.roc = roc, ...))
+  } else {
+    return(ci.coords(roc = roc, ...))
+  }
 }
 
 ci.coords.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
     stop("'ci.coords' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.coords(smooth.roc = roc, ...))
   } else {
@@ -58,8 +69,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
                                  progress = getOption("pROCProgress", interactive()),
                                  cl = NULL,
                                  ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
@@ -70,7 +81,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # A smoothed curve has no thresholds, hence threshold = FALSE, as in
   # coords.smooth.roc().
   input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
-  ret <- roc_utils_match_coords_ret_args(ret)
+  ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = smooth.roc)
   if (!is.na(special)) {
@@ -88,6 +99,14 @@ ci.coords.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate (and
+  # warn if a corrected partial AUC is not defined). Only the partial AUC range
+  # is needed (for "best"): bootstrap.smooth.coords() restores it.
+  roc$auc <- NULL
+  auc.args <- NULL
+  if (!is.null(smooth.roc$auc) && !identical(attr(smooth.roc$auc, "partial.auc"), FALSE)) {
+    auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
+  }
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
@@ -95,7 +114,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
     roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    smooth.roc.call = smooth.roc.call, best.policy = best.policy,
+    smooth.roc.call = smooth.roc.call, best.policy = best.policy, auc.args = auc.args,
     simplify = "list", progress = progress, cl = cl
   )
   # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
@@ -139,8 +158,8 @@ ci.coords.roc <- function(roc,
                           progress = getOption("pROCProgress", interactive()),
                           cl = NULL,
                           ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
@@ -150,23 +169,27 @@ ci.coords.roc <- function(roc,
 
   input <- roc_utils_match_coords_input_args(input)
 
-  if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
-    # Don't show NA thresholds by default (including ordered curves, where
-    # a threshold interval cannot be computed).
-    ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
-  } else {
-    ret <- roc_utils_match_coords_ret_args(ret)
-    if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
-      warning("A confidence interval for 'threshold' is not available for ordered ROC curves.")
-    }
-  }
-
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = roc)
   if (!is.na(special)) {
     x <- special
     if (x == "all" || x == "local maximas") {
       stop("'all' and 'local maximas' are not available for confidence intervals.")
+    }
+  }
+
+  if (missing(ret) && (input != "threshold" || roc_utils_is_ordered_roc(roc))) {
+    # Don't show NA thresholds by default (including ordered curves, where
+    # a threshold interval cannot be computed).
+    ret <- roc_utils_match_coords_ret_args(setdiff(ret, "threshold"), threshold = FALSE)
+  } else if (identical(ret, "all") && !(identical(x, "best") || input == "threshold")) {
+    # No threshold interval for a non-threshold input (see the check below):
+    # "all" means all the other coordinates, as for smoothed curves
+    ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
+  } else {
+    ret <- roc_utils_match_coords_ret_args(ret)
+    if (roc_utils_is_ordered_roc(roc) && "threshold" %in% ret) {
+      warning("A confidence interval for 'threshold' is not available for ordered ROC curves.")
     }
   }
 

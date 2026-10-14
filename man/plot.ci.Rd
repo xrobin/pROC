@@ -33,7 +33,7 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   }
   \item{type}{type of plot, \dQuote{bars} or \dQuote{shape}. Can be
     shortened to \dQuote{b} or \dQuote{s}. \dQuote{shape} is only available for
-    \code{ci.se} and \code{ci.sp}, not for \code{ci.thresholds}.
+    \code{ci.se}, \code{ci.sp} and \code{ci.coords}, not for \code{ci.thresholds}.
   }
   \item{length}{the length (as plot coordinates) of the bar ticks. Only
     if \code{type="bars"}.
@@ -55,6 +55,15 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   bars or as a confidence shape, depending on the state of the
   \code{type} argument. The shape is plotted over the ROC curve, so that
   the curve is re-plotted unless \code{no.roc=TRUE}.
+
+  With a \code{\link{ci.coords}} object, the coordinates given as
+  \code{x} are drawn on the horizontal axis and the confidence interval of
+  the first \code{ret} coordinate on the vertical axis (a warning is
+  issued if there are several): on a ROC plot this matches the axes only
+  for \code{input="specificity"} and \code{ret="sensitivity"}, the only
+  coordinates that \code{\link{plot.roc}(ci = TRUE)} draws (it skips
+  other coordinates with a warning). \code{x} must be numeric:
+  \dQuote{best} or level labels of an ordered predictor give an error.
 
   These functions must be called on an existing plot
   (\code{\link{dev.cur}() == 1} is an error).
@@ -78,7 +87,7 @@ This function returns the confidence interval object invisibly.
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 

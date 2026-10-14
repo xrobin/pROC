@@ -26,7 +26,7 @@ has.partial.auc.auc <- function(roc) {
     return(NULL)
   }
 
-  is.numeric(attr(roc, "partial.auc")) && length(attr(roc, "partial.auc") == 2)
+  is.numeric(attr(roc, "partial.auc")) && length(attr(roc, "partial.auc")) == 2
 }
 
 has.partial.auc.smooth.roc <- function(roc) {

@@ -88,10 +88,10 @@ var.roc <- function(roc,
       }
     } else if (method == "obuchowski") {
       if ("smooth.roc" %in% class(roc)) {
-        stop("Using Obuchowski for smoothed ROCs is not supported. Using bootstrap instead.")
+        stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-        stop("Using Obuchowski for partial AUC on sensitivity region is not supported. Using bootstrap instead.")
+        stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
     }
   }
@@ -116,9 +116,16 @@ var.roc <- function(roc,
 var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl = NULL, ...) {
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
+    # Check if called with density.cases or density.controls
+    if (is.null(roc$smoothing.args) || is.numeric(roc$smoothing.args$density.cases) || is.numeric(roc$smoothing.args$density.controls)) {
+      stop("Cannot compute the variance of ROC curves smoothed with numeric density.controls and density.cases.")
+    }
     smoothing.args <- roc$smoothing.args
     smoothing.args$smooth <- TRUE
     non.smoothed.roc <- attr(roc, "roc")
+    # smooth.roc() would recompute its auc on each replicate (and warn if a
+    # corrected partial AUC is not defined): the replicate AUC is auc.call's
+    non.smoothed.roc$auc <- NULL
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
     smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), roc$smoothing.args))
     auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]

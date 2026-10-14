@@ -21,24 +21,40 @@ ci <- function(...) {
   UseMethod("ci")
 }
 
-ci.formula <- function(formula, data, ...) {
+ci.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.roc(roc(response, predictor, ...), ...)
+  roc <- roc(response, predictor, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci(smooth.roc = roc, ...))
+  } else {
+    return(ci(roc = roc, ...))
+  }
 }
 
 ci.default <- function(response, predictor, ...) {
+  if (inherits(response, "mv.multiclass.roc")) {
+    stop("CI of a multiclass ROC curve not implemented")
+  } else if (inherits(response, "mv.multiclass.auc")) {
+    stop("CI of a multiclass AUC not implemented")
+  }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
-    return(ci.roc(smooth.roc = roc, ...))
+    return(ci.smooth.roc(smooth.roc = roc, ...))
   } else {
     return(ci.roc(roc = roc, ...))
   }
@@ -48,13 +64,13 @@ ci.smooth.roc <- function(smooth.roc, of = c("auc", "sp", "se", "coords"), ...) 
   of <- match.arg(of)
 
   if (of == "auc") {
-    ci <- ci.auc.smooth.roc(smooth.roc, ...)
+    ci <- ci.auc.smooth.roc(smooth.roc = smooth.roc, ...)
   } else if (of == "sp") {
-    ci <- ci.sp.smooth.roc(smooth.roc, ...)
+    ci <- ci.sp.smooth.roc(smooth.roc = smooth.roc, ...)
   } else if (of == "se") {
-    ci <- ci.se.smooth.roc(smooth.roc, ...)
+    ci <- ci.se.smooth.roc(smooth.roc = smooth.roc, ...)
   } else if (of == "coords") {
-    ci <- ci.coords.smooth.roc(smooth.roc, ...)
+    ci <- ci.coords.smooth.roc(smooth.roc = smooth.roc, ...)
   } else {
     stop(sprintf("Unknown 'of' for CI: %s", of))
   }

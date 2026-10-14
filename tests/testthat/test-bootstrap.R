@@ -231,3 +231,96 @@ test_that("stratified and non-stratified resampling keep their shapes", {
   expect_equal(length(nonstrat$controls) + length(nonstrat$cases),
                length(r.s100b$predictor))
 })
+
+test_that("non-stratified bootstrap drops the resamples that lose a class", {
+  set.seed(42)
+  # 2 cases (or controls) among 20: about 12% of the resamples have none,
+  # so some of 200 resamples always do (all keep both classes with p < 1e-11)
+  resp <- c(rep(0, 18), rep(1, 2))
+  pred <- c(1:18, 12.5, 19)
+  r.few.cases <- roc(resp, pred, quiet = TRUE)
+  r.few.controls <- roc(1 - resp, -pred, quiet = TRUE)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  for (r in list(r.few.cases, r.few.controls)) {
+    cis <- list()
+    expect_warning(cis$se <- ci.se(r, specificities = 0.5, boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$sp <- ci.sp(r, sensitivities = 0.5, boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$sp.se <- ci.coords(r, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$se.sp <- ci.coords(r, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$thr <- ci.thresholds(r, thresholds = 15, boot.n = 200, boot.stratified = FALSE), na.warning)
+    for (ci in cis) {
+      values <- as.numeric(unlist(unclass(ci)))
+      expect_false(anyNA(values))
+      expect_true(all(values >= 0 & values <= 1))
+    }
+  }
+})
+
+test_that("non-stratified ci.auc and var drop the resamples that lose the controls", {
+  set.seed(42)
+  # 2 controls out of 10: about 11% of the resamples lose both of them, so
+  # some of 200 resamples always do (none does with p < 1e-9)
+  r <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  expect_warning(ci <- ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.auc")
+  expect_warning(v <- var(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_true(is.numeric(v))
+})
+
+test_that("non-stratified bootstraps of ordered predictors drop the resamples that lose a class", {
+  set.seed(42)
+  pred <- factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), levels = c("a", "b", "c", "d"), ordered = TRUE)
+  r <- roc(c(0, 0, rep(1, 8)), pred, quiet = TRUE)
+  # 2 controls out of 10: some of 200 resamples always lose both (none does with p < 1e-9)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  expect_warning(ci <- ci.se(r, specificities = 0.5, boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.se")
+  expect_warning(ci <- ci.sp(r, sensitivities = 0.5, boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.sp")
+  expect_warning(ci <- ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.auc")
+  expect_warning(ci <- ci.coords(r, "b", input = "threshold", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.coords")
+})
+
+test_that("boot.n must be a non-negative number", {
+  set.seed(42)
+  msg <- "'boot.n' must be a non-negative number."
+  for (boot.n in list(-1, NA, Inf, "a", numeric(0))) {
+    expect_error(ci.auc(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.auc(smooth(r.s100b), boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(var(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.se(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.sp(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.thresholds(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.coords(r.s100b, "best", boot.n = boot.n), msg, fixed = TRUE)
+  }
+  # An integer-valued double or an integer is fine
+  expect_equal(attr(ci.auc(r.s100b, method = "bootstrap", boot.n = 2L), "boot.n"), 2L)
+})
+
+test_that("boot.n is read as seq_len() does", {
+  # A fraction is truncated
+  set.seed(42)
+  a <- ci.auc(r.s100b, method = "bootstrap", boot.n = 2.5)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  set.seed(42)
+  t <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2.5)
+  set.seed(42)
+  t2 <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2)
+  expect_identical(t$parameter, t2$parameter)
+  expect_identical(t$p.value, t2$p.value)
+  # A vector uses its first element, with a warning
+  set.seed(42)
+  expect_warning(a <- ci.auc(r.s100b, method = "bootstrap", boot.n = c(2, 10)), "first element used of 'boot.n' argument", fixed = TRUE)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  # boot.n = 0 runs no replicate: a NA CI or p-value, as before
+  expect_identical(as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 0)), rep(NA_real_, 3))
+  expect_identical(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 0)$p.value, NaN)
+})

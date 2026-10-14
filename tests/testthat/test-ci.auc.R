@@ -75,3 +75,57 @@ for (stratified in c(TRUE, FALSE)) {
     })
   }
 }
+
+test_that("ci.auc of a smoothed percent curve with a corrected partial AUC is 100x the fraction one", {
+  s <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(1, 0.8), partial.auc.correct = TRUE, quiet = TRUE))
+  s.percent <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(100, 80), partial.auc.correct = TRUE, percent = TRUE, quiet = TRUE))
+  set.seed(42)
+  ci.fraction <- ci.auc(s, boot.n = 10)
+  set.seed(42)
+  ci.percent <- ci.auc(s.percent, boot.n = 10)
+  expect_false(anyNA(ci.percent))
+  expect_equal(as.numeric(ci.percent), 100 * as.numeric(ci.fraction))
+})
+
+test_that("ci.auc and ci formula/default methods with smooth = TRUE can recompute the AUC", {
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE))
+  set.seed(42)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, reuse.auc = FALSE, progress = "none"))
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+})
+
+test_that("ci.auc and ci formula/default methods with smooth = TRUE take method", {
+  s <- smooth(r.s100b)
+  set.seed(42)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+})
+
+test_that("ci functions reject a missing or vector conf.level", {
+  set.seed(42)
+  for (conf.level in list(NA, NA_real_, c(0.9, 0.95), "0.95")) {
+    expect_error(ci.auc(r.s100b, conf.level = conf.level), "conf.level must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.auc(smooth(r.s100b), conf.level = conf.level), "conf.level must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.se(r.s100b, conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.se(smooth(r.s100b), conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.sp(r.s100b, conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.sp(smooth(r.s100b), conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.thresholds(r.s100b, conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.coords(r.s100b, "best", conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+    expect_error(ci.coords(smooth(r.s100b), "best", conf.level = conf.level), "'conf.level' must be a single number within the interval [0,1].", fixed = TRUE)
+  }
+  # A logical is a number, as in base R (t.test(conf.level = TRUE))
+  expect_identical(as.numeric(ci.auc(r.s100b, conf.level = TRUE)), as.numeric(ci.auc(r.s100b, conf.level = 1)))
+})

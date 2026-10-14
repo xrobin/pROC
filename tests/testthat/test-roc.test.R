@@ -53,6 +53,35 @@ test_that("roc.test statistic and p are as expected with defaults", {
   expect_identical(attr(t3$conf.int, "conf.level"), 0.95)
 })
 
+test_that("paired DeLong conf.int is on the percent scale of percent curves", {
+  t1p <- roc.test(r.wfns.percent, r.s100b.percent)
+  expect_equal(t1p$conf.int[1:2], t1$conf.int[1:2] * 100)
+  expect_identical(attr(t1p$conf.int, "conf.level"), 0.95)
+  expect_equal(t1p$statistic, t1$statistic)
+})
+
+test_that("roc.test checks conf.level when the method is selected automatically", {
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, conf.level = "0.9"), "conf.level must be numeric")
+  expect_error(roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, method = "delong", conf.level = 2), "conf.level must be between 0 and 1")
+  # A logical is a number, as in t.test()
+  expect_identical(as.numeric(roc.test(r.wfns, r.s100b, conf.level = TRUE)$conf.int), as.numeric(roc.test(r.wfns, r.s100b, conf.level = 1)$conf.int))
+})
+
+test_that("roc.test does not check conf.level for the tests that do not use it", {
+  set.seed(42)
+  expect_warning(ref <- roc.test(r.wfns, r.s100b, paired = FALSE), "paired")
+  for (conf.level in list(2, NA, "0.9")) {
+    expect_warning(ht <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = conf.level), "paired")
+    expect_identical(ht$p.value, ref$p.value)
+    expect_warning(ht <- roc.test(r.wfns, r.s100b, method = "delong", paired = FALSE, conf.level = conf.level), "paired")
+    expect_identical(ht$p.value, ref$p.value)
+    expect_is(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = conf.level), "htest")
+    expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = conf.level), "htest")
+  }
+})
+
 test_that("two.sided roc.test produces identical p values when roc curves are reversed", {
   t1b <- roc.test(r.s100b, r.wfns)
   expect_equal(t1b$p.value, t1$p.value)
@@ -307,4 +336,294 @@ test_that("se/sp roc.test works with mixed roc, auc and smooth.roc objects", {
       }
     }
   }
+})
+
+test_that("roc.test keeps the partial AUC of auc objects of smoothed curves", {
+  a1 <- auc(smooth(r.s100b), partial.auc = c(1, .8))
+  a2 <- auc(smooth(r.ndka), partial.auc = c(1, .8))
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(1, .8)))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, .8)))
+  set.seed(42)
+  t.auc <- roc.test(a1, a2, boot.n = 10)
+  set.seed(42)
+  t.smooth <- roc.test(s1, s2, boot.n = 10)
+  expect_equal(unname(t.auc$estimate), c(as.numeric(a1), as.numeric(a2)))
+  expect_equal(t.auc$estimate, t.smooth$estimate)
+  expect_equal(t.auc$statistic, t.smooth$statistic)
+})
+
+test_that("roc.test errors on curves smoothed with numeric densities", {
+  set.seed(42)
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_warning(
+    expect_error(roc.test(s1, s2, boot.n = 2), "smoothed with numeric density.controls and density.cases"),
+    "Different smoothing parameters"
+  )
+})
+
+test_that("roc.test errors on curves built from numeric densities", {
+  set.seed(42)
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(roc.test(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("roc.test.default with predictor2 = NULL gives the missing predictor2 error", {
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, NULL), "Missing argument predictor2")
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, predictor2 = NULL), "Missing argument predictor2")
+})
+
+test_that("roc.test selects the bootstrap when only roc2 has a partial AUC", {
+  set.seed(42)
+  expect_warning(res.12 <- roc.test(r.ndka, r.s100b.partial1, boot.n = 10), "Different AUC specifications")
+  set.seed(42)
+  expect_warning(res.21 <- roc.test(r.s100b.partial1, r.ndka, boot.n = 10), "Different AUC specifications")
+  expect_equal(res.12$method, res.21$method)
+  expect_equal(res.12$statistic, -res.21$statistic)
+})
+
+test_that("roc.test returns the documented data.name", {
+  t <- roc.test(r.wfns, r.s100b)
+  expect_identical(t$data.name, "r.wfns and r.s100b")
+  t <- roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b)
+  expect_identical(t$data.name, t$data.names)
+  t <- roc.test(outcome ~ wfns + s100b, aSAH)
+  expect_identical(t$data.name, t$data.names)
+  old <- options(warnPartialMatchDollar = TRUE)
+  on.exit(options(old))
+  expect_warning(capture.output(print(t)), NA)
+})
+
+test_that("sensitivity and specificity tests report the tested values as estimates", {
+  set.seed(42)
+  t.sp <- roc.test(r.ndka, r.s100b, method = "specificity", specificity = 0.8, boot.n = 2)
+  expect_equal(unname(t.sp$estimate), c(
+    coords(r.ndka, 0.8, input = "specificity", ret = "sensitivity")[1, 1],
+    coords(r.s100b, 0.8, input = "specificity", ret = "sensitivity")[1, 1]
+  ))
+  expect_match(names(t.sp$estimate), "sensitivity of roc[12] at 0.8 specificity")
+  t.se <- roc.test(r.ndka, r.s100b, method = "sensitivity", sensitivity = 0.8, boot.n = 2)
+  expect_equal(unname(t.se$estimate), c(
+    coords(r.ndka, 0.8, input = "sensitivity", ret = "specificity")[1, 1],
+    coords(r.s100b, 0.8, input = "sensitivity", ret = "specificity")[1, 1]
+  ))
+})
+
+test_that("roc.test data.name is a single string for long calls", {
+  set.seed(42)
+  t1 <- roc.test(
+    roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE),
+    roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  )
+  expect_length(t1$data.name, 1)
+  expect_identical(t1$data.names, t1$data.name)
+  expect_match(t1$data.name, "quiet = TRUE) and roc(aSAH$outcome, aSAH$wfns", fixed = TRUE)
+
+  t2 <- roc.test(aSAH$outcome, aSAH$s100b * 1000 + aSAH$ndka * 0 + aSAH$age * 0, aSAH$ndka * 1000 + aSAH$s100b * 0 + aSAH$age * 0, quiet = TRUE)
+  expect_length(t2$data.name, 1)
+  expect_match(t2$data.name, "aSAH$s100b * 1000 + aSAH$ndka * 0 + aSAH$age * 0 and aSAH$ndka * 1000", fixed = TRUE)
+
+  t3 <- roc.test(outcome ~ s100b + ndka, data = aSAH[aSAH$age > 0 & aSAH$gender %in% c("Male", "Female") & !is.na(aSAH$wfns), ], quiet = TRUE)
+  expect_length(t3$data.name, 1)
+  expect_match(t3$data.name, "in aSAH[aSAH$age > 0", fixed = TRUE)
+
+  t4 <- roc.test(
+    auc(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    roc(aSAH$outcome, aSAH$wfns, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)
+  )
+  expect_length(t4$data.name, 1)
+
+  t5 <- roc.test(
+    smooth(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    smooth(roc(aSAH$outcome, aSAH$ndka, levels = c("Good", "Poor"), direction = "<", quiet = TRUE)),
+    method = "bootstrap", boot.n = 10, progress = "none"
+  )
+  expect_length(t5$data.name, 1)
+
+  t6 <- roc.test(aSAH$outcome, data.frame(s100b = aSAH$s100b, ndka = aSAH$ndka, check.names = FALSE, stringsAsFactors = FALSE), quiet = TRUE)
+  expect_length(t6$data.name, 1)
+  expect_match(t6$data.name, "s100b and ndka in data.frame(s100b = aSAH$s100b", fixed = TRUE)
+})
+
+test_that("bootstrap se/sp tests give D = 0 when the tested values never differ", {
+  set.seed(42)
+  # se = 1 at sp = 0 and sp = 1 at se = 0 in every resample: zero variance
+  t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, boot.n = 20, progress = "none")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  t <- roc.test(r.s100b, r.ndka, method = "sensitivity", sensitivity = 0, boot.n = 20, progress = "none")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  # unpaired
+  expect_warning(t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, paired = FALSE, boot.n = 20, progress = "none"))
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+})
+
+test_that("paired DeLong roc.test with a single case or control returns NA", {
+  resp <- c(0, 1, 0, 0) # 1 case, 3 controls
+  r1 <- roc(resp, c(0.1, 0.25, 0.2, 0.3), direction = "<", quiet = TRUE) # AUC 2/3
+  r2 <- roc(resp, c(0.3, 0.25, 0.1, 0.2), direction = "<", quiet = TRUE) # AUC 2/3
+  r3 <- roc(resp, c(0.4, 0.5, 0.6, 0.9), direction = "<", quiet = TRUE) # AUC 1/3
+  t12 <- roc.test(r1, r2)
+  expect_true(is.na(t12$p.value))
+  expect_true(is.nan(t12$statistic))
+  expect_true(is.na(roc.test(r1, r1)$p.value))
+  expect_true(is.na(roc.test(r1, r3)$p.value))
+
+  resp2 <- c(1, 0, 1, 1) # 1 control, 3 cases
+  r4 <- roc(resp2, c(0.6, 0.65, 0.7, 0.8), direction = "<", quiet = TRUE)
+  r5 <- roc(resp2, c(0.9, 0.65, 0.3, 0.7), direction = "<", quiet = TRUE)
+  expect_true(is.na(roc.test(r4, r5)$p.value))
+})
+
+test_that("roc.test default/formula give a clear error when roc() returns NaN", {
+  d <- data.frame(
+    y = c(0, 0, 0, 1, 1, 1),
+    x1 = c(1, 2, Inf, 4, 5, 6),
+    x2 = c(2, 1, 3, 5, 4, 6)
+  )
+  expect_error(expect_warning(roc.test(d$y, d$x1, d$x2, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(d$y, d$x2, d$x1, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(d$y, d[c("x1", "x2")], quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+  expect_error(expect_warning(roc.test(y ~ x1 + x2, d, quiet = TRUE), "Infinite"), "roc\\(\\) returned NA or NaN")
+})
+
+test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
+  r1 <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
+  r2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE)
+  s1 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE))
+  s2 <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, quiet = TRUE))
+  set.seed(42)
+  expected <- roc.test(s1, s2, boot.n = 10)
+  set.seed(42)
+  t.roc <- roc.test(r1, r2, boot.n = 10)
+  set.seed(42)
+  t.mixed <- expect_warning(roc.test(r1, s2, boot.n = 10), NA)
+  set.seed(42)
+  t.default <- roc.test(aSAH$outcome, aSAH$s100b, aSAH$ndka, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.formula <- roc.test(outcome ~ s100b + ndka, data = aSAH, smooth = TRUE, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(unname(expected$estimate), c(as.numeric(r1$auc), as.numeric(r2$auc)))
+  for (t in list(t.roc, t.mixed, t.default, t.formula)) {
+    expect_equal(unname(t$estimate), unname(expected$estimate))
+    expect_equal(t$statistic, expected$statistic)
+  }
+})
+
+test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 0, p = 1", {
+  # AUC == 1: all placements are 1, the variance is exactly 0
+  r1 <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 6), quiet = TRUE)
+  r3 <- roc(c(0, 0, 0, 0, 1, 1, 1, 1), c(1, 2, 3, 4, 5, 6, 7, 8), quiet = TRUE)
+  expect_warning(t <- roc.test(r1, r3), "AUC == 1")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  expect_true(is.finite(t$parameter))
+  expect_warning(t <- roc.test(r1, r3, alternative = "greater"), "AUC == 1")
+  expect_equal(t$p.value, 0.5)
+  # Same as the paired test
+  expect_warning(t.paired <- roc.test(r1, r1), "AUC == 1")
+  expect_equal(unname(t.paired$statistic), 0)
+  expect_equal(t.paired$p.value, 1)
+  # A single case: the variance is undefined, p-value stays NA
+  r.single <- roc(c(0, 0, 0, 1), c(1, 2, 3, 4), quiet = TRUE)
+  expect_warning(t <- roc.test(r.single, r1, paired = FALSE), "AUC == 1")
+  expect_true(is.na(t$p.value))
+})
+
+test_that("roc.test compares only the smoothing arguments of the curves", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  s2 <- smooth(r.ndka)
+  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  s1.ci <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", quiet = TRUE)
+  expect_no_warning(roc.test(s1.col, s2, boot.n = 5), message = msg)
+  expect_no_warning(roc.test(s1.ci, s2, boot.n = 5), message = msg)
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_no_warning(roc.test(t$roc1, s2, boot.n = 5), message = msg)
+  # real differences are still reported
+  expect_warning(roc.test(smooth(r.s100b, n = 100), s2, boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", adjust = 2), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), r.ndka, boot.n = 5), msg)
+})
+
+test_that("roc.test and cov do not warn for the same smoothing spelled differently", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  expect_no_warning(roc.test(smooth(r.s100b, n = 512L), smooth(r.ndka), boot.n = 2), message = msg)
+  expect_no_warning(cov(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.n = 512L, quiet = TRUE), smooth(r.ndka), boot.n = 2), message = msg)
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", adjust = 1, cut = 3), smooth(r.ndka, method = "density"), boot.n = 2), message = msg)
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", kernel = "gaussian"), smooth(r.ndka, method = "density", window = "gaussian"), boot.n = 2), message = msg)
+  # real differences are still reported
+  expect_warning(roc.test(smooth(r.s100b, method = "density", kernel = "epanechnikov"), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", adjust = 1.5), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  skip_if_not_installed("MASS")
+  expect_no_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "normal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "logistic"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
+})
+
+test_that("roc.test rejects a missing or vector conf.level", {
+  set.seed(42)
+  msg <- "conf.level must be a single number between 0 and 1."
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = NA_real_), msg, fixed = TRUE)
+  expect_error(roc.test(r.s100b, r.ndka, conf.level = c(0.9, 0.95)), msg, fixed = TRUE)
+  # Not checked where it is not used
+  expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = c(0.9, 0.95)), "htest")
+})
+
+test_that("roc(smooth = TRUE) does not take the x of ci.coords or the log of plot as smoothing arguments", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  # x is a formal of density(), but the data of the smoother
+  a <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "density",
+    ci = TRUE, of = "coords", x = "best", boot.n = 5, progress = "none", quiet = TRUE
+  )
+  expect_null(a$smoothing.args$x)
+  expect_no_warning(roc.test(a, smooth(r.ndka, method = "density"), boot.n = 5), message = msg)
+
+  skip_if_not_installed("MASS")
+  pdf(NULL)
+  on.exit(dev.off())
+  # log is a formal of the fitdistr densities, but set by fitdistr itself
+  f <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "fitdistr", plot = TRUE, log = "", quiet = TRUE)
+  expect_null(f$smoothing.args$log)
+  expect_no_warning(roc.test(f, smooth(r.ndka, method = "fitdistr"), boot.n = 5), message = msg)
+  g <- roc(aSAH$outcome, aSAH$s100b + 0.01,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = "gamma", plot = TRUE, log = "", quiet = TRUE
+  )
+  expect_s3_class(g, "smooth.roc")
+  expect_null(g$smoothing.args$log)
+})
+
+test_that("roc.test returns the smoothed curves with the call of the input curves", {
+  set.seed(42)
+  # do.call() stored the whole deparsed curve as the call
+  s1 <- smooth(r.s100b)
+  s2 <- roc(aSAH$outcome, aSAH$ndka, smooth = TRUE, quiet = TRUE)
+  t <- roc.test(s1, s2, boot.n = 5, progress = "none")
+  expect_identical(t$roc1$call, s1$call)
+  expect_identical(t$roc2$call, s2$call)
+  expect_s3_class(t$roc1, "smooth.roc")
+  expect_equal(t$roc1$sensitivities, s1$sensitivities)
+})
+
+test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdistr densities", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  # density() matches the kernel partially
+  expect_no_warning(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density", kernel = "epanechnikov"), boot.n = 2), message = msg)
+  expect_no_warning(cov(smooth(r.s100b, method = "density", window = "rect"), smooth(r.ndka, method = "density", kernel = "rectangular"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", kernel = "e"), smooth(r.ndka, method = "density"), boot.n = 2), msg)
+  skip_if_not_installed("MASS")
+  # "lognormal" and "log-normal" are the same density
+  expect_no_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2), message = msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
 })

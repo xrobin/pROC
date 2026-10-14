@@ -53,3 +53,49 @@ test_that("bootstrap var runs with roc, auc and smooth.roc objects", {
     }
   }
 })
+
+test_that("var errors on curves smoothed with numeric densities", {
+  set.seed(42)
+  x <- seq(0, 1, length.out = 64)
+  s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
+  s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
+  expect_error(var(s1, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("var errors on curves built from numeric densities", {
+  set.seed(42)
+  x <- seq(-4, 6, length.out = 64)
+  d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
+  expect_error(var(d1, boot.n = 2), "smoothed with numeric density.controls and density.cases")
+})
+
+test_that("var with unsupported obuchowski cases errors without claiming to use bootstrap", {
+  set.seed(42)
+  expect_error(var(smooth(r.s100b), method = "obuchowski"), "Use method=\"bootstrap\" instead")
+  expect_error(var(r.s100b.partial2, method = "obuchowski"), "Use method=\"bootstrap\" instead")
+})
+
+test_that("var works on smoothed percent curves", {
+  s <- smooth(r.s100b)
+  s.percent <- smooth(r.s100b.percent)
+  set.seed(42)
+  v <- var(s, boot.n = 20, progress = "none")
+  set.seed(42)
+  v.percent <- var(s.percent, boot.n = 20, progress = "none")
+  expect_equal(v.percent, v * 100^2)
+  set.seed(42)
+  expect_equal(var(auc(s.percent), boot.n = 20, progress = "none"), v * 100^2)
+})
+
+test_that("var of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  set.seed(42)
+  # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
+  # Each value twice (once shifted by 0.05), so that nearly all the resamples can be smoothed
+  controls <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9)
+  cases <- c(0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  resp <- rep(0:1, each = 16)
+  pred <- c(controls, controls + 0.05, cases, cases + 0.05)
+  s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
+  expect_no_warning(var(s, boot.n = 50), message = "Partial AUC correction not defined")
+})

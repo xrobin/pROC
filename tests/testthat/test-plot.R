@@ -207,3 +207,287 @@ test_that("PR curve with CI works", {
   }
   expect_doppelganger("plot_pr", test_plot_pr)
 })
+
+test_that("plot.roc and lines.roc formula methods keep the variable names", {
+  pdf(NULL)
+  on.exit(dev.off())
+  dataline <- function(x) grep("^Data:", capture.output(print(x)), value = TRUE)
+  expected <- dataline(roc(outcome ~ s100b, data = aSAH, quiet = TRUE))
+  expect_identical(expected, "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).")
+  expect_identical(dataline(plot.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
+  expect_identical(dataline(lines.roc(outcome ~ s100b, data = aSAH, quiet = TRUE)), expected)
+})
+
+test_that("plot.ci.coords draws visible ticks for a single x", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  ci <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-ci-coords-single-x", function() {
+    plot(r.s100b)
+    plot(ci)
+  })
+})
+
+test_that("plot.ci.coords gives a clear error for non-numeric x", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  ci <- ci.coords(r.s100b, x = "best", ret = "sensitivity", best.policy = "random", boot.n = 10, progress = "none")
+  expect_error(plot(ci), "numeric 'x'")
+})
+
+test_that("plot with ci = TRUE on a curve without CI gives a clear error", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(plot(r.s100b, ci = TRUE), "has no confidence interval")
+  expect_error(plot(smooth(r.s100b), ci = TRUE), "has no confidence interval")
+})
+
+test_that("lines.roc default/formula return the NA/NaN of roc() with a warning, like plot.roc", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  d <- data.frame(
+    y = c(0, 0, 0, 1, 1, 1),
+    xna = c(1, 2, NA, 4, 5, 6),
+    xinf = c(1, 2, Inf, 4, 5, 6)
+  )
+  expect_warning(r <- withVisible(lines.roc(d$y, d$xna, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(y ~ xna, d, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
+  expect_warning(r <- withVisible(lines.roc(y ~ xinf, d, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
+  expect_warning(r <- withVisible(plot.roc(d$y, d$xinf, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NaN, visible = FALSE))
+})
+
+test_that("percent print.thres labels keep 3 decimals for the threshold", {
+  skip_if(getRversion() < "4.1")
+  r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-percent-print-thres-best", function() plot(r.percent, print.thres = "best"))
+  expect_doppelganger("plot-percent-print-thres-local-maximas", function() plot(r.percent, print.thres = "local maximas"))
+})
+
+test_that("CI shapes are drawn in increasing order whatever order the CI was computed in", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  ci_sp <- ci.sp(r.s100b, sensitivities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_se <- ci.se(r.s100b, specificities = c(0.75, 0.25, 0.5), boot.n = 10, progress = "none")
+  ci_co <- ci.coords(r.s100b, x = c(0.75, 0.25, 0.5), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-ci-sp-shape-unordered-sensitivities", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_sp, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-se-shape-unordered-specificities", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_se, type = "shape", no.roc = TRUE), "Low definition shape")
+  })
+  expect_doppelganger("plot-ci-coords-shape-unordered-x", function() {
+    plot(r.s100b)
+    expect_warning(plot(ci_co, type = "shape"), "Low definition shape")
+  })
+})
+
+test_that("print.auc does not print the CI of another AUC specification", {
+  skip_if(getRversion() < "4.1")
+  r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-print-auc-partial-auc-without-stored-ci", function() {
+    plot(r.ci, print.auc = TRUE, reuse.auc = FALSE, partial.auc = c(1, 0.8))
+  })
+  # Same specification: the stored CI is still printed
+  expect_doppelganger("plot-print-auc-reuse-auc-false-with-stored-ci", function() {
+    plot(r.ci, print.auc = TRUE, reuse.auc = FALSE)
+  })
+  expect_doppelganger("plot-print-auc-with-stored-ci", function() plot(r.ci, print.auc = TRUE))
+})
+
+test_that("legacy.axes labels are not padded", {
+  skip_if(getRversion() < "4.1")
+  r.percent <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), percent = TRUE, quiet = TRUE)
+  expect_doppelganger("plot-legacy-axes-percent", function() plot(r.percent, legacy.axes = TRUE))
+  # Same number of decimals on all labels: see the "legacy.axes" snapshot
+})
+
+test_that("plot.roc draws the sensitivity of a ci.coords with plot.ci.coords", {
+  skip_if(getRversion() < "4.1")
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "specificity", ret = "sensitivity", boot.n = 10, progress = "none")
+  expect_doppelganger("plot-roc-ci-coords-sensitivity", function() plot(r))
+  # Other coordinates are skipped, even before the sensitivity
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "specificity", ret = c("precision", "sensitivity"), boot.n = 10, progress = "none")
+  expect_warning(
+    expect_doppelganger("plot-roc-ci-coords-sensitivity-not-precision", function() plot(r)),
+    "not 'precision' with input 'specificity'"
+  )
+})
+
+test_that("plot.roc skips with a warning a ci.coords that does not map onto the ROC axes", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- r.s100b
+  # CI of the specificity at given sensitivities
+  r$ci <- ci.coords(r.s100b, x = c(0.5, 0.9), input = "sensitivity", ret = "specificity", boot.n = 10, progress = "none")
+  expect_warning(expect_identical(plot(r), r), "not 'specificity' with input 'sensitivity'")
+  expect_warning(plot(r, ci.type = "shape"), "not 'specificity' with input 'sensitivity'")
+  # CI at a threshold
+  r$ci <- ci.coords(r.s100b, x = 0.2, boot.n = 10, progress = "none")
+  expect_warning(plot(r), "not 'threshold', 'specificity', 'sensitivity' with input 'threshold'")
+  # CI at the best threshold (perfect separation: a single best threshold in every resample)
+  r <- roc(rep(0:1, each = 10), c(1:10, 11:20), quiet = TRUE)
+  r$ci <- expect_warning(ci.coords(r, x = "best", boot.n = 10, progress = "none"), "AUC == 1")
+  expect_warning(expect_identical(plot(r), r), "with input 'threshold'")
+  # Nothing is drawn
+  skip_if(getRversion() < "4.1")
+  r <- r.s100b
+  r$ci <- ci.coords(r.s100b, x = 0.2, boot.n = 10, progress = "none")
+  expect_warning(
+    expect_doppelganger("plot-roc-ci-coords-threshold-skipped", function() plot(r)),
+    "with input 'threshold'"
+  )
+})
+
+test_that("panel.first and panel.last are drawn on smoothed curves from roc() and plot.roc()", {
+  pdf(NULL)
+  on.exit(dev.off())
+  n <- 0
+  s <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, plot = TRUE, quiet = TRUE,
+    panel.first = {
+      n <- n + 1
+      abline(h = 0.5)
+    },
+    panel.last = text(0.5, 0.5, "last")
+  )
+  expect_equal(n, 1)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$smoothing.args$panel.first)
+  expect_null(s$smoothing.args$panel.last)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("roc-smooth-plot-panel-first-panel-last", function() {
+    roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, plot = TRUE, quiet = TRUE, panel.first = abline(h = 0.5), panel.last = text(0.5, 0.5, "last"))
+  })
+  expect_doppelganger("plot-roc-default-smooth-panel-last", function() {
+    plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE, panel.last = text(0.5, 0.5, "last"))
+  })
+})
+
+test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
+  pdf(NULL)
+  on.exit(dev.off())
+  dataline <- function(x) grep("^Data:", capture.output(print(x)), value = TRUE)
+  expected <- "Data: aSAH$s100b in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor)."
+  expect_identical(dataline(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+  expect_identical(dataline(lines.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE)), expected)
+})
+
+test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve", {
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.85), quiet = TRUE)
+  co <- coords(r, "all")
+  expect_true(anyNA(co$threshold)) # interpolated window limit
+  r2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), partial.auc.focus = "se", quiet = TRUE)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-print-thres-all-partial-auc-sp", function() plot(r, print.thres = "all"))
+  expect_doppelganger("plot-print-thres-all-partial-auc-se", function() plot(r2, print.thres = "all"))
+})
+
+test_that("the lab graphical parameter sets the number of ticks", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b, lab = c(10, 10, 7))
+  expect_equal(par("xaxp")[3], 10)
+  expect_equal(par("yaxp")[3], 10)
+  r <- roc(aSAH$outcome, aSAH$s100b, plot = TRUE, lab = c(10, 10, 7), quiet = TRUE)
+  expect_equal(par("xaxp")[3], 10)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-lab-with-print-thres-print-auc", function() {
+    plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE)
+  })
+})
+
+test_that("graphical parameters in ... don't clash with the print.thres, print.auc and polygon arguments", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_s3_class(plot(r.s100b, print.auc = TRUE, cex = 0.8), "roc")
+  expect_s3_class(plot(r.s100b, print.thres = 0.205, cex = 0.8, pch = 3, adj = 0), "roc")
+  expect_s3_class(roc(aSAH$outcome, aSAH$s100b, plot = TRUE, print.auc = TRUE, cex = 1.2, quiet = TRUE), "roc")
+  expect_s3_class(plot(smooth(r.s100b), print.auc = TRUE, cex = 0.8), "smooth.roc")
+  skip_if(getRversion() < "4.1")
+  # The dedicated print.thres.pch and print.auc.cex take precedence over pch and cex
+  expect_doppelganger("plot-print-thres-print-auc-with-pch-cex-adj", function() {
+    plot(r.s100b, print.thres = 0.205, print.thres.pch = 4, print.auc = TRUE, print.auc.cex = 2, cex = 0.8, pch = 3, adj = 0)
+  })
+  expect_doppelganger("plot-auc-polygons-with-border-density-angle", function() {
+    plot(r.s100b, auc.polygon = TRUE, max.auc.polygon = TRUE, border = "red", density = 10, angle = 30)
+  })
+})
+
+test_that("plot.roc names print.thres.best.weights in its errors", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_error(
+    plot(r.s100b, print.thres = "best", print.thres.best.weights = c(1, 2)),
+    "prevalence ('print.thres.best.weights[2]') must be in the interval ]0,1[.",
+    fixed = TRUE
+  )
+  expect_error(
+    plot(r.s100b, print.thres = TRUE, print.thres.best.weights = c(0, 0.5)),
+    "cost ('print.thres.best.weights[1]')",
+    fixed = TRUE
+  )
+})
+
+test_that("plot.roc draws no threshold when none is in the partial AUC window", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  expect_warning(plot(r, print.thres = TRUE), "No coordinates found")
+  expect_warning(plot(r, print.thres = "local maximas"), "No coordinates found")
+  expect_s3_class(plot(r, print.thres = "all"), "roc")
+  r2 <- roc(controls = c(1, 3, 5, 2, 4), cases = c(2, 4, 6, 7, 5), partial.auc = c(0.80001, 0.8), quiet = TRUE)
+  s <- smooth(r2, n = 10)
+  expect_warning(plot(s, print.thres = "best"), "No coordinates found")
+})
+
+test_that("plot.roc applies the AUC specification of ... to print.thres", {
+  y <- c(0, 0, 0, 0, 1, 1, 1, 1)
+  x <- c(1, 2, 3, 6, 4, 5, 7, 8)
+  r <- roc(y, x, quiet = TRUE)
+  r.noauc <- roc(y, x, auc = FALSE, quiet = TRUE)
+  pdf(NULL)
+  on.exit(dev.off())
+  # The thresholds are those of the returned AUC, with or without print.auc
+  for (print.thres in list(TRUE, "best", "all", "local maximas")) {
+    expect_equal(
+      plot(r, print.thres = print.thres, partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc,
+      plot(r, print.thres = print.thres, partial.auc = c(1, 0.9), reuse.auc = FALSE, print.auc = TRUE)$auc
+    )
+  }
+  expect_equal(as.numeric(plot(r.noauc, print.thres = "best", partial.auc = c(1, 0.9))$auc), 0.05)
+  expect_equal(as.numeric(plot(r, print.thres = 3.5, partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc), 0.05)
+  # No AUC is needed without print.thres or the AUC flags
+  expect_null(plot(r.noauc)$auc)
+  expect_null(plot(r.noauc, print.thres = "no")$auc)
+  expect_null(plot(r.noauc, print.thres = NULL)$auc)
+  # Smoothed curves
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE))
+  expect_equal(
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)$auc,
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE, print.auc = TRUE)$auc
+  )
+  # Same threshold as roc(y, x, partial.auc = c(1, 0.9)): 6.5, the best inside the window
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-print-thres-best-reuse-auc-false-partial-auc", function() {
+    plot(r, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)
+  })
+  expect_doppelganger("plot-smooth-print-thres-best-reuse-auc-false-partial-auc", function() {
+    plot(s, print.thres = "best", partial.auc = c(1, 0.9), reuse.auc = FALSE)
+  })
+})

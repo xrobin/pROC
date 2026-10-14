@@ -21,23 +21,31 @@ auc <- function(...) {
   UseMethod("auc")
 }
 
-auc.formula <- function(formula, data, ...) {
+auc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'auc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
 
-  roc(response, predictor, auc = TRUE, ...)$auc
+  roc <- roc(response, predictor, auc = TRUE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  roc$auc
 }
 
 auc.default <- function(response, predictor, ...) {
-  roc.default(response, predictor, auc = TRUE, ...)$auc
+  roc <- roc.default(response, predictor, auc = TRUE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  roc$auc
 }
 
 auc.smooth.roc <- function(smooth.roc, ...) {
@@ -45,7 +53,8 @@ auc.smooth.roc <- function(smooth.roc, ...) {
 }
 
 auc.multiclass.roc <- function(multiclass.roc, ...) {
-  sum <- sum(sapply(multiclass.roc$rocs, auc, ...))
+  aucs <- lapply(multiclass.roc$rocs, auc, ...) # keep individual AUCs in a list for later
+  sum <- sum(sapply(aucs, as.numeric))
   count <- length(multiclass.roc$levels)
   # Hand & Till formula:
   auc <- (2 * sum) / (count * (count - 1))
@@ -56,7 +65,6 @@ auc.multiclass.roc <- function(multiclass.roc, ...) {
   attr(auc, "roc") <- multiclass.roc
   # Get partial auc details from first computed auc
   # TODO: find a better way to recover partial.auc!
-  aucs <- lapply(multiclass.roc$rocs, auc, ...) # keep individual AUCs in a list for later
   attr(auc, "partial.auc") <- attr(aucs[[1]], "partial.auc")
   if (!identical(attr(aucs[[1]], "partial.auc"), FALSE)) {
     attr(auc, "partial.auc.focus") <- attr(aucs[[1]], "partial.auc.focus")
@@ -105,9 +113,19 @@ auc.roc <- function(roc,
   if (!identical(partial.auc, FALSE) & !(is.numeric(partial.auc) && length(partial.auc) == 2)) {
     stop("partial.auc must be either FALSE or a numeric vector of length 2")
   }
+  if (!identical(partial.auc, FALSE)) {
+    if (any(partial.auc < 0 | partial.auc > ifelse(percent, 100, 1), na.rm = TRUE)) {
+      stop(sprintf("partial.auc must be within [0, %s]", ifelse(percent, 100, 1)))
+    }
+    # Store the specification in a canonical form, so that the same
+    # specification compares identical (partial.auc.correct = 1, integer bounds)
+    partial.auc.correct <- as.logical(partial.auc.correct)
+    partial.auc <- as.numeric(partial.auc)
+  }
 
   # Ensure partial.auc is sorted with partial.auc[1] >= partial.auc[2]
-  partial.auc <- sort(partial.auc, decreasing = TRUE)
+  # (keeping NA bounds, which give a NA AUC)
+  partial.auc <- sort(partial.auc, decreasing = TRUE, na.last = TRUE)
   # Get and sort the sensitivities and specificities
   roc <- sort_roc(roc)
   se <- roc$sensitivities
@@ -123,6 +141,10 @@ auc.roc <- function(roc,
       means.vert <- (se[-1] + se[-length(se)]) / 2
       auc <- sum(means.vert * diffs.x)
     }
+  }
+  # NA bounds: the partial area is not available
+  else if (anyNA(partial.auc)) {
+    auc <- NA_real_
   }
   # Partial area
   else {
@@ -192,7 +214,7 @@ auc.roc <- function(roc,
     min <- roc_utils_min_partial_auc(partial.auc, percent)
     max <- roc_utils_max_partial_auc(partial.auc, percent)
     # The correction is defined only when auc >= min
-    if (!allow.invalid.partial.auc.correct && auc < min) {
+    if (!allow.invalid.partial.auc.correct && isTRUE(auc < min)) {
       warning("Partial AUC correction not defined for ROC curves below the diagonal.")
       auc <- NA
     } else if (percent) {

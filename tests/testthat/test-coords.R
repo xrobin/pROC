@@ -573,11 +573,11 @@ test_that("invalid se/sp", {
   smooth.s100b.percent <- smooth(r.s100b.percent)
   for (inp in c("sens", "spec")) {
     for (r in list(r.s100b.percent, smooth.s100b.percent)) {
-      expect_error(coords(r.s100b.percent, x = -2, input = inp))
-      expect_error(coords(r.s100b.percent, x = 0, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 10, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 100, input = inp), NA)
-      expect_error(coords(r.s100b.percent, x = 101, input = inp))
+      expect_error(coords(r, x = -2, input = inp))
+      expect_error(coords(r, x = 0, input = inp), NA)
+      expect_error(coords(r, x = 10, input = inp), NA)
+      expect_error(coords(r, x = 100, input = inp), NA)
+      expect_error(coords(r, x = 101, input = inp))
     }
   }
 })
@@ -613,4 +613,245 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
     coords(r.s100b, 1, "sp", "se"),
     0.2926829268292683 # and not 0
   )
+})
+
+test_that("coords with NA thresholds gives a clear error", {
+  expect_error(coords(r.s100b, c(0.5, NA), input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+  expect_error(coords(r.s100b, NaN, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+  r.rev <- roc(aSAH$outcome, aSAH$s100b, direction = ">", quiet = TRUE)
+  expect_error(coords(r.rev, NA_real_, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+})
+
+test_that("coords 'best' returns the right youden and closest.topleft with a specificity partial AUC", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, partial.auc = c(1, 0.5), quiet = TRUE)
+  best.y <- coords(r, "best", ret = c("threshold", "youden"))
+  expect_equal(best.y$threshold, c(4.5, 6.5))
+  expect_equal(best.y$youden, c(1.8, 1.8))
+  best.t <- coords(r, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best.t$threshold, c(4.5, 6.5))
+  expect_equal(best.t$closest.topleft, c(0.04, 0.04))
+
+  for (r in list(r.s100b.partial1, r.ndka.partial1, r.s100b.partial2)) {
+    for (bm in c("youden", "closest.topleft")) {
+      best <- coords(r, "best", ret = c("threshold", bm), best.method = bm)
+      expect_equal(best[[bm]], coords(r, best$threshold, ret = bm)[[bm]])
+    }
+  }
+})
+
+test_that("coords 'best' closest.topleft is on the percent scale for percent curves", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  rp <- roc(resp, pred, percent = TRUE, quiet = TRUE)
+  best <- coords(rp, "best", ret = c("threshold", "closest.topleft"), best.method = "closest.topleft")
+  expect_equal(best$closest.topleft, c(4, 4))
+
+  for (r in list(r.s100b.percent, smooth(r.s100b.percent))) {
+    best <- coords(r, "best", ret = "closest.topleft", best.method = "closest.topleft")
+    # Requesting another column goes through roc_utils_calc_coords
+    best.acc <- coords(r, "best", ret = c("closest.topleft", "accuracy"), best.method = "closest.topleft")
+    expect_equal(best$closest.topleft, best.acc$closest.topleft)
+  }
+  expect_equal(
+    coords(r.s100b.percent, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft,
+    100 * coords(r.s100b, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft
+  )
+})
+
+test_that("Coords pick the upper-left end of flat bits with complementary inputs", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, quiet = TRUE)
+  for (inp in c("fpr", "1-specificity", "fp")) {
+    expect_equal(coords(r, 0, input = inp, ret = c("specificity", "sensitivity")), coords(r, 1, input = "specificity", ret = c("specificity", "sensitivity")), ignore_attr = TRUE, info = inp)
+  }
+  for (inp in c("fnr", "1-sensitivity", "fn")) {
+    expect_equal(coords(r, 0, input = inp, ret = c("specificity", "sensitivity")), coords(r, 1, input = "sensitivity", ret = c("specificity", "sensitivity")), ignore_attr = TRUE, info = inp)
+  }
+  expect_equal(coords(r, 0, input = "fpr", ret = "sensitivity")$sensitivity, 0.8)
+  expect_equal(coords(r, 0, input = "fnr", ret = "specificity")$specificity, 0.8)
+
+  # Every point of a curve with ties
+  for (sp in unique(r.wfns$specificities)) {
+    expect_equal(
+      coords(r.wfns, 1 - sp, input = "fpr", ret = c("specificity", "sensitivity")),
+      coords(r.wfns, sp, input = "specificity", ret = c("specificity", "sensitivity")),
+      ignore_attr = TRUE
+    )
+  }
+  for (se in unique(r.wfns$sensitivities)) {
+    expect_equal(
+      coords(r.wfns, 1 - se, input = "fnr", ret = c("specificity", "sensitivity")),
+      coords(r.wfns, se, input = "sensitivity", ret = c("specificity", "sensitivity")),
+      ignore_attr = TRUE
+    )
+  }
+})
+
+test_that("coords returns the threshold of exact points with any numeric input", {
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  r <- roc(resp, pred, quiet = TRUE)
+  expect_equal(coords(r, 3, input = "tn")$threshold, 3.5)
+  expect_equal(coords(r, 0.4, input = "fpr")$threshold, 3.5)
+  expect_equal(coords(r, 2, input = "fp")$threshold, 3.5)
+  expect_equal(coords(r, 3, input = "tp")$threshold, 7.5)
+  expect_equal(coords(r, 0.4, input = "fnr")$threshold, 7.5)
+  # Interpolated: still NA
+  expect_true(is.na(coords(r, 2.5, input = "tn")$threshold))
+
+  # All the points of a curve
+  co <- coords(r.s100b, "all", ret = c("threshold", "tn", "tp"))
+  for (inp in c("tn", "tp")) {
+    for (i in seq_len(nrow(co))) {
+      res <- coords(r.s100b, co[[inp]][i], input = inp, ret = c("threshold", "tn", "tp"))
+      expect_equal(res[[inp]], co[[inp]][i])
+      # The point is either this one, or another one with the same value of 'inp'
+      expect_true(res$threshold %in% co$threshold[co[[inp]] == co[[inp]][i]])
+    }
+  }
+
+  # Ordered predictor
+  co <- coords(r.wfns, "all", ret = c("threshold", "tn"))
+  expect_equal(coords(r.wfns, co$tn[3], input = "tn", ret = "threshold")$threshold, co$threshold[3])
+})
+
+test_that("coords.auc passes its arguments", {
+  a <- auc(r.s100b)
+  expect_equal(coords(a, "best", ret = "threshold"), coords(r.s100b, "best", ret = "threshold"))
+  expect_equal(
+    coords(a, x = 0.9, input = "specificity", ret = "sensitivity"),
+    coords(r.s100b, x = 0.9, input = "specificity", ret = "sensitivity")
+  )
+  # Partial AUC is taken into account
+  a.partial <- auc(r.s100b, partial.auc = c(1, 0.9))
+  expect_equal(coords(a.partial, "best", ret = "threshold"), coords(r.s100b.partial, "best", ret = "threshold"))
+  # Without arguments: unchanged
+  expect_equal(coords(a), coords(r.s100b))
+  # Smoothed curve
+  s <- smooth(r.s100b)
+  expect_equal(coords(auc(s), "best", ret = "specificity"), coords(s, "best", ret = "specificity"))
+})
+
+test_that("coords on smoothed curves with numeric x honour drop and transpose", {
+  s <- smooth(r.s100b)
+  expected <- coords(s, c(0.5, 0.9), input = "specificity", transpose = FALSE)
+  expect_s3_class(expected, "data.frame")
+  expect_warning(res <- coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE), "'transpose=TRUE' is deprecated")
+  expect_equal(res, t(expected))
+  expect_warning(res <- coords(s, 0.5, input = "specificity", drop = TRUE), "'drop' is deprecated")
+  expect_identical(res, expected[1, , drop = TRUE])
+})
+
+test_that("coords as.list on smoothed curves with one numeric x returns a flat list", {
+  s <- smooth(r.s100b)
+  expect_warning(res <- coords(s, 0.5, input = "specificity", as.list = TRUE), "'as.list' is deprecated")
+  expect_equal(names(res), c("specificity", "sensitivity"))
+  expect_equal(res$specificity, 0.5)
+})
+
+test_that("coords on smoothed curves give each deprecation warning once", {
+  s <- smooth(r.s100b)
+  transpose.warning <- "'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version."
+  as.list.warning <- "'as.list' is deprecated and will be removed in a future version."
+  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", transpose = TRUE)), transpose.warning)
+  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", as.list = TRUE)), as.list.warning)
+  expect_identical(capture_warnings(coords(s, "best", as.list = TRUE)), as.list.warning)
+  expect_identical(capture_warnings(coords(s, "best", transpose = TRUE)), transpose.warning)
+})
+
+test_that("deprecated coords forms keep numeric coordinates on ordered curves", {
+  r <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
+  expect_warning(best <- coords(r, "best", as.list = TRUE), "'as.list' is deprecated")
+  expect_type(best$specificity, "double")
+  expect_type(best$sensitivity, "double")
+  expect_equal(best$specificity, coords(r, "best")$specificity)
+  # unchanged on numeric curves
+  expect_warning(res <- coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE), "'as.list' is deprecated")
+  expect_identical(res, apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
+})
+
+test_that("coords keeps the names of threshold x as row names whatever ret", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2.5, 4, 5), quiet = TRUE)
+  x <- c(low = 1.5, high = 3.5)
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "sensitivity"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"))), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = "all")), c("low", "high"))
+  expect_equal(rownames(coords(r, x, input = "threshold", ret = c("threshold", "accuracy"), best.weights = c(2, 0.3))), c("low", "high"))
+})
+
+test_that("coords warns about unknown or misspelt 'ret' elements", {
+  expect_warning(
+    res <- coords(r.s100b, "best", ret = c("threshold", "specifcity", "sensitivity")),
+    "specifcity"
+  )
+  expect_equal(res, coords(r.s100b, "best", ret = c("threshold", "sensitivity")))
+  expect_warning(
+    coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "ppv", "npV")),
+    "npV"
+  )
+  expect_warning(
+    coords(smooth(r.s100b), "best", ret = c("threshold", "sensitivity")),
+    "threshold"
+  )
+  # nothing matches: still an error
+  expect_error(coords(r.s100b, "best", ret = "specifcity"))
+  # valid, abbreviated and alias elements don't warn
+  expect_no_warning(coords(r.s100b, "best", ret = c("t", "se", "sp", "npe", "topleft")))
+  expect_no_warning(coords(r.s100b, "best", ret = "all"))
+})
+
+test_that("coords of a smoothed curve with numeric x uses best.weights", {
+  s <- smooth(r.s100b)
+  w <- c(2, 0.2) # r = (1 - 0.2) / (2 * 0.2) = 2
+  res <- coords(s, 0.9, input = "specificity", ret = c("se", "sp", "youden", "closest.topleft"), best.weights = w)
+  expect_equal(res$youden, res$sensitivity + 2 * res$specificity)
+  expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
+})
+
+test_that("coords with NA in a numeric non-threshold x gives NA rows", {
+  res <- coords(r.s100b, c(0.5, NA), input = "sensitivity")
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "sensitivity"))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "specificity"))))
+  res <- coords(r.s100b, c(NA, 0.5), input = "fpr", ret = "all")
+  expect_true(all(is.na(res[1, ])))
+  expect_false(anyNA(res[2, colnames(res) != "threshold"]))
+  s <- smooth(r.s100b)
+  res <- coords(s, c(0.5, NA), input = "specificity")
+  expect_identical(res[1, ], coords(s, 0.5, input = "specificity"))
+  expect_true(all(is.na(res[2, ])))
+})
+
+test_that("coords rejects an invalid best.weights cost or prevalence", {
+  r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2, 3, 4), quiet = TRUE)
+  cost.msg <- "cost ('best.weights[1]') must be positive."
+  prev.msg <- "prevalence ('best.weights[2]') must be in the interval ]0,1[."
+  expect_error(coords(r, "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(-1, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(r, "best", best.weights = c(1, NA)), prev.msg, fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  # An infinite cost is valid: maximize the sensitivity
+  expect_true(all(coords(r, "best", best.weights = c(Inf, 0.5))$sensitivity == 1))
+  # A NA cost gives NA
+  expect_true(all(is.na(coords(r, "best", best.weights = c(NA, 0.5)))))
+  expect_true(all(is.na(coords(r, 0.5, input = "specificity", ret = c("youden", "closest.topleft"), best.weights = c(NA, 0.5)))))
+})
+
+test_that("coords 'best' with no point in the partial AUC window gives only pROC's warning", {
+  # specificities 0, 0.5, 0.5, 1, 1: none in [0.6, 0.8]
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  w <- capture_warnings(co <- coords(r, "best"))
+  expect_null(co)
+  expect_length(w, 1)
+  expect_match(w, "No coordinates found")
+  # smoothed curve with no point in a narrow window
+  r2 <- roc(controls = c(1, 3, 5, 2, 4), cases = c(2, 4, 6, 7, 5), partial.auc = c(0.80001, 0.8), quiet = TRUE)
+  s <- smooth(r2, n = 10)
+  w <- capture_warnings(co <- coords(s, "best"))
+  expect_null(co)
+  expect_length(w, 1)
+  expect_match(w, "No coordinates found")
 })

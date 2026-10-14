@@ -64,28 +64,41 @@ cov.roc <- function(roc1, roc2,
   # store which objects are smoothed, and how
   smoothing.args <- list()
   if ("smooth.roc" %in% class(roc1)) {
-    smoothing.args$roc1 <- roc1$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc1$smooth <- TRUE
-    roc1 <- attr(roc1, "roc")
+    if (is.null(attr(roc1, "roc"))) { # built directly from densities
+      stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
+    }
+    roc1 <- roc_utils_unsmooth(roc1)
     # oroc1$auc <- roc1$auc
   } else {
     smoothing.args$roc1 <- list(smooth = FALSE)
   }
   if ("smooth.roc" %in% class(roc2)) {
-    smoothing.args$roc2 <- roc2$smoothing.args
+    # The AUC specification is kept in the auc of the unsmoothed curve, not in
+    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
+    smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
     smoothing.args$roc2$smooth <- TRUE
-    roc2 <- attr(roc2, "roc")
+    if (is.null(attr(roc2, "roc"))) { # built directly from densities
+      stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
+    }
+    roc2 <- roc_utils_unsmooth(roc2)
     # oroc2$auc <- roc2$auc
   } else {
     smoothing.args$roc2 <- list(smooth = FALSE)
   }
 
   # then determine whether the rocs are paired or not
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
   if (!rocs.are.paired) {
     message("ROC curves are unpaired.")
     return(0)
   }
+  # use the curves without the observations missing in either of them
+  roc1 <- attr(rocs.are.paired, "roc1")
+  roc2 <- attr(rocs.are.paired, "roc2")
 
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
@@ -122,14 +135,14 @@ cov.roc <- function(roc1, roc2,
     warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
   }
   # check that the same smoothing params were requested in auc. Otherwise, issue a warning
-  if (!identical(smoothing.args$roc1, smoothing.args$roc2)) {
+  if (!identical(roc_utils_relevant_smoothing_args(smoothing.args$roc1), roc_utils_relevant_smoothing_args(smoothing.args$roc2))) {
     warning("Different smoothing parameters in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
   }
 
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (has.partial.auc(roc1)) {
+    if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
@@ -184,14 +197,15 @@ cov.roc <- function(roc1, roc2,
       cov <- cov * (100^2)
     }
   } else if (method == "obuchowski") {
-    cov <- cov_roc_obuchowski(roc1, roc2) / length(roc1$cases)
+    # the computations are done in fraction, re-transformed in percent below
+    cov <- cov_roc_obuchowski(roc_utils_unpercent(roc1), roc_utils_unpercent(roc2)) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
     }
   } else { # method == "bootstrap"
     # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
+    if (any(sapply(smoothing.args, function(x) is.numeric(x$density.cases) || is.numeric(x$density.controls)))) {
       stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
 

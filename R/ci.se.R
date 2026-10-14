@@ -21,25 +21,36 @@ ci.se <- function(...) {
   UseMethod("ci.se")
 }
 
-ci.se.formula <- function(formula, data, ...) {
+ci.se.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.se'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.se(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.se(smooth.roc = roc, ...))
+  } else {
+    return(ci.se(roc = roc, ...))
+  }
 }
 
 ci.se.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
-    stop("'ci.sp' not available for multiclass ROC curves.")
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
+    stop("'ci.se' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.se(smooth.roc = roc, ...))
   } else {
@@ -56,8 +67,8 @@ ci.se.smooth.roc <- function(smooth.roc,
                              cl = NULL,
                              parallel = FALSE,
                              ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
@@ -74,6 +85,9 @@ ci.se.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate (and
+  # warn if a corrected partial AUC is not defined), but it is not used
+  roc$auc <- NULL
 
   # prepare the calls
   smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
@@ -83,9 +97,9 @@ ci.se.smooth.roc <- function(smooth.roc,
     smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(specificities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.se", "ci", class(ci))
@@ -106,8 +120,8 @@ ci.se.roc <- function(roc,
                       cl = NULL,
                       parallel = FALSE,
                       ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
@@ -120,8 +134,8 @@ ci.se.roc <- function(roc,
     roc = roc, stratified = boot.stratified, sp = specificities, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(specificities))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.se", "ci", class(ci))

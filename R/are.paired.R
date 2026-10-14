@@ -44,6 +44,7 @@ are.paired.roc <- function(roc1, roc2,
   if ("auc" %in% class(roc2)) {
     roc2 <- attr(roc2, "roc")
   }
+  oroc1 <- oroc2 <- NULL # the original smoothed curves, if any
   if ("smooth.roc" %in% class(roc1)) {
     oroc1 <- roc1
     roc1 <- attr(roc1, "roc")
@@ -53,62 +54,78 @@ are.paired.roc <- function(roc1, roc2,
     roc2 <- attr(roc2, "roc")
   }
   # Check if the levels are the same. Otherwise it is not paired.
-  if (!identical(roc1$levels, roc2$levels)) {
+  # Compare them as character: levels given explicitly are stored as given
+  # (numeric, factor...) while the default levels are character
+  if (!identical(as.character(roc1$levels), as.character(roc2$levels))) {
     return(FALSE)
   }
   # check if responses of roc 1 and 2 are identical
   if (identical(roc1$response, roc2$response)) {
     retval <- TRUE
     if (return.paired.rocs) {
-      attr(retval, "roc1") <- roc1
-      attr(retval, "roc2") <- roc2
+      # Return the smoothed curves if the input was smoothed
+      attr(retval, "roc1") <- if (!is.null(oroc1) && reuse.smooth) oroc1 else roc1
+      attr(retval, "roc2") <- if (!is.null(oroc2) && reuse.smooth) oroc2 else roc2
     }
     return(retval)
   } else {
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
-    if (identical(roc1$original.response, roc2$original.response)) {
+    # An NA level of the response is missing too (as in roc())
+    if (identical(roc_utils_response_na_level(roc1$original.response), roc_utils_response_na_level(roc2$original.response))) {
       retval <- TRUE
       if (!return.paired.rocs) {
         return(retval)
       }
       # else prepare paired ROCs
-      idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
+      # The NA level of an ordered predictor is missing too (as in roc())
+      idx.exclude <- is.na(roc_utils_ordered_na_level(roc1$original.predictor)) | is.na(roc_utils_ordered_na_level(roc2$original.predictor)) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
+      # Print the data as the input curves, not as the expressions above
+      for (field in c("call", "predictor.name", "response.name")) {
+        roc1.paired[[field]] <- roc1[[field]]
+        roc2.paired[[field]] <- roc2[[field]]
+      }
       # Re-use auc/ci/smooth for roc1
-      if (exists("oroc1") && reuse.smooth) {
+      # Take auc and ci from the smoothed curve if roc1.paired is smoothed
+      source.roc1 <- roc1
+      if (!is.null(oroc1) && reuse.smooth) {
+        source.roc1 <- oroc1
         args <- oroc1$smoothing.args
         args$roc <- roc1.paired
         roc1.paired <- do.call("smooth.roc", args)
-        roc1.paired$call$roc <- as.name("roc1.paired")
+        roc1.paired$call <- oroc1$call
       }
-      if (!is.null(roc1$auc) && reuse.auc) {
-        args <- attributes(roc1$auc)
+      if (!is.null(source.roc1$auc) && reuse.auc) {
+        args <- attributes(source.roc1$auc)
         args$roc <- roc1.paired
         roc1.paired$auc <- do.call("auc.roc", args)
       }
-      if (!is.null(roc1$ci) && reuse.ci) {
-        args <- attributes(roc1$ci)
+      if (!is.null(source.roc1$ci) && reuse.ci) {
+        args <- attributes(source.roc1$ci)
         args$roc <- NULL
-        roc1.paired$ci <- do.call(class(roc1$ci)[1], c(roc = list(roc1.paired), args))
+        roc1.paired$ci <- do.call(class(source.roc1$ci)[1], c(list(roc1.paired), args))
       }
       # Re-use auc/ci/smooth for roc2
-      if (exists("oroc2") && reuse.smooth) {
+      # Take auc and ci from the smoothed curve if roc2.paired is smoothed
+      source.roc2 <- roc2
+      if (!is.null(oroc2) && reuse.smooth) {
+        source.roc2 <- oroc2
         args <- oroc2$smoothing.args
         args$roc <- roc2.paired
         roc2.paired <- do.call("smooth.roc", args)
-        roc2.paired$call$roc <- as.name("roc2.paired")
+        roc2.paired$call <- oroc2$call
       }
-      if (!is.null(roc2$auc) && reuse.auc) {
-        args <- attributes(roc2$auc)
+      if (!is.null(source.roc2$auc) && reuse.auc) {
+        args <- attributes(source.roc2$auc)
         args$roc <- roc2.paired
         roc2.paired$auc <- do.call("auc.roc", args)
       }
-      if (!is.null(roc2$ci) && reuse.ci) {
-        args <- attributes(roc2$ci)
+      if (!is.null(source.roc2$ci) && reuse.ci) {
+        args <- attributes(source.roc2$ci)
         args$roc <- NULL
-        roc2.paired$ci <- do.call(class(roc2$ci)[1], c(roc = list(roc2.paired), args))
+        roc2.paired$ci <- do.call(class(source.roc2$ci)[1], c(list(roc2.paired), args))
       }
 
       # Attach ROCs and return value

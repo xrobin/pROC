@@ -21,22 +21,38 @@ ci.auc <- function(...) {
   UseMethod("ci.auc")
 }
 
-ci.auc.formula <- function(formula, data, ...) {
+ci.auc.formula <- function(formula, data, subset, na.action, ...) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.auc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.auc.roc(roc.default(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.auc(smooth.roc = roc, ...))
+  } else {
+    return(ci.auc(roc = roc, ...))
+  }
 }
 
 ci.auc.default <- function(response, predictor, ...) {
+  if (inherits(response, "mv.multiclass.roc")) {
+    stop("CI of a multiclass ROC curve not implemented")
+  } else if (inherits(response, "mv.multiclass.auc")) {
+    stop("CI of a multiclass AUC not implemented")
+  }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.auc(smooth.roc = roc, ...))
   } else {
@@ -59,8 +75,8 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               cl = NULL,
                               parallel = FALSE,
                               ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("conf.level must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("conf.level must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
@@ -72,7 +88,9 @@ ci.auc.smooth.roc <- function(smooth.roc,
 
   # We need an auc
   if (is.null(smooth.roc$auc) | !reuse.auc) {
-    smooth.roc$auc <- auc(smooth.roc, ...)
+    # Named: smooth = TRUE in ... (from ci.auc.default/formula) would
+    # partially match the smooth.roc argument of auc.smooth.roc
+    smooth.roc$auc <- auc(smooth.roc = smooth.roc, ...)
   }
 
   # Check if called with density.cases or density.controls
@@ -83,6 +101,9 @@ ci.auc.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
   roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
+  # remove the auc too: smooth.roc() would recompute it on each replicate, with
+  # its partial AUC still in percent once roc$percent is set to FALSE below
+  roc$auc <- NULL
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- smooth.roc$percent
@@ -134,8 +155,8 @@ ci.auc.roc <- function(roc,
                        cl = NULL,
                        parallel = FALSE,
                        ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("conf.level must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("conf.level must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {

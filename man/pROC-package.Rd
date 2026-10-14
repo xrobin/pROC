@@ -83,7 +83,7 @@
 }
 
 \section{Dataset}{
-  This package comes with a dataset of 141 patients with aneurysmal
+  This package comes with a dataset of 113 patients with aneurysmal
   subarachnoid hemorrhage: \code{\link{aSAH}}.
 }
 
@@ -137,7 +137,7 @@ aSAH \%>\%
   cases or controls.
 
   The number of bootstrap replicates is controlled by \code{boot.n}. Higher numbers will give a more precise estimate of the significance tests and confidence intervals
-  but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
+  but take more time to compute. 2000 is recommended by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Speed}{
@@ -168,7 +168,9 @@ aSAH \%>\%
 	  functions, or set the default for the session with
 	  \code{options(pROCProgress = FALSE)}. The bar costs essentially nothing:
 	  it is redrawn about a hundred times over the whole bootstrap, not once per
-	  replicate.
+	  replicate. When the bootstrap runs in parallel (see \code{cl} below), no
+	  bar is drawn: a single message such as \dQuote{Bootstrapping 2000
+	  replicates on 2 workers...} is printed instead.
 	}
 
 	\subsection{Parallel processing}{
@@ -215,7 +217,7 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -238,16 +240,13 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
   DOI: \doi{10.1109/LSP.2014.2337313}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

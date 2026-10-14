@@ -18,7 +18,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, ...)
+\S3method{roc}{formula}(formula, data, subset, na.action, ...)
 \S3method{roc}{data.frame}(data, response, predictor,
 ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
@@ -59,10 +59,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     built directly from two densities on identical \code{x} points, as in
     \code{\link[=smooth.roc]{smooth}}.
   }
-  \item{formula, data}{a formula of the type \code{response~predictor}. If mulitple predictors 
+  \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
-    \code{data} and \code{subset}, but not \code{na.action} are supported, see 
+    \code{data}, \code{subset} and \code{na.action} are supported, see
     \code{\link{model.frame}} for more details.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}}
+    with \code{formula} and \code{data}. \code{na.action} defaults to
+    \code{\link{na.pass}}, so that \code{NA} values are handled by
+    \code{na.rm}; values other than \code{na.pass} and \code{na.fail}
+    give a warning, as they break the pairing detection of
+    \code{\link{roc.test}} and \code{\link{are.paired}}.
   }
   \item{levels}{the value of the response for controls and cases
     respectively. By default, the first two values of
@@ -77,8 +84,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed
-    (ignored by \code{roc.formula}).
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.
+    This also applies to \code{roc.formula}, which passes the
+    \code{NA} values to \code{roc.default} (\code{na.action=na.pass}).
   }
   \item{direction}{how are positive observations defined?
     \dQuote{<}: observations are positive when they
@@ -87,7 +95,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     (\code{<=}) to the threshold.
     \dQuote{auto} (default): automatically detect in which group the
     median is higher and take the direction accordingly. See details.
-    You should set this explicity to \dQuote{>} or \dQuote{<} whenever
+    You should set this explicitly to \dQuote{>} or \dQuote{<} whenever
     you are resampling or randomizing the data, otherwise the 
     curves will be biased towards higher AUC values.
   }
@@ -97,7 +105,11 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{ret}{for \code{roc.data.frame} only, whether to return the
 	threshold sensitivity and specificity at all thresholds (\dQuote{coords}),
 	all the coordinates at all thresholds (\dQuote{all_coords}) or the
-	\code{roc} object (\dQuote{roc}).}
+	\code{roc} object (\dQuote{roc}). As it has the same name, the \code{ret}
+	argument of \code{\link{ci.coords}} cannot be passed through
+	\code{roc.data.frame} and \code{roc_} (use
+	\code{roc(response ~ predictor, data, ci=TRUE, of="coords", ret=\dots)}
+	instead).}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
   }
@@ -115,7 +127,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{smooth.method, smooth.n, ci.method}{in \code{roc.formula} and
 	\code{roc.default}, the \code{method} and \code{n} arguments to
-	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and
+	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
+	\code{method} argument to \code{\link{ci.auc}} (if \code{ci=TRUE} and
 	\code{of="auc"}) must be passed as
 	\code{smooth.method}, \code{smooth.n} and \code{ci.method} to avoid confusions.
   }
@@ -125,14 +138,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     \itemize{
       \item \code{\link{auc}}: \code{partial.auc}, \code{partial.auc.focus}, \code{partial.auc.correct}.
       \item \code{\link{ci}}: \code{of}, \code{conf.level}, \code{boot.n}, \code{boot.stratified}, \code{progress}
-      \item \code{\link{ci.auc}}:, \code{reuse.auc}, \code{method}
+      \item \code{\link{ci.auc}}: \code{reuse.auc}, and \code{method}
+        as \code{ci.method}
       \item \code{\link{ci.thresholds}}: \code{thresholds}
-      \item \code{\link{ci.se}}: \code{sensitivities}
-      \item \code{\link{ci.sp}}: \code{specificities}
+      \item \code{\link{ci.se}}: \code{specificities}
+      \item \code{\link{ci.sp}}: \code{sensitivities}
       \item \code{\link{plot.roc}}: \code{add}, \code{col} and most
         other arguments to the \code{\link{plot.roc}} function. See
 	\code{\link{plot.roc}} directly for more details.
-      \item \code{\link{smooth}}: \code{method}, \code{n}, and all other
+      \item \code{\link{smooth}}: \code{method} and \code{n} as
+        \code{smooth.method} and \code{smooth.n} (\code{n} itself would
+        be taken as \code{na.rm}), and all other
         arguments. See \code{\link{smooth}} for more details.
     }
   }
@@ -159,12 +175,12 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   inverted.
 	
   In some cases, it is more convenient to pass the data as
-  \code{controls, cases}, but both arguments are ignored if
-  \code{response, predictor} was specified to non-\code{NULL} values.
+  \code{controls, cases}, but they cannot be combined with
+  non-\code{NULL} \code{response, predictor} (an error is raised).
   It is also possible to pass density data with \code{density.controls,
   density.cases}, which will result in a smoothed ROC curve even if
-  \code{smooth=FALSE}, but are ignored if \code{response, predictor} or
-  \code{controls, cases} are provided.
+  \code{smooth=FALSE}, but they cannot be combined with
+  \code{response, predictor} or \code{controls, cases} either.
   
   Thresholds are selected as the means between any two consecutive values 
   observed in the data. This choice is aimed to facilitate their interpretation,
@@ -180,6 +196,18 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \code{direction = "<"}, and \code{predictor <= threshold} when
   \code{direction = ">"}. Unused defined levels are retained. Levels of
   \code{cases} and \code{controls} must be identical (same labels, same order).
+
+  With \code{direction="auto"}, the direction is chosen by comparing the
+  median of the controls with the median of the cases (the medians of the
+  level ranks for ordered predictors): \dQuote{<} if the median of the
+  controls is lower than or equal to the median of the cases, and
+  \dQuote{>} otherwise. The AUC is not guaranteed to be above 0.5: in
+  particular, when both medians are equal (frequent with binary or
+  ordered predictors with few levels), \dQuote{<} is chosen whatever the
+  AUC. Set \code{direction} explicitly whenever the expected direction
+  is known. With \code{density.controls, density.cases}, the curve is built
+  with \dQuote{<} and turned to \dQuote{>} if its AUC is below that of the
+  diagonal (0.5 for a full AUC).
 
   Specifications for \code{\link{auc}}, \code{\link{ci}} and
   \code{\link{plot.roc}} are not kept if \code{auc}, \code{ci} or \code{plot} are set to
@@ -321,7 +349,8 @@ aSAH  \%>\%
   Infinite values of the predictor cannot always be thresholded by
   infinity and can cause ROC curves to not reach 0 or 100\% 
   specificity or sensitivity. Since version 1.13.0, pROC returns \code{NaN}
-  with a warning message \dQuote{Infinite value(s) in predictor} if
+  with a warning message \dQuote{Infinite value(s) in predictor, cannot
+  build a valid ROC curve. NaN returned instead.} if
   \code{predictor} contains any \link[=is.infinite]{infinite} values.
 }
 
@@ -332,7 +361,7 @@ aSAH  \%>\%
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
@@ -398,9 +427,10 @@ plot(rocobj)
 
 # Smoothed ROC curve
 roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-# this is not identical to
+# this gives the same smoothed curve and AUC as
 smooth(roc(aSAH$outcome, aSAH$s100b))
-# because in the latter case, the returned object contains no AUC
+# but the returned objects differ in their call and in the data stored
+# (the former also contains the predictor, response and levels)
 }
 
 \keyword{univar}

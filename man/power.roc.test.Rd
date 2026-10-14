@@ -46,12 +46,12 @@ alternative = c("two.sided", "one.sided"), ...)
       \item{ra}{correlation between the variables in case patients}
       \item{delta}{the difference of AUC between the two ROC curves}
     }
-    For a partial AUC, the following additional parameters must be set:
+    For a partial AUC, the following four additional parameters must be set:
     \describe{
-      \item{FPR11}{Upper bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR12}{Lower bound of FPR (1 - specificity) of ROC curve 1}
-      \item{FPR21}{Upper bound of FPR (1 - specificity) of ROC curve 2}
-      \item{FPR22}{Lower bound of FPR (1 - specificity) of ROC curve 2}
+      \item{FPR11, FPR12}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 1}
+      \item{FPR21, FPR22}{the two bounds (in any order) of the FPR
+        (1 - specificity) range of ROC curve 2}
     }
   }
   \item{ncontrols, ncases}{
@@ -104,7 +104,9 @@ alternative = c("two.sided", "one.sided"), ...)
 
   \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
   function, but the empirical ROC will not be used, only the number of
-  patients and the AUC.
+  patients and the AUC. Only the full AUC is supported: a ROC curve with a
+  partial AUC gives the error \dQuote{Power calculation for one ROC curve
+  is only available for the full AUC.}
 }
 
 \section{Two paired ROC curves power calculation}{
@@ -116,6 +118,19 @@ alternative = c("two.sided", "one.sided"), ...)
   (formulas 2 and 3, p. 1530--1531). The null hypothesis is that the AUC
   of \code{roc1} is the same than the AUC of \code{roc2}, with
   \code{roc1} taken as the reference ROC curve.
+
+  If the two curves do not have the same missing (\code{NA}) predictor
+  values, the observations missing in either curve are removed from both,
+  and the curves are rebuilt on the observations they have in common
+  (see \code{\link{are.paired}}). The AUCs, variances, covariance and
+  numbers of cases and controls are then those of the rebuilt curves.
+
+  Two curves built with \code{controls} and \code{cases} with the same
+  numbers of controls and of cases are always considered paired, and
+  their observations are matched by their position in the
+  \code{controls} and \code{cases} vectors (see
+  \code{\link{are.paired}}): only use them if they were measured on
+  the same patients, given in the same order.
 
   For the sample size, \code{ncases} is computed directly from formula 2
   and ncontrols is deduced with \code{kappa} (defaults to the
@@ -163,6 +178,10 @@ alternative = c("two.sided", "one.sided"), ...)
   Warning: if the roc object passed to roc.test contains an \code{auc}
   field and \code{reuse.auc=TRUE}, \link{auc} is not called and
   arguments such as \code{partial.auc} are silently ignored.
+
+  Corrected partial AUCs (\code{partial.auc.correct=TRUE}) are not
+  supported and give the error \dQuote{Cannot compute power with
+  corrected partial AUCs}.
 }
 
 \value{
@@ -182,11 +201,11 @@ alternative = c("two.sided", "one.sided"), ...)
   approach''. \emph{Biometrics} \bold{44}, 837--845.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
-  determination for diagnostic accurary studies involving binormal ROC
+  determination for diagnostic accuracy studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16},
   1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
 
-  Nancy A. Obuchowski, Micharl L. Lieber, Frank H. Wians
+  Nancy A. Obuchowski, Michael L. Lieber, Frank H. Wians
   Jr. (2004). ``ROC Curves in Clinical Chemistry: Uses, Misuses, and
   Possible Solutions''. \emph{Clinical Chemistry}, \bold{50}, 1118--1125. DOI:
   \doi{10.1373/clinchem.2004.031823}.
@@ -281,13 +300,16 @@ power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
 
 ## With only binormal parameters given
-# From example 2 of Obuchowski and McClish, 1997.
+# From example 2 of Obuchowski and McClish, 1997. pROC 1.19.1 and earlier
+# gave 107 cases; pROC now computes the variance under the null hypothesis
+# with the parameters of the first curve for both (as in Obuchowski's
+# DESIGNROC program), which gives about 120 cases.
 ob.params <- list(A1=2.6, B1=1, A2=1.9, B2=1, rn=0.6, ra=0.6, FPR11=0,
 FPR12=0.2, FPR21=0, FPR22=0.2, delta=0.037) 
 
 power.roc.test(ob.params, power=0.8, sig.level=0.05)
-power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=107)
-power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=107)
+power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=120)
+power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=120)
 
 }
 

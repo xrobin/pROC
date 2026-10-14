@@ -51,6 +51,26 @@ roc_utils_c_ordered <- function(...) {
   ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
 }
 
+# An NA level of an ordered predictor (addNA(), factor(exclude = NULL))
+# codes missing values, not a value above or below the others: make them
+# real NAs, removed with na.rm = TRUE like any missing predictor value.
+roc_utils_ordered_na_level <- function(x) {
+  if (is.ordered(x) && anyNA(levels(x))) {
+    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = TRUE)
+  }
+  x
+}
+
+# An NA level of a response factor (addNA(), factor(exclude = NULL)) codes
+# missing responses, not a class: make them real NAs, so that they are
+# handled by na.rm like any missing response.
+roc_utils_response_na_level <- function(x) {
+  if (is.factor(x) && anyNA(levels(x))) {
+    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = is.ordered(x))
+  }
+  x
+}
+
 # Concatenate predictors, preserving ordered class when needed.
 roc_utils_combine_predictor <- function(...) {
   args <- list(...)
@@ -443,7 +463,16 @@ roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
   x <- replace(x, x == "t", "threshold")
   x <- replace(x, x == "npe", "1-npv")
   x <- replace(x, x == "ppe", "1-ppv")
-  return(match.arg(x, valid.ret.args, several.ok = TRUE))
+  # match.arg(several.ok = TRUE) silently drops the elements that don't match
+  unknown <- x[is.na(pmatch(x, valid.ret.args, duplicates.ok = TRUE))]
+  matched <- match.arg(x, valid.ret.args, several.ok = TRUE)
+  if (length(unknown) > 0) {
+    warning(sprintf(
+      "Unknown or ambiguous coordinate(s) in 'ret' ignored: %s.",
+      paste0("'", unknown, "'", collapse = ", ")
+    ))
+  }
+  return(matched)
 }
 
 # Arguments which can be used as input for coords
@@ -502,6 +531,21 @@ roc_utils_is_perfect_curve <- function(roc) {
   return(abs(best.point - 2) < .Machine$double.eps^0.5) # or best.point == 2, with numerical tolerance
 }
 
+# roc() returns NA (NA values with na.rm = FALSE) or NaN (infinite predictor
+# values) instead of a curve. The interfaces that build a curve with roc()
+# check its result with this helper and return the NA/NaN unchanged.
+# Input: the result of roc(); plot: whether the caller was asked to draw it
+# Output: TRUE for a curve, FALSE (with a warning if plot = TRUE) otherwise
+roc_utils_is_curve <- function(roc, plot = FALSE) {
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    return(TRUE)
+  }
+  if (plot) {
+    warning(simpleWarning("Nothing plotted: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).", call = sys.call(-1)))
+  }
+  FALSE
+}
+
 # Load package namespace 'pkg'.
 # Input: package name
 # Returns: TRUE upon success (or if the package was already loaded)
@@ -510,12 +554,7 @@ load.suggested.package <- function(pkg) {
   if (requireNamespace(pkg)) {
     return(TRUE)
   } else if (interactive()) {
-    if (getRversion() < "3.5.0") { # utils::askYesNo not available
-      message(sprintf("Package %s not available, do you want to install it now?", pkg))
-      auto.install <- utils::menu(c("Yes", "No")) == 1
-    } else {
-      auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
-    }
+    auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
     if (isTRUE(auto.install)) {
       utils::install.packages(pkg)
       if (requireNamespace(pkg)) {
@@ -601,6 +640,9 @@ roc_utils_thr_idx <- function(roc, x) {
   if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
   }
+  if (anyNA(x)) {
+    stop("Missing values are not allowed in 'x'.")
+  }
   cut_points <- sort(unique(roc$predictor))
   thr_idx <- rep(NA_integer_, length(x))
   if (roc$direction == "<") {
@@ -656,6 +698,28 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 }
 
 
+# Whether x is a single non-missing number, to validate arguments.
+# A logical counts as a number, as in base R arithmetic (and t.test(conf.level = TRUE))
+roc_utils_is_single_number <- function(x) {
+  (is.numeric(x) || is.logical(x)) && length(x) == 1 && !is.na(x)
+}
+
+# Check the best.weights argument
+# @param weights: see coords(best.weights=)
+# @param arg: the name of the argument, for the error messages
+roc_utils_check_best_weights <- function(weights, arg = "best.weights") {
+  if (!is.numeric(weights) || length(weights) != 2) {
+    stop(sprintf("'%s' must be a numeric vector of length 2", arg))
+  }
+  # A NA cost gives a NA criterion
+  if (!is.na(weights[1]) && weights[1] <= 0) {
+    stop(sprintf("cost ('%s[1]') must be positive.", arg))
+  }
+  if (is.na(weights[2]) || weights[2] <= 0 || weights[2] >= 1) {
+    stop(sprintf("prevalence ('%s[2]') must be in the interval ]0,1[.", arg))
+  }
+}
+
 # Get optimal criteria Youden or Closest Topleft
 # @param se, sp: the roc curve
 # @param max: the maximum value, 1 or 100, based on percent. Namely ifelse(percent, 100, 1)
@@ -663,14 +727,8 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 # @param method: youden or closest.topleft coords(best.method=)
 # @return numeric vector along roc$thresholds/roc$se/roc$sp.
 roc_utils_optim_crit <- function(se, sp, max, weights, method) {
-  if (is.numeric(weights) && length(weights) == 2) {
-    r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
-  } else {
-    stop("'best.weights' must be a numeric vector of length 2")
-  }
-  if (weights[2] <= 0 || weights[2] >= 1) {
-    stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
-  }
+  roc_utils_check_best_weights(weights)
+  r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
 
   if (method == "youden") {
     optim.crit <- se + r * sp
@@ -752,9 +810,13 @@ coord.is.decreasing <- c(
 roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   # Get predictors (easy)
   if (data.missing) {
-    predictors <- attr(terms(formula), "term.labels")
+    formula.terms <- terms(formula)
   } else {
-    predictors <- attr(terms(formula, data = data), "term.labels")
+    formula.terms <- terms(formula, data = data)
+  }
+  predictors <- attr(formula.terms, "term.labels")
+  if (attr(formula.terms, "response") == 0) {
+    stop("Error in the formula: a response is required in a formula of type response~predictor.")
   }
 
   indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch = 0)
@@ -819,12 +881,17 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   if (!is.null(model.weights(m))) stop("weights are not supported")
 
   # Sanity checks
-  stopifnot(length(predictors) == ncol(m) - 1)
+  if (length(predictors) != ncol(m) - 1) {
+    stop("Invalid formula: only formulas of type response~predictor or response~predictor1+predictor2+... are supported.")
+  }
   stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
 
   return(list(
     response.name = names(m)[1],
-    response = model.response(m),
+    # model.response() names the response with the row names of the data:
+    # drop them so that formula and default interfaces give the same
+    # response, and are.paired can recognize the curves as paired
+    response = unname(model.response(m)),
     predictor.names = names(m)[-1],
     predictors = m[-1]
   ))
@@ -842,9 +909,9 @@ roc_utils_stop_if_no_device <- function(fun.name) {
   }
 }
 
-roc_utils_stop_if_no_auc <- function(x) {
+roc_utils_stop_if_no_auc <- function(x, arg = "x") {
   if (is.null(x$auc)) {
-    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
+    stop(sprintf("'%s' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.", arg))
   }
 }
 
@@ -855,4 +922,140 @@ roc_utils_warn_deprecated_parallel <- function(parallel) {
   if (!identical(parallel, FALSE)) {
     warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
   }
+}
+
+# Returns the empirical ROC curve a smooth.roc was built from, with the AUC
+# specification of the smoothed curve (partial.auc etc.) rather than the one
+# of the empirical curve, so that the smoothed curve can be rebuilt as it was.
+roc_utils_unsmooth <- function(smooth.roc) {
+  roc <- attr(smooth.roc, "roc")
+  if (!is.null(smooth.roc$auc)) {
+    # Only the specification matters: the (corrected) partial AUC of the
+    # empirical curve may not be defined, and is never reported
+    roc$auc <- auc(roc,
+      partial.auc = attr(smooth.roc$auc, "partial.auc"),
+      partial.auc.focus = attr(smooth.roc$auc, "partial.auc.focus"),
+      partial.auc.correct = attr(smooth.roc$auc, "partial.auc.correct"),
+      allow.invalid.partial.auc.correct = TRUE
+    )
+  }
+  return(roc)
+}
+
+# plot.roc() for roc(..., plot = TRUE). The dots may carry ci.coords()' 'x'
+# (roc(..., ci = TRUE, of = "coords", x = ...)), which would bind to the 'x'
+# of plot.roc() and replace the curve: capture it here so it is not forwarded.
+roc_utils_plot_roc <- function(curve, ..., x) {
+  plot.roc(curve, ...)
+}
+
+# axis() for plot.roc() without explicit labels. The 'lab' graphical parameter
+# (number of ticks, used by plot()) would partially match the 'labels' argument
+# of axis(): capture it here so it is not forwarded.
+roc_utils_axis <- function(..., lab) {
+  axis(...)
+}
+
+# smooth.roc() for roc(..., smooth = TRUE). roc() forwards its ... to auc, ci
+# and plot.roc too, but smooth.roc() forces all its dots (list(...)) and stores
+# them in smoothing.args, where they are evaluated again when the smoothing is
+# replayed (bootstrap, roc.test, are.paired): a plotmath title such as
+# main = quote(italic(x)) then fails, and panel.first/panel.last would be drawn
+# before the plot exists. Pass only the arguments of smooth.roc() and of the
+# smoothers, selected by name without forcing the others (..N refers to the
+# N-th element of ... lazily). The method of ci.auc() (ci.auc(response,
+# predictor, smooth = TRUE, method = "bootstrap")) is not passed either: the
+# smoothing method is smooth.method.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...) {
+  densfuns <- (function(..., density.controls = NULL, density.cases = NULL) list(density.controls, density.cases))(...)
+  methods <- eval(formals(smooth.roc)$method)
+  arg.names <- setdiff(
+    c(names(formals(smooth.roc)), roc_utils_smoothing_arg_names(methods[pmatch(smooth.method, methods)], densfuns)),
+    c("roc", "method", "n", "...")
+  )
+  dots.names <- names(substitute(list(...)))[-1]
+  keep <- which(dots.names %in% arg.names)
+  args <- lapply(keep, function(i) as.name(paste0("..", i)))
+  names(args) <- dots.names[keep]
+  eval(as.call(c(list(quote(smooth.roc), quote(roc), method = quote(smooth.method), n = quote(smooth.n)), args)))
+}
+
+# Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
+# where they end up in smoothing.args
+roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+
+# The smoothing arguments that can change a smoothed curve, sorted by name, to
+# compare how two curves were smoothed. smoothing.args can also hold arguments
+# that the smoothers ignore (passed to smooth() directly, or the arguments of
+# plot and ci stored by roc(..., smooth = TRUE) in older versions).
+# The arguments are normalised so that the same smoothing spelled differently
+# compares identical: the defaults of the smoothers are filled in and integers
+# are stored as doubles (n = 512L is n = 512).
+roc_utils_relevant_smoothing_args <- function(smoothing.args) {
+  relevant <- roc_utils_smoothing_arg_names(smoothing.args$method, smoothing.args[c("density.controls", "density.cases")])
+  if (identical(smoothing.args$method, "density")) {
+    defaults <- formals(smooth_roc_density)[c("cut", "adjust")]
+    for (arg in names(defaults)) {
+      if (is.null(smoothing.args[[arg]])) {
+        smoothing.args[[arg]] <- defaults[[arg]]
+      }
+    }
+    # window is only the default of kernel
+    if (is.null(smoothing.args$kernel)) {
+      smoothing.args$kernel <- if (is.null(smoothing.args$window)) formals(smooth_roc_density)$window else smoothing.args$window
+    }
+    smoothing.args$window <- NULL
+    # density() matches the kernel partially ("e" is "epanechnikov")
+    if (is.character(smoothing.args$kernel) && length(smoothing.args$kernel) == 1) {
+      kernels <- eval(formals(stats::density.default)$kernel)
+      kernel <- pmatch(smoothing.args$kernel, kernels)
+      if (!is.na(kernel)) {
+        smoothing.args$kernel <- kernels[kernel]
+      }
+    }
+  } else if (identical(smoothing.args$method, "fitdistr")) {
+    for (arg in c("density.controls", "density.cases")) {
+      # NULL densities are fitted as "normal"
+      if (is.null(smoothing.args[[arg]])) {
+        smoothing.args[[arg]] <- "normal"
+      }
+      # Density names are matched partially, and some are aliases
+      # ("lognormal" and "log-normal"): compare the density functions
+      if (is.character(smoothing.args[[arg]]) && length(smoothing.args[[arg]]) == 1) {
+        densfun <- pmatch(smoothing.args[[arg]], names(smooth_roc_fitdistr_densfuns))
+        if (!is.na(densfun)) {
+          smoothing.args[[arg]] <- smooth_roc_fitdistr_densfuns[[densfun]]
+        }
+      }
+    }
+  }
+  smoothing.args <- lapply(smoothing.args, function(arg) {
+    if (is.integer(arg)) {
+      storage.mode(arg) <- "double"
+    }
+    arg
+  })
+  smoothing.args[sort(intersect(names(smoothing.args), relevant))]
+}
+
+# The names of the arguments that can change a curve smoothed with 'method'
+# (already matched), given the density.controls and density.cases arguments
+roc_utils_smoothing_arg_names <- function(method, densfuns) {
+  relevant <- c("smooth", "method", "n", "bw", "density.controls", "density.cases", "start.controls", "start.cases")
+  densfuns <- Filter(is.function, densfuns)
+  if (identical(method, "density")) {
+    # arguments taken by smooth_roc_density or passed to the density functions
+    densfuns <- c(densfuns, stats::density.default)
+    relevant <- c(relevant, names(formals(smooth_roc_density)))
+  } else if (identical(method, "fitdistr")) {
+    # arguments passed to the density functions or to optim by fitdistr
+    densfuns <- c(densfuns, lapply(smooth_roc_fitdistr_densfuns, match.fun))
+    relevant <- c(relevant, "gr", "lower", "upper", "control")
+  }
+  for (densfun in densfuns) {
+    # Not the arguments the smoothers set themselves: the data (first
+    # argument), from/to of density() and log of fitdistr
+    relevant <- c(relevant, setdiff(names(formals(densfun))[-1], c("from", "to", "log")))
+  }
+  relevant
 }
