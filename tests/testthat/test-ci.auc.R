@@ -117,3 +117,15 @@ test_that("ci functions reject a missing or vector conf.level", {
   # A logical is a number, as in base R (t.test(conf.level = TRUE))
   expect_identical(as.numeric(ci.auc(r.s100b, conf.level = TRUE)), as.numeric(ci.auc(r.s100b, conf.level = 1)))
 })
+
+test_that("ci.auc and ci formula/default methods with smooth = TRUE take method", {
+  s <- smooth(r.s100b)
+  set.seed(42)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
+})
