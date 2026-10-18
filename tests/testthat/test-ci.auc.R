@@ -87,6 +87,20 @@ test_that("ci.auc of a smoothed percent curve with a corrected partial AUC is 10
   expect_equal(as.numeric(ci.percent), 100 * as.numeric(ci.fraction))
 })
 
+test_that("ci.auc and ci formula/default methods with smooth = TRUE can recompute the AUC", {
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE))
+  set.seed(42)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, reuse.auc = FALSE, progress = "none"))
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(outcome ~ s100b, data = aSAH, smooth = TRUE, boot.n = 5, reuse.auc = FALSE, progress = "none", quiet = TRUE)), expected)
+  set.seed(42)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, boot.n = 5, auc = FALSE, progress = "none", quiet = TRUE)), expected)
+})
+
 test_that("ci functions reject a missing or vector conf.level", {
   set.seed(42)
   for (conf.level in list(NA, NA_real_, c(0.9, 0.95), "0.95")) {
