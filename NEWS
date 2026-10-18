@@ -90,6 +90,7 @@
   * 'geom_polygon_auc' gives a clear error on a curve without AUC (instead of "no applicable method")
   * `plot.ci.coords()` draws visible ticks when the CI has a single `x`, and gives a clear error when `x` is not numeric (e.g. `x = "best"`) instead of "non-numeric argument to binary operator".
   * 'multiclass.roc' now accepts a tibble (including dplyr's grouped and rowwise data frames) as the predictor matrix.
+  * `roc(..., ci = TRUE, of = "coords", x = ..., plot = TRUE)` (and `ci.coords(response, predictor, x = ..., plot = TRUE)`) no longer fail with "'response' must have two levels": the `x` of `ci.coords()` is not forwarded to `plot.roc()` anymore.
   * 'multiclass.roc' now fails with a clear error instead of returning an infinite AUC or failing with 'n < m' when fewer than two levels with observations are available
   * Fixed 'smooth' with 'method="logcondens"' or 'method="logcondens.smooth"' ignoring the direction of the ROC curve: curves with 'direction=">"' were smoothed as with 'direction="<"'. Smoothed curves saved by earlier versions keep their old curve: smooth them again
   * Fixed 'smooth' failing with 'reuse.ci=TRUE' on curves with a CI
@@ -159,10 +160,15 @@
   * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer fails ("missing values and NaN's not allowed"), and gives a clear error when no threshold is in the partial AUC window.
   * plot.roc() now applies the AUC specification given in "..." (e.g. "partial.auc" with "reuse.auc = FALSE") to "print.thres" too: the marked thresholds and the returned "auc" no longer depend on "print.auc", "auc.polygon" or "max.auc.polygon".
   * multiclass.roc() now says that only one column of a predictor matrix could be matched to the levels of the response, instead of asking for a vector.
+  * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
+  * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
+  * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
+  * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for smoothed curves returned by 'roc.test'
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
   * Fixed bootstrap 'roc.test' and 'cov' of a curve smoothed with an extra argument (such as 'smooth(r, percent=FALSE)' or 'direction') failing with "duplicated argument(s) in AUC skeleton" and writing a 'pROC_bug.RData' file into the working directory
+  * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
