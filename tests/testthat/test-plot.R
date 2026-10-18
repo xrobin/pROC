@@ -396,6 +396,37 @@ test_that("print.thres = 'all' marks only real thresholds on a partial AUC curve
   expect_doppelganger("plot-print-thres-all-partial-auc-se", function() plot(r2, print.thres = "all"))
 })
 
+test_that("the lab graphical parameter sets the number of ticks", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b, lab = c(10, 10, 7))
+  expect_equal(par("xaxp")[3], 10)
+  expect_equal(par("yaxp")[3], 10)
+  r <- roc(aSAH$outcome, aSAH$s100b, plot = TRUE, lab = c(10, 10, 7), quiet = TRUE)
+  expect_equal(par("xaxp")[3], 10)
+  skip_if(getRversion() < "4.1")
+  expect_doppelganger("plot-lab-with-print-thres-print-auc", function() {
+    plot(r.s100b, lab = c(10, 10, 7), print.thres = 0.205, print.auc = TRUE)
+  })
+})
+
+test_that("graphical parameters in ... don't clash with the print.thres, print.auc and polygon arguments", {
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_s3_class(plot(r.s100b, print.auc = TRUE, cex = 0.8), "roc")
+  expect_s3_class(plot(r.s100b, print.thres = 0.205, cex = 0.8, pch = 3, adj = 0), "roc")
+  expect_s3_class(roc(aSAH$outcome, aSAH$s100b, plot = TRUE, print.auc = TRUE, cex = 1.2, quiet = TRUE), "roc")
+  expect_s3_class(plot(smooth(r.s100b), print.auc = TRUE, cex = 0.8), "smooth.roc")
+  skip_if(getRversion() < "4.1")
+  # The dedicated print.thres.pch and print.auc.cex take precedence over pch and cex
+  expect_doppelganger("plot-print-thres-print-auc-with-pch-cex-adj", function() {
+    plot(r.s100b, print.thres = 0.205, print.thres.pch = 4, print.auc = TRUE, print.auc.cex = 2, cex = 0.8, pch = 3, adj = 0)
+  })
+  expect_doppelganger("plot-auc-polygons-with-border-density-angle", function() {
+    plot(r.s100b, auc.polygon = TRUE, max.auc.polygon = TRUE, border = "red", density = 10, angle = 30)
+  })
+})
+
 test_that("print.auc does not print the CI of another AUC specification", {
   skip_if(getRversion() < "4.1")
   r.ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)

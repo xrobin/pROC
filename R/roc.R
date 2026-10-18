@@ -326,7 +326,7 @@ roc.default <- function(response, predictor,
       warning("CI can not be computed with densities.")
     }
     if (plot) {
-      plot.roc(smooth.roc, ...)
+      roc_utils_plot_roc(smooth.roc, ...)
     }
     return(smooth.roc)
   } else {
@@ -391,7 +391,7 @@ roc.default <- function(response, predictor,
   }
   # plot
   if (plot) {
-    plot.roc(roc, ...)
+    roc_utils_plot_roc(roc, ...)
   }
 
   # return roc
