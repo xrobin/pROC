@@ -207,6 +207,12 @@ test_that("fitdistr smoothing with a density function accepts other ... argument
   )
   expect_equal(s$sensitivities, expected$sensitivities)
   expect_equal(s$specificities, expected$specificities)
+  # with an auc argument forwarded by roc()
+  r2 <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = dens, start = list(m = 2, s = 1), df = 5, partial.auc = c(1, .8)
+  )
+  expect_equal(as.numeric(r2$auc), as.numeric(auc(expected, partial.auc = c(1, .8))))
 })
 
 test_that("fitdistr smoothing of a single case gives an NA curve", {
@@ -375,4 +381,91 @@ test_that("fitdistr smoothing rejects fixed parameters of closed-form densities"
   expect_named(s$fit.controls$estimate, "sd")
   s <- smooth(r.s100b, method = "fitdistr", density = "weibull", shape = 2, lower = 0.001)
   expect_named(s$fit.controls$estimate, "scale")
+})
+
+test_that("roc(smooth=TRUE, smooth.method='fitdistr') does not pass auc arguments to fitdistr", {
+  set.seed(42)
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  expected <- auc(smooth(r, method = "fitdistr", density = "weibull"), partial.auc = c(1, .8))
+  s <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = "weibull", partial.auc = c(1, .8)
+  )
+  expect_is(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), as.numeric(expected))
+})
+
+test_that("density smoothing passes only density arguments from roc() to density", {
+  response <- rep(0:1, each = 10)
+  predictor <- c(1, 2, 2.5, 3, 3.5, 4, 5, 5.5, 6, 8, 3, 4.5, 5, 6, 6.5, 7, 7.5, 8, 9, 10)
+  r <- smooth(roc(response, predictor, quiet = TRUE), method = "density", adjust = 2)
+  set.seed(42)
+  expected <- ci.coords(r, x = 0.9, input = "specificity", ret = "se", boot.n = 3)
+  # ci.coords' x must not reach density() as its data
+  set.seed(42)
+  obtained <- ci.coords(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  set.seed(42)
+  obtained <- roc(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, ci = TRUE, of = "coords", x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)$ci
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  # same with a density function
+  dens <- function(x, ...) stats::density(x, ...)
+  s <- smooth(roc(response, predictor, quiet = TRUE), method = "density", density = dens, adjust = 2)
+  s2 <- roc(response, predictor, quiet = TRUE, smooth = TRUE, smooth.method = "density", density = dens, adjust = 2, x = 0.9)
+  expect_equal(s2$sensitivities, s$sensitivities)
+  expect_equal(s$sensitivities, r$sensitivities)
+})
+
+test_that("the graphical adj argument does not change density smoothing", {
+  pdf(NULL)
+  on.exit(dev.off())
+  s <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0.5, quiet = TRUE)
+  expect_equal(s.adj$sensitivities, s$sensitivities)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", adj = 0.5, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+})
+
+test_that("roc(smooth = TRUE) forwards ... to smooth.roc as R matches arguments", {
+  # Expected values are those of pROC 1.19.1, except sub= and adj=, which failed there
+  pdf(NULL)
+  on.exit(dev.off())
+  y <- aSAH$outcome
+  x <- aSAH$s100b
+  r <- roc(y, x, quiet = TRUE)
+  s <- roc(y, x, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  expect_equal(as.numeric(s$auc), as.numeric(auc(smooth(r, method = "density"))))
+  # sub is the plot subtitle, not subset (failed in 1.19.1)
+  expect_equal(
+    as.numeric(auc(roc(outcome ~ s100b, data = aSAH, plot = TRUE, sub = "All patients", quiet = TRUE))),
+    as.numeric(r$auc)
+  )
+  # adj is the graphical parameter, not adjust (failed in 1.19.1: 'bw' is not positive)
+  expect_equal(
+    as.numeric(auc(roc(y, x, smooth = TRUE, smooth.method = "density", plot = TRUE, print.auc = TRUE, adj = 0, quiet = TRUE))),
+    as.numeric(s$auc)
+  )
+  # kern partially matches the kernel of density smoothing
+  expect_equal(
+    as.numeric(auc(roc(y, x, smooth = TRUE, smooth.method = "density", kern = "rectangular", quiet = TRUE))),
+    as.numeric(auc(smooth(r, method = "density", kernel = "rectangular")))
+  )
+  # method is not the smoothing method: use smooth.method
+  expect_error(roc(y, x, smooth = TRUE, method = "density", quiet = TRUE), "matched by multiple actual arguments")
+  # smooth() keeps R's partial matching: adj is adjust
+  expect_equal(
+    as.numeric(auc(smooth(r, method = "density", adj = 2))),
+    as.numeric(auc(smooth(r, method = "density", adjust = 2)))
+  )
+  # control partially matches the controls of roc(): pass it to smooth()
+  expect_error(
+    roc(y, x, smooth = TRUE, smooth.method = "fitdistr", control = list(maxit = 100), quiet = TRUE),
+    "incompatible with 'response/predictor'"
+  )
 })

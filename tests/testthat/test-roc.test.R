@@ -561,3 +561,17 @@ test_that("roc.test returns the smoothed curves with the call of the input curve
   expect_equal(t$roc1$sensitivities, s1$sensitivities)
 })
 
+test_that("roc(smooth = TRUE) does not take the x of ci.coords as a smoothing argument", {
+  set.seed(42)
+  # x is a formal of density(), but the data of the smoother
+  a <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "density",
+    ci = TRUE, of = "coords", x = "best", boot.n = 5, progress = "none", quiet = TRUE
+  )
+  expect_null(a$smoothing.args$x)
+  b <- roc(aSAH$outcome, aSAH$ndka,
+    smooth = TRUE, smooth.method = "density",
+    ci = TRUE, of = "coords", x = "best", boot.n = 5, progress = "none", quiet = TRUE
+  )
+  expect_is(roc.test(a, b, boot.n = 5), "htest")
+})
