@@ -51,14 +51,18 @@ ci(...)
 }
 
 \details{
-  \code{ci.formula} and \code{ci.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{ci.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{ci.smooth.roc}). \code{roc(\dots, ci=TRUE)} is a shortcut that
+  calls it after building the curve, and \code{ci.formula} and
+  \code{ci.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{ci.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{ci.roc}. Simply use \code{ci}
+  \code{\link{roc}} and \code{ci.roc}, with the limits described in the
+  \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use \code{ci}
   that will dispatch to the correct method.
   
-  This function is typically called from \code{\link{roc}} when \code{ci=TRUE} (not by
-  default). Depending on the \code{of} argument, the specific
+  Depending on the \code{of} argument, the specific
   \code{ci} functions \code{\link{ci.auc}}, \code{\link{ci.thresholds}},
   \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}} are called.
   

@@ -303,8 +303,7 @@ data(aSAH)
 ##  Basic example
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
 smooth(rocobj)
-# or directly with roc()
-roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
+# roc(aSAH$outcome, aSAH$s100b, smooth=TRUE) is a shortcut for the same curve
 
 # plotting
 plot(rocobj)

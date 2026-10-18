@@ -274,10 +274,12 @@ na.rm=TRUE, method=NULL, ...)
   different smoothing specifications, the warning 
   \dQuote{Different smoothing parameters in the ROC curves. Enforcing
     the inconsistency, but unexpected results may be produced.} is issued.
-  This warning can be benign, especially if ROC curves were generated
-  with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
-  functions (such as plot), or if you really want to compare two ROC
-  curves smoothed differently.
+  This warning is benign if you really want to compare two ROC curves
+  smoothed differently. To smooth both curves the same way, call
+  \code{\link[=smooth.roc]{smooth}} on each curve with the same arguments
+  (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
+  using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
+  other functions (such as plot) also reach the smoothing.
   The arguments are compared as they were given (see \code{smoothing.args}
   in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
   default value or an abbreviation (such as \code{kernel="e"} for
@@ -435,9 +437,7 @@ roc.test(roc1, roc2, alternative="less")
 \dontrun{
 # Comparison can be done on smoothed ROCs
 # Smoothing is re-done at each iteration, and execution is slow
-roc.test(smooth(roc1), smooth(roc2))
-# or:
-roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns, smooth=TRUE, boot.n=100)
+roc.test(smooth(roc1), smooth(roc2), boot.n=100)
 }
 # or from an AUC (no smoothing)
 roc.test(auc(roc1), roc2)
