@@ -21,7 +21,7 @@ roc.test <- function(...) {
   UseMethod("roc.test")
 }
 
-roc.test.formula <- function(formula, data, ...) {
+roc.test.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   roc.data <- roc_utils_extract_formula(formula, data, ...,

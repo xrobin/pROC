@@ -21,7 +21,7 @@ lines.roc <- function(x, ...) {
   UseMethod("lines.roc")
 }
 
-lines.roc.formula <- function(x, data, subset, na.action, ...) {
+lines.roc.formula <- function(x, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   names(call)[2] <- "formula" # forced to be x by definition of lines
