@@ -103,7 +103,7 @@ cov.roc <- function(roc1, roc2,
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
     if (smoothing.args$roc1$smooth) {
-      roc1$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1)), ...)
+      roc1$auc <- auc(smooth.roc = roc_utils_resmooth(roc1, smoothing.args$roc1), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc1 in the following processing,
@@ -117,7 +117,7 @@ cov.roc <- function(roc1, roc2,
   }
   if (is.null(roc2$auc) | !reuse.auc) {
     if (smoothing.args$roc2$smooth) {
-      roc2$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2)), ...)
+      roc2$auc <- auc(smooth.roc = roc_utils_resmooth(roc2, smoothing.args$roc2), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc2 in the following processing,
