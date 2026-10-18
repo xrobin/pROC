@@ -66,17 +66,13 @@ cov.roc <- function(roc1, roc2,
   smooth1 <- methods::is(roc1, "smooth.roc")
   if (smooth1) {
     roc_utils_stop_if_numeric_density(roc1, "the covariance of")
-    # The AUC specification is kept in the auc of the unsmoothed curve, not in
-    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
-    smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
+    smoothing.args$roc1 <- roc1$smoothing.args
     roc1 <- roc_utils_unsmooth(roc1)
   }
   smooth2 <- methods::is(roc2, "smooth.roc")
   if (smooth2) {
     roc_utils_stop_if_numeric_density(roc2, "the covariance of")
-    # The AUC specification is kept in the auc of the unsmoothed curve, not in
-    # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
-    smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
+    smoothing.args$roc2 <- roc2$smoothing.args
     roc2 <- roc_utils_unsmooth(roc2)
   }
 

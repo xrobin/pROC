@@ -951,6 +951,32 @@ roc_utils_axis <- function(..., lab) {
   axis(...)
 }
 
+# smooth.roc() for roc(..., smooth = TRUE). roc() forwards the same ... to
+# smooth.roc, auc, ci and plot.roc. Capture here the few names of the other
+# functions that the smoothers would take (as plot.default does for Axis):
+# - x (ci.coords) would become the data of density() (BUG-076, BUG-133);
+# - panel.first and panel.last (plot.roc) would be forced before the plot
+#   exists when smooth.roc stores the dots (BUG-161);
+# - partial.auc, partial.auc.focus, partial.auc.correct and
+#   allow.invalid.partial.auc.correct (auc) would be passed to fitdistr and
+#   the density function (BUG-042);
+# - adj (graphical parameter) would partially match the adjust of density
+#   smoothing (BUG-169).
+# Everything else is forwarded as is.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...,
+                                 x, panel.first, panel.last,
+                                 partial.auc, partial.auc.focus, partial.auc.correct,
+                                 allow.invalid.partial.auc.correct, adj) {
+  smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
+}
+
+# roc() for the default and formula methods of ci and ci.auc. Their ... also
+# holds the method of ci.auc ("delong" or "bootstrap"), which roc(smooth = TRUE)
+# would pass to smooth.roc as a second 'method' (BUG-166): capture it here.
+roc_utils_roc_ci <- function(response, predictor, ..., method) {
+  roc.default(response, predictor, ...)
+}
+
 # The AUC specification, which smooth.roc stores in smoothing.args when it is
 # passed to it (see roc_utils_resmooth)
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
