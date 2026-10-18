@@ -601,3 +601,15 @@ test_that("roc.test and cov do not warn for abbreviated kernels or aliased fitdi
   expect_no_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr", density = "log-normal"), boot.n = 2), message = msg)
   expect_warning(roc.test(smooth(r.s100b, method = "fitdistr", density = "lognormal"), smooth(r.ndka, method = "fitdistr"), boot.n = 2), msg)
 })
+
+test_that("roc(smooth = TRUE) does not take the x of ci.coords as a smoothing argument", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  # x is a formal of density(), but the data of the smoother
+  a <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "density",
+    ci = TRUE, of = "coords", x = "best", boot.n = 5, progress = "none", quiet = TRUE
+  )
+  expect_null(a$smoothing.args$x)
+  expect_no_warning(roc.test(a, smooth(r.ndka, method = "density"), boot.n = 5), message = msg)
+})
