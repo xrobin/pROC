@@ -95,7 +95,7 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 panel.first=NULL,
 panel.last=NULL,
 ...)
-\S3method{plot.roc}{formula}(x, data, subset, na.action, ...)
+\S3method{plot.roc}{formula}(x, data, ..., subset, na.action)
 \S3method{plot.roc}{default}(x, predictor, ...)
 \S3method{plot.roc}{smooth.roc}(x, ...)
 

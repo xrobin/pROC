@@ -527,6 +527,34 @@ test_that("roc with densities, direction = 'auto' and a corrected partial AUC be
   expect_equal(as.numeric(r$auc), as.numeric(r.gt$auc))
 })
 
+test_that("formula methods with subset can plot and smooth", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  r.female <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", quiet = TRUE)
+  r <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(r$auc), as.numeric(r.female$auc))
+  s <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)
+  expect_equal(s$sensitivities, smooth(r.female)$sensitivities)
+  rl <- roc(outcome ~ s100b + ndka, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(rl$s100b$auc), as.numeric(r.female$auc))
+  expect_equal(
+    as.numeric(auc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)),
+    as.numeric(auc(smooth(r.female)))
+  )
+  expect_equal(
+    as.numeric(ci(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci(r.female))
+  )
+  expect_equal(
+    as.numeric(ci.auc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci.auc(r.female))
+  )
+  expect_s3_class(ci.se(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.se")
+  expect_s3_class(ci.sp(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.sp")
+  expect_s3_class(ci.thresholds(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.thresholds")
+})
+
 test_that("a data.frame response gives a clear error", {
   set.seed(42)
   expect_error(auc(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
@@ -539,4 +567,32 @@ test_that("duplicated levels give a clear error", {
   y <- as.numeric(aSAH$outcome == "Poor")
   expect_error(roc(y, aSAH$s100b, levels = c(0, 0), quiet = TRUE), "'levels' must contain two different values")
   expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
+})
+
+test_that("roc.test and multiclass.roc formula methods with subset can plot and smooth", {
+  pdf(NULL)
+  on.exit(dev.off())
+  # gos6 has no observation for level 2
+  data <- transform(aSAH, gos6 = droplevels(gos6))
+  female <- data[data$gender == "Female", ]
+  male <- data[data$gender == "Male", ]
+  set.seed(42)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", smooth = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.female <- roc.test(outcome ~ s100b + ndka, female, smooth = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(t$p.value, t.female$p.value)
+  expect_equal(t$estimate, t.female$estimate)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, female, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, subset = gender == "Male", plot = TRUE, quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, male, quiet = TRUE)$auc)
+  )
+  # sub (subtitle) is a plot argument, not a partial match of subset
+  t <- roc.test(outcome ~ s100b + ndka, data, plot = TRUE, sub = "All patients", quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, data, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, plot = TRUE, sub = "All patients", quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, quiet = TRUE)$auc)
+  )
 })

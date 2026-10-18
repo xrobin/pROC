@@ -160,6 +160,8 @@
   * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer fails ("missing values and NaN's not allowed"), and gives a clear error when no threshold is in the partial AUC window.
   * plot.roc() now applies the AUC specification given in "..." (e.g. "partial.auc" with "reuse.auc = FALSE") to "print.thres" too: the marked thresholds and the returned "auc" no longer depend on "print.auc", "auc.polygon" or "max.auc.polygon".
   * multiclass.roc() now says that only one column of a predictor matrix could be matched to the levels of the response, instead of asking for a vector.
+  * Fixed 'sub' (the plot subtitle) being taken as 'subset' in the formula methods of 'plot.roc', 'lines.roc' and of 'roc', 'auc' and 'ci*' with 'plot = TRUE' ("No control observation."): 'subset' and 'na.action' now come after '...' and must be named.
+  * Fixed 'roc.test' and 'multiclass.roc' formula methods with 'subset' failing ("object not found") with 'plot = TRUE' or 'smooth = TRUE': they now take 'subset' and 'na.action' explicitly, like 'roc'.
   * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
   * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
   * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
