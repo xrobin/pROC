@@ -885,8 +885,29 @@ roc_utils_unsmooth <- function(smooth.roc) {
   return(roc)
 }
 
-# Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
-# where they end up in smoothing.args
+# Smooths 'roc' again as a curve smoothed with 'smoothing.args' (the
+# smoothing.args of a smooth.roc). Every replay of a smoothing goes through
+# here: roc.test, cov, are.paired and the bootstrap of smoothed curves.
+# - The stored arguments are passed as values (quote = TRUE): a language
+#   object such as roc(..., plot = TRUE, main = quote(italic(x))) stored is
+#   not evaluated again.
+# - The AUC specification is not a smoothing argument (smooth(r, partial.auc =
+#   ...) and older versions of roc(smooth = TRUE) stored it): it is kept in
+#   the auc of the curve.
+# - The CI of 'roc' is dropped: smooth.roc(reuse.ci = TRUE) would bootstrap it
+#   again. So is its AUC, unless reuse.auc is TRUE: the callers that only need
+#   the curve (bootstrap replicates) should not compute it.
+roc_utils_resmooth <- function(roc, smoothing.args, reuse.auc = FALSE) {
+  roc$ci <- NULL
+  if (!reuse.auc) {
+    roc$auc <- NULL
+  }
+  smoothing.args[roc_utils_auc_arg_names] <- NULL
+  do.call(smooth.roc, c(list(roc = roc), smoothing.args), quote = TRUE)
+}
+
+# The AUC specification, which smooth.roc stores in smoothing.args when it is
+# passed to it (see roc_utils_resmooth)
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
 
 # Curves smoothed from numeric densities cannot be resampled
