@@ -87,6 +87,7 @@
   * `plot.roc()` and `lines.roc()` with a formula return a curve that prints the predictor and response names instead of "(unknown)" (same fix as issue #101 for `roc()`).
   * `geom_polygon_auc()`, `geom_polygon_max_auc()` and `geom_text_auc()` give a clear error on a curve without AUC (instead of "no applicable method"), like their base-graphics counterparts.
   * `plot.ci.coords()` draws visible ticks when the CI has a single `x`, and gives a clear error when `x` is not numeric (e.g. `x = "best"`) instead of "non-numeric argument to binary operator".
+  * `roc(..., ci = TRUE, of = "coords", x = ..., plot = TRUE)` (and `ci.coords(response, predictor, x = ..., plot = TRUE)`) no longer fail with "'response' must have two levels": the `x` of `ci.coords()` is not forwarded to `plot.roc()` anymore.
   * Fixed 'multiclass.roc' failing with 'Predictor must be numeric or ordered.' with a tibble predictor
   * 'multiclass.roc' now fails with a clear error instead of returning an infinite AUC or failing with 'n < m' when fewer than two levels with observations are available
   * Fixed 'smooth' with 'method="logcondens"' or 'method="logcondens.smooth"' ignoring the direction of the ROC curve: curves with 'direction=">"' were smoothed as with 'direction="<"'
@@ -133,6 +134,7 @@
   * coords(input = "threshold") again uses the names of x as row names when ret includes derived coordinates such as accuracy or ppv (lost in the development version since the data.frame refactor; kept in 1.19.1).
   * roc.test() with unpaired DeLong now returns D = 0 and p = 1 instead of NaN when both AUCs are equal with zero variance (e.g. AUC = 1), like the paired DeLong and bootstrap tests.
   * multiclass.roc() now gives a clear error when the response is a data.frame, as roc() does.
+  * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for curves smoothed identically in 'roc' with plot or CI arguments, or returned by 'roc.test'
   * Fixed 'print' of 'multiclass.roc' objects built from a formula passed in a variable (twin of issue #101)
@@ -173,6 +175,10 @@
   * 'ci.thresholds(thresholds = "all")' on a partial AUC curve no longer returns an all-NA, unprintable CI, and gives a clear error when no threshold is in the partial AUC window.
   * plot.roc() now applies the AUC specification given in "..." (e.g. "partial.auc" with "reuse.auc = FALSE") to "print.thres" too: the marked thresholds and the returned "auc" no longer depend on "print.auc", "auc.polygon" or "max.auc.polygon".
   * multiclass.roc() now says that only one column of a predictor matrix could be matched to the levels of the response, instead of asking for a vector.
+  * Fixed 'ci.auc' and 'ci' with 'smooth=TRUE' failing with 'reuse.auc=FALSE' or 'auc=FALSE' ("$ operator is invalid for atomic vectors")
+  * 'multiclass.roc' with 'ci=TRUE' now gives a clear "not implemented" error, and accepts 'auc' (the AUC is always computed), instead of failing with "matched by multiple actual arguments"
+  * Fixed 'plot.roc' with the graphical parameter 'lab' failing ("'labels' is supplied and not 'at'")
+  * Fixed 'plot.roc' with 'print.auc', 'print.thres', 'auc.polygon' or 'max.auc.polygon' failing ("matched by multiple actual arguments") with the graphical parameters 'cex', 'pch', 'adj', 'border', 'angle' or 'density'
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
