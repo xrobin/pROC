@@ -951,6 +951,20 @@ roc_utils_resmooth <- function(roc, smoothing.args) {
   do.call("smooth.roc", c(list(roc = roc), smoothing.args))
 }
 
+# plot.roc() for roc(..., plot = TRUE). The dots may carry ci.coords()' 'x'
+# (roc(..., ci = TRUE, of = "coords", x = ...)), which would bind to the 'x'
+# of plot.roc() and replace the curve: capture it here so it is not forwarded.
+roc_utils_plot_roc <- function(curve, ..., x) {
+  plot.roc(curve, ...)
+}
+
+# axis() for plot.roc() without explicit labels. The 'lab' graphical parameter
+# (number of ticks, used by plot()) would partially match the 'labels' argument
+# of axis(): capture it here so it is not forwarded.
+roc_utils_axis <- function(..., lab) {
+  axis(...)
+}
+
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")

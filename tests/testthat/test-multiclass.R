@@ -352,6 +352,14 @@ test_that("multiclass.roc with a data.frame response gives a clear error", {
   expect_s3_class(multiclass.roc(d$y, data.frame(a = d$x, b = -d$x, c = d$x)), "mv.multiclass.roc")
 })
 
+test_that("multiclass.roc with smooth = TRUE gives a clear error", {
+  gos <- droplevels(aSAH$gos6)
+  expect_error(multiclass.roc(gos, aSAH$s100b, smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  m <- cbind("1" = aSAH$s100b, "3" = aSAH$ndka, "4" = aSAH$age, "5" = as.numeric(aSAH$wfns))
+  expect_error(multiclass.roc(gos, m, smooth = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+})
+
 test_that("multiclass.roc drops a level whose observations all have an NA predictor", {
   resp <- c("a", "a", "b", "b", "c", "c", "d")
   pred <- c(1, 2, 3, 4, 5, 6, NA)
@@ -366,6 +374,22 @@ test_that("multiclass.roc drops a level whose observations all have an NA predic
   expect_warning(mv <- multiclass.roc(resp, P), "No observation for response level\\(s\\): d")
   expect_equal(mv$levels, c("a", "b", "c"))
   expect_equal(as.numeric(mv$auc), as.numeric(multiclass.roc(resp[1:6], P[1:6, 1:3])$auc))
+})
+
+test_that("multiclass.roc with ci gives a clear error and ignores auc", {
+  set.seed(42)
+  gos <- droplevels(aSAH$gos6)
+  m <- cbind("1" = aSAH$s100b, "3" = aSAH$ndka, "4" = aSAH$age, "5" = as.numeric(aSAH$wfns))
+  expect_error(multiclass.roc(gos, aSAH$s100b, ci = TRUE, quiet = TRUE), "CI of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), ci = TRUE, quiet = TRUE), "CI of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos, m, ci = TRUE), "CI of a multiclass ROC curve not implemented")
+  # The AUC is always computed
+  expected <- as.numeric(multiclass.roc(gos, aSAH$s100b, quiet = TRUE)$auc)
+  for (auc in c(TRUE, FALSE)) {
+    expect_equal(as.numeric(multiclass.roc(gos, aSAH$s100b, auc = auc, quiet = TRUE)$auc), expected)
+    expect_equal(as.numeric(multiclass.roc(gos, aSAH$s100b, auc = auc, ci = FALSE, quiet = TRUE)$auc), expected)
+  }
+  expect_equal(as.numeric(multiclass.roc(gos, m, auc = TRUE, ci = FALSE)$auc), as.numeric(multiclass.roc(gos, m)$auc))
 })
 
 test_that("univariate multiclass.roc rejects duplicated levels", {
