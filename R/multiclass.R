@@ -78,7 +78,8 @@ multiclass_roc_univariate <- function(response, predictor,
   }
   multiclass.roc$levels <- levels
 
-  rocs <- utils::combn(levels, 2, function(X, response, predictor, percent, ...) {
+  # auc and ci in ... (see multiclass.roc.default) are not passed again
+  rocs <- utils::combn(levels, 2, function(X, response, predictor, percent, ..., auc, ci) {
     roc(response, predictor, levels = X, percent = percent, auc = FALSE, ci = FALSE, ...)
   }, simplify = FALSE, response = response, predictor = predictor, percent = percent, direction = direction, ...)
 
@@ -99,7 +100,8 @@ multiclass_na_rm <- function(..., na.rm = TRUE) {
   isTRUE(na.rm)
 }
 
-compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, direction, ...) {
+# auc and ci in ... (see multiclass.roc.default) are not passed again to roc()
+compute.pair.AUC <- function(pred.matrix, i, j, ref.outcome, levels, percent, direction, ..., auc, ci) {
   # computes A(i|j), the probability that a randomly
   # chosen member of class j has a lower estimated probability (or score)
   # of belonging to class i than a randomly chosen member of class i
@@ -203,6 +205,18 @@ multiclass.roc.default <- function(response, predictor,
   # An NA level of the response (addNA()) codes missing values: it is not a
   # class that can be compared
   levels <- levels[!is.na(levels)]
+
+  # smooth = TRUE would smooth the pairwise curves, whose AUCs then fail.
+  # Look only at 'smooth': other arguments in ... (e.g. subset) must not be evaluated here
+  smooth.requested <- function(..., smooth = FALSE) isTRUE(smooth)
+  if (smooth.requested(...)) {
+    stop("Smoothing of a multiclass ROC curve not implemented")
+  }
+  # Same for ci = TRUE. The AUC is always computed: auc = TRUE/FALSE is ignored
+  ci.requested <- function(..., ci = FALSE) isTRUE(ci)
+  if (ci.requested(...)) {
+    stop("CI of a multiclass ROC curve not implemented")
+  }
 
   # We need at least two levels in response
   if (length(unique(response[!is.na(response)])) < 2) {
