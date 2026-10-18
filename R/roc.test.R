@@ -149,25 +149,21 @@ roc.test.roc <- function(roc1, roc2,
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
-  if (methods::is(roc1, "smooth.roc")) {
+  smooth1 <- methods::is(roc1, "smooth.roc")
+  if (smooth1) {
+    roc_utils_stop_if_numeric_density(roc1, "the statistic on")
     # The AUC specification is kept in the auc of the unsmoothed curve, not in
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc1 <- roc1$smoothing.args[setdiff(names(roc1$smoothing.args), roc_utils_auc_arg_names)]
-    smoothing.args$roc1$smooth <- TRUE
-    roc_utils_stop_if_numeric_density(roc1, "the statistic on")
     roc1 <- roc_utils_unsmooth(roc1)
-  } else {
-    smoothing.args$roc1 <- list(smooth = FALSE)
   }
-  if (methods::is(roc2, "smooth.roc")) {
+  smooth2 <- methods::is(roc2, "smooth.roc")
+  if (smooth2) {
+    roc_utils_stop_if_numeric_density(roc2, "the statistic on")
     # The AUC specification is kept in the auc of the unsmoothed curve, not in
     # the smoothing arguments (roc(smooth = TRUE, partial.auc = ...) puts it there)
     smoothing.args$roc2 <- roc2$smoothing.args[setdiff(names(roc2$smoothing.args), roc_utils_auc_arg_names)]
-    smoothing.args$roc2$smooth <- TRUE
-    roc_utils_stop_if_numeric_density(roc2, "the statistic on")
     roc2 <- roc_utils_unsmooth(roc2)
-  } else {
-    smoothing.args$roc2 <- list(smooth = FALSE)
   }
 
   # Check if we do a paired or unpaired roc.test
@@ -202,29 +198,15 @@ roc.test.roc <- function(roc1, roc2,
 
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
-    if (smoothing.args$roc1$smooth) {
-      roc1$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1)), ...)
-      # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
-      # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
-      # This removal should be safe because we always use smoothing.args with roc1 in the following processing,
-      # however it is a potential source of bugs.
-      smoothing.args$roc1$partial.auc <- NULL
-      smoothing.args$roc1$partial.auc.correct <- NULL
-      smoothing.args$roc1$partial.auc.focus <- NULL
+    if (smooth1) {
+      roc1$auc <- auc(smooth.roc = roc_utils_resmooth(roc1, smoothing.args$roc1), ...)
     } else {
       roc1$auc <- auc(roc1, ...)
     }
   }
   if (is.null(roc2$auc) | !reuse.auc) {
-    if (smoothing.args$roc2$smooth) {
-      roc2$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2)), ...)
-      # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
-      # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
-      # This removal should be safe because we always use smoothing.args with roc2 in the following processing,
-      # however it is a potential source of bugs.
-      smoothing.args$roc2$partial.auc <- NULL
-      smoothing.args$roc2$partial.auc.correct <- NULL
-      smoothing.args$roc2$partial.auc.focus <- NULL
+    if (smooth2) {
+      roc2$auc <- auc(smooth.roc = roc_utils_resmooth(roc2, smoothing.args$roc2), ...)
     } else {
       roc2$auc <- auc(roc2, ...)
     }
@@ -245,7 +227,7 @@ roc.test.roc <- function(roc1, roc2,
     if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
-    } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+    } else if (smooth1 || smooth2) {
       # smoothing in one or both: bootstrap
       method <- "bootstrap"
     } else if (roc1$direction != roc2$direction) {
@@ -261,7 +243,7 @@ roc.test.roc <- function(roc1, roc2,
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("DeLong's test is not supported for partial AUC. Use method=\"bootstrap\" instead.")
       }
-      if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+      if (smooth1 || smooth2) {
         stop("DeLong's test is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if (roc1$direction != roc2$direction) {
@@ -272,7 +254,7 @@ roc.test.roc <- function(roc1, roc2,
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
       }
-      if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+      if (smooth1 || smooth2) {
         stop("Venkatraman's test is not supported for smoothed ROCs")
       }
       if (roc1$direction != roc2$direction) {
@@ -285,31 +267,31 @@ roc.test.roc <- function(roc1, roc2,
   }
 
   # Prepare the return value htest
-  if (smoothing.args$roc1$smooth) {
-    estimate <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))$auc
+  if (smooth1) {
+    estimate <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)$auc
   } else {
     estimate <- roc1$auc
   }
-  if (smoothing.args$roc2$smooth) {
-    estimate <- c(estimate, do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))$auc)
+  if (smooth2) {
+    estimate <- c(estimate, roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)$auc)
   } else {
     estimate <- c(estimate, roc2$auc)
   }
   if (identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    nest <- paste(ifelse(smoothing.args$roc1$smooth, "Smoothed ", ""), "AUC of roc1", sep = "")
+    nest <- paste(ifelse(smooth1, "Smoothed ", ""), "AUC of roc1", sep = "")
   } else {
     nest <- paste(ifelse(attr(roc1$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smoothing.args$roc1$smooth, "Smoothed ", ""),
+      ifelse(smooth1, "Smoothed ", ""),
       "pAUC (", attr(roc1$auc, "partial.auc")[1], "-", attr(roc1$auc, "partial.auc")[2], " ", attr(roc1$auc, "partial.auc.focus"),
       ") of roc1",
       sep = ""
     )
   }
   if (identical(attr(roc2$auc, "partial.auc"), FALSE)) {
-    nest <- c(nest, paste(ifelse(smoothing.args$roc2$smooth, "Smoothed ", ""), "AUC of roc2", sep = ""))
+    nest <- c(nest, paste(ifelse(smooth2, "Smoothed ", ""), "AUC of roc2", sep = ""))
   } else {
     nest <- c(nest, paste(ifelse(attr(roc2$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smoothing.args$roc2$smooth, "Smoothed ", ""),
+      ifelse(smooth2, "Smoothed ", ""),
       "pAUC (", attr(roc2$auc, "partial.auc")[1], "-", attr(roc2$auc, "partial.auc")[2], " ", attr(roc2$auc, "partial.auc.focus"),
       ") of roc2",
       sep = ""
@@ -464,11 +446,11 @@ roc.test.roc <- function(roc1, roc2,
   # Remove name from p value
   htest$p.value <- unname(htest$p.value)
   # Restore smoothing if necessary
-  if (smoothing.args$roc1$smooth) {
-    htest$roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
+  if (smooth1) {
+    htest$roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
   }
-  if (smoothing.args$roc2$smooth) {
-    htest$roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
+  if (smooth2) {
+    htest$roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
   }
   return(htest)
 }

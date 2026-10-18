@@ -86,9 +86,7 @@ are.paired.roc <- function(roc1, roc2,
       source.roc1 <- roc1
       if (!is.null(oroc1) && reuse.smooth) {
         source.roc1 <- oroc1
-        args <- oroc1$smoothing.args
-        args$roc <- roc1.paired
-        roc1.paired <- do.call("smooth.roc", args)
+        roc1.paired <- roc_utils_resmooth(roc1.paired, oroc1$smoothing.args)
         roc1.paired$call$roc <- as.name("roc1.paired")
       }
       if (!is.null(source.roc1$auc) && reuse.auc) {
@@ -106,9 +104,7 @@ are.paired.roc <- function(roc1, roc2,
       source.roc2 <- roc2
       if (!is.null(oroc2) && reuse.smooth) {
         source.roc2 <- oroc2
-        args <- oroc2$smoothing.args
-        args$roc <- roc2.paired
-        roc2.paired <- do.call("smooth.roc", args)
+        roc2.paired <- roc_utils_resmooth(roc2.paired, oroc2$smoothing.args)
         roc2.paired$call$roc <- as.name("roc2.paired")
       }
       if (!is.null(source.roc2$auc) && reuse.auc) {

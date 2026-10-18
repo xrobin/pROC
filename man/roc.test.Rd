@@ -273,6 +273,10 @@ na.rm=TRUE, method=NULL, ...)
   with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
   functions (such as plot), or if you really want to compare two ROC
   curves smoothed differently.
+  The arguments are compared as they were given (see \code{smoothing.args}
+  in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
+  default value or an abbreviation (such as \code{kernel="e"} for
+  \code{"epanechnikov"}) counts as a difference.
 
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
   ROC curves have a different differ in the value of

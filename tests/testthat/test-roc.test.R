@@ -522,3 +522,21 @@ test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
     expect_equal(t$statistic, expected$statistic)
   }
 })
+
+test_that("roc.test compares the smoothing arguments of the curves", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
+  s2 <- smooth(r.ndka)
+  # curves returned by roc.test
+  t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
+  expect_no_warning(roc.test(t$roc1, s2, boot.n = 5), message = msg)
+  # real differences are reported
+  expect_warning(roc.test(smooth(r.s100b, n = 100), s2, boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b, method = "density", adjust = 2), smooth(r.ndka, method = "density"), boot.n = 5), msg)
+  expect_warning(roc.test(smooth(r.s100b), r.ndka, boot.n = 5), msg)
+  # and so are the other arguments given to smooth, as in 1.19.1
+  s1.ci <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, boot.n = 5, progress = "none", quiet = TRUE)
+  expect_warning(roc.test(s1.ci, s2, boot.n = 5), msg)
+})
+
