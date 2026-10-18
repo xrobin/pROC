@@ -153,11 +153,13 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth) {
     smoothing.args$roc1$method <- smoothing.args$roc1$smooth.method
-    roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
+    smoothing.args$roc1$smooth.method <- NULL
+    roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1)
   }
   if (smoothing.args$roc2$smooth) {
     smoothing.args$roc2$method <- smoothing.args$roc2$smooth.method
-    roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
+    smoothing.args$roc2$smooth.method <- NULL
+    roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2)
   }
 
   if (test == "sp") {

@@ -207,7 +207,7 @@ roc.test.roc <- function(roc1, roc2,
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
     if (smoothing.args$roc1$smooth) {
-      roc1$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1)), ...)
+      roc1$auc <- auc(smooth.roc = roc_utils_resmooth(roc1, smoothing.args$roc1), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc1 in the following processing,
@@ -221,7 +221,7 @@ roc.test.roc <- function(roc1, roc2,
   }
   if (is.null(roc2$auc) | !reuse.auc) {
     if (smoothing.args$roc2$smooth) {
-      roc2$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2)), ...)
+      roc2$auc <- auc(smooth.roc = roc_utils_resmooth(roc2, smoothing.args$roc2), ...)
       # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
       # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
       # This removal should be safe because we always use smoothing.args with roc2 in the following processing,
@@ -290,12 +290,12 @@ roc.test.roc <- function(roc1, roc2,
 
   # Prepare the return value htest
   if (smoothing.args$roc1$smooth) {
-    estimate <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))$auc
+    estimate <- roc_utils_resmooth(roc1, smoothing.args$roc1)$auc
   } else {
     estimate <- roc1$auc
   }
   if (smoothing.args$roc2$smooth) {
-    estimate <- c(estimate, do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))$auc)
+    estimate <- c(estimate, roc_utils_resmooth(roc2, smoothing.args$roc2)$auc)
   } else {
     estimate <- c(estimate, roc2$auc)
   }
@@ -474,10 +474,10 @@ roc.test.roc <- function(roc1, roc2,
   htest$p.value <- unname(htest$p.value)
   # Restore smoothing if necessary
   if (smoothing.args$roc1$smooth) {
-    htest$roc1 <- do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1))
+    htest$roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1)
   }
   if (smoothing.args$roc2$smooth) {
-    htest$roc2 <- do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2))
+    htest$roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2)
   }
   return(htest)
 }

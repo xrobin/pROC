@@ -897,6 +897,15 @@ roc_utils_unsmooth <- function(smooth.roc) {
   return(roc)
 }
 
+# smooth.roc() again with the smoothing arguments of roc.test, cov and
+# bootstrap.test/bootstrap.cov. Their 'smooth' flag tells which curves are
+# smoothed: it is not an argument of smooth.roc, and the smoothers would pass it
+# on to fitdistr or density().
+roc_utils_resmooth <- function(roc, smoothing.args) {
+  smoothing.args$smooth <- NULL
+  do.call("smooth.roc", c(list(roc = roc), smoothing.args))
+}
+
 # Arguments of auc that roc(smooth = TRUE, ...) also forwards to smooth.roc,
 # where they end up in smoothing.args
 roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
