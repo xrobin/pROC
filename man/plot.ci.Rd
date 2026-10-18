@@ -117,9 +117,8 @@ ci.sp.obj <- ci.sp(rocobj, sensitivities=seq(0, 1, .01), boot.n=100)
 plot(rocobj) # restart a new plot
 plot(ci.sp.obj, type="shape", col="blue")
 
-# Direct syntax (response, predictor): ci() (like auc(), roc() and plot())
-# accepts a response/predictor pair directly, with no roc object needed:
-ci.thresh.obj <- ci(aSAH$outcome, aSAH$s100b, of="thresholds")
+# Thresholds
+ci.thresh.obj <- ci(rocobj, of="thresholds")
 plot(rocobj) # restart a new plot
 plot(ci.thresh.obj)
 

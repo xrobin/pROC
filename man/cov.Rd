@@ -201,10 +201,12 @@ cov(...)
   different smoothing specifications, the warning 
   \dQuote{Different smoothing parameters in the ROC curves. Enforcing
     the inconsistency, but unexpected results may be produced.} is issued.
-  This warning can be benign, especially if ROC curves were generated
-  with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
-  functions (such as plot), or if you really want to compare two ROC
-  curves smoothed differently.
+  This warning is benign if you really want to compare two ROC curves
+  smoothed differently. To smooth both curves the same way, call
+  \code{\link[=smooth.roc]{smooth}} on each curve with the same arguments
+  (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
+  using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
+  other functions (such as plot) also reach the smoothing.
   The arguments are compared as they were given (see \code{smoothing.args}
   in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
   default value or an abbreviation (such as \code{kernel="e"} for
