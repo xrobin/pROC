@@ -107,26 +107,36 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 	all the coordinates at all thresholds (\dQuote{all_coords}) or the
 	\code{roc} object (\dQuote{roc}). As it has the same name, the \code{ret}
 	argument of \code{\link{ci.coords}} cannot be passed through
-	\code{roc.data.frame} and \code{roc_} (use
-	\code{roc(response ~ predictor, data, ci=TRUE, of="coords", ret=\dots)}
-	instead).}
+	\code{roc.data.frame} and \code{roc_}: call
+	\code{\link{ci.coords}(rocobj, ret=\dots)} on the curve returned by
+	\code{roc} instead.}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
-    to be smoothed.
+    to be smoothed. This is a shortcut for \code{smooth(roc(\dots))}, which
+    is preferred (see \dQuote{Shortcuts} below).
   }
   \item{auc}{compute the area under the curve (AUC)? If \code{TRUE}
     (default), additional arguments can be passed to \code{\link{auc}}.
+    For a partial AUC, prefer calling \code{\link{auc}} on the curve
+    (see \dQuote{Shortcuts} below).
   }
   \item{ci}{compute the confidence interval (CI)? If set to \code{TRUE}, 
-    additional arguments can be passed to \code{\link{ci}}.
+    additional arguments can be passed to \code{\link{ci}}. This is a
+    shortcut for calling \code{\link{ci}} on the curve, which is preferred
+    (see \dQuote{Shortcuts} below).
   }
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
-    arguments can be passed to \code{\link{plot.roc}}.
+    arguments can be passed to \code{\link{plot.roc}}. This is a
+    shortcut for calling \code{\link[=plot.roc]{plot}} on the curve, which
+    is preferred (see \dQuote{Shortcuts} below).
   }
-  \item{smooth.method, smooth.n, ci.method}{in \code{roc.formula} and
-	\code{roc.default}, the \code{method} and \code{n} arguments to
+  \item{smooth.method, smooth.n, ci.method}{with the shortcuts only. Prefer
+	\code{\link[=smooth.roc]{smooth}(rocobj, method=\dots, n=\dots)} and
+	\code{\link{ci.auc}(rocobj, method=\dots)} on the curve returned by
+	\code{roc}. In \code{roc.formula} and \code{roc.default}, the
+	\code{method} and \code{n} arguments to
 	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
 	\code{method} argument to \code{\link{ci.auc}} (if \code{ci=TRUE} and
 	\code{of="auc"}) must be passed as
@@ -155,12 +165,14 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 }
 \details{
   This function's main job is to build a ROC object. See the
-  \dQuote{Value} section to this page for more details. Before
-  returning, it will call (in this order) the \code{\link[=smooth.roc]{smooth}},
-  \code{\link{auc}}, \code{\link{ci}} and \code{\link{plot.roc}}
-  functions if \code{smooth} \code{auc}, \code{ci} and \code{plot.roc}
-  (respectively) arguments are set to TRUE. By default, only \code{auc}
-  is called.
+  \dQuote{Value} section to this page for more details. The curve is
+  then passed to \code{\link[=smooth.roc]{smooth}}, \code{\link{auc}},
+  \code{\link{ci}}, \code{\link{coords}} or \code{\link[=plot.roc]{plot}}.
+  As a shortcut, before returning, \code{roc} will call (in this order) the
+  \code{\link[=smooth.roc]{smooth}}, \code{\link{auc}}, \code{\link{ci}}
+  and \code{\link{plot.roc}} functions if the \code{smooth}, \code{auc},
+  \code{ci} and \code{plot} (respectively) arguments are set to TRUE. By
+  default, only \code{auc} is called.
 
   Data can be provided as \code{response, predictor}, where the
   predictor is the numeric (or ordered) level of the evaluated signal, and
@@ -237,6 +249,29 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 
   Note that if \code{roc} was called with \code{auc=TRUE}, the latter syntax will not
   allow redefining the AUC specifications. You must use \code{reuse.auc=FALSE} for that.
+}
+
+\section{Shortcuts}{
+  The \code{smooth}, \code{auc}, \code{ci} and \code{plot} arguments are
+  shortcuts for calling these functions on the curve. With them, a single
+  \code{\dots} is shared by \code{\link[=smooth.roc]{smooth}},
+  \code{\link{auc}}, \code{\link{ci}} and \code{\link{plot.roc}}, and
+  arguments are matched by R as for any function call. Care is needed:
+  arguments must be spelled in full, as an abbreviation can match an
+  argument of \code{roc} itself (\code{control} for \code{\link{optim}}
+  is taken as \code{controls}) or of another function; and names used by
+  several of these functions, such as \code{method}, \code{x} or \code{n},
+  can collide or reach the wrong function. Calling the functions
+  separately avoids all of this, as each argument then goes to the
+  function it belongs to:
+
+  \preformatted{
+    rocobj <- roc(aSAH$outcome, aSAH$s100b)
+    smoothed <- smooth(rocobj, method = "density", adjust = 2)
+    auc(smoothed, partial.auc = c(1, 0.8))
+    ci(smoothed, boot.n = 100)
+    plot(smoothed, main = "S100b")
+  }
   
 }
 \value{
@@ -426,11 +461,12 @@ ci(rocobj)
 plot(rocobj)
 
 # Smoothed ROC curve
-roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-# this gives the same smoothed curve and AUC as
-smooth(roc(aSAH$outcome, aSAH$s100b))
-# but the returned objects differ in their call and in the data stored
-# (the former also contains the predictor, response and levels)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+smooth(rocobj)
+# roc(aSAH$outcome, aSAH$s100b, smooth=TRUE) is a shortcut that gives the
+# same smoothed curve and AUC, but the returned objects differ in their
+# call and in the data stored (the shortcut also contains the predictor,
+# response and levels)
 }
 
 \keyword{univar}

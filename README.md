@@ -42,7 +42,7 @@ roc(outcome ~ s100b, aSAH)
 ```
 ### Smoothing
 ```R
-roc(outcome ~ s100b, aSAH, smooth=TRUE) 
+smooth(roc(outcome ~ s100b, aSAH))
 ```
 ### more options, partial AUC, CI, and plotting
 ```R
