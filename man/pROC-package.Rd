@@ -15,16 +15,27 @@
 
 \details{
   The basic unit of the pROC package is the \code{\link{roc}} function. It
-  will build a ROC curve, smooth it if requested (if \code{smooth=TRUE}),
-  compute the AUC (if \code{auc=TRUE}), the confidence interval (CI) if 
-  requested (if \code{ci=TRUE}) and plot the curve if requested (if
-  \code{plot=TRUE}). 
+  builds a ROC curve, which is then passed to the other functions:
+  \code{\link[=smooth.roc]{smooth}} to smooth it, \code{\link{auc}} to
+  compute the (partial) area under the curve, \code{\link{ci}} for a
+  confidence interval (CI), \code{\link{coords}} for the coordinates of
+  the curve and \code{\link[=plot.roc]{plot}} to plot it:
 
-  The \code{\link{roc}} function will call \code{\link[=smooth.roc]{smooth}},
-  \code{\link{auc}},
-  \code{\link{ci}} and \code{\link{plot}} as necessary. See these
-  individual functions for the arguments that can be passed to them
-  through \code{\link{roc}}. These function can be called separately.
+  \preformatted{
+  rocobj <- roc(aSAH$outcome, aSAH$s100b)
+  auc(rocobj, partial.auc = c(1, 0.8))
+  ci(rocobj)
+  plot(smooth(rocobj))
+  }
+
+  Each argument then goes to the function it belongs to, and each
+  function documents its own arguments.
+
+  As a shortcut, \code{\link{roc}} can also smooth the curve
+  (\code{smooth=TRUE}), compute the AUC (\code{auc=TRUE}, the default), the
+  CI (\code{ci=TRUE}) and plot the curve (\code{plot=TRUE}), with the
+  arguments of these functions passed through its \code{...}. See
+  \code{\link{roc}} for the limits of this shortcut.
 
   Two paired (that is \code{\link{roc}} objects with the same
   \code{response}) or unpaired (with different \code{response}) ROC

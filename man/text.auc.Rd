@@ -78,9 +78,10 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, boot.n = 100)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ciobj <- ci(rocobj, boot.n = 100)
 plot(rocobj)
-text(rocobj)                 # "AUC: 0.XXX (0.XXX-0.XXX)"
+text(rocobj, ci = ciobj)     # "AUC: 0.XXX (0.XXX-0.XXX)"
 
 aucobj <- auc(rocobj)
 plot(rocobj)
