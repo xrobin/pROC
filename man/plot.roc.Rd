@@ -252,8 +252,9 @@ panel.last=NULL,
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
     \code{plot} argument for \code{\link{roc}} is not allowed, and that
     the \code{x} argument of \code{\link{ci.coords}} cannot be passed
-    this way, as it would be matched to \code{x} (use
-    \code{roc(\dots, ci=TRUE, of="coords", x=\dots, plot=TRUE)} instead).
+    this way, as it would be matched to \code{x}: build the curve with
+    \code{\link{roc}}, plot it, and draw the CI of
+    \code{\link{ci.coords}(rocobj, x=\dots)} on it with \code{plot()}.
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
@@ -262,12 +263,16 @@ panel.last=NULL,
 }
 
 \details{
-  This function is typically called from \code{\link{roc}} when plot=TRUE (not by
-  default). \code{plot.roc.formula} and \code{plot.roc.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{plot.roc.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{plot.roc.smooth.roc}). \code{roc(\dots, plot=TRUE)} is a shortcut
+  that calls it after building the curve, and \code{plot.roc.formula} and
+  \code{plot.roc.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{plot.roc.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{plot.roc.roc}. Simply use \code{plot.roc}
-  that will dispatch to the correct method.
+  \code{\link{roc}} and \code{plot.roc.roc}, with the limits described in
+  the \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use
+  \code{plot.roc} that will dispatch to the correct method.
 
   The plotting is done in the following order:
   \enumerate{
