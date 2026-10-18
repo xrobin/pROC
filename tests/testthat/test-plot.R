@@ -356,6 +356,23 @@ test_that("plot.roc applies the AUC specification of ... to print.thres", {
   })
 })
 
+test_that("formula methods take sub (subtitle) as a plot argument, not as subset", {
+  r <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
+  expect_doppelganger("formula-sub", function() {
+    r1 <- plot.roc(outcome ~ s100b, data = aSAH, sub = "All patients", quiet = TRUE)
+    expect_equal(as.numeric(r1$auc), as.numeric(r$auc))
+  })
+  r2 <- roc(outcome ~ s100b, data = aSAH, plot = TRUE, sub = "All patients", quiet = TRUE)
+  expect_equal(as.numeric(r2$auc), as.numeric(r$auc))
+  plot(r)
+  r3 <- lines.roc(outcome ~ wfns, data = aSAH, sub = "x", quiet = TRUE)
+  expect_equal(as.numeric(r3$auc), as.numeric(auc(aSAH$outcome, aSAH$wfns, quiet = TRUE)))
+  # subset itself is still taken by the formula
+  r.female <- roc(aSAH$outcome[aSAH$gender == "Female"], aSAH$s100b[aSAH$gender == "Female"], quiet = TRUE)
+  r4 <- plot.roc(outcome ~ s100b, data = aSAH, subset = gender == "Female", sub = "Women", quiet = TRUE)
+  expect_equal(as.numeric(r4$auc), as.numeric(r.female$auc))
+})
+
 test_that("plot.roc and lines.roc default methods keep the variable names of smoothed curves", {
   pdf(NULL)
   on.exit(dev.off())
