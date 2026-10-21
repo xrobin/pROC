@@ -182,9 +182,17 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
-  \item{smoothing.args}{a list of the arguments used for the
-    smoothing. Will serve to apply the smoothing again in further
-    bootstrap operations.
+  \item{smoothing.args}{a list of the arguments given to \code{smooth}:
+    \code{method}, \code{n}, \code{bw}, the \code{density.*} and
+    \code{start.*} arguments, and everything passed in \dots. With the
+    \code{\link{roc}(..., smooth=TRUE)} shortcut, this includes the
+    arguments meant for the other functions (such as \code{\link{plot.roc}}
+    or \code{\link{ci}}). Defaults filled in by the smoothers themselves
+    are not recorded. The list serves to apply the smoothing again in
+    bootstrap operations, \code{\link{roc.test}}, \code{\link{cov}} and
+    \code{\link{are.paired}}: the stored values are passed again as values,
+    not evaluated again. \code{\link{roc.test}} and \code{\link{cov}}
+    compare these lists to detect curves smoothed differently.
   }
   \item{auc}{if the original ROC curve contained an AUC, it is computed
     again on the smoothed ROC.

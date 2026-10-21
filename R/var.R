@@ -121,20 +121,16 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl
       stop("Cannot compute the variance of ROC curves smoothed with numeric density.controls and density.cases.")
     }
     smoothing.args <- roc$smoothing.args
-    smoothing.args$smooth <- TRUE
+    resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
     non.smoothed.roc <- attr(roc, "roc")
-    # smooth.roc() would recompute its auc on each replicate (and warn if a
-    # corrected partial AUC is not defined): the replicate AUC is auc.call's
-    non.smoothed.roc$auc <- NULL
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
-    smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), roc$smoothing.args))
     auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
     auc.args$allow.invalid.partial.auc.correct <- TRUE
     auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
 
     aucs <- bootstrap.replicates(boot.n, bootstrap.smooth.auc,
       roc = non.smoothed.roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      resmooth = resmooth, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
     )
   }
   ## Non smoothed ROC curves variance

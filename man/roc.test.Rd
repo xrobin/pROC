@@ -295,6 +295,10 @@ na.rm=TRUE, method=NULL, ...)
   (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
   using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
   other functions (such as plot) also reach the smoothing.
+  The arguments are compared as they were given (see \code{smoothing.args}
+  in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
+  default value or an abbreviation (such as \code{kernel="e"} for
+  \code{"epanechnikov"}) counts as a difference.
 
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
   ROC curves have a different value of
