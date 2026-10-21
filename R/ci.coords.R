@@ -134,6 +134,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   attr(ci, "input") <- input
   attr(ci, "x") <- x
   attr(ci, "ret") <- ret
+  attr(ci, "best.method") <- best.method
+  attr(ci, "best.weights") <- best.weights
+  attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -221,6 +224,9 @@ ci.coords.roc <- function(roc,
   attr(ci, "input") <- input
   attr(ci, "x") <- x
   attr(ci, "ret") <- ret
+  attr(ci, "best.method") <- best.method
+  attr(ci, "best.weights") <- best.weights
+  attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

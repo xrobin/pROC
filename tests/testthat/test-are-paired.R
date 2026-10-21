@@ -253,3 +253,24 @@ test_that("re-paired curves print the data of the input curves", {
   expect_false(grepl("paired|idx.exclude", out))
   expect_match(out, "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
 })
+
+test_that("re-paired curves keep the best.method, best.weights and best.policy of a stored ci.coords", {
+  set.seed(42)
+  a <- aSAH$s100b
+  a[1] <- NA
+  b <- aSAH$ndka
+  b[2] <- NA
+  ra <- roc(aSAH$outcome, a, quiet = TRUE)
+  rb <- roc(aSAH$outcome, b, quiet = TRUE)
+  ra$ci <- ci.coords(ra, "best",
+    input = "specificity", ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  pair <- are.paired(ra, rb, return.paired.rocs = TRUE, reuse.ci = TRUE)
+  ci <- attr(pair, "roc1")$ci
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "best.method"), "closest.topleft")
+  expect_identical(attr(ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(ci, "best.policy"), "random")
+})
