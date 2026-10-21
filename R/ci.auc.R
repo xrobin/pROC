@@ -74,9 +74,15 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               progress = getOption("pROCProgress", interactive()),
                               cl = NULL,
                               parallel = FALSE,
-                              ...) {
+                              ...,
+                              method = NULL) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("conf.level must be a single number within the interval [0,1].")
+  }
+
+  # Smoothed curves are always bootstrapped
+  if (identical(pmatch(method, c("delong", "bootstrap")), 1L)) {
+    warning("DeLong method is not supported for smoothed ROCs. Using bootstrap instead.")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
