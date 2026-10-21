@@ -155,6 +155,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{x}{the coordinates used to calculate the CI, as given in argument.}
   \item{ret}{the return values, as given in argument or substituted by
   	\code{\link{coords}}.}
+  \item{best.method, best.weights, best.policy}{the corresponding
+    arguments, as given in argument (\code{best.policy} matched).}
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
