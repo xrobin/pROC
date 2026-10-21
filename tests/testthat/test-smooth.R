@@ -427,3 +427,30 @@ test_that("roc(smooth = TRUE) forwards ... to smooth.roc as R matches arguments"
     "incompatible with 'response/predictor'"
   )
 })
+
+test_that("smooth with reuse.ci keeps the best.method, best.weights and best.policy of a stored ci.coords", {
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.coords(r, "best",
+    input = "specificity", ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  expect_identical(attr(r$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(r$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(r$ci, "best.policy"), "random")
+  set.seed(1)
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_identical(attr(s$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(s$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(s$ci, "best.policy"), "random")
+  # same as the specification given directly on the smoothed curve
+  set.seed(1)
+  direct <- ci.coords(smooth(r), "best",
+    ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  expect_equal(s$ci$specificity, direct$specificity)
+  expect_equal(s$ci$sensitivity, direct$sensitivity)
+})
