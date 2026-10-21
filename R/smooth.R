@@ -115,6 +115,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
     } else {
       args <- attributes(roc$ci)
       args$roc <- NULL
+      args$method <- NULL # smoothed curves are always bootstrapped
       if (methods::is(roc$ci, "ci.coords") && identical(args$x, "best")) {
         # input is ignored for x = "best" (and "threshold" is not a valid
         # input on a smoothed curve)
