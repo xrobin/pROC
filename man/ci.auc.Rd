@@ -25,7 +25,8 @@
 progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...,
+method = NULL)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
@@ -99,7 +100,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
   The default is to use the \dQuote{delong} method, except for comparison of
   partial AUC and smoothed curves, where \code{bootstrap} is used. Using
-  \dQuote{delong} for partial AUC and smoothed ROCs is not supported.
+  \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
+  partial AUC it is an error, and smoothed curves are always bootstrapped
+  (with a warning if \code{method="delong"}).
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in
@@ -149,6 +152,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Warnings}{
+  If \code{method="delong"} and the ROC curve is smoothed, a warning is
+  issued and the CI is computed with bootstrap.
+
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
   contains no case or control observation, or that there are not enough

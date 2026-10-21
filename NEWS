@@ -173,6 +173,7 @@
   * Fixed 'ci' and 'ci.auc' with response and predictor (or a formula), 'smooth=TRUE' and 'method' failing with 'formal argument "method" matched by multiple actual arguments'
   * Fixed 'var', 'ci.se', 'ci.sp' and 'ci.coords' of smoothed curves with a corrected partial AUC emitting one "Partial AUC correction not defined" warning per bootstrap replicate
   * Fixed 'roc.test' and 'cov' warning about different smoothing parameters for smoothed curves returned by 'roc.test'
+  * 'ci.auc' and 'ci' of a smoothed curve with 'method="delong"' now warn that the CI is bootstrapped, instead of silently ignoring the method
   * 'ci.coords' now stores 'best.method', 'best.weights' and 'best.policy' as attributes, so that 'smooth' and 'are.paired' with 'reuse.ci=TRUE' recompute a stored CI of the "best" point with them instead of the default Youden criterion
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
   * Fixed bootstrap 'roc.test' and 'cov' of a curve smoothed with an extra argument (such as 'smooth(r, percent=FALSE)' or 'direction') failing with "duplicated argument(s) in AUC skeleton" and writing a 'pROC_bug.RData' file into the working directory
