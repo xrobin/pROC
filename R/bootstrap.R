@@ -19,48 +19,27 @@
 
 ##########  AUC of two ROC curves (roc.test, cov)  ##########
 
+# The arguments to build a resampled curve like 'roc' in
+# bootstrap.test.replicate: its AUC specification, and its smoothing.args if
+# it was smoothed (NULL otherwise), replayed by roc_utils_resmooth.
+bootstrap.skeleton <- function(roc, smoothing.args) {
+  skeleton <- attributes(roc$auc)
+  skeleton$roc <- NULL
+  skeleton$class <- NULL
+  skeleton$direction <- roc$direction
+  skeleton$allow.invalid.partial.auc.correct <- TRUE
+  skeleton$smooth <- FALSE
+  skeleton$smoothing.args <- smoothing.args
+  skeleton
+}
+
 bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args,
                           progress = FALSE, cl = NULL) {
-  # rename method into smooth.method for roc
-  smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
-  smoothing.args$roc1$method <- NULL
-  smoothing.args$roc2$smooth.method <- smoothing.args$roc2$method
-  smoothing.args$roc2$method <- NULL
-
   # Prepare arguments for later calls to roc
-  auc1skeleton <- attributes(roc1$auc)
-  auc1skeleton$roc <- NULL
-  auc1skeleton$direction <- roc1$direction
-  auc1skeleton$class <- NULL
-  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
-  auc2skeleton <- attributes(roc2$auc)
-  auc2skeleton$roc <- NULL
-  auc2skeleton$direction <- roc2$direction
-  auc2skeleton$class <- NULL
-  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
-
+  auc1skeleton <- bootstrap.skeleton(roc1, smoothing.args$roc1)
+  auc2skeleton <- bootstrap.skeleton(roc2, smoothing.args$roc2)
   auc1skeleton$auc <- auc2skeleton$auc <- TRUE
 
-  # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
-  # If this condition happen, it probably means we have a bug elsewhere.
-  # Rather than making a complicated processing to remove the duplicates,
-  # just throw an error and let us solve the bug when a user reports it.
-  duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
-  duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
-  if (any(duplicated.auc1skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-  if (any(duplicated.auc2skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
   if (!boot.stratified) {
     # The non-stratified resample rebuilds each curve from response/predictor,
     # so the skeletons need the levels and direction to do it without checks.
@@ -88,46 +67,10 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
 # Bootstrap test, used by roc.test.roc
 bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args,
                            progress = FALSE, cl = NULL) {
-  # rename method into smooth.method for roc
-  smoothing.args$roc1$smooth.method <- smoothing.args$roc1$method
-  smoothing.args$roc1$method <- NULL
-  smoothing.args$roc2$smooth.method <- smoothing.args$roc2$method
-  smoothing.args$roc2$method <- NULL
-
   # Prepare arguments for later calls to roc
-  auc1skeleton <- attributes(roc1$auc)
-  auc1skeleton$roc <- NULL
-  auc1skeleton$direction <- roc1$direction
-  auc1skeleton$class <- NULL
-  auc1skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc1skeleton <- c(auc1skeleton, smoothing.args$roc1)
-  names(auc1skeleton)[which(names(auc1skeleton) == "n")] <- "smooth.n"
-  auc2skeleton <- attributes(roc2$auc)
-  auc2skeleton$roc <- NULL
-  auc2skeleton$direction <- roc2$direction
-  auc2skeleton$class <- NULL
-  auc2skeleton$allow.invalid.partial.auc.correct <- TRUE
-  auc2skeleton <- c(auc2skeleton, smoothing.args$roc2)
-  names(auc2skeleton)[which(names(auc2skeleton) == "n")] <- "smooth.n"
-
+  auc1skeleton <- bootstrap.skeleton(roc1, smoothing.args$roc1)
+  auc2skeleton <- bootstrap.skeleton(roc2, smoothing.args$roc2)
   auc1skeleton$auc <- auc2skeleton$auc <- test == "boot"
-
-  # Some attributes may be duplicated in AUC skeletons and will mess the boostrap later on when we do.call().
-  # If this condition happen, it probably means we have a bug elsewhere.
-  # Rather than making a complicated processing to remove the duplicates,
-  # just throw an error and let us solve the bug when a user reports it.
-  duplicated.auc1skeleton <- duplicated(names(auc1skeleton))
-  duplicated.auc2skeleton <- duplicated(names(auc2skeleton))
-  if (any(duplicated.auc1skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: duplicated argument(s) in AUC1 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc1skeleton)[duplicated(names(auc1skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
-  if (any(duplicated.auc2skeleton)) {
-    sessionInfo <- sessionInfo()
-    save(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("duplicated argument(s) in AUC2 skeleton: \"%s\". Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", paste(names(auc2skeleton)[duplicated(names(auc2skeleton))], collapse = ", "), utils::packageDescription("pROC")$BugReports))
-  }
 
   if (!boot.stratified) {
     # The non-stratified resample rebuilds each curve from response/predictor,
@@ -151,15 +94,11 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   )
 
   # Restore smoothing if necessary
-  if (smoothing.args$roc1$smooth) {
-    smoothing.args$roc1$method <- smoothing.args$roc1$smooth.method
-    smoothing.args$roc1$smooth.method <- NULL
-    roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1)
+  if (!is.null(smoothing.args$roc1)) {
+    roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
   }
-  if (smoothing.args$roc2$smooth) {
-    smoothing.args$roc2$method <- smoothing.args$roc2$smooth.method
-    smoothing.args$roc2$smooth.method <- NULL
-    roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2)
+  if (!is.null(smoothing.args$roc2)) {
+    roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
   }
 
   if (test == "sp") {
@@ -536,8 +475,8 @@ bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
     builder <- "roc_rp_nochecks"
   }
 
-  boot.roc1 <- try(do.call(builder, auc1skeleton), silent = TRUE)
-  boot.roc2 <- try(do.call(builder, auc2skeleton), silent = TRUE)
+  boot.roc1 <- try(bootstrap.test.curve(builder, auc1skeleton), silent = TRUE)
+  boot.roc2 <- try(bootstrap.test.curve(builder, auc2skeleton), silent = TRUE)
   # A resampled curve may not be smoothable: report the replicate as missing.
   if (methods::is(boot.roc1, "try-error") || methods::is(boot.roc2, "try-error")) {
     return(c(NA_real_, NA_real_))
@@ -586,11 +525,28 @@ bootstrap.auc <- function(n, roc, stratified) {
   ))
 }
 
+# A resampled curve of bootstrap.test.replicate, built by 'builder' from the
+# skeleton (see bootstrap.skeleton) and smoothed again if it carries
+# smoothing.args. The AUC of a smoothed curve is computed after the smoothing.
+bootstrap.test.curve <- function(builder, skeleton) {
+  smoothing.args <- skeleton$smoothing.args
+  skeleton$smoothing.args <- NULL
+  if (is.null(smoothing.args)) {
+    return(do.call(builder, skeleton))
+  }
+  auc <- skeleton$auc
+  skeleton$auc <- FALSE
+  curve <- roc_utils_resmooth(do.call(builder, skeleton), smoothing.args)
+  if (auc) {
+    curve$auc <- do.call(auc.smooth.roc, c(list(curve), skeleton[intersect(names(skeleton), roc_utils_auc_arg_names)]))
+  }
+  curve
+}
+
 ##########  AUC of a smooth ROC curve (ci.auc, var)  ##########
 
-bootstrap.smooth.auc <- function(n, roc, stratified, smooth.roc.call, auc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  auc.call$smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+bootstrap.smooth.auc <- function(n, roc, stratified, resmooth, auc.call) {
+  auc.call$smooth.roc <- try(resmooth(roc_utils_resampled_roc(roc, stratified)), silent = TRUE)
   if (methods::is(auc.call$smooth.roc, "try-error")) {
     return(NA_real_)
   }
@@ -619,9 +575,8 @@ bootstrap.sp <- function(n, roc, stratified, se) {
 
 ##########  SE and SP of a smooth ROC curve (ci.se, ci.sp)  ##########
 
-bootstrap.smooth.se <- function(n, roc, stratified, sp, smooth.roc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+bootstrap.smooth.se <- function(n, roc, stratified, sp, resmooth) {
+  smooth.roc <- try(resmooth(roc_utils_resampled_roc(roc, stratified)), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
     # One NA per requested specificity, as bootstrap.se
     return(rep(NA_real_, length(sp)))
@@ -629,9 +584,8 @@ bootstrap.smooth.se <- function(n, roc, stratified, sp, smooth.roc.call) {
   coords.smooth.roc(smooth.roc, sp, input = "specificity", ret = "sensitivity")[, 1]
 }
 
-bootstrap.smooth.sp <- function(n, roc, stratified, se, smooth.roc.call) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+bootstrap.smooth.sp <- function(n, roc, stratified, se, resmooth) {
+  smooth.roc <- try(resmooth(roc_utils_resampled_roc(roc, stratified)), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
     # One NA per requested sensitivity, as bootstrap.sp
     return(rep(NA_real_, length(se)))
@@ -672,10 +626,9 @@ bootstrap.coords <- function(n, roc, stratified, x, input, ret,
 ##########  Coords of a smooth ROC curve (ci.coords)  ##########
 
 bootstrap.smooth.coords <- function(n, roc, stratified, x, input, ret,
-                                    best.method, best.weights, smooth.roc.call,
+                                    best.method, best.weights, resmooth,
                                     best.policy, auc.args = NULL) {
-  smooth.roc.call$roc <- roc_utils_resampled_roc(roc, stratified)
-  smooth.roc <- try(eval(smooth.roc.call), silent = TRUE)
+  smooth.roc <- try(resmooth(roc_utils_resampled_roc(roc, stratified)), silent = TRUE)
   if (methods::is(smooth.roc, "try-error")) {
     # Same shape as a successful replicate, so ci.coords can reshape all the
     # replicates into an array without shifting the values
