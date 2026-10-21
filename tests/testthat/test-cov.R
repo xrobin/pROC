@@ -194,16 +194,16 @@ test_that("cov works on curves smoothed in roc() with a partial AUC", {
   expect_equal(cov(r1, r2, boot.n = 10), expected)
 })
 
-test_that("cov compares only the smoothing arguments of the curves", {
+test_that("cov compares the smoothing arguments of the curves", {
   set.seed(42)
   msg <- "Different smoothing parameters"
   s2 <- smooth(r.ndka)
-  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
-  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
-  expect_no_warning(cov(s1.col, s2, boot.n = 5), message = msg)
   # curves returned by roc.test
   t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
   expect_no_warning(cov(t$roc1, s2, boot.n = 5), message = msg)
-  # real differences are still reported
+  # real differences are reported
   expect_warning(cov(smooth(r.s100b, n = 100), s2, boot.n = 5), msg)
+  # and so are the other arguments given to smooth, as in 1.19.1
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  expect_warning(cov(s1.col, s2, boot.n = 5), msg)
 })

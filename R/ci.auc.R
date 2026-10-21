@@ -100,10 +100,6 @@ ci.auc.smooth.roc <- function(smooth.roc,
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
-  # remove the auc too: smooth.roc() would recompute it on each replicate, with
-  # its partial AUC still in percent once roc$percent is set to FALSE below
-  roc$auc <- NULL
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- smooth.roc$percent
@@ -118,7 +114,8 @@ ci.auc.smooth.roc <- function(smooth.roc,
   }
 
   # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
+  smoothing.args <- smooth.roc$smoothing.args
+  resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
   auc.args <- attributes(smooth.roc$auc)[grep("partial.auc", names(attributes(smooth.roc$auc)))]
   auc.args$allow.invalid.partial.auc.correct <- TRUE
   auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
@@ -126,7 +123,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   aucs <- roc_utils_drop_na_replicates(
     bootstrap.replicates(boot.n, bootstrap.smooth.auc,
       roc = roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      resmooth = resmooth, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
