@@ -129,3 +129,25 @@ test_that("ci.auc and ci formula/default methods with smooth = TRUE take method"
   set.seed(42)
   expect_equal(as.numeric(ci(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
 })
+
+test_that("ci.auc of a smoothed curve takes method and bootstraps DeLong with a warning", {
+  s <- smooth(r.s100b)
+  set.seed(42)
+  expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(s, method = "bootstrap", boot.n = 5, progress = "none")), expected)
+  # DeLong is not supported for smoothed curves: same bootstrap CI, with a warning
+  msg <- "DeLong method is not supported for smoothed ROCs. Using bootstrap instead."
+  set.seed(42)
+  expect_warning(ci <- ci.auc(s, method = "delong", boot.n = 5, progress = "none"), msg, fixed = TRUE)
+  expect_equal(as.numeric(ci), expected)
+  set.seed(42)
+  expect_warning(ci <- ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "delong", boot.n = 5, progress = "none", quiet = TRUE), msg, fixed = TRUE)
+  expect_equal(as.numeric(ci), expected)
+  # A CI of the unsmoothed curve computed with DeLong is reused with bootstrap, without warning
+  r <- r.s100b
+  r$ci <- ci.auc(r, method = "delong", boot.n = 5) # boot.n: stored for the reuse
+  set.seed(42)
+  expect_no_warning(s.ci <- smooth(r, reuse.ci = TRUE)$ci)
+  expect_equal(as.numeric(s.ci), expected)
+})
