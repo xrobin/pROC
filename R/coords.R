@@ -159,32 +159,15 @@ coords.smooth.roc <- function(smooth.roc,
         best.weights, best.method
       )
 
-      if (is.null(smooth.roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
-        se <- smooth.roc$sensitivities[optim.crit == max(optim.crit)]
-        sp <- smooth.roc$specificities[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
-      } else {
-        in.window <- if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]
-        } else {
-          smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]
-        }
-        if (!any(in.window)) { # no point in the window: max() below would be -Inf
-          warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
-          return(NULL)
-        }
-        if (attr(smooth.roc$auc, "partial.auc.focus") == "sensitivity") {
-          optim.crit.partial <- (optim.crit)[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$sensitivities <= partial.auc[1] & smooth.roc$sensitivities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-        } else {
-          optim.crit.partial <- (optim.crit)[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]]
-          se <- smooth.roc$sensitivities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          sp <- smooth.roc$specificities[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-          optim.crit <- optim.crit[smooth.roc$specificities <= partial.auc[1] & smooth.roc$specificities >= partial.auc[2]][optim.crit.partial == max(optim.crit.partial)]
-        }
+      in.window <- roc_utils_in_partial_auc(smooth.roc, ignore.partial.auc)
+      if (!any(in.window)) { # no point in the window: max() below would be -Inf
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
+        return(NULL)
       }
+      best <- in.window & optim.crit == max(optim.crit[in.window])
+      se <- smooth.roc$sensitivities[best]
+      sp <- smooth.roc$specificities[best]
+      optim.crit <- optim.crit[best]
       if (length(se) == 0) {
         warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
@@ -367,17 +350,10 @@ coords.roc <- function(roc,
       )
 
       # Filter thresholds based on partial.auc
-      in.window <- rep(TRUE, length(optim.crit))
-      if (!(is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc)) {
-        in.window <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]
-        } else {
-          roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]
-        }
-        if (!any(in.window)) { # no point in the window: max() below would be -Inf
-          warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
-          return(NULL)
-        }
+      in.window <- roc_utils_in_partial_auc(roc, ignore.partial.auc)
+      if (!any(in.window)) { # no point in the window: max() below would be -Inf
+        warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
+        return(NULL)
       }
       # Select on the exact criterion when there is one, report optim.crit
       select.crit <- roc_utils_optim_crit_counts(roc, best.weights, best.method)
