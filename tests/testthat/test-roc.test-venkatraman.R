@@ -169,3 +169,16 @@ test_that("unpaired venkatraman statistic integrates the error curves over [0, 1
   # Identical curves
   expect_equal(stat(c(1, 3), 2, c(1, 3), 2), 0)
 })
+
+test_that("unpaired venkatraman permutes curves of different designs on a common scale", {
+  # Both curves separate cases from controls perfectly. On the mixture scale
+  # of the statistic, every control of either curve lies below every case,
+  # so every permutation must give two perfect curves again (E = 0). Permuting
+  # raw ranks of curves of different sizes or case mixes did not.
+  r1 <- roc(controls = 1:8, cases = 9:10, direction = "<", quiet = TRUE)
+  r2 <- roc(controls = 1:20, cases = 21:100, direction = "<", quiet = TRUE)
+  set.seed(42)
+  res <- pROC:::venkatraman.unpaired.test(r1, r2, boot.n = 200)
+  expect_lt(res[[1]], 1e-12)
+  expect_true(all(res[[2]] < 1e-12))
+})

@@ -74,9 +74,12 @@ venkatraman.paired.permutation <- function(n, R, S, D, levels, ties.method) {
 }
 
 venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, mp, ties.method) {
-  # Break ties
-  R <- R + runif(length(D1)) - 0.5 # Add small amount of random but keep same mean
-  S <- S + runif(length(D2)) - 0.5
+  # Venkatraman (2000), section 2.2: the reference distribution permutes the
+  # values transformed by the mixture CDF of their curve, pooled within each
+  # disease group. Raw ranks of curves of different sizes or case mixes are
+  # not on a common scale.
+  R <- venkatraman.mixture.position(R, D1, levels1, mp)
+  S <- venkatraman.mixture.position(S, D2, levels2, mp)
 
   R.controls <- R[D1 %in% levels1[1]]
   R.cases <- R[D1 %in% levels1[2]]
@@ -92,6 +95,22 @@ venkatraman.unpaired.permutation <- function(n, R, S, D1, D2, levels1, levels2, 
   S[D2 %in% levels2[2]] <- cases[(length(R.cases) + 1):length(cases)]
 
   return(venkatraman.unpaired.stat(venkatraman.rank(R, ties.method), venkatraman.rank(S, ties.method), D1, D2, levels1, levels2, mp))
+}
+
+# Position of each observation on the mixture CDF of its curve,
+# M(x) = mp * F_cases(x) + (1 - mp) * F_controls(x) (Venkatraman 2000, section
+# 2.2). The paper assumes continuous data and uses M itself. Here each
+# observation is put at a random point within the step of M at its rank (tied
+# ranks share the step of the whole group): a random tie-break like the J(.)
+# of Venkatraman and Begg (1996, p. 838), not part of the 2000 paper.
+venkatraman.mixture.position <- function(R, D, levels, mp) {
+  cases <- sort(R[D %in% levels[2]])
+  controls <- sort(R[D %in% levels[1]])
+  below <- mp * findInterval(R, cases, left.open = TRUE) / length(cases) +
+    (1 - mp) * findInterval(R, controls, left.open = TRUE) / length(controls)
+  upto <- mp * findInterval(R, cases) / length(cases) +
+    (1 - mp) * findInterval(R, controls) / length(controls)
+  return(below + runif(length(R)) * (upto - below))
 }
 
 # rank(ties.method = "random") draws random numbers even when nothing is tied:
