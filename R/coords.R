@@ -367,12 +367,8 @@ coords.roc <- function(roc,
       )
 
       # Filter thresholds based on partial.auc
-      if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
-        se <- roc$sensitivities[optim.crit == max(optim.crit)]
-        sp <- roc$specificities[optim.crit == max(optim.crit)]
-        thres <- roc$thresholds[optim.crit == max(optim.crit)]
-        optim.crit <- optim.crit[optim.crit == max(optim.crit)]
-      } else {
+      in.window <- rep(TRUE, length(optim.crit))
+      if (!(is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc)) {
         in.window <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
           roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]
         } else {
@@ -382,20 +378,17 @@ coords.roc <- function(roc,
           warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
           return(NULL)
         }
-        if (attr(roc$auc, "partial.auc.focus") == "sensitivity") {
-          optim.crit <- (optim.crit)[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$sensitivities <= partial.auc[1] & roc$sensitivities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
-        } else {
-          optim.crit <- (optim.crit)[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]]
-          se <- roc$sensitivities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          sp <- roc$specificities[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          thres <- roc$thresholds[roc$specificities <= partial.auc[1] & roc$specificities >= partial.auc[2]][optim.crit == max(optim.crit)]
-          optim.crit <- optim.crit[optim.crit == max(optim.crit)]
-        }
       }
+      # Select on the exact criterion when there is one, report optim.crit
+      select.crit <- roc_utils_optim_crit_counts(roc, best.weights, best.method)
+      if (is.null(select.crit)) {
+        select.crit <- optim.crit
+      }
+      best <- in.window & select.crit == max(select.crit[in.window])
+      se <- roc$sensitivities[best]
+      sp <- roc$specificities[best]
+      thres <- roc$thresholds[best]
+      optim.crit <- optim.crit[best]
       if (length(thres) == 0) {
         warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
