@@ -160,11 +160,12 @@ test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
 test_that("ci.coords on a smoothed curve keeps replicates aligned when smoothing fails", {
   set.seed(42)
   # A replicate that fails to smooth has the shape of a successful one
-  failing <- function(roc) stop("cannot smooth")
-  res <- pROC:::bootstrap.smooth.coords(1, attr(smooth(r.s100b), "roc"), TRUE,
+  failing <- list(method = "density", density.controls = function(x, ...) stop("cannot smooth"))
+  res <- pROC:::bootstrap.replicate(1, attr(smooth(r.s100b), "roc"), TRUE, pROC:::bootstrap.coords,
     x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"),
-    best.method = "youden", best.weights = c(1, 0.5), resmooth = failing,
-    best.policy = "stop"
+    best.method = "youden", best.weights = c(1, 0.5), best.policy = "stop",
+    na = pROC:::bootstrap.coords.na(c(0.5, 0.9), c("sensitivity", "specificity")),
+    smoothing.args = failing
   )
   expect_equal(dim(res), c(2, 2))
   expect_named(res, c("sensitivity", "specificity"))

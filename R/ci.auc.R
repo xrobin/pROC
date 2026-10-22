@@ -119,17 +119,12 @@ ci.auc.smooth.roc <- function(smooth.roc,
     }
   }
 
-  # prepare the calls
-  smoothing.args <- smooth.roc$smoothing.args
-  resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
-  auc.args <- attributes(smooth.roc$auc)[grep("partial.auc", names(attributes(smooth.roc$auc)))]
-  auc.args$allow.invalid.partial.auc.correct <- TRUE
-  auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
-
   aucs <- roc_utils_drop_na_replicates(
-    bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+    bootstrap.replicates(boot.n, bootstrap.replicate,
       roc = roc, stratified = boot.stratified,
-      resmooth = resmooth, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      statistic = bootstrap.auc, auc.args = bootstrap.auc.args(smooth.roc$auc), na = NA_real_,
+      smoothing.args = smooth.roc$smoothing.args,
+      FUN.VALUE = NA_real_, progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?

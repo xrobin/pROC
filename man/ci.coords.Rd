@@ -133,7 +133,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   
   This warning will also be displayed if you chose \code{best.policy = "omit"}
   and a ROC curve with multiple \dQuote{best} threshold was generated
-  during at least one of the replicates.
+  during at least one of the replicates, if a replicate of a smoothed curve
+  cannot be smoothed, or with \code{x="best"} if a replicate has no point
+  in the partial AUC range.
 }
 
 \value{

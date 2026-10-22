@@ -732,6 +732,18 @@ roc_utils_optim_crit <- function(se, sp, max, weights, method) {
   return(optim.crit)
 }
 
+# The points of a curve in the range of its partial AUC, where coords()
+# searches "best": all of them without a partial AUC, or with ignore = TRUE
+# (coords(ignore.partial.auc = TRUE))
+roc_utils_in_partial_auc <- function(roc, ignore = FALSE) {
+  partial.auc <- if (is.null(roc$auc)) FALSE else attr(roc$auc, "partial.auc")
+  if (ignore || identical(partial.auc, FALSE)) {
+    return(rep(TRUE, length(roc$sensitivities)))
+  }
+  values <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") roc$sensitivities else roc$specificities
+  values <= partial.auc[1] & values >= partial.auc[2]
+}
+
 # The criterion of roc_utils_optim_crit computed from the counts of an
 # empirical curve, to select the "best" thresholds with an exact ==:
 # youden is tp * n0 + tn * n1 and closest.topleft is
