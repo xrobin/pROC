@@ -972,3 +972,49 @@ test_that("percent curves store 100 * k / n, and fraction curves k / n", {
     expect_identical(rf$specificities, tn / n0)
   }
 })
+
+# "best" is selected on the counts with the default best.weights (step 2 of
+# the cluster C decision on PR #148)
+test_that("best returns every exactly tied threshold, on fraction and percent curves", {
+  co <- c(1, 1, 5, 2, 4, 1, 1)
+  ca <- c(1, 5, 2, 5, 3, 4, 3)
+  # 1.5 and 2.5 both have tp * n0 + tn * n1 = 70; se + sp rounds differently
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = co, cases = ca, direction = "<", percent = percent, quiet = TRUE)
+    expect_identical(coords(r, "best", ret = "threshold")$threshold, c(1.5, 2.5))
+  }
+})
+
+test_that("the count criterion orders the thresholds as roc_utils_optim_crit", {
+  set.seed(42)
+  for (i in 1:20) {
+    r <- roc(controls = rnorm(sample(5:30, 1)), cases = rnorm(sample(5:30, 1), 1), quiet = TRUE)
+    for (method in c("youden", "closest.topleft")) {
+      counts <- pROC:::roc_utils_optim_crit_counts(r, c(1, 0.5), method)
+      crit <- pROC:::roc_utils_optim_crit(r$sensitivities, r$specificities, 1, c(1, 0.5), method)
+      # Wherever the counts differ, the floating-point criterion orders the
+      # two thresholds the same way (it can miss exact ties, not invert them)
+      d.counts <- sign(outer(counts, counts, "-"))
+      d.crit <- sign(outer(crit, crit, "-"))
+      expect_identical(d.crit[d.counts != 0], d.counts[d.counts != 0])
+    }
+  }
+  # Only with the default weights, and not on smoothed curves
+  expect_null(pROC:::roc_utils_optim_crit_counts(r.s100b, c(1, 0.4), "youden"))
+  expect_null(pROC:::roc_utils_optim_crit_counts(smooth(r.s100b), c(1, 0.5), "youden"))
+})
+
+test_that("best with other best.weights is selected on roc_utils_optim_crit", {
+  co <- c(1, 1, 5, 2, 4, 1, 1)
+  ca <- c(1, 5, 2, 5, 3, 4, 3)
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = co, cases = ca, direction = "<", percent = percent, quiet = TRUE)
+    for (method in c("youden", "closest.topleft")) {
+      crit <- pROC:::roc_utils_optim_crit(r$sensitivities, r$specificities, ifelse(percent, 100, 1), c(1, 0.4), method)
+      expect_identical(
+        coords(r, "best", best.method = method, best.weights = c(1, 0.4), ret = "threshold")$threshold,
+        r$thresholds[crit == max(crit)]
+      )
+    }
+  }
+})
