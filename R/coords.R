@@ -432,7 +432,9 @@ coords.roc <- function(roc,
       } else {
         all_thr <- roc$thresholds
       }
-      all_coords <- roc_utils_calc_coords(roc, all_thr, roc$sensitivities, roc$specificities, best.weights)
+      all_coords <- roc_utils_calc_coords(roc, all_thr, roc$sensitivities, roc$specificities, best.weights,
+        exact = !methods::is(roc, "smooth.roc")
+      )
       input_values <- all_coords[, input]
       se <- all_coords[, "sensitivity"]
       sp <- all_coords[, "specificity"]
@@ -482,7 +484,10 @@ coords.roc <- function(roc,
     # Deduce additional tn, tp, fn, fp, npv, ppv
     # Keep the row names (names of a threshold 'x'), if any
     res.rownames <- if (.row_names_info(res) > 0) rownames(res)
-    res <- roc_utils_calc_coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights)
+    # The rows with a threshold are points of the empirical curve
+    res <- roc_utils_calc_coords(roc, res[, "threshold"], res[, "sensitivity"], res[, "specificity"], best.weights,
+      exact = !methods::is(roc, "smooth.roc") & !is.na(res[, "threshold"])
+    )
     if (!is.null(res.rownames)) {
       rownames(res) <- res.rownames
     }
