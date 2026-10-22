@@ -421,15 +421,10 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
 
   # compute SE / SP
   thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), direction)
-  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction)
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction, scale = ifelse(percent, 100, 1))
 
   se <- perfs$se
   sp <- perfs$sp
-
-  if (percent) {
-    se <- se * 100
-    sp <- sp * 100
-  }
 
   # store the computations in the roc object
   roc$sensitivities <- se

@@ -82,7 +82,7 @@ roc_utils_threshold_rank <- function(threshold, direction) {
   as.integer(threshold) - (direction == ">")
 }
 
-roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction) {
+roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction, scale = 1) {
   if (direction == ">") {
     tp <- sum(case_i <= thr_i, na.rm = TRUE)
     tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
@@ -90,7 +90,7 @@ roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction) {
     tp <- sum(case_i >= thr_i, na.rm = TRUE)
     tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
   }
-  c(sp = tn / length(ctrl_i), se = tp / length(case_i))
+  c(sp = scale * tn / length(ctrl_i), se = scale * tp / length(case_i))
 }
 
 roc_utils_c_thresholds <- function(...) {
@@ -121,9 +121,12 @@ roc_utils_coords_basic <- function(threshold, specificity, sensitivity) {
 }
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
-roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
+# scale: 100 for percent curves. The rates are computed as scale * k / n, one
+# rounding, so that a typed value such as 57.5 (23/40) matches the point it
+# denotes, on percent as on fraction curves ((k / n) * 100 rounds twice).
+roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 1) {
   if (is.ordered(thresholds) || is.ordered(cases) || is.ordered(controls)) {
-    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction))
+    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction, scale))
   }
   ncontrols <- length(controls)
   ncases <- length(cases)
@@ -136,8 +139,8 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
 
   tp <- cumsum(response.sorted == 1)
   fp <- cumsum(response.sorted == 0)
-  se <- tp / ncases
-  sp <- (ncontrols - fp) / ncontrols
+  se <- scale * tp / ncases
+  sp <- scale * (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
   dups.pred <- rev(duplicated(rev(predictor.sorted)))
   dups.sesp <- duplicated(se) & duplicated(sp)
@@ -150,15 +153,15 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
-    sp <- rev(c(1, sp[!dups]))
+    sp <- rev(c(scale, sp[!dups]))
   } else {
     se <- c(0, se[!dups])
-    sp <- c(1, sp[!dups])
+    sp <- c(scale, sp[!dups])
   }
   return(list(se = se, sp = sp))
 }
 
-roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) {
+roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, scale = 1) {
   user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
   expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
   stopifnot(is.ordered(thresholds), identical(levels(thresholds), expected))
@@ -169,7 +172,7 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) 
   se <- numeric(n)
   sp <- numeric(n)
   for (i in seq_len(n)) {
-    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
+    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction, scale)
     sp[i] <- unname(p["sp"])
     se[i] <- unname(p["se"])
   }
@@ -549,14 +552,23 @@ load.suggested.package <- function(pkg) {
 # @param thr, se, sp
 # @param best.weights: see coords
 # @return data.frame
-roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
+# exact: TRUE for the rows that are points of an empirical curve (recycled).
+# Their se and sp were built as scale * k / n (roc_utils_perfs_all), so
+# round() recovers the counts k exactly: it inverts that construction, it is
+# not a tolerance. Never set it for interpolated or smoothed values, whose
+# counts are not integers. Every other coordinate is then computed from the
+# counts, with one rounding.
+roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights, exact = FALSE) {
   ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
   ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   substr.percent <- ifelse(roc$percent, 100, 1)
 
+  exact <- rep_len(exact, length(se))
   tp <- se * ncases / substr.percent
+  tp[exact] <- round(tp[exact])
   fn <- ncases - tp
   tn <- sp * ncontrols / substr.percent
+  tn[exact] <- round(tn[exact])
   fp <- ncontrols - tn
   npv <- substr.percent * tn / (tn + fn)
   ppv <- substr.percent * tp / (tp + fp)
@@ -565,9 +577,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
   accuracy <- substr.percent * (tp + tn) / (ncases + ncontrols)
   precision <- ppv
   recall <- tpr <- se
-  fpr <- substr.percent - sp
+  fpr <- substr.percent * fp / ncontrols
   tnr <- sp
-  fnr <- substr.percent * fn / (tp + fn)
+  fnr <- substr.percent * fn / ncases
   fdr <- substr.percent * fp / (tp + fp)
   youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
   closest.topleft <- -roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
@@ -588,15 +600,15 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
     fpr = fpr,
     fnr = fnr,
     fdr = fdr,
-    "1-specificity" = substr.percent - sp,
-    "1-sensitivity" = substr.percent - se,
-    "1-accuracy" = substr.percent - accuracy,
-    "1-npv" = substr.percent - npv,
-    "1-ppv" = substr.percent - ppv,
+    "1-specificity" = fpr,
+    "1-sensitivity" = fnr,
+    "1-accuracy" = substr.percent * (fp + fn) / (ncases + ncontrols),
+    "1-npv" = substr.percent * fn / (tn + fn),
+    "1-ppv" = fdr,
     precision = precision,
     recall = recall,
-    "lr_pos" = (se / substr.percent) / (1 - sp / substr.percent),
-    "lr_neg" = (1 - se / substr.percent) / (sp / substr.percent),
+    "lr_pos" = tp * ncontrols / (fp * ncases),
+    "lr_neg" = fn * ncontrols / (tn * ncases),
     youden = youden,
     closest.topleft = closest.topleft,
     check.names = FALSE,
