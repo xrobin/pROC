@@ -59,8 +59,11 @@ are.paired.roc <- function(roc1, roc2,
   if (!identical(as.character(roc1$levels), as.character(roc2$levels))) {
     return(FALSE)
   }
-  # check if responses of roc 1 and 2 are identical
-  if (identical(roc1$response, roc2$response)) {
+  # check if responses of roc 1 and 2 are identical. Ignore the names (a
+  # formula gives the row names, as model.response() does), but not the
+  # na.action attribute: two curves that lost different observations must be
+  # paired on the observations they share, below.
+  if (identical(unname(roc1$response), unname(roc2$response))) {
     retval <- TRUE
     if (return.paired.rocs) {
       # Return the smoothed curves if the input was smoothed
@@ -71,15 +74,13 @@ are.paired.roc <- function(roc1, roc2,
   } else {
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
-    # An NA level of the response is missing too (as in roc())
-    if (identical(roc_utils_response_na_level(roc1$original.response), roc_utils_response_na_level(roc2$original.response))) {
+    if (identical(unname(roc1$original.response), unname(roc2$original.response))) {
       retval <- TRUE
       if (!return.paired.rocs) {
         return(retval)
       }
       # else prepare paired ROCs
-      # The NA level of an ordered predictor is missing too (as in roc())
-      idx.exclude <- is.na(roc_utils_ordered_na_level(roc1$original.predictor)) | is.na(roc_utils_ordered_na_level(roc2$original.predictor)) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
+      idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
       # Print the data as the input curves, not as the expressions above

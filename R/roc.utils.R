@@ -48,27 +48,8 @@ roc_utils_c_ordered <- function(...) {
       stop("Levels of cases and controls differ.")
     }
   }
-  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
-}
-
-# An NA level of an ordered predictor (addNA(), factor(exclude = NULL))
-# codes missing values, not a value above or below the others: make them
-# real NAs, removed with na.rm = TRUE like any missing predictor value.
-roc_utils_ordered_na_level <- function(x) {
-  if (is.ordered(x) && anyNA(levels(x))) {
-    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = TRUE)
-  }
-  x
-}
-
-# An NA level of a response factor (addNA(), factor(exclude = NULL)) codes
-# missing responses, not a class: make them real NAs, so that they are
-# handled by na.rm like any missing response.
-roc_utils_response_na_level <- function(x) {
-  if (is.factor(x) && anyNA(levels(x))) {
-    x <- factor(x, levels = levels(x)[!is.na(levels(x))], ordered = is.ordered(x))
-  }
-  x
+  # exclude = NULL: an NA level is a level like the others, as in base R
+  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls, exclude = NULL)
 }
 
 # Concatenate predictors, preserving ordered class when needed.
@@ -349,7 +330,7 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
     }
     thr_levels <- c("-Inf", user_levels)
   }
-  ordered(thr_levels, levels = thr_levels)
+  ordered(thr_levels, levels = thr_levels, exclude = NULL)
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
@@ -889,10 +870,7 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
 
   return(list(
     response.name = names(m)[1],
-    # model.response() names the response with the row names of the data:
-    # drop them so that formula and default interfaces give the same
-    # response, and are.paired can recognize the curves as paired
-    response = unname(model.response(m)),
+    response = model.response(m),
     predictor.names = names(m)[-1],
     predictors = m[-1]
   ))
