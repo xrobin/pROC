@@ -165,5 +165,57 @@ expected.bootstrap <- list(
     class = "htest",
     shape = 10L,
     values = c(712, 0)
+  ),
+  roctest.smooth = list(
+    class = "htest",
+    shape = 12L,
+    values = c(1.8679870391, 0.0617638775)
+  ),
+  roctest.smooth.ns = list(
+    class = "htest",
+    shape = 12L,
+    values = c(2.1316189759, 0.0330381825)
+  ),
+  cov.smooth = list(
+    class = "numeric",
+    shape = 1L,
+    values = -0.0005951156
+  ),
+  roctest.unpaired = list(
+    class = "htest",
+    shape = 11L,
+    values = c(-2.1680319841, 0.0301562531)
+  ),
+  roctest.unpaired.ns = list(
+    class = "htest",
+    shape = 11L,
+    values = c(-1.5613898301, 0.1184318)
+  ),
+  roctest.lost.class = list(
+    class = "htest",
+    shape = 11L,
+    values = c(0.7462833859, 0.4554962455)
+  ),
+  roctest.sp = list(
+    class = "htest",
+    shape = 11L,
+    values = c(1.3825449071, 0.1668044518)
+  ),
+  roctest.pauc.percent = list(
+    class = "htest",
+    shape = 11L,
+    values = c(1.6864011313, 0.0917185637)
+  ),
+  ci.coords.smooth = list(
+    class = c("ci.coords", "ci", "list"),
+    shape = 2L,
+    values = c(0.4979758475, 0.111601599, 0.5980501811, 0.1831976809, 0.6503340438, 
+      0.2929850261, 0.5, 0.9, 0.5, 0.9, 0.5, 0.9)
+  ),
+  ci.coords.random = list(
+    class = c("ci.coords", "ci", "list"),
+    shape = 2L,
+    values = c(0.4853658537, 0.6097560976, 0.7506097561, 0.7100694444, 0.8194444444, 
+      0.8579861111)
   )
 )
