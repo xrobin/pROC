@@ -727,6 +727,38 @@ roc_utils_optim_crit <- function(se, sp, max, weights, method) {
   return(optim.crit)
 }
 
+# The criterion of roc_utils_optim_crit computed from the counts of an
+# empirical curve, to select the "best" thresholds with an exact ==:
+# youden is tp * n0 + tn * n1 and closest.topleft is
+# -(fn^2 * n0^2 + fp^2 * n1^2), roc_utils_optim_crit scaled by n0 * n1 and
+# n0^2 * n1^2, so they order the thresholds the same way. They are exact
+# integers only with the default weights (r = 1) and while they stay below
+# 2^53: NULL otherwise (and for smoothed curves), to select on
+# roc_utils_optim_crit as before.
+roc_utils_optim_crit_counts <- function(roc, weights, method) {
+  r <- (1 - weights[2]) / (weights[1] * weights[2])
+  if (!isTRUE(r == 1) || methods::is(roc, "smooth.roc")) {
+    return(NULL)
+  }
+  n1 <- length(roc$cases)
+  n0 <- length(roc$controls)
+  scale <- ifelse(roc$percent, 100, 1)
+  # round() inverts scale * k / n (see roc_utils_calc_coords)
+  tp <- round(roc$sensitivities * n1 / scale)
+  tn <- round(roc$specificities * n0 / scale)
+  if (method == "youden") {
+    if (2 * n0 * n1 > 2^53) {
+      return(NULL)
+    }
+    tp * n0 + tn * n1
+  } else {
+    if (2 * n0^2 * n1^2 > 2^53) {
+      return(NULL)
+    }
+    -((n1 - tp)^2 * n0^2 + (n0 - tn)^2 * n1^2)
+  }
+}
+
 coord.is.monotone <- c(
   "threshold" = TRUE,
   "sensitivity" = TRUE,
