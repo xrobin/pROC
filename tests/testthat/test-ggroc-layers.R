@@ -18,3 +18,10 @@ test_that("ggroc_legacy_axes_from_plot reads the parent x mapping", {
   expect_false(pROC:::ggroc_legacy_axes_from_plot(ggroc(r.s100b)))
   expect_true(pROC:::ggroc_legacy_axes_from_plot(ggroc(r.s100b, legacy.axes = TRUE)))
 })
+
+test_that("layers stop with a clear error on ggplot2 < 4.0.0", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  local_mocked_bindings(ggroc_ggplot2_version = function() "3.5.2", .package = "pROC")
+  expect_error(ggroc(r.s100b) + geom_roc_identity(r.s100b), "require ggplot2 >= 4.0.0, but ggplot2 3.5.2 is loaded")
+  expect_error(ggroc(r.s100b) + geom_polygon_auc(r.s100b), "require ggplot2 >= 4.0.0")
+})

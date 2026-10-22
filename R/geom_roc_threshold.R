@@ -10,6 +10,15 @@ geom_roc_threshold.roc <- function(data,
                                    size = 2,
                                    ...) {
   load.ggplot2()
+  # Smoothed curves have no thresholds (same restrictions as plot.roc's print.thres)
+  if (methods::is(data, "smooth.roc")) {
+    if (is.numeric(thresholds)) {
+      stop("Numeric 'thresholds' unsupported on a smoothed ROC curve.")
+    } else if (is.character(thresholds) && length(thresholds) == 1 &&
+      match.arg(thresholds, c("all", "local maximas", "best")) == "local maximas") {
+      stop("'local maximas' 'thresholds' unsupported on a smoothed ROC curve.")
+    }
+  }
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
@@ -18,10 +27,18 @@ geom_roc_threshold.roc <- function(data,
     pattern <- if (ordered_roc) {
       ifelse(percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
     } else {
-      ifelse(percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
+      ifelse(percent, "%.3f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
     }
   }
   co <- coords(data, thresholds)
+  # Only mark real thresholds: with a partial AUC, coords(data, "all") also
+  # returns the interpolated limits of the window, with an NA threshold
+  if (!methods::is(data, "smooth.roc") && !is.null(co)) {
+    co <- co[!is.na(co$threshold), , drop = FALSE]
+  }
+  if (is.null(co)) { # no coordinates (e.g. no point in the partial AUC window): empty layer
+    co <- data.frame(threshold = numeric(0), specificity = numeric(0), sensitivity = numeric(0))
+  }
   co <- ggroc_add_one_or_hundred(co, percent)
   if (is.null(co$threshold)) {
     co$threshold <- NA_real_

@@ -23,7 +23,10 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # Always print number of patients, controls, thresholds, levels?
-  print_dataline(attr(x, "roc")) # take this from original roc
+  # (not available for curves built with numeric densities)
+  if (!is.null(attr(x, "roc"))) {
+    print_dataline(attr(x, "roc")) # take this from original roc
+  }
 
   # Smoothing
   cat("Smoothing: ")
@@ -31,7 +34,7 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     cat("density with controls: ", as.character(x$call[match("density.controls", names(x$call))]), "; and cases: ", as.character(x$call[match("density.cases", names(x$call))]), "\n", sep = "")
   } else if (x$smoothing.args$method == "density") {
     cat("density (bandwidth: ", x$smoothing.args$bw, "; adjust: ", ifelse(is.null(x$smoothing.args$adjust), 1, x$smoothing.args$adjust), ")\n", sep = "")
-  } else if (x$smoothing.args$method == "density") {
+  } else if (x$smoothing.args$method == "fitdistr") {
     cat("fitting ", x$fit.controls$densfun, " distribution for controls:\n", sep = "")
     print(x$fit.controls$estimate)
     cat("fitting ", x$fit.cases$densfun, " distribution for cases:\n", sep = "")
@@ -61,13 +64,17 @@ print.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3), ca
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # get predictor name
-  if ("predictor" %in% names(x$call)) {
+  if (!is.null(x$predictor.name)) { # stored by the formula method
+    predictor.name <- x$predictor.name
+  } else if ("predictor" %in% names(x$call)) {
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     predictor.name <- attr(terms(as.formula(x$call$formula), data = x$data), "term.labels")
   }
   # Get response
-  if ("response" %in% names(x$call)) {
+  if (!is.null(x$response.name)) { # stored by the formula method
+    response.name <- x$response.name
+  } else if ("response" %in% names(x$call)) {
     response.name <- as.character(x$call[match("response", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
@@ -96,19 +103,23 @@ print.mv.multiclass.roc <- function(x, digits = max(3, getOption("digits") - 3),
     cat("\nCall:\n", deparse(x$call), "\n\n", sep = "")
   }
   # get predictor name
-  if ("predictor" %in% names(x$call)) {
+  if (!is.null(x$predictor.name)) { # stored by the formula method
+    predictor.name <- x$predictor.name
+  } else if ("predictor" %in% names(x$call)) {
     predictor.name <- as.character(x$call[match("predictor", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     predictor.name <- attr(terms(as.formula(x$call$formula), data = x$data), "term.labels")
   }
   # Get response
-  if ("response" %in% names(x$call)) {
+  if (!is.null(x$response.name)) { # stored by the formula method
+    response.name <- x$response.name
+  } else if ("response" %in% names(x$call)) {
     response.name <- as.character(x$call[match("response", names(x$call))])
   } else if (!is.null(x$call$formula)) {
     formula.attrs <- attributes(terms(as.formula(x$call$formula), data = x$data))
     response.name <- rownames(formula.attrs$factors)[formula.attrs$response]
   }
-  cat("Data: multivariate predictor ", predictor.name, " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
+  cat("Data: multivariate predictor ", paste(predictor.name, collapse = ", "), " with ", length(x$levels), " levels of ", response.name, ": ", paste(x$levels, collapse = ", "), ".\n", sep = "")
 
   # AUC if exists
   if (!is.null(x$auc)) {
@@ -187,8 +198,9 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 print.ci.thresholds <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(attr(x, "conf.level") * 100, "% CI", sep = "")
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
-  signif.sp <- signif(x$sp, digits = digits)
-  signif.se <- signif(x$se, digits = digits)
+  # unname: the row names (thresholds) can be NA
+  signif.sp <- unname(signif(x$specificity, digits = digits))
+  signif.se <- unname(signif(x$sensitivity, digits = digits))
   print(data.frame(thresholds = attr(x, "thresholds"), sp.low = signif.sp[, 1], sp.median = signif.sp[, 2], sp.high = signif.sp[, 3], se.low = signif.se[, 1], se.median = signif.se[, 2], se.high = signif.se[, 3]), row.names = FALSE)
   invisible(x)
 }
@@ -220,7 +232,12 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   colnames.grid <- expand.grid(c("low", "median", "high"), attr(x, "ret"))
   colnames.vec <- paste(colnames.grid$Var2, colnames.grid$Var1, sep = ".")
   colnames(table) <- c(attr(x, "input"), colnames.vec)
-  rownames(table) <- attr(x, "x")
+  if (anyDuplicated(attr(x, "x")) || anyNA(attr(x, "x"))) {
+    # data.frame row names must be unique and not NA (x can be repeated or NA)
+    rownames(table) <- NULL
+  } else {
+    rownames(table) <- attr(x, "x")
+  }
 
   print(table, row.names = length(attr(x, "ret")) > 1)
   invisible(x)
@@ -248,6 +265,6 @@ print_dataline <- function(x) {
     } else {
       response.name <- "(unknown)"
     }
-    cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", x$levels[1], ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", x$levels[2], ").\n", sep = "")
+    cat("Data: ", predictor.name, " in ", length(x$controls), " controls (", response.name, " ", as.character(x$levels[1]), ") ", x$direction, " ", length(x$cases), " cases (", response.name, " ", as.character(x$levels[2]), ").\n", sep = "")
   }
 }

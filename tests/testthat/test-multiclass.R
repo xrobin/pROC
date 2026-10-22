@@ -281,3 +281,124 @@ test_that("Invalid CI functions fail cleanly", {
   expect_error(ci.thresholds(uv.mr), "not available for multiclass ROC curves")
   expect_error(ci.thresholds(uv.mr$auc), "not available for multiclass ROC curves")
 })
+
+test_that("multivariate with decision values for exactly half of the levels warns", {
+  response <- factor(c("a", "a", "b", "b", "c", "c", "d", "d"))
+  pred <- cbind(a = c(.9, .8, .1, .2, .1, .3, .2, .1), b = c(.1, .2, .7, .8, .2, .1, .3, .2))
+  expect_warning(mc <- multiclass.roc(response, pred), "following classes: c,d")
+  expect_equal(mc$levels, c("a", "b"))
+  expect_equal(as.numeric(mc$auc), 1)
+})
+
+test_that("requested levels without observation are dropped whatever the response type", {
+  x <- c(1, 2, 3, 4, 5, 6)
+  resp <- c("a", "a", "b", "b", "c", "c")
+  expect_warning(ref <- multiclass.roc(factor(resp, levels = c("a", "b", "c", "q")), x, quiet = TRUE), "No observation for response level\\(s\\): q")
+  expect_warning(mc.chr <- multiclass.roc(resp, x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  expect_warning(mc.fac <- multiclass.roc(factor(resp), x, levels = c("a", "b", "c", "q"), quiet = TRUE), "No observation for response level\\(s\\): q")
+  for (mc in list(mc.chr, mc.fac)) {
+    expect_equal(mc$levels, c("a", "b", "c"))
+    expect_equal(as.numeric(mc$auc), as.numeric(ref$auc))
+  }
+
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_warning(mv <- multiclass.roc(resp, P, levels = c("a", "b", "c", "q")), "No observation for response level\\(s\\): q")
+  expect_equal(mv$levels, c("a", "b", "c"))
+})
+
+test_that("multivariate with a subset of levels does not warn about columns present in response", {
+  response <- c("a", "a", "b", "b", "c", "c")
+  P <- cbind(a = c(.9, .8, .1, .2, .1, .3), b = c(.1, .2, .7, .8, .2, .1), c = c(.1, .1, .2, .1, .7, .8))
+  expect_silent(mc <- multiclass.roc(response, P, levels = c("a", "b")))
+  expect_equal(mc$levels, c("a", "b"))
+  # A column really absent from response still warns
+  expect_warning(multiclass.roc(response[1:4], P[1:4, ], levels = c("a", "b")), "not found in 'response': c")
+})
+
+test_that("multiclass.roc requires at least two levels", {
+  response <- c(1, 1, 2, 2, 3, 3)
+  predictor <- c(1, 2, 3, 4, 5, 6)
+  expect_error(multiclass.roc(response, predictor, levels = 3, quiet = TRUE), "at least two levels")
+  expect_error(multiclass.roc(response, predictor, levels = "3", quiet = TRUE), "at least two levels")
+  expect_warning(
+    expect_error(multiclass.roc(response, predictor, levels = c(3, 4), quiet = TRUE), "at least two levels"),
+    "No observation for response level\\(s\\): 4"
+  )
+  # NA is not a level
+  expect_error(multiclass.roc(c(1, NA, 1, 1), c(1, 2, 3, 4)), "at least two levels")
+})
+
+test_that("CI functions give a clear error for multivariate multiclass curves", {
+  set.seed(42)
+  response <- factor(rep(c("a", "b", "c"), each = 4))
+  predictor <- matrix(c(9:1, 1:3, 1:12, 12:1), ncol = 3, dimnames = list(NULL, c("a", "b", "c")))
+  mv.mr <- multiclass.roc(response, predictor)
+  mv.auc <- auc(mv.mr)
+  expect_error(ci(mv.mr), "multiclass ROC curve not implemented")
+  expect_error(ci(mv.auc), "multiclass AUC not implemented")
+  expect_error(ci.auc(mv.mr), "multiclass ROC curve not implemented")
+  expect_error(ci.auc(mv.auc), "multiclass AUC not implemented")
+  for (f in c("ci.se", "ci.sp", "ci.thresholds", "ci.coords")) {
+    expect_error(match.fun(f)(mv.mr), "not available for multiclass ROC curves")
+    expect_error(match.fun(f)(mv.auc), "not available for multiclass ROC curves")
+  }
+})
+
+test_that("multiclass.roc with a data.frame response gives a clear error", {
+  d <- data.frame(y = factor(rep(c("a", "b", "c"), each = 4)), x = c(1:4, 3:6, 5:8))
+  expect_error(multiclass.roc(d["y"], d$x), "'response' must be a vector or factor")
+  expect_error(multiclass.roc(list(d$y), d$x), "'response' must be a vector or factor")
+  # A data.frame predictor (multivariate) is still accepted
+  expect_s3_class(multiclass.roc(d$y, data.frame(a = d$x, b = -d$x, c = d$x)), "mv.multiclass.roc")
+})
+
+test_that("multiclass.roc with smooth = TRUE gives a clear error", {
+  gos <- droplevels(aSAH$gos6)
+  expect_error(multiclass.roc(gos, aSAH$s100b, smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  m <- cbind("1" = aSAH$s100b, "3" = aSAH$ndka, "4" = aSAH$age, "5" = as.numeric(aSAH$wfns))
+  expect_error(multiclass.roc(gos, m, smooth = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
+})
+
+test_that("multiclass.roc with ci gives a clear error and ignores auc", {
+  set.seed(42)
+  gos <- droplevels(aSAH$gos6)
+  m <- cbind("1" = aSAH$s100b, "3" = aSAH$ndka, "4" = aSAH$age, "5" = as.numeric(aSAH$wfns))
+  expect_error(multiclass.roc(gos, aSAH$s100b, ci = TRUE, quiet = TRUE), "CI of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), ci = TRUE, quiet = TRUE), "CI of a multiclass ROC curve not implemented")
+  expect_error(multiclass.roc(gos, m, ci = TRUE), "CI of a multiclass ROC curve not implemented")
+  # The AUC is always computed
+  expected <- as.numeric(multiclass.roc(gos, aSAH$s100b, quiet = TRUE)$auc)
+  for (auc in c(TRUE, FALSE)) {
+    expect_equal(as.numeric(multiclass.roc(gos, aSAH$s100b, auc = auc, quiet = TRUE)$auc), expected)
+    expect_equal(as.numeric(multiclass.roc(gos, aSAH$s100b, auc = auc, ci = FALSE, quiet = TRUE)$auc), expected)
+  }
+  expect_equal(as.numeric(multiclass.roc(gos, m, auc = TRUE, ci = FALSE)$auc), as.numeric(multiclass.roc(gos, m)$auc))
+})
+
+test_that("univariate multiclass.roc rejects duplicated levels", {
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
+  expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
+})
+
+test_that("auc of a multiclass.roc computes each pairwise AUC once", {
+  y <- factor(c("a", "a", "a", "b", "b", "b", "c", "c", "c"))
+  x <- c(1, 2, 3, 2, 3, 4, 4, 5, 6)
+  mr <- multiclass.roc(y, x, direction = ">", quiet = TRUE)
+  # one warning per pairwise curve (3), not two
+  expect_identical(
+    capture_warnings(a <- auc(mr, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)),
+    rep("Partial AUC correction not defined for ROC curves below the diagonal.", 3)
+  )
+  expect_true(is.na(a))
+  expect_true(attr(a, "partial.auc.correct"))
+  mr2 <- multiclass.roc(y, x, quiet = TRUE)
+  expect_equal(as.numeric(auc(mr2)), mean(sapply(mr2$rocs, function(r) as.numeric(auc(r)))))
+})
+
+test_that("multivariate multiclass.roc says when only one column matches a level", {
+  y <- factor(c("a", "a", "b", "b", "c", "c"))
+  p <- matrix(c(.9, .8, .1, .2, .1, .3, .1, .2, .8, .7, .1, .2, 0, 0, .1, .1, .8, .5), ncol = 3, dimnames = list(NULL, c("a", "B", "C")))
+  expect_error(multiclass.roc(y, p), "Only one column of 'predictor' ('a') could be matched", fixed = TRUE)
+  expect_error(multiclass.roc(y, p[, "a", drop = FALSE]), "For a single decision value, please provide 'predictor' as a vector.", fixed = TRUE)
+})

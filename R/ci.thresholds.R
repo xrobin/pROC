@@ -21,25 +21,33 @@ ci.thresholds <- function(...) {
   UseMethod("ci.thresholds")
 }
 
-ci.thresholds.formula <- function(formula, data, ...) {
+ci.thresholds.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.thresholds'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.thresholds(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  ci.thresholds(roc, ...)
 }
 
 ci.thresholds.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
     stop("'ci.thresholds' not available for multiclass ROC curves.")
   }
-  ci.thresholds(roc.default(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  ci.thresholds(roc, ...)
 }
 
 ci.thresholds.smooth.roc <- function(smooth.roc, ...) {
@@ -55,8 +63,8 @@ ci.thresholds.roc <- function(roc,
                               cl = NULL,
                               parallel = FALSE,
                               ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
@@ -70,6 +78,12 @@ ci.thresholds.roc <- function(roc,
   if (!is.na(special)) {
     thresholds <- special
     thresholds.num <- coords(roc, x = thresholds, input = "threshold", ret = "threshold", ...)[, 1]
+    # With a partial AUC, coords(x = "all") also returns the interpolated
+    # limits of the window, with an NA threshold: they are not thresholds
+    thresholds.num <- thresholds.num[!is.na(thresholds.num)]
+    if (length(thresholds.num) == 0) {
+      stop("No threshold of the ROC curve in the partial AUC range. Use 'ignore.partial.auc = TRUE' to consider all thresholds.")
+    }
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
     thresholds.num <- roc$thresholds[thresholds]
@@ -98,14 +112,21 @@ ci.thresholds.roc <- function(roc,
 
   # One 2 x length(thresholds) matrix per replicate, stacked into a
   # 2 x length(thresholds) x boot.n array.
-  perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
-    roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
-    simplify = "columns", progress = progress, cl = cl
+  na <- matrix(NA_real_, 2, length(thresholds.num))
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified, curve = FALSE,
+    statistic = bootstrap.thresholds, thresholds = thresholds.num, direction = roc$direction, na = na,
+    FUN.VALUE = na, progress = progress, cl = cl
   )
+  # Drop the replicates with NA (a class can vanish from a non-stratified
+  # resample): one column per replicate, then back to the array
+  perfs.dim <- dim(perfs)
+  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L, ignore = rep(is.na(thresholds.num), each = perfs.dim[1]))
+  perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)
-  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs)
+  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs, na.rm = TRUE)
 
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])

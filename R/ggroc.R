@@ -13,13 +13,13 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
         x = "1-specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_continuous(lim = c(0, 100))
+      xlims <- ggplot2::scale_x_continuous(limits = c(0, 100))
     } else {
       aes_list <- list(
         x = "specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_reverse(lim = c(100, 0))
+      xlims <- ggplot2::scale_x_reverse(limits = c(100, 0))
     }
   } else {
     if (legacy.axes) {
@@ -27,13 +27,13 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
         x = "1-specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_continuous(lim = c(0, 1))
+      xlims <- ggplot2::scale_x_continuous(limits = c(0, 1))
     } else {
       aes_list <- list(
         x = "specificity",
         y = "sensitivity"
       )
-      xlims <- ggplot2::scale_x_reverse(lim = c(1, 0))
+      xlims <- ggplot2::scale_x_reverse(limits = c(1, 0))
     }
   }
   # Add extra aes
@@ -115,9 +115,12 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
     stop("ROC curves use percent inconsistently and cannot be plotted together")
   }
 
-  # Make sure the data is a named list
+  # Make sure the data is a named list: unnamed elements are named by index
   if (is.null(names(data))) {
     names(data) <- seq(data)
+  } else {
+    unnamed <- is.na(names(data)) | names(data) == ""
+    names(data)[unnamed] <- which(unnamed)
   }
   # Make sure names are unique:
   if (any(duplicated(names(data)))) {

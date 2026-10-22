@@ -75,3 +75,46 @@ test_that("ci.thresholds rejects character thresholds on a numeric ROC", {
     "'thresholds' of class character must be of length 1"
   )
 })
+
+test_that("ci.thresholds with NA thresholds gives NA rows", {
+  set.seed(42)
+  ci <- ci.thresholds(r.s100b, thresholds = c(0.5, NA), boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.thresholds(r.s100b, thresholds = 0.5, boot.n = 10)
+  expect_identical(ci$specificity[1, ], ci1$specificity[1, ])
+  expect_identical(ci$sensitivity[1, ], ci1$sensitivity[1, ])
+  expect_identical(unname(ci$specificity[2, ]), rep(NA_real_, 3))
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
+  # A logical NA selects a NA threshold, as in base R indexing
+  ci <- ci.thresholds(r.s100b, thresholds = c(TRUE, NA, rep(FALSE, length(r.s100b$thresholds) - 2)), boot.n = 2)
+  expect_identical(as.vector(attr(ci, "thresholds")), c(r.s100b$thresholds[1], NA))
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+})
+
+test_that("ci.thresholds 'all' on a partial AUC curve skips the window limits", {
+  set.seed(42)
+  # coords(r, "all") adds the interpolated window end with an NA threshold
+  r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(3, 4, 5, 6, 7), partial.auc = c(1, 0.7), quiet = TRUE)
+  ci <- ci.thresholds(r, boot.n = 10, thresholds = "all")
+  expect_identical(rownames(ci$sensitivity), c("4.5", "5.5", "6.5", "Inf"))
+  expect_identical(rownames(ci$specificity), c("4.5", "5.5", "6.5", "Inf"))
+  expect_false(anyNA(ci$sensitivity))
+  expect_false(anyNA(ci$specificity))
+  expect_output(print(ci), "6.5")
+})
+
+test_that("ci.thresholds gives a clear error with no threshold in the partial AUC window", {
+  set.seed(42)
+  # specificities 0, 0.5, 0.5, 1, 1: none in [0.6, 0.8]
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  msg <- "No threshold of the ROC curve in the partial AUC range"
+  expect_error(ci.thresholds(r, boot.n = 2, thresholds = "all"), msg)
+  # coords() finds no point in the window either
+  for (thresholds in c("local maximas", "best")) {
+    expect_warning(
+      expect_error(ci.thresholds(r, boot.n = 2, thresholds = thresholds), msg),
+      "No coordinates found"
+    )
+  }
+})

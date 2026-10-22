@@ -20,21 +20,22 @@
 \S3method{text}{auc}(x, ci = NULL, pattern = NULL, xy = NULL, adj = c(0, 1),
      col = par("col"), cex = par("cex"), ...)
 \S3method{text}{ci.auc}(x, ...)
-\S3method{text}{roc}(x, ...)
-\S3method{text}{smooth.roc}(x, ...)
+\S3method{text}{roc}(x, ci = x$ci, ...)
+\S3method{text}{smooth.roc}(x, ci = x$ci, ...)
 }
 
 \arguments{
   \item{x}{an \code{\link{auc}}, \code{\link{ci.auc}}, \code{\link{roc}}
     or \code{\link{smooth.roc}} object. The \code{ci.auc} method draws
     \code{attr(x, "auc")} with \code{x} as its confidence interval. The
-    \code{roc}/\code{smooth.roc} methods use \code{x$auc} and \code{x$ci}
-    (compute an AUC first, with \code{\link{auc}} or \code{roc(...,
+    \code{roc}/\code{smooth.roc} methods use \code{x$auc} and, by default,
+    \code{x$ci} (compute an AUC first, with \code{\link{auc}} or \code{roc(...,
     auc = TRUE)}, if missing).
   }
   \item{ci}{optional \code{\link{ci.auc}} object to include in the
-    label. Ignored (no interval shown) if it is not of class
-    \dQuote{ci.auc}, for example a \code{\link{ci.se}}.
+    label (\code{x$ci} for the \code{roc}/\code{smooth.roc} methods).
+    Ignored (no interval shown) if it is not of class \dQuote{ci.auc},
+    for example a \code{\link{ci.se}}.
   }
   \item{pattern}{\link{sprintf} pattern for the label. \code{NULL}
     selects the same default as \code{plot.roc(print.auc.pattern =
@@ -77,13 +78,14 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, boot.n = 100)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+ciobj <- ci(rocobj, boot.n = 100)
 plot(rocobj)
-text(rocobj)                 # "AUC: 0.XXX (0.XXX-0.XXX)"
+text(rocobj, ci = ciobj)     # "AUC: 0.XXX (0.XXX-0.XXX)"
 
 aucobj <- auc(rocobj)
 plot(rocobj)
-text(aucobj, xy = c(40, 40), pattern = "Area under the curve: \%.2f")
+text(aucobj, xy = c(.4, .4), pattern = "Area under the curve: \%.2f")
 }
 \keyword{aplot}
 \keyword{hplot}

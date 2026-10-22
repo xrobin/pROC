@@ -48,7 +48,8 @@ roc_utils_c_ordered <- function(...) {
       stop("Levels of cases and controls differ.")
     }
   }
-  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls)
+  # exclude = NULL: an NA level is a level like the others, as in base R
+  ordered(unlist(lapply(args, as.character), use.names = FALSE), levels = lvls, exclude = NULL)
 }
 
 # Concatenate predictors, preserving ordered class when needed.
@@ -81,7 +82,7 @@ roc_utils_threshold_rank <- function(threshold, direction) {
   as.integer(threshold) - (direction == ">")
 }
 
-roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction) {
+roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction, scale = 1) {
   if (direction == ">") {
     tp <- sum(case_i <= thr_i, na.rm = TRUE)
     tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
@@ -89,7 +90,7 @@ roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction) {
     tp <- sum(case_i >= thr_i, na.rm = TRUE)
     tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
   }
-  c(sp = tn / length(ctrl_i), se = tp / length(case_i))
+  c(sp = scale * tn / length(ctrl_i), se = scale * tp / length(case_i))
 }
 
 roc_utils_c_thresholds <- function(...) {
@@ -126,9 +127,12 @@ roc_utils_coords_basic <- function(threshold, specificity, sensitivity, extra = 
 }
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
-roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
+# scale: 100 for percent curves. The rates are computed as scale * k / n, one
+# rounding, so that a typed value such as 57.5 (23/40) matches the point it
+# denotes, on percent as on fraction curves ((k / n) * 100 rounds twice).
+roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 1) {
   if (is.ordered(thresholds) || is.ordered(cases) || is.ordered(controls)) {
-    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction))
+    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction, scale))
   }
   ncontrols <- length(controls)
   ncases <- length(cases)
@@ -141,8 +145,8 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
 
   tp <- cumsum(response.sorted == 1)
   fp <- cumsum(response.sorted == 0)
-  se <- tp / ncases
-  sp <- (ncontrols - fp) / ncontrols
+  se <- scale * tp / ncases
+  sp <- scale * (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
   dups.pred <- rev(duplicated(rev(predictor.sorted)))
   dups.sesp <- duplicated(se) & duplicated(sp)
@@ -155,15 +159,15 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction) {
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
-    sp <- rev(c(1, sp[!dups]))
+    sp <- rev(c(scale, sp[!dups]))
   } else {
     se <- c(0, se[!dups])
-    sp <- c(1, sp[!dups])
+    sp <- c(scale, sp[!dups])
   }
   return(list(se = se, sp = sp))
 }
 
-roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) {
+roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, scale = 1) {
   user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
   expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
   stopifnot(is.ordered(thresholds), identical(levels(thresholds), expected))
@@ -174,7 +178,7 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction) 
   se <- numeric(n)
   sp <- numeric(n)
   for (i in seq_len(n)) {
-    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
+    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction, scale)
     sp[i] <- unname(p["sp"])
     se[i] <- unname(p["se"])
   }
@@ -230,7 +234,7 @@ roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
     case_i <- as.integer(cases)
     ctrl_i <- as.integer(controls)
     offset <- as.integer(direction == ">")
-    for (i in seq_len(nthr)) {
+    for (i in which(!is.na(thresholds))) { # a missing threshold stays NA
       out[, i] <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
     }
   } else {
@@ -329,7 +333,7 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
     }
     thr_levels <- c("-Inf", user_levels)
   }
-  ordered(thr_levels, levels = thr_levels)
+  ordered(thr_levels, levels = thr_levels, exclude = NULL)
 }
 
 # Find all the local maximas of the ROC curve. Returns a logical vector
@@ -443,7 +447,16 @@ roc_utils_match_coords_ret_args <- function(x, threshold = TRUE) {
   x <- replace(x, x == "t", "threshold")
   x <- replace(x, x == "npe", "1-npv")
   x <- replace(x, x == "ppe", "1-ppv")
-  return(match.arg(x, valid.ret.args, several.ok = TRUE))
+  # match.arg(several.ok = TRUE) silently drops the elements that don't match
+  unknown <- x[is.na(pmatch(x, valid.ret.args, duplicates.ok = TRUE))]
+  matched <- match.arg(x, valid.ret.args, several.ok = TRUE)
+  if (length(unknown) > 0) {
+    warning(sprintf(
+      "Unknown or ambiguous coordinate(s) in 'ret' ignored: %s.",
+      paste0("'", unknown, "'", collapse = ", ")
+    ))
+  }
+  return(matched)
 }
 
 # Arguments which can be used as input for coords
@@ -502,6 +515,21 @@ roc_utils_is_perfect_curve <- function(roc) {
   return(abs(best.point - 2) < .Machine$double.eps^0.5) # or best.point == 2, with numerical tolerance
 }
 
+# roc() returns NA (NA values with na.rm = FALSE) or NaN (infinite predictor
+# values) instead of a curve. The interfaces that build a curve with roc()
+# check its result with this helper and return the NA/NaN unchanged.
+# Input: the result of roc(); plot: whether the caller was asked to draw it
+# Output: TRUE for a curve, FALSE (with a warning if plot = TRUE) otherwise
+roc_utils_is_curve <- function(roc, plot = FALSE) {
+  if (inherits(roc, c("roc", "smooth.roc"))) {
+    return(TRUE)
+  }
+  if (plot) {
+    warning(simpleWarning("Nothing plotted: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).", call = sys.call(-1)))
+  }
+  FALSE
+}
+
 # Load package namespace 'pkg'.
 # Input: package name
 # Returns: TRUE upon success (or if the package was already loaded)
@@ -510,12 +538,7 @@ load.suggested.package <- function(pkg) {
   if (requireNamespace(pkg)) {
     return(TRUE)
   } else if (interactive()) {
-    if (getRversion() < "3.5.0") { # utils::askYesNo not available
-      message(sprintf("Package %s not available, do you want to install it now?", pkg))
-      auto.install <- utils::menu(c("Yes", "No")) == 1
-    } else {
-      auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
-    }
+    auto.install <- utils::askYesNo(sprintf("Package %s not available, do you want to install it now?", pkg))
     if (isTRUE(auto.install)) {
       utils::install.packages(pkg)
       if (requireNamespace(pkg)) {
@@ -534,14 +557,23 @@ load.suggested.package <- function(pkg) {
 # @param thr, se, sp
 # @param best.weights: see coords
 # @return data.frame
-roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
+# exact: TRUE for the rows that are points of an empirical curve (recycled).
+# Their se and sp were built as scale * k / n (roc_utils_perfs_all), so
+# round() recovers the counts k exactly: it inverts that construction, it is
+# not a tolerance. Never set it for interpolated or smoothed values, whose
+# counts are not integers. Every other coordinate is then computed from the
+# counts, with one rounding.
+roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights, exact = FALSE) {
   ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
   ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
   substr.percent <- ifelse(roc$percent, 100, 1)
 
+  exact <- rep_len(exact, length(se))
   tp <- se * ncases / substr.percent
+  tp[exact] <- round(tp[exact])
   fn <- ncases - tp
   tn <- sp * ncontrols / substr.percent
+  tn[exact] <- round(tn[exact])
   fp <- ncontrols - tn
   npv <- substr.percent * tn / (tn + fn)
   ppv <- substr.percent * tp / (tp + fp)
@@ -550,9 +582,9 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
   accuracy <- substr.percent * (tp + tn) / (ncases + ncontrols)
   precision <- ppv
   recall <- tpr <- se
-  fpr <- substr.percent - sp
+  fpr <- substr.percent * fp / ncontrols
   tnr <- sp
-  fnr <- substr.percent * fn / (tp + fn)
+  fnr <- substr.percent * fn / ncases
   fdr <- substr.percent * fp / (tp + fp)
   youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
   closest.topleft <- -roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
@@ -573,15 +605,15 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
     fpr = fpr,
     fnr = fnr,
     fdr = fdr,
-    "1-specificity" = substr.percent - sp,
-    "1-sensitivity" = substr.percent - se,
-    "1-accuracy" = substr.percent - accuracy,
-    "1-npv" = substr.percent - npv,
-    "1-ppv" = substr.percent - ppv,
+    "1-specificity" = fpr,
+    "1-sensitivity" = fnr,
+    "1-accuracy" = substr.percent * (fp + fn) / (ncases + ncontrols),
+    "1-npv" = substr.percent * fn / (tn + fn),
+    "1-ppv" = fdr,
     precision = precision,
     recall = recall,
-    "lr_pos" = (se / substr.percent) / (1 - sp / substr.percent),
-    "lr_neg" = (1 - se / substr.percent) / (sp / substr.percent),
+    "lr_pos" = tp * ncontrols / (fp * ncases),
+    "lr_neg" = fn * ncontrols / (tn * ncases),
     youden = youden,
     closest.topleft = closest.topleft,
     check.names = FALSE,
@@ -593,11 +625,18 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights) {
 # We need to be careful to assign x to the right thresholds around exact data point
 # values. This means this function cannot look at the ROC thresholds themselves
 # but must instead use the predictor values to assess the thresholds exactly.
-# Returns the indices of the thresholds x.
+# Returns the indices of the thresholds x, NA for a missing x.
 # @param roc: the roc curve
 # @param x: the threshold to determine indices
 # @return integer vector of indices along roc$thresholds/roc$se/roc$sp.
 roc_utils_thr_idx <- function(roc, x) {
+  missing.x <- is.na(x)
+  if (any(missing.x)) {
+    # A missing threshold gives a NA row, as a missing value of any other input
+    thr_idx <- rep(NA_integer_, length(x))
+    thr_idx[!missing.x] <- roc_utils_thr_idx(roc, x[!missing.x])
+    return(thr_idx)
+  }
   if (roc_utils_is_ordered_roc(roc)) {
     return(roc_utils_thr_idx_ordered(roc, x))
   }
@@ -631,9 +670,6 @@ roc_utils_thr_idx <- function(roc, x) {
 
 roc_utils_thr_idx_ordered <- function(roc, x) {
   ch <- as.character(x)
-  if (anyNA(ch)) {
-    stop("Missing values are not allowed in 'x'.")
-  }
   x_pos <- match(ch, levels(roc$thresholds))
   if (anyNA(x_pos)) {
     unknown <- unique(ch[is.na(x_pos)])
@@ -656,6 +692,28 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 }
 
 
+# Whether x is a single non-missing number, to validate arguments.
+# A logical counts as a number, as in base R arithmetic (and t.test(conf.level = TRUE))
+roc_utils_is_single_number <- function(x) {
+  (is.numeric(x) || is.logical(x)) && length(x) == 1 && !is.na(x)
+}
+
+# Check the best.weights argument
+# @param weights: see coords(best.weights=)
+# @param arg: the name of the argument, for the error messages
+roc_utils_check_best_weights <- function(weights, arg = "best.weights") {
+  if (!is.numeric(weights) || length(weights) != 2) {
+    stop(sprintf("'%s' must be a numeric vector of length 2", arg))
+  }
+  # A NA cost gives a NA criterion
+  if (!is.na(weights[1]) && weights[1] <= 0) {
+    stop(sprintf("cost ('%s[1]') must be positive.", arg))
+  }
+  if (is.na(weights[2]) || weights[2] <= 0 || weights[2] >= 1) {
+    stop(sprintf("prevalence ('%s[2]') must be in the interval ]0,1[.", arg))
+  }
+}
+
 # Get optimal criteria Youden or Closest Topleft
 # @param se, sp: the roc curve
 # @param max: the maximum value, 1 or 100, based on percent. Namely ifelse(percent, 100, 1)
@@ -663,14 +721,8 @@ roc_utils_thr_idx_ordered <- function(roc, x) {
 # @param method: youden or closest.topleft coords(best.method=)
 # @return numeric vector along roc$thresholds/roc$se/roc$sp.
 roc_utils_optim_crit <- function(se, sp, max, weights, method) {
-  if (is.numeric(weights) && length(weights) == 2) {
-    r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
-  } else {
-    stop("'best.weights' must be a numeric vector of length 2")
-  }
-  if (weights[2] <= 0 || weights[2] >= 1) {
-    stop("prevalence ('best.weights[2]') must be in the interval ]0,1[.")
-  }
+  roc_utils_check_best_weights(weights)
+  r <- (1 - weights[2]) / (weights[1] * weights[2]) # r should be 1 by default
 
   if (method == "youden") {
     optim.crit <- se + r * sp
@@ -678,6 +730,50 @@ roc_utils_optim_crit <- function(se, sp, max, weights, method) {
     optim.crit <- -((max - se)^2 + r * (max - sp)^2)
   }
   return(optim.crit)
+}
+
+# The points of a curve in the range of its partial AUC, where coords()
+# searches "best": all of them without a partial AUC, or with ignore = TRUE
+# (coords(ignore.partial.auc = TRUE))
+roc_utils_in_partial_auc <- function(roc, ignore = FALSE) {
+  partial.auc <- if (is.null(roc$auc)) FALSE else attr(roc$auc, "partial.auc")
+  if (ignore || identical(partial.auc, FALSE)) {
+    return(rep(TRUE, length(roc$sensitivities)))
+  }
+  values <- if (attr(roc$auc, "partial.auc.focus") == "sensitivity") roc$sensitivities else roc$specificities
+  values <= partial.auc[1] & values >= partial.auc[2]
+}
+
+# The criterion of roc_utils_optim_crit computed from the counts of an
+# empirical curve, to select the "best" thresholds with an exact ==:
+# youden is tp * n0 + tn * n1 and closest.topleft is
+# -(fn^2 * n0^2 + fp^2 * n1^2), roc_utils_optim_crit scaled by n0 * n1 and
+# n0^2 * n1^2, so they order the thresholds the same way. They are exact
+# integers only with the default weights (r = 1) and while they stay below
+# 2^53: NULL otherwise (and for smoothed curves), to select on
+# roc_utils_optim_crit as before.
+roc_utils_optim_crit_counts <- function(roc, weights, method) {
+  r <- (1 - weights[2]) / (weights[1] * weights[2])
+  if (!isTRUE(r == 1) || methods::is(roc, "smooth.roc")) {
+    return(NULL)
+  }
+  n1 <- length(roc$cases)
+  n0 <- length(roc$controls)
+  scale <- ifelse(roc$percent, 100, 1)
+  # round() inverts scale * k / n (see roc_utils_calc_coords)
+  tp <- round(roc$sensitivities * n1 / scale)
+  tn <- round(roc$specificities * n0 / scale)
+  if (method == "youden") {
+    if (2 * n0 * n1 > 2^53) {
+      return(NULL)
+    }
+    tp * n0 + tn * n1
+  } else {
+    if (2 * n0^2 * n1^2 > 2^53) {
+      return(NULL)
+    }
+    -((n1 - tp)^2 * n0^2 + (n0 - tn)^2 * n1^2)
+  }
 }
 
 coord.is.monotone <- c(
@@ -752,9 +848,13 @@ coord.is.decreasing <- c(
 roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   # Get predictors (easy)
   if (data.missing) {
-    predictors <- attr(terms(formula), "term.labels")
+    formula.terms <- terms(formula)
   } else {
-    predictors <- attr(terms(formula, data = data), "term.labels")
+    formula.terms <- terms(formula, data = data)
+  }
+  predictors <- attr(formula.terms, "term.labels")
+  if (attr(formula.terms, "response") == 0) {
+    stop("Error in the formula: a response is required in a formula of type response~predictor.")
   }
 
   indx <- match(c("formula", "data", "weights", "subset", "na.action"), names(call), nomatch = 0)
@@ -819,7 +919,9 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
   if (!is.null(model.weights(m))) stop("weights are not supported")
 
   # Sanity checks
-  stopifnot(length(predictors) == ncol(m) - 1)
+  if (length(predictors) != ncol(m) - 1) {
+    stop("Invalid formula: only formulas of type response~predictor or response~predictor1+predictor2+... are supported.")
+  }
   stopifnot(all.equal(model.response(m), m[[1]], check.attributes = FALSE))
 
   return(list(
@@ -842,9 +944,9 @@ roc_utils_stop_if_no_device <- function(fun.name) {
   }
 }
 
-roc_utils_stop_if_no_auc <- function(x) {
+roc_utils_stop_if_no_auc <- function(x, arg = "x") {
   if (is.null(x$auc)) {
-    stop("'x' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.")
+    stop(sprintf("'%s' has no 'auc'; call auc() on it (or roc(..., auc = TRUE)) first.", arg))
   }
 }
 
@@ -856,3 +958,87 @@ roc_utils_warn_deprecated_parallel <- function(parallel) {
     warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
   }
 }
+
+# Returns the empirical ROC curve a smooth.roc was built from, with the AUC
+# specification of the smoothed curve (partial.auc etc.) rather than the one
+# of the empirical curve, so that the smoothed curve can be rebuilt as it was.
+roc_utils_unsmooth <- function(smooth.roc) {
+  roc <- attr(smooth.roc, "roc")
+  if (!is.null(smooth.roc$auc)) {
+    # Only the specification matters: the (corrected) partial AUC of the
+    # empirical curve may not be defined, and is never reported
+    roc$auc <- auc(roc,
+      partial.auc = attr(smooth.roc$auc, "partial.auc"),
+      partial.auc.focus = attr(smooth.roc$auc, "partial.auc.focus"),
+      partial.auc.correct = attr(smooth.roc$auc, "partial.auc.correct"),
+      allow.invalid.partial.auc.correct = TRUE
+    )
+  }
+  return(roc)
+}
+
+# Smooths 'roc' again as a curve smoothed with 'smoothing.args' (the
+# smoothing.args of a smooth.roc). Every replay of a smoothing goes through
+# here: roc.test, cov, are.paired and the bootstrap of smoothed curves.
+# - The stored arguments are passed as values (quote = TRUE): a language
+#   object such as roc(..., plot = TRUE, main = quote(italic(x))) stored is
+#   not evaluated again.
+# - The AUC specification is not a smoothing argument (smooth(r, partial.auc =
+#   ...) and older versions of roc(smooth = TRUE) stored it): it is kept in
+#   the auc of the curve.
+# - The CI of 'roc' is dropped: smooth.roc(reuse.ci = TRUE) would bootstrap it
+#   again. So is its AUC, unless reuse.auc is TRUE: the callers that only need
+#   the curve (bootstrap replicates) should not compute it.
+roc_utils_resmooth <- function(roc, smoothing.args, reuse.auc = FALSE) {
+  roc$ci <- NULL
+  if (!reuse.auc) {
+    roc$auc <- NULL
+  }
+  smoothing.args[roc_utils_auc_arg_names] <- NULL
+  do.call(smooth.roc, c(list(roc = roc), smoothing.args), quote = TRUE)
+}
+
+# plot.roc() for roc(..., plot = TRUE). The dots may carry ci.coords()' 'x'
+# (roc(..., ci = TRUE, of = "coords", x = ...)), which would bind to the 'x'
+# of plot.roc() and replace the curve: capture it here so it is not forwarded.
+roc_utils_plot_roc <- function(curve, ..., x) {
+  plot.roc(curve, ...)
+}
+
+# axis() for plot.roc() without explicit labels. The 'lab' graphical parameter
+# (number of ticks, used by plot()) would partially match the 'labels' argument
+# of axis(): capture it here so it is not forwarded.
+roc_utils_axis <- function(..., lab) {
+  axis(...)
+}
+
+# smooth.roc() for roc(..., smooth = TRUE). roc() forwards the same ... to
+# smooth.roc, auc, ci and plot.roc. Capture here the few names of the other
+# functions that the smoothers would take (as plot.default does for Axis):
+# - x (ci.coords) would become the data of density() (BUG-076, BUG-133);
+# - panel.first and panel.last (plot.roc) would be forced before the plot
+#   exists when smooth.roc stores the dots (BUG-161);
+# - partial.auc, partial.auc.focus, partial.auc.correct and
+#   allow.invalid.partial.auc.correct (auc) would be passed to fitdistr and
+#   the density function (BUG-042);
+# - adj (graphical parameter) would partially match the adjust of density
+#   smoothing (BUG-169).
+# Everything else is forwarded as is.
+roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...,
+                                 x, panel.first, panel.last,
+                                 partial.auc, partial.auc.focus, partial.auc.correct,
+                                 allow.invalid.partial.auc.correct, adj) {
+  smooth.roc(roc, method = smooth.method, n = smooth.n, ...)
+}
+
+# roc() for the default and formula methods of ci and ci.auc. Their ... also
+# holds the method of ci.auc ("delong" or "bootstrap"), which roc(smooth = TRUE)
+# would pass to smooth.roc as a second 'method' (BUG-166): capture it here.
+roc_utils_roc_ci <- function(response, predictor, ..., method) {
+  roc.default(response, predictor, ...)
+}
+
+# The AUC specification, which smooth.roc stores in smoothing.args when it is
+# passed to it (see roc_utils_resmooth)
+roc_utils_auc_arg_names <- c("partial.auc", "partial.auc.focus", "partial.auc.correct", "allow.invalid.partial.auc.correct")
+

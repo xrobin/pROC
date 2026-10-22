@@ -33,7 +33,7 @@ are.paired(...)
     \code{\link{ci}} and \code{\link[=smooth.roc]{smooth}} should be re-computed
     (with the same parameters than the original ROC curves)
   }
-  \item{\dots}{additionnal arguments for \code{are.paired.roc}. Ignored
+  \item{\dots}{additional arguments for \code{are.paired.roc}. Ignored
     in \code{are.paired.roc}
   }
 }
@@ -50,6 +50,16 @@ are.paired(...)
 
   It can raise false positives if the responses are identical but correspond
   to different patients.
+
+  Curves built with \code{controls} and \code{cases} (see
+  \code{\link{roc}}) carry no information on which observations come
+  from the same patients: their \code{response} is made of the controls
+  followed by the cases. Two such curves with the same numbers of
+  controls and of cases are therefore always considered paired, and
+  their observations are matched by their position in the
+  \code{controls} and \code{cases} vectors, even if they come from
+  independent samples. Use \code{paired=FALSE} in \code{\link{roc.test}}
+  for independent samples.
 }
 
 \value{
@@ -57,7 +67,7 @@ are.paired(...)
   otherwise. 
 
   In addition, if \code{TRUE} and \code{return.paired.rocs=TRUE}, the
-  following atributes are defined:
+  following attributes are defined:
   \item{roc1, roc2}{the two ROC curve with all \code{NA}s values removed
     in both curves.
   }

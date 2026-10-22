@@ -21,7 +21,7 @@ ci(...)
 \S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
 \S3method{ci}{multiclass.roc}(multiclass.roc, of = "auc", ...)
 \S3method{ci}{multiclass.auc}(multiclass.auc, of = "auc", ...)
-\S3method{ci}{formula}(formula, data, ...)
+\S3method{ci}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci}{default}(response, predictor, ...)
 }
 		   
@@ -34,6 +34,9 @@ ci(...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{of}{The type of confidence interval. One of \dQuote{auc},
 	\dQuote{thresholds}, \dQuote{sp}, \dQuote{se} or \dQuote{coords}. Note that
@@ -48,14 +51,18 @@ ci(...)
 }
 
 \details{
-  \code{ci.formula} and \code{ci.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{ci.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{ci.smooth.roc}). \code{roc(\dots, ci=TRUE)} is a shortcut that
+  calls it after building the curve, and \code{ci.formula} and
+  \code{ci.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{ci.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{ci.roc}. Simply use \code{ci}
+  \code{\link{roc}} and \code{ci.roc}, with the limits described in the
+  \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use \code{ci}
   that will dispatch to the correct method.
   
-  This function is typically called from \code{\link{roc}} when \code{ci=TRUE} (not by
-  default). Depending on the \code{of} argument, the specific
+  Depending on the \code{of} argument, the specific
   \code{ci} functions \code{\link{ci.auc}}, \code{\link{ci.thresholds}},
   \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}} are called.
   
@@ -72,12 +79,17 @@ ci(...)
 The return value of the specific \code{ci} functions
 \code{\link{ci.auc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}}, depending on the
 \code{of} argument.
+
+With \code{response} and \code{predictor} (or a \code{formula}),
+\code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
+returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
+predictor values).
 }
 
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 

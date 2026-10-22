@@ -95,7 +95,7 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 panel.first=NULL,
 panel.last=NULL,
 ...)
-\S3method{plot.roc}{formula}(x, data, subset, na.action, ...)
+\S3method{plot.roc}{formula}(x, data, ..., subset, na.action)
 \S3method{plot.roc}{default}(x, predictor, ...)
 \S3method{plot.roc}{smooth.roc}(x, ...)
 
@@ -103,8 +103,9 @@ panel.last=NULL,
 		   
 \arguments{
   \item{x}{a roc object from the \link{roc} function (for plot.roc.roc),
-    a formula (for plot.roc.formula) or a response vector (for
-    plot.roc.default).
+    a smooth.roc object from the \link[=smooth.roc]{smooth} function (for
+    plot.roc.smooth.roc), a formula (for plot.roc.formula) or a response
+    vector (for plot.roc.default).
   }
   \item{predictor, data}{arguments for the \link{roc} function.}
   \item{subset,na.action}{arguments for \code{\link{model.frame}}}
@@ -113,8 +114,8 @@ panel.last=NULL,
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} object
     contains an \dQuote{auc} field, re-use these specifications for the
-    plot (specifically \code{print.auc}, \code{auc.polygon} and
-    \code{max.auc.polygon} arguments). See details.
+    plot (specifically \code{print.auc}, \code{auc.polygon},
+    \code{max.auc.polygon} and \code{print.thres} arguments). See details.
   }
   \item{axes}{a logical indicating if the plot axes must be drawn.}
   \item{legacy.axes}{a logical indicating if the specificity axis (x
@@ -157,8 +158,9 @@ panel.last=NULL,
   \item{print.thres.pattern}{the text pattern for the thresholds, as a
     \link{sprintf} format. Three values are passed to sprintf:
     threshold, specificity, sensitivity. If \code{NULL}, a reasonable
-    default is used: \code{\%f} for numeric ROC curves, \code{\%s} for
-    ordered predictors.
+    default is used: \code{"\%.3f (\%.3f, \%.3f)"} (or
+    \code{"\%.3f (\%.1f\%\%, \%.1f\%\%)"} with \code{percent}), with
+    \code{\%s} for the threshold of ordered predictors.
   }
   \item{print.thres.pattern.cex}{the character expansion factor (cex) for the
     threshold text pattern. See \link{par} for more details.
@@ -219,7 +221,13 @@ panel.last=NULL,
     (lty), density, angle and border for the maximum AUC polygon. See
     \code{\link{polygon}} and \code{\link{par}} for more details.
   }
-  \item{ci}{boolean. Should we plot the confidence intervals?}
+  \item{ci}{boolean. Should we plot the confidence intervals? Defaults to
+    \code{TRUE} if \code{x} has a \code{ci} field; \code{ci=TRUE} on a curve
+    without one is an error. A \code{\link{ci.coords}} CI is drawn with
+    \code{\link{plot.ci.coords}} only for the sensitivity at given
+    specificities (\code{input="specificity"}, \code{ret="sensitivity"}),
+    the only coordinates that map onto the ROC axes; other coordinates are
+    skipped with a warning.}
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
@@ -242,7 +250,11 @@ panel.last=NULL,
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{plot.roc.roc} when calling
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
-    \code{plot} argument for \code{\link{roc}} is not allowed.
+    \code{plot} argument for \code{\link{roc}} is not allowed, and that
+    the \code{x} argument of \code{\link{ci.coords}} cannot be passed
+    this way, as it would be matched to \code{x}: build the curve with
+    \code{\link{roc}}, plot it, and draw the CI of
+    \code{\link{ci.coords}(rocobj, x=\dots)} on it with \code{plot()}.
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
@@ -251,12 +263,16 @@ panel.last=NULL,
 }
 
 \details{
-  This function is typically called from \code{\link{roc}} when plot=TRUE (not by
-  default). \code{plot.roc.formula} and \code{plot.roc.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{plot.roc.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{plot.roc.smooth.roc}). \code{roc(\dots, plot=TRUE)} is a shortcut
+  that calls it after building the curve, and \code{plot.roc.formula} and
+  \code{plot.roc.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{plot.roc.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{plot.roc.roc}. Simply use \code{plot.roc}
-  that will dispatch to the correct method.
+  \code{\link{roc}} and \code{plot.roc.roc}, with the limits described in
+  the \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use
+  \code{plot.roc} that will dispatch to the correct method.
 
   The plotting is done in the following order:
   \enumerate{
@@ -289,7 +305,10 @@ panel.last=NULL,
   For \code{print.auc}, \code{auc.polygon} and \code{max.auc.polygon}
   arguments, an AUC specification is
   required. By default, the total AUC is plotted, but you may want a
-  partial AUCs. The specification is defined by:
+  partial AUCs. The specification is also used for \code{print.thres}:
+  with a partial AUC, the \dQuote{best}, \dQuote{all} and
+  \dQuote{local maximas} thresholds are looked for only inside its
+  window (see \code{\link{coords}}). The specification is defined by:
   \enumerate{
     \item the \dQuote{auc} field in the \dQuote{\link{roc}} object if
     \code{reuse.auc} is set to \code{TRUE} (default). It is naturally
@@ -317,13 +336,20 @@ panel.last=NULL,
 }
 
 \value{
-This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for more details.
+This function returns the ROC curve invisibly: a list of class \dQuote{roc},
+or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
+\code{\link[=smooth.roc]{smooth}} for more details.
+
+With \code{predictor} (or a \code{formula}), \code{NA} (or \code{NaN})
+is returned instead, with a warning, and nothing is plotted, if \code{\link{roc}}
+returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
+predictor values).
 }
 
 \references{
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
 }
 
@@ -337,7 +363,7 @@ This function returns a list of class \dQuote{roc} invisibly. See \link{roc} for
 data(aSAH)
 roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
 roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
-roc.ndka <- roc(aSAH$outcome, aSAH$wfns)
+roc.ndka <- roc(aSAH$outcome, aSAH$ndka)
 
 # Simple example:
 plot(roc.s100b)

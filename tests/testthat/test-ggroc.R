@@ -147,3 +147,22 @@ test_that("Ggroc list converts size aes to linewidth", {
   expect_true("linewidth" %in% names(g$mapping))
   expect_false("size" %in% names(g$mapping))
 })
+
+test_that("ggroc names unnamed elements of a partially named list by index", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  g <- ggroc(list(a = r.s100b, r.wfns))
+  expect_equal(sort(unique(as.character(g$data$name))), c("2", "a"))
+  g <- ggroc(list(a = r.s100b, r.wfns, r.ndka))
+  expect_equal(sort(unique(as.character(g$data$name))), c("2", "3", "a"))
+})
+
+test_that("ggroc does not rely on partial argument matching", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  old <- options(warnPartialMatchArgs = TRUE, warnPartialMatchDollar = TRUE)
+  on.exit(options(old))
+  expect_warning(ggroc(r.s100b), NA)
+  expect_warning(ggroc(r.s100b, legacy.axes = TRUE), NA)
+  expect_warning(ggroc(r.s100b.percent), NA)
+  expect_warning(ggroc(r.s100b.percent, legacy.axes = TRUE), NA)
+  expect_warning(ggroc(list(a = r.s100b, b = r.wfns)), NA)
+})

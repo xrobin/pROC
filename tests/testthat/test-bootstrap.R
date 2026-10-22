@@ -231,3 +231,232 @@ test_that("stratified and non-stratified resampling keep their shapes", {
   expect_equal(length(nonstrat$controls) + length(nonstrat$cases),
                length(r.s100b$predictor))
 })
+
+test_that("non-stratified bootstrap drops the resamples that lose a class", {
+  set.seed(42)
+  # 2 cases (or controls) among 20: about 12% of the resamples have none,
+  # so some of 200 resamples always do (all keep both classes with p < 1e-11)
+  resp <- c(rep(0, 18), rep(1, 2))
+  pred <- c(1:18, 12.5, 19)
+  r.few.cases <- roc(resp, pred, quiet = TRUE)
+  r.few.controls <- roc(1 - resp, -pred, quiet = TRUE)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  for (r in list(r.few.cases, r.few.controls)) {
+    cis <- list()
+    expect_warning(cis$se <- ci.se(r, specificities = 0.5, boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$sp <- ci.sp(r, sensitivities = 0.5, boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$sp.se <- ci.coords(r, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$se.sp <- ci.coords(r, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 200, boot.stratified = FALSE), na.warning)
+    expect_warning(cis$thr <- ci.thresholds(r, thresholds = 15, boot.n = 200, boot.stratified = FALSE), na.warning)
+    for (ci in cis) {
+      values <- as.numeric(unlist(unclass(ci)))
+      expect_false(anyNA(values))
+      expect_true(all(values >= 0 & values <= 1))
+    }
+  }
+})
+
+test_that("non-stratified ci.auc and var drop the resamples that lose the controls", {
+  set.seed(42)
+  # 2 controls out of 10: about 11% of the resamples lose both of them, so
+  # some of 200 resamples always do (none does with p < 1e-9)
+  r <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  expect_warning(ci <- ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.auc")
+  expect_warning(v <- var(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_true(is.numeric(v))
+})
+
+test_that("non-stratified bootstraps of ordered predictors drop the resamples that lose a class", {
+  set.seed(42)
+  pred <- factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), levels = c("a", "b", "c", "d"), ordered = TRUE)
+  r <- roc(c(0, 0, rep(1, 8)), pred, quiet = TRUE)
+  # 2 controls out of 10: some of 200 resamples always lose both (none does with p < 1e-9)
+  na.warning <- "NA value\\(s\\) produced during bootstrap were ignored"
+  expect_warning(ci <- ci.se(r, specificities = 0.5, boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.se")
+  expect_warning(ci <- ci.sp(r, sensitivities = 0.5, boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.sp")
+  expect_warning(ci <- ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.auc")
+  expect_warning(ci <- ci.coords(r, "b", input = "threshold", boot.stratified = FALSE, boot.n = 200), na.warning)
+  expect_s3_class(ci, "ci.coords")
+})
+
+test_that("boot.n must be a non-negative number", {
+  set.seed(42)
+  msg <- "'boot.n' must be a non-negative number."
+  for (boot.n in list(-1, NA, Inf, "a", numeric(0))) {
+    expect_error(ci.auc(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.auc(smooth(r.s100b), boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(var(r.s100b, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.se(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.sp(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.thresholds(r.s100b, boot.n = boot.n), msg, fixed = TRUE)
+    expect_error(ci.coords(r.s100b, "best", boot.n = boot.n), msg, fixed = TRUE)
+  }
+  # An integer-valued double or an integer is fine
+  expect_equal(attr(ci.auc(r.s100b, method = "bootstrap", boot.n = 2L), "boot.n"), 2L)
+})
+
+test_that("boot.n is read as seq_len() does", {
+  # A fraction is truncated
+  set.seed(42)
+  a <- ci.auc(r.s100b, method = "bootstrap", boot.n = 2.5)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  set.seed(42)
+  t <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2.5)
+  set.seed(42)
+  t2 <- roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 2)
+  expect_identical(t$parameter, t2$parameter)
+  expect_identical(t$p.value, t2$p.value)
+  # A vector uses its first element, with a warning
+  set.seed(42)
+  expect_warning(a <- ci.auc(r.s100b, method = "bootstrap", boot.n = c(2, 10)), "first element used of 'boot.n' argument", fixed = TRUE)
+  set.seed(42)
+  expect_identical(as.numeric(a), as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 2)))
+  # boot.n = 0 runs no replicate: a NA CI or p-value, as before
+  expect_identical(as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 0)), rep(NA_real_, 3))
+  expect_identical(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 0)$p.value, NaN)
+})
+
+# Replicates that fail (cluster F decision on PR #148, rows F1-F15): a
+# resample that loses a class, cannot be smoothed, or has no "best" point in
+# the partial AUC range gives an NA replicate, dropped with one warning.
+# set.seed(1): the seed of the table in the decision. With F9's data, most
+# other seeds hit an error of coords() on a degenerate binormal fit (pending,
+# not a replicate failure).
+f.resp <- c(rep(0, 27), rep(1, 3)) # 3 cases in 30
+f.ri <- roc(f.resp, c(1:27, 20.5, 25.5, 28), quiet = TRUE)
+f.rc <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE) # 2 controls in 10
+
+test_that("F1: ci.auc drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.auc(f.ri, method = "bootstrap", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F2: ci.sp drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.sp(f.ri, sensitivities = 0.5, boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F3: ci.coords drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.coords(f.ri, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F4: ci.thresholds drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.thresholds(f.ri, thresholds = 22, boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci$sensitivity))
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F5: roc.test drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  r2 <- roc(f.resp, c(1:27, 26, 2, 28), quiet = TRUE)
+  expect_warning(t <- roc.test(f.ri, r2, method = "bootstrap", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_true(is.finite(t$statistic))
+})
+
+test_that("F6: ci.auc drops the resamples that lose all controls", {
+  set.seed(1)
+  expect_warning(ci <- ci.auc(f.rc, method = "bootstrap", boot.stratified = FALSE, boot.n = 50), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F7: var drops the resamples that lose a class", {
+  set.seed(1)
+  expect_warning(v <- var(f.rc, method = "bootstrap", boot.stratified = FALSE, boot.n = 50), "NA value")
+  expect_true(is.finite(v))
+})
+
+test_that("F8: ci.se of an ordered predictor drops the resamples that lose a class", {
+  ro <- roc(c(0, 0, rep(1, 8)), factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), ordered = TRUE), quiet = TRUE)
+  set.seed(1)
+  expect_warning(ci <- ci.se(ro, specificities = 0.5, boot.stratified = FALSE, boot.n = 50), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F9: ci.coords of a smoothed curve keeps the replicates aligned when smoothing fails", {
+  s9 <- smooth(roc(rep(0:1, each = 6), c(1, 1, 1, 2, 2, 3, 1, 2, 2, 3, 3, 3), quiet = TRUE))
+  set.seed(1)
+  expect_warning(ci <- ci.coords(s9, x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"), boot.n = 100), "NA value")
+  # Each replicate returns the requested specificities: an aligned CI is the input
+  expect_equal(unname(ci$specificity), matrix(c(0.5, 0.9), 2, 3))
+})
+
+test_that("F10: ci.se of a smoothed curve with no smoothable resample is NA", {
+  s10 <- smooth(roc(c(0, 0, 0, 1, 1, 1, 1, 1), c(1.71, 0.10, 0.80, 0.63, 3.56, 2.54, 1.72, 0.58), quiet = TRUE))
+  set.seed(1)
+  expect_warning(ci <- ci.se(s10, specificities = c(0.5, 0.9), boot.n = 5), "NA value")
+  expect_equal(dim(ci), c(2, 3))
+  expect_true(all(is.na(ci)))
+})
+
+test_that("F11: ci.coords drops the resamples with no best point in the partial AUC range", {
+  r11 <- roc(rep(0:1, each = 5), c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10), partial.auc = c(0.9, 0.7), quiet = TRUE)
+  set.seed(1)
+  expect_warning(ci <- ci.coords(r11, "best", boot.n = 50), "NA value")
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F12: ci.auc of a smoothed percent curve with a corrected partial AUC", {
+  s12 <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(100, 80), partial.auc.correct = TRUE, percent = TRUE, quiet = TRUE))
+  set.seed(1)
+  expect_no_warning(ci <- ci.auc(s12, boot.n = 20))
+  expect_false(anyNA(ci))
+})
+
+test_that("F13: var of a smoothed curve with a corrected partial AUC does not warn per replicate", {
+  s13 <- smooth(roc(rep(0:1, each = 8), c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9, 0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4),
+    partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE
+  ))
+  set.seed(1)
+  expect_no_warning(v <- var(s13, boot.n = 100))
+  expect_true(is.finite(v))
+})
+
+test_that("F14: roc.test of a smoothed curve with an extra smoothing argument writes no file", {
+  wd <- tempfile("pROC-F14-")
+  dir.create(wd)
+  owd <- setwd(wd)
+  on.exit({
+    setwd(owd)
+    unlink(wd, recursive = TRUE)
+  })
+  set.seed(1)
+  expect_warning(
+    t <- roc.test(smooth(r.s100b, method = "density", percent = FALSE), r.ndka, method = "bootstrap", boot.n = 20),
+    "Different smoothing parameters"
+  )
+  expect_true(is.finite(t$statistic))
+  expect_false(file.exists("pROC_bug.RData"))
+})
+
+test_that("F15: the keyword/level warning of coords repeats once per replicate, as in develop", {
+  rb <- roc(c(0, 0, 0, 0, 1, 1, 1, 1, 1, 1),
+    factor(c("a", "best", "c", "a", "best", "c", "c", "best", "c", "c"), levels = c("a", "best", "c"), ordered = TRUE),
+    quiet = TRUE
+  )
+  # One warning for x = "best" itself, and one per replicate (the only
+  # warnings of this call)
+  n.warnings <- 0
+  set.seed(1)
+  withCallingHandlers(
+    ci.coords(rb, "best", ret = c("specificity", "sensitivity"), boot.n = 12),
+    warning = function(w) {
+      n.warnings <<- n.warnings + 1
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n.warnings, 13)
+})
