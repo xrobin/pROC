@@ -389,16 +389,16 @@ roc_utils_resampled_roc <- function(roc, stratified) {
     thresholds = thresholds,
     controls = resampled$controls,
     cases = resampled$cases,
-    direction = roc$direction
+    direction = roc$direction,
+    scale = ifelse(roc$percent, 100, 1)
   )
-  scale <- ifelse(roc$percent, 100, 1)
   roc$controls <- resampled$controls
   roc$cases <- resampled$cases
   roc$predictor <- resampled$predictor
   roc$response <- resampled$response
   roc$thresholds <- thresholds
-  roc$sensitivities <- perfs$se * scale
-  roc$specificities <- perfs$sp * scale
+  roc$sensitivities <- perfs$se
+  roc$specificities <- perfs$sp
   roc
 }
 

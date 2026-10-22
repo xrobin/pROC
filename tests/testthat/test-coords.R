@@ -867,3 +867,108 @@ test_that("coords 'best' with no point in the partial AUC window gives only pROC
   expect_length(w, 1)
   expect_match(w, "No coordinates found")
 })
+
+# Percent curves store 100 * k / n, one rounding, so that typed values match
+# the points they denote, as on fraction curves (C1-C13 in the cluster C
+# decision on PR #148)
+exact.controls <- c(1:23, 30:46)
+exact.cases <- c(23.6, 23.7, 23.8, 50:55)
+tsp <- c("threshold", "specificity", "sensitivity")
+
+test_that("C1: coords finds a typed specificity on percent as on fraction curves", {
+  r <- roc(controls = exact.controls, cases = exact.cases, quiet = TRUE)
+  rp <- roc(controls = exact.controls, cases = exact.cases, percent = TRUE, quiet = TRUE)
+  f <- coords(r, 0.575, input = "specificity", ret = tsp)
+  p <- coords(rp, 57.5, input = "specificity", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(f$threshold, 23.3)
+  expect_identical(p$specificity, 57.5)
+  expect_identical(p$sensitivity, 100)
+})
+
+test_that("C2: ci.se at a typed specificity is the same on percent and fraction curves", {
+  r <- roc(controls = exact.controls, cases = exact.cases, quiet = TRUE)
+  rp <- roc(controls = exact.controls, cases = exact.cases, percent = TRUE, quiet = TRUE)
+  set.seed(42)
+  f <- ci.se(r, specificities = 0.575, boot.n = 100)
+  set.seed(42)
+  p <- ci.se(rp, specificities = 57.5, boot.n = 100)
+  expect_equal(as.numeric(p), 100 * as.numeric(f))
+})
+
+test_that("C3: coords finds a typed count on percent curves", {
+  rp2 <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
+  p <- coords(rp2, 2, input = "tp", ret = tsp)
+  expect_identical(p$threshold, 5.5)
+  expect_identical(p$specificity, 100)
+  expect_identical(p$sensitivity, 100 * 2 / 3)
+})
+
+test_that("C4: an fpr input finds the point of the equivalent specificity", {
+  r4 <- roc(controls = c(1, 2, 5), cases = c(3, 4, 6), quiet = TRUE)
+  expect_identical(coords(r4, 1 / 3, input = "fpr", ret = tsp), coords(r4, 2 / 3, input = "specificity", ret = tsp))
+})
+
+test_that("C5: counts derived from a fraction curve are integers and find their threshold", {
+  r3 <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
+  expect_identical(coords(r3, 15, input = "tp", ret = "threshold")$threshold, 8.75)
+})
+
+test_that("C6: the counts of every point are integers", {
+  r3 <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
+  rp2 <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
+  for (r in list(r3, rp2)) {
+    co <- coords(r, "all", ret = c("tp", "tn", "fp", "fn"))
+    expect_identical(as.matrix(co), round(as.matrix(co)))
+  }
+})
+
+test_that("C7: a percent partial AUC window ending on a curve point keeps the point", {
+  args <- list(controls = c(43.3, 43.6, 80, 120), cases = 1:100, direction = "<", partial.auc.focus = "se", quiet = TRUE)
+  rp <- do.call(roc, c(args, percent = TRUE, partial.auc = list(c(100, 57))))
+  r <- do.call(roc, c(args, partial.auc = list(c(1, 0.57))))
+  p <- coords(rp, "all", ret = tsp)
+  f <- coords(r, "all", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(tail(p$sensitivity, 3), c(57, 57, 57))
+})
+
+test_that("C8: best in a percent window ending on a curve point", {
+  args <- list(controls = 1:40, cases = c(rep(23.5, 8), 30, 31), direction = "<", quiet = TRUE)
+  p <- coords(do.call(roc, c(args, percent = TRUE, partial.auc = list(c(100, 57.5)))), "best", ret = tsp)
+  f <- coords(do.call(roc, c(args, partial.auc = list(c(1, 0.575)))), "best", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(p$threshold, 23.25)
+  expect_identical(p$specificity, 57.5)
+})
+
+test_that("C11: a bootstrap roc.test of two perfect percent curves", {
+  y <- c(0, 0, 0, 0, 0, 0, 1, 1)
+  x1 <- c(-1, 0, 0, 1, -1, 1, 2, 2)
+  x2 <- c(1, 1, 0, 0, 0, 0, 2.5, 1.5)
+  p <- lapply(c(FALSE, TRUE), function(pc) {
+    s <- if (pc) 100 else 1
+    a <- roc(y, x1, percent = pc, partial.auc = c(1, .2) * s, quiet = TRUE)
+    b <- roc(y, x2, percent = pc, partial.auc = c(1, .2) * s, quiet = TRUE)
+    set.seed(42)
+    expect_warning(t <- roc.test(a, b, method = "bootstrap", boot.n = 20), "AUC == 1")
+    t$p.value
+  })
+  expect_identical(p[[2]], p[[1]])
+  expect_identical(p[[1]], 1)
+})
+
+test_that("percent curves store 100 * k / n, and fraction curves k / n", {
+  for (marker in c("s100b", "ndka", "wfns")) {
+    rf <- roc(aSAH$outcome, aSAH[[marker]], quiet = TRUE)
+    rp <- roc(aSAH$outcome, aSAH[[marker]], percent = TRUE, quiet = TRUE)
+    n1 <- length(rp$cases)
+    n0 <- length(rp$controls)
+    tp <- round(rp$sensitivities * n1 / 100)
+    tn <- round(rp$specificities * n0 / 100)
+    expect_identical(rp$sensitivities, 100 * tp / n1)
+    expect_identical(rp$specificities, 100 * tn / n0)
+    expect_identical(rf$sensitivities, tp / n1)
+    expect_identical(rf$specificities, tn / n0)
+  }
+})

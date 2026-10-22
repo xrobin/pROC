@@ -1,4 +1,5 @@
 1.19.9999 (development)
+  * Percent curves now store sensitivities and specificities as '100 * k / n' instead of '(k / n) * 100'. Stored values can differ from earlier versions in the last digit, so compare them with 'all.equal()', not 'identical()'. Typed values (such as 57.5) now match the points of percent curves as they do on fraction curves, in 'coords', 'ci.se', 'ci.sp', 'ci.coords', partial AUC windows and 'roc.test'. Coordinates derived in 'coords' (counts, 'fpr', the '1-...' coordinates, likelihood ratios) are now computed from the counts, so that equivalent queries (such as 'input="fpr"' and 'input="specificity"') find the same point. The diagonal case of 'partial.auc.correct' (NA) on percent curves can differ from earlier versions
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations; 'progress' is no longer deprecated
   * The deprecated 'parallel' argument now warns as the documentation stated
