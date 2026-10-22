@@ -292,7 +292,8 @@ test_that("ci.coords default ret omits threshold on an ordered ROC", {
 test_that("unknown and missing threshold labels have clear messages", {
   r <- roc(aSAH$outcome, text.levels, quiet = TRUE, direction = "<")
   expect_error(coords(r, "-Inf", input = "threshold"), "Inf\" sentinel")
-  expect_error(coords(r, c("low", NA), input = "threshold"), "Missing values")
+  # A missing label gives a NA row, as a missing value of any other input
+  expect_true(all(is.na(coords(r, c("low", NA), input = "threshold")[2, ])))
 })
 
 test_that("coords on a numeric ROC restores the match.arg error", {
