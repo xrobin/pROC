@@ -145,3 +145,27 @@ test_that("venkatraman rejects a partial AUC on either curve", {
     "Different AUC specifications"
   )
 })
+
+test_that("unpaired venkatraman statistic integrates the error curves over [0, 1]", {
+  # The error curves e(p) = mp * Fcases + (1 - mp) * (1 - Fcontrols) against the
+  # mixture quantile p start at (0, 1 - mp) and end at (1, mp); E is the area
+  # between them.
+  stat <- function(controls1, cases1, controls2, cases2) {
+    r1 <- roc(controls = controls1, cases = cases1, direction = "<", quiet = TRUE)
+    r2 <- roc(controls = controls2, cases = cases2, direction = "<", quiet = TRUE)
+    unname(suppressWarnings(roc.test(r1, r2, method = "venkatraman", paired = FALSE, boot.n = 1))$statistic)
+  }
+  # e1: (0, .5) (.25, .25) (.5, 0) (.75, .25) (1, .5)
+  # e2: (0, .5) (.25, .75) (.5, .5) (.75, .25) (1, .5)
+  # The area between p = 0 and .25 (1/16) used to be left out
+  expect_equal(stat(c(1, 2), c(3, 4), c(2, 3), c(1, 4)), 1 / 4)
+  # e1: (0, .5) (1/6, 1/3) (2/3, 5/6) (5/6, 2/3) (1, .5)
+  # e2: (0, .5) (.5, 0) (2/3, 1/6) (5/6, 1/3) (1, .5)
+  expect_equal(stat(c(1, 3, 4), 2, 1, c(2, 3, 4)), 1 / 3)
+  # e1: (0, .5) (.25, .25) (.75, .75) (1, .5)
+  # e2: (0, .5) (.25, .75) (.75, .25) (1, .5)
+  # The curves cross at p = .5: 4 triangles of area 1/16
+  expect_equal(stat(c(1, 3), 2, 2, c(1, 3)), 1 / 4)
+  # Identical curves
+  expect_equal(stat(c(1, 3), 2, c(1, 3), 2), 0)
+})
