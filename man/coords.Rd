@@ -196,7 +196,10 @@ transpose = FALSE, as.matrix=FALSE, ...)
   By default, prevalence is 0.5 and cost is 1 so that no weight is
   applied in effect.
 
-  Note that several thresholds might be equally optimal.
+  Note that several thresholds might be equally optimal. With the default
+  \code{best.weights}, \dQuote{best} returns every threshold that is
+  exactly tied (the criterion is compared on the counts of true and false
+  positives). With other weights, ties are decided in floating point.
 }
 
 \subsection{Available coordinates}{
