@@ -138,6 +138,11 @@ transpose = FALSE, as.matrix=FALSE, ...)
   coordinates are returned. Otherwise, the point is interpolated
   between the two neighbouring points of the curve and \code{NA} is returned
   as threshold.
+  The points are matched exactly (\code{==}), as \code{\link{match}} does.
+  An empirical curve stores \eqn{k / n} (\eqn{100 k / n} with
+  \code{percent=TRUE}), so a typed decimal such as 0.575 or 57.5 matches
+  the point it denotes, while a computed value such as
+  \code{seq(0, 1, 0.1)[7]} may not (R FAQ 7.31).
 
   The coords function in this package is a generic, but it might be
   superseded by functions in other packages such as
