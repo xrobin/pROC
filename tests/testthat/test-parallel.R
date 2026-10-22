@@ -205,3 +205,20 @@ test_that("a bootstrap leaves the generator of the user's workers as it was", {
     expect_identical(clusterEvalQ(cl, list(RNGkind(), runif(3))), expected)
   })
 })
+
+test_that("bootstrap values on a cluster are pinned", {
+  # Characterisation (cluster F decision on PR #148): generated before the
+  # replicate wrapper. A fork cluster (cl = 2) and a PSOCK cluster give the
+  # same values, each replicate having its own RNG stream.
+  skip_if_no_cluster()
+  expected <- c(0.5994071816, 0.7476287263, 0.7825838415)
+  set.seed(42)
+  expect_equal(as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 10, cl = 2)), expected, tolerance = 1e-8)
+  set.seed(42)
+  psock <- with_cluster(2, function(cl) ci.auc(r.s100b, method = "bootstrap", boot.n = 10, cl = cl))
+  expect_equal(as.numeric(psock), expected, tolerance = 1e-8)
+  # Smoothed curves are smoothed again on the workers
+  set.seed(42)
+  t <- roc.test(smooth(r.s100b), smooth(r.ndka), boot.n = 10, cl = 2)
+  expect_equal(unname(t$statistic), 1.7661426453, tolerance = 1e-8)
+})
