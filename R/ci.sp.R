@@ -82,14 +82,13 @@ ci.sp.smooth.roc <- function(smooth.roc,
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
 
-  # prepare the calls
-  smoothing.args <- smooth.roc$smoothing.args
-  resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
-
+  # One NA per requested value for a replicate that cannot be computed
+  na <- rep(NA_real_, length(sensitivities))
   boot.n <- roc_utils_check_boot_n(boot.n)
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.sp,
-    roc = roc, stratified = boot.stratified, se = sensitivities,
-    resmooth = resmooth, simplify = "rows", progress = progress, cl = cl
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.sp, se = sensitivities, na = na, smoothing.args = smooth.roc$smoothing.args,
+    FUN.VALUE = na, simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))
@@ -125,9 +124,13 @@ ci.sp.roc <- function(roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
+  # One NA per requested value for a replicate that cannot be computed
+  na <- rep(NA_real_, length(sensitivities))
   boot.n <- roc_utils_check_boot_n(boot.n)
-  perfs <- bootstrap.replicates(boot.n, bootstrap.sp,
-    roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress, cl = cl
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.sp, se = sensitivities, na = na,
+    FUN.VALUE = na, simplify = "rows", progress = progress, cl = cl
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))

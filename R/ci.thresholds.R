@@ -112,10 +112,12 @@ ci.thresholds.roc <- function(roc,
 
   # One 2 x length(thresholds) matrix per replicate, stacked into a
   # 2 x length(thresholds) x boot.n array.
+  na <- matrix(NA_real_, 2, length(thresholds.num))
   boot.n <- roc_utils_check_boot_n(boot.n)
-  perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
-    roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
-    simplify = "columns", progress = progress, cl = cl
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified, curve = FALSE,
+    statistic = bootstrap.thresholds, thresholds = thresholds.num, direction = roc$direction, na = na,
+    FUN.VALUE = na, progress = progress, cl = cl
   )
   # Drop the replicates with NA (a class can vanish from a non-stratified
   # resample): one column per replicate, then back to the array

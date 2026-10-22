@@ -100,24 +100,21 @@ ci.coords.smooth.roc <- function(smooth.roc,
     auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
   }
 
-  # prepare the calls
-  smoothing.args <- smooth.roc$smoothing.args
-  resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
-
+  na <- bootstrap.coords.na(x, ret)
   boot.n <- roc_utils_check_boot_n(boot.n)
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    resmooth = resmooth, best.policy = best.policy, auc.args = auc.args,
-    simplify = "list", progress = progress, cl = cl
+    best.policy = best.policy, window = auc.args, na = na,
+    smoothing.args = smooth.roc$smoothing.args,
+    FUN.VALUE = as.matrix(na), progress = progress, cl = cl
   )
-  # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
-  perfs_array <- array(unlist(perfs),
-    dim = c(length(x), length(ret), boot.n),
-    dimnames = list(x, ret, NULL)
-  )
+  # An array of length(x) x length(ret) x boot.n suited for summary (each
+  # replicate has the length of na: checked by bootstrap.replicates)
+  perfs_array <- array(perfs, dim = c(length(x), length(ret), length(perfs) / length(x) / length(ret)), dimnames = list(x, ret, NULL))
 
-  if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs_array, 3, function(x) all(is.na(x))))) {
     if (all(which.ones)) {
       warning("All bootstrap iterations produced NA values only.")
     } else {
@@ -194,20 +191,20 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
+  na <- bootstrap.coords.na(x, ret)
   boot.n <- roc_utils_check_boot_n(boot.n)
-  perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    best.policy = best.policy, simplify = "list", progress = progress, cl = cl
+    best.policy = best.policy, na = na,
+    FUN.VALUE = as.matrix(na), progress = progress, cl = cl
   )
-  perfs <- lapply(perfs, ci_coords_numeric_columns)
-  # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
-  perfs_array <- array(unlist(perfs),
-    dim = c(length(x), length(ret), boot.n),
-    dimnames = list(x, ret, NULL)
-  )
+  # An array of length(x) x length(ret) x boot.n suited for summary (each
+  # replicate has the length of na: checked by bootstrap.replicates)
+  perfs_array <- array(perfs, dim = c(length(x), length(ret), length(perfs) / length(x) / length(ret)), dimnames = list(x, ret, NULL))
 
-  if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs_array, 3, function(x) all(is.na(x))))) {
     if (all(which.ones)) {
       warning("All bootstrap iterations produced NA values only.")
     } else {

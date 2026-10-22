@@ -398,20 +398,6 @@ roc.default <- function(response, predictor,
   return(roc)
 }
 
-# Creates a ROC object from response, predictor, ... without argument checking. Not to be exposed to the end user
-roc_rp_nochecks <- function(response, predictor, levels, ...) {
-  splitted <- split(predictor, response)
-  controls <- splitted[[as.character(levels[1])]]
-  if (length(controls) == 0) {
-    stop("No control observation.")
-  }
-  cases <- splitted[[as.character(levels[2])]]
-  if (length(cases) == 0) {
-    stop("No case observation.")
-  }
-  roc_cc_nochecks(controls, cases, ...)
-}
-
 # Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
 roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.method, smooth.n, auc, ...) {
   # create the roc object

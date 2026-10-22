@@ -117,23 +117,21 @@ var_roc_bootstrap <- function(roc, boot.n, boot.stratified, progress = FALSE, cl
   ## Smoothed ROC curve variance
   if (inherits(roc, "smooth.roc")) {
     roc_utils_stop_if_numeric_density(roc, "the variance of")
-    smoothing.args <- roc$smoothing.args
-    resmooth <- function(roc) roc_utils_resmooth(roc, smoothing.args)
     non.smoothed.roc <- attr(roc, "roc")
     non.smoothed.roc$percent <- FALSE # as we did earlier for the smoothed.roc
-    auc.args <- attributes(roc$auc)[grep("partial.auc", names(attributes(roc$auc)))]
-    auc.args$allow.invalid.partial.auc.correct <- TRUE
-    auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
-
-    aucs <- bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+    aucs <- bootstrap.replicates(boot.n, bootstrap.replicate,
       roc = non.smoothed.roc, stratified = boot.stratified,
-      resmooth = resmooth, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      statistic = bootstrap.auc, auc.args = bootstrap.auc.args(roc$auc), na = NA_real_,
+      smoothing.args = roc$smoothing.args,
+      FUN.VALUE = NA_real_, progress = progress, cl = cl
     )
   }
   ## Non smoothed ROC curves variance
   else {
-    aucs <- bootstrap.replicates(boot.n, bootstrap.auc,
-      roc = roc, stratified = boot.stratified, simplify = "vector", progress = progress, cl = cl
+    aucs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+      roc = roc, stratified = boot.stratified,
+      statistic = bootstrap.auc, auc.args = bootstrap.auc.args(roc$auc), na = NA_real_,
+      FUN.VALUE = NA_real_, progress = progress, cl = cl
     )
   }
 

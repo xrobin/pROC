@@ -348,3 +348,112 @@ test_that("boot.n is read as seq_len() does", {
   expect_identical(as.numeric(ci.auc(r.s100b, method = "bootstrap", boot.n = 0)), rep(NA_real_, 3))
   expect_identical(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 0)$p.value, NaN)
 })
+
+# Replicates that fail (cluster F decision on PR #148, rows F1-F15): a
+# resample that loses a class, cannot be smoothed, or has no "best" point in
+# the partial AUC range gives an NA replicate, dropped with one warning.
+# set.seed(1): the seed of the table in the decision. With F9's data, most
+# other seeds hit an error of coords() on a degenerate binormal fit (pending,
+# not a replicate failure).
+f.resp <- c(rep(0, 27), rep(1, 3)) # 3 cases in 30
+f.ri <- roc(f.resp, c(1:27, 20.5, 25.5, 28), quiet = TRUE)
+f.rc <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE) # 2 controls in 10
+
+test_that("F1: ci.auc drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.auc(f.ri, method = "bootstrap", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F2: ci.sp drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.sp(f.ri, sensitivities = 0.5, boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci))
+})
+
+test_that("F3: ci.coords drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.coords(f.ri, x = 0.5, input = "sensitivity", ret = "specificity", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F4: ci.thresholds drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  expect_warning(ci <- ci.thresholds(f.ri, thresholds = 22, boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_false(anyNA(ci$sensitivity))
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F5: roc.test drops the non-stratified resamples that lose a class", {
+  set.seed(1)
+  r2 <- roc(f.resp, c(1:27, 26, 2, 28), quiet = TRUE)
+  expect_warning(t <- roc.test(f.ri, r2, method = "bootstrap", boot.n = 200, boot.stratified = FALSE), "NA value")
+  expect_true(is.finite(t$statistic))
+})
+
+test_that("F9: ci.coords of a smoothed curve keeps the replicates aligned when smoothing fails", {
+  s9 <- smooth(roc(rep(0:1, each = 6), c(1, 1, 1, 2, 2, 3, 1, 2, 2, 3, 3, 3), quiet = TRUE))
+  set.seed(1)
+  expect_warning(ci <- ci.coords(s9, x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"), boot.n = 100), "NA value")
+  # Each replicate returns the requested specificities: an aligned CI is the input
+  expect_equal(unname(ci$specificity), matrix(c(0.5, 0.9), 2, 3))
+})
+
+test_that("F11: ci.coords drops the resamples with no best point in the partial AUC range", {
+  r11 <- roc(rep(0:1, each = 5), c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10), partial.auc = c(0.9, 0.7), quiet = TRUE)
+  set.seed(1)
+  expect_warning(ci <- ci.coords(r11, "best", boot.n = 50), "NA value")
+  expect_false(anyNA(ci$specificity))
+})
+
+test_that("F12: ci.auc of a smoothed percent curve with a corrected partial AUC", {
+  s12 <- smooth(roc(aSAH$outcome, aSAH$ndka, partial.auc = c(100, 80), partial.auc.correct = TRUE, percent = TRUE, quiet = TRUE))
+  set.seed(1)
+  expect_no_warning(ci <- ci.auc(s12, boot.n = 20))
+  expect_false(anyNA(ci))
+})
+
+test_that("F13: var of a smoothed curve with a corrected partial AUC does not warn per replicate", {
+  s13 <- smooth(roc(rep(0:1, each = 8), c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9, 0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4),
+    partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE
+  ))
+  set.seed(1)
+  expect_no_warning(v <- var(s13, boot.n = 100), message = "Partial AUC correction not defined")
+  expect_true(is.finite(v))
+})
+
+test_that("F14: roc.test of a smoothed curve with an extra smoothing argument writes no file", {
+  wd <- tempfile("pROC-F14-")
+  dir.create(wd)
+  owd <- setwd(wd)
+  on.exit({
+    setwd(owd)
+    unlink(wd, recursive = TRUE)
+  })
+  set.seed(1)
+  expect_warning(
+    t <- roc.test(smooth(r.s100b, method = "density", percent = FALSE), r.ndka, method = "bootstrap", boot.n = 20),
+    "Different smoothing parameters"
+  )
+  expect_true(is.finite(t$statistic))
+  expect_false(file.exists("pROC_bug.RData"))
+})
+
+test_that("F15: the keyword/level warning of coords repeats once per replicate, as in develop", {
+  rb <- roc(c(0, 0, 0, 0, 1, 1, 1, 1, 1, 1),
+    factor(c("a", "best", "c", "a", "best", "c", "c", "best", "c", "c"), levels = c("a", "best", "c"), ordered = TRUE),
+    quiet = TRUE
+  )
+  # One warning for x = "best" itself, and one per replicate (the only
+  # warnings of this call)
+  n.warnings <- 0
+  set.seed(1)
+  withCallingHandlers(
+    ci.coords(rb, "best", ret = c("specificity", "sensitivity"), best.policy = "random", boot.n = 12),
+    warning = function(w) {
+      n.warnings <<- n.warnings + 1
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_identical(n.warnings, 13)
+})
