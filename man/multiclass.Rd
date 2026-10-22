@@ -112,9 +112,7 @@ is more subject to bugs. Please report them if you find one.
 
 \section{Warnings}{
   If one of the levels specified in \code{levels} has no observation in
-  \code{response}, or only observations with a \code{NA} predictor
-  (removed by \code{\link{roc}} with \code{na.rm=TRUE}, the default), a
-  warning is issued and the level is ignored.
+  \code{response}, a warning is issued and the level is ignored.
 }
 
 \references{

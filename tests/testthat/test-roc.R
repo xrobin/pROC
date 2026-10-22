@@ -569,38 +569,6 @@ test_that("duplicated levels give a clear error", {
   expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
 })
 
-test_that("roc ignores an NA level of the response", {
-  y <- c(0, 0, 0, 1, 1, 1, NA, NA)
-  x <- c(1, 2, 4, 3, 5, 6, 7, 8)
-  expected <- roc(y, x, quiet = TRUE)
-  # NA level last: spurious "more than two levels" warning
-  expect_no_warning(r <- roc(addNA(factor(y)), x, quiet = TRUE))
-  expect_identical(as.character(r$levels), c("0", "1"))
-  expect_equal(r$sensitivities, expected$sensitivities)
-  expect_equal(r$specificities, expected$specificities)
-  # NA level first: taken as the controls
-  f <- factor(y, levels = c(NA, 0, 1), exclude = NULL)
-  expect_no_warning(r <- roc(f, x, quiet = TRUE))
-  expect_identical(as.character(r$levels), c("0", "1"))
-  expect_equal(as.numeric(r$auc), as.numeric(expected$auc))
-})
-
-test_that("an NA level of the response is missing with na.rm = FALSE and in na.action", {
-  y <- c(0, 0, 0, 1, 1, 1, NA, NA)
-  x <- c(1, 2, 4, 3, 5, 6, 7, 8)
-  # real NAs
-  expect_identical(roc(y, x, na.rm = FALSE, quiet = TRUE), NA)
-  # NA level last and first
-  expect_identical(roc(addNA(factor(y)), x, na.rm = FALSE, quiet = TRUE), NA)
-  f <- factor(y, levels = c(NA, 0, 1), exclude = NULL)
-  expect_identical(roc(f, x, na.rm = FALSE, quiet = TRUE), NA)
-  # with na.rm = TRUE, the observations are listed in na.action
-  expected <- attr(roc(y, x, quiet = TRUE)$response, "na.action")
-  expect_equal(as.integer(expected), 7:8)
-  expect_identical(attr(roc(addNA(factor(y)), x, quiet = TRUE)$response, "na.action"), expected)
-  expect_identical(attr(roc(f, x, quiet = TRUE)$predictor, "na.action"), expected)
-})
-
 test_that("roc.test and multiclass.roc formula methods with subset can plot and smooth", {
   pdf(NULL)
   on.exit(dev.off())

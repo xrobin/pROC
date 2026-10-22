@@ -137,13 +137,34 @@ test_that("formula and default interfaces give paired curves", {
   )
   ra <- roc(y ~ a, d, quiet = TRUE)
   rb <- roc(d$y, d$b, quiet = TRUE)
-  expect_identical(ra$response, roc(d$y, d$a, quiet = TRUE)$response)
+  # The formula keeps the row names of model.response(), as in 1.19.1
+  expect_identical(names(ra$response), rownames(d))
   expect_true(are.paired(ra, rb))
   expect_identical(roc.test(ra, rb)$p.value, roc.test(ra, roc(y ~ b, d, quiet = TRUE))$p.value)
   # Same data with different row names
   d2 <- d
   rownames(d2) <- letters[1:10]
   expect_true(are.paired(ra, roc(y ~ b, d2, quiet = TRUE)))
+  # A named response
+  expect_true(are.paired(roc(setNames(d$y, letters[1:10]), d$a, quiet = TRUE), rb))
+  # A factor and a numeric response are not identical
+  expect_false(are.paired(roc(factor(d$y), d$a, quiet = TRUE), rb))
+})
+
+test_that("curves that lost different observations to NA are paired on the common ones", {
+  # The responses left after removing the NAs are identical, but not the
+  # observations: the na.action attribute tells them apart
+  y <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1)
+  a <- c(NA, 2, 3, 5, 7, 4, 6, 8, 9, 10, 1, 11)
+  b <- c(6, NA, 4, 3, 8, 2, 5, 9, 7, 10, 1, 12)
+  ra <- roc(y, a, quiet = TRUE)
+  rb <- roc(y, b, quiet = TRUE)
+  expect_identical(as.vector(ra$response), as.vector(rb$response))
+  pair <- are.paired(ra, rb, return.paired.rocs = TRUE)
+  expect_true(pair)
+  expect_length(attr(pair, "roc1")$response, 10)
+  expected <- roc.test(roc(y[-(1:2)], a[-(1:2)], quiet = TRUE), roc(y[-(1:2)], b[-(1:2)], quiet = TRUE))$p.value
+  expect_equal(roc.test(ra, rb)$p.value, expected)
 })
 
 test_that("are.paired doesn't use objects named oroc1/oroc2 from the user's workspace", {
@@ -226,20 +247,6 @@ test_that("re-paired curves print the data of the input curves", {
   expect_match(out, "Data: a in 2 controls (y 0) < 4 cases (y 1).", fixed = TRUE)
 })
 
-
-test_that("an NA level of the response pairs with real NAs", {
-  y <- aSAH$outcome
-  y[c(3, 10)] <- NA
-  x1 <- aSAH$s100b
-  x1[5] <- NA
-  r1 <- roc(y, x1, quiet = TRUE)
-  r1.na.level <- roc(addNA(y), x1, quiet = TRUE)
-  r2 <- roc(y, aSAH$ndka, quiet = TRUE)
-  expect_true(are.paired(r1.na.level, r2))
-  expect_true(are.paired(r2, r1.na.level))
-  expect_equal(roc.test(r1.na.level, r2)$p.value, roc.test(r1, r2)$p.value)
-  expect_equal(roc.test(r1.na.level, r2)$method, "DeLong's test for two correlated ROC curves")
-})
 
 test_that("re-paired curves keep the best.method, best.weights and best.policy of a stored ci.coords", {
   set.seed(42)

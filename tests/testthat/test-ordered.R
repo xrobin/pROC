@@ -300,42 +300,31 @@ test_that("coords on a numeric ROC restores the match.arg error", {
   expect_error(coords(r.ndka, "foo"), "arg")
 })
 
-test_that("an NA level of an ordered predictor is a missing value", {
-  resp <- c(0, 0, 0, 1, 1, 1, 1)
-  pred <- ordered(c("a", "b", NA, "a", "b", "c", "c"))
-  o <- addNA(pred)
-  expected <- roc(resp, pred, quiet = TRUE)
+test_that("an NA level of an ordered predictor is a level like the others, as in 1.19.1", {
+  # Ranked at its position in levels(), as base R does (addNA() puts it last)
+  resp <- c(0, 0, 0, 1, 1, 1)
+  o <- addNA(ordered(c("a", "b", NA, "a", "b", "b")))
+  expected.se <- c(1, 2 / 3, 0, 0)
+  expected.sp <- c(0, 1 / 3, 2 / 3, 1)
   r <- roc(resp, o, quiet = TRUE)
-  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
-  expect_equal(r$thresholds, expected$thresholds)
-  expect_equal(r$sensitivities, expected$sensitivities)
-  expect_equal(r$specificities, expected$specificities)
-  expect_equal(coords(r, "all"), coords(expected, "all"))
-  rcc <- roc(controls = o[1:3], cases = o[4:7], quiet = TRUE)
-  expect_equal(as.numeric(auc(rcc)), as.numeric(auc(expected)))
-  expect_equal(rcc$thresholds, expected$thresholds)
-  expect_identical(roc(resp, o, na.rm = FALSE, quiet = TRUE), NA)
-  expect_identical(roc(controls = o[1:3], cases = o[4:7], na.rm = FALSE, quiet = TRUE), NA)
-})
-
-test_that("an NA level of an ordered predictor is a missing value in paired functions and multiclass.roc", {
-  resp <- c(0, 0, 0, 0, 1, 1, 1, 1)
-  o.na <- ordered(c("a", "b", NA, "a", "b", "c", "c", "b"))
-  o <- addNA(o.na) # NA kept as a level
-  b <- c(1, 3, 2, 5, 4, 6, 7, 8)
-  ro <- roc(resp, o, quiet = TRUE)
-  ro.na <- roc(resp, o.na, quiet = TRUE)
-  rb <- roc(resp, b, quiet = TRUE)
-  # are.paired rebuilt the curves on the observations with a real NA only
-  paired <- are.paired(ro, rb, return.paired.rocs = TRUE)
-  expect_true(paired)
-  expect_equal(attr(paired, "roc1")$sensitivities, attr(are.paired(ro.na, rb, return.paired.rocs = TRUE), "roc1")$sensitivities)
-  expect_equal(roc.test(ro, rb)$p.value, roc.test(ro.na, rb)$p.value)
-  expect_equal(cov(ro, rb), cov(ro.na, rb))
-  expect_equal(power.roc.test(ro, rb, power = 0.9)$ncases, power.roc.test(ro.na, rb, power = 0.9)$ncases)
-  # multiclass: level 2 has only missing predictor values
-  y3 <- c(0, 0, 1, 1, 2, 2)
-  expect_warning(mc <- multiclass.roc(y3, addNA(ordered(c("a", "b", "b", "c", NA, NA)))), "No observation for response level(s): 2", fixed = TRUE)
-  expect_warning(mc.na <- multiclass.roc(y3, ordered(c("a", "b", "b", "c", NA, NA))), "No observation for response level(s): 2", fixed = TRUE)
-  expect_equal(as.numeric(mc$auc), as.numeric(mc.na$auc))
+  expect_equal(as.numeric(auc(r)), 7 / 18) # 0.3889, as in 1.19.1
+  expect_equal(r$sensitivities, expected.se)
+  expect_equal(r$specificities, expected.sp)
+  expect_identical(levels(r$thresholds), c("a", "b", NA, "Inf"))
+  # The same curve as with a regular level in place of NA
+  z <- roc(resp, ordered(c("a", "b", "z", "a", "b", "b")), quiet = TRUE)
+  expect_identical(r$sensitivities, z$sensitivities)
+  expect_identical(r$specificities, z$specificities)
+  # na.rm = FALSE and controls/cases give the same curve
+  r.na <- roc(resp, o, na.rm = FALSE, quiet = TRUE)
+  expect_equal(as.numeric(auc(r.na)), 7 / 18)
+  expect_equal(r.na$sensitivities, expected.se)
+  rcc <- roc(controls = o[1:3], cases = o[4:6], quiet = TRUE)
+  expect_equal(as.numeric(auc(rcc)), 7 / 18)
+  expect_equal(rcc$specificities, expected.sp)
+  # Numeric labels are ranked by level too (1.19.1 converted them to numbers
+  # and dropped the NA level: 0.5833)
+  expect_equal(as.numeric(auc(roc(resp, addNA(ordered(c(1, 2, NA, 1, 2, 2))), quiet = TRUE))), 7 / 18)
+  # A real NA is still a missing value
+  expect_equal(as.numeric(auc(roc(resp, ordered(c("a", "b", NA, "a", "b", "b")), quiet = TRUE))), 0.5833, tolerance = 1e-4)
 })

@@ -193,14 +193,9 @@ roc.default <- function(response, predictor,
     if (is.list(response)) {
       stop("'response' must be a vector or factor, not a data.frame or list.")
     }
-    # Before the default levels are computed from it
-    response <- roc_utils_response_na_level(response)
 
     # Validate levels
     if (missing(levels)) {
-      # An NA level of the response (addNA()) codes missing values: it is not
-      # a class (as in multiclass.roc)
-      levels <- levels[!is.na(levels)]
       if (length(levels) > 2) {
         warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
         levels <- levels[1:2]
@@ -228,7 +223,6 @@ roc.default <- function(response, predictor,
     if (length(predictor) != length(response)) {
       stop("Response and predictor must be vectors of the same length.")
     }
-    predictor <- roc_utils_ordered_na_level(predictor)
     # remove NAs if requested
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor)
@@ -278,8 +272,6 @@ roc.default <- function(response, predictor,
     if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
       stop("'density.*' arguments incompatible with 'cases/controls'.")
     }
-    controls <- roc_utils_ordered_na_level(controls)
-    cases <- roc_utils_ordered_na_level(cases)
     # remove nas
     if (na.rm) {
       if (any(is.na(controls))) {

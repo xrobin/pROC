@@ -360,22 +360,6 @@ test_that("multiclass.roc with smooth = TRUE gives a clear error", {
   expect_error(multiclass.roc(gos ~ s100b, data = cbind(aSAH, gos = gos), smooth = TRUE, quiet = TRUE), "Smoothing of a multiclass ROC curve not implemented")
 })
 
-test_that("multiclass.roc drops a level whose observations all have an NA predictor", {
-  resp <- c("a", "a", "b", "b", "c", "c", "d")
-  pred <- c(1, 2, 3, 4, 5, 6, NA)
-  expect_warning(mr <- multiclass.roc(resp, pred, quiet = TRUE), "No observation for response level\\(s\\): d")
-  expect_equal(mr$levels, c("a", "b", "c"))
-  expect_equal(as.numeric(mr$auc), as.numeric(multiclass.roc(resp[1:6], pred[1:6], quiet = TRUE)$auc))
-
-  P <- cbind(
-    a = c(.8, .7, .1, .2, .1, .1, NA), b = c(.1, .2, .8, .6, .2, .1, NA),
-    c = c(.1, .1, .1, .2, .7, .8, NA), d = c(0, 0, 0, 0, 0, 0, NA)
-  )
-  expect_warning(mv <- multiclass.roc(resp, P), "No observation for response level\\(s\\): d")
-  expect_equal(mv$levels, c("a", "b", "c"))
-  expect_equal(as.numeric(mv$auc), as.numeric(multiclass.roc(resp[1:6], P[1:6, 1:3])$auc))
-})
-
 test_that("multiclass.roc with ci gives a clear error and ignores auc", {
   set.seed(42)
   gos <- droplevels(aSAH$gos6)
@@ -395,23 +379,6 @@ test_that("multiclass.roc with ci gives a clear error and ignores auc", {
 test_that("univariate multiclass.roc rejects duplicated levels", {
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(1, 1, 3), quiet = TRUE), "'levels' must not contain duplicated values")
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c("1", "3", "3"), quiet = TRUE), "'levels' must not contain duplicated values")
-})
-
-test_that("multiclass.roc ignores an NA level of the response", {
-  gos <- addNA(factor(aSAH$gos6[-(1:3)]))
-  gos[1:3] <- NA
-  expected <- multiclass.roc(factor(aSAH$gos6[-(1:3)])[-(1:3)], aSAH$s100b[-(1:6)], quiet = TRUE)
-  mc <- multiclass.roc(gos, aSAH$s100b[-(1:3)], quiet = TRUE)
-  expect_equal(mc$levels, expected$levels)
-  expect_equal(as.numeric(auc(mc)), as.numeric(auc(expected)))
-  y <- c(0, 0, 0, 1, 1, 1, 2, 2, 2, NA)
-  m <- cbind(
-    "0" = c(0.8, 0.6, 0.3, 0.2, 0.1, 0.5, 0.1, 0.2, 0.3, 0.4),
-    "1" = c(0.1, 0.3, 0.4, 0.7, 0.6, 0.2, 0.3, 0.2, 0.1, 0.3),
-    "2" = c(0.1, 0.1, 0.3, 0.1, 0.3, 0.3, 0.6, 0.6, 0.6, 0.3)
-  )
-  expect_no_warning(mc <- multiclass.roc(addNA(factor(y)), m))
-  expect_equal(as.numeric(auc(mc)), as.numeric(auc(multiclass.roc(factor(y), m))))
 })
 
 test_that("auc of a multiclass.roc computes each pairwise AUC once", {
