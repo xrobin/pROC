@@ -575,3 +575,28 @@ test_that("roc(smooth = TRUE) does not take the x of ci.coords as a smoothing ar
   )
   expect_is(roc.test(a, b, boot.n = 5), "htest")
 })
+
+test_that("one-sided paired DeLong tests return a one-sided conf.int", {
+  # The one-sided 95% bound is the bound of the two-sided 90% interval
+  ci90 <- roc.test(r.wfns, r.s100b, conf.level = 0.9)$conf.int
+  t.gt <- roc.test(r.wfns, r.s100b, alternative = "greater")
+  t.lt <- roc.test(r.wfns, r.s100b, alternative = "less")
+  expect_equal(t.gt$conf.int[1:2], c(ci90[1], Inf))
+  expect_equal(t.lt$conf.int[1:2], c(-Inf, ci90[2]))
+  expect_identical(attr(t.gt$conf.int, "conf.level"), 0.95)
+  expect_identical(attr(t.lt$conf.int, "conf.level"), 0.95)
+  # p < 0.05 if and only if the interval excludes 0
+  expect_true(t.gt$p.value < 0.05 && t.gt$conf.int[1] > 0)
+  expect_true(t.lt$p.value > 0.05 && t.lt$conf.int[2] > 0)
+  # percent
+  t.gt.percent <- roc.test(r.wfns.percent, r.s100b.percent, alternative = "greater")
+  expect_equal(t.gt.percent$conf.int[1:2], t.gt$conf.int[1:2] * 100)
+  # Significant one-sided test whose two-sided interval contained 0
+  response <- rep(0:1, each = 6)
+  r1 <- roc(response, c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3), quiet = TRUE)
+  r2 <- roc(response, c(0.7, 2.1, 1.2, 3.0, 2.2, 4.1, 1.5, 2.5, 3.9, 4.4, 2.6, 5.3), quiet = TRUE)
+  t <- roc.test(r1, r2, alternative = "greater")
+  expect_equal(t$p.value, 0.04963006, tolerance = 1e-6)
+  expect_gt(t$conf.int[1], 0)
+  expect_identical(t$conf.int[2], Inf)
+})

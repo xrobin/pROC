@@ -322,7 +322,7 @@ roc.test.roc <- function(roc1, roc2,
       }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
       stat <- delong.paired.test(delong.calcs)
-      stat.ci <- ci_delong_paired(delong.calcs, conf.level)
+      stat.ci <- ci_delong_paired(delong.calcs, conf.level, alternative)
       names(stat) <- "Z"
       htest$statistic <- stat
       htest$method <- "DeLong's test for two correlated ROC curves"
