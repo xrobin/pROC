@@ -238,16 +238,17 @@ ci.coords.roc <- function(roc,
 # return(enforce.best.policy(res, best.policy))
 # }
 enforce.best.policy <- function(res, best.policy) {
-  if (best.policy == "unique.stop") {
-    # Rows that are identical in all the values summarized into the CI are the
-    # same point (ie. thresholds at empty levels of an ordered predictor).
-    distinct <- !duplicated(ci_coords_numeric_columns(res))
-    if (sum(distinct) == 1) {
-      return(res[distinct, , drop = FALSE])
-    }
-    stop("More than one distinct \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
-  } else if (best.policy == "stop") {
+  if (best.policy == "stop") {
     stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
+  }
+  # Rows that are identical in all the values summarized into the CI are the
+  # same point (ie. thresholds at empty levels of an ordered predictor).
+  res <- res[!duplicated(ci_coords_numeric_columns(res)), , drop = FALSE]
+  if (nrow(res) == 1) {
+    return(res)
+  }
+  if (best.policy == "unique.stop") {
+    stop("More than one distinct \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
   } else if (best.policy == "omit") {
     res[1, ] <- NA
     return(res[1, , drop = FALSE])

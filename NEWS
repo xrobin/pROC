@@ -26,7 +26,10 @@
     plot.roc(print.thres). ci.coords() omits the threshold interval by
     default on ordered curves. Its new default best.policy="unique.stop"
     merges "best" thresholds that are identical in all the returned
-    values (such as empty levels) before stopping.
+    values (such as empty levels) before stopping, as "omit" and "random"
+    do. best.policy="stop" counts empty levels as distinct thresholds and
+    can stop where 1.19.1 did not, as with aSAH's wfns; the default
+    "unique.stop" avoids this.
   * ci.coords() with best.policy="omit" now drops a bootstrap replicate
     that has several "best" points, instead of returning the first
     column of the coords data.frame.

@@ -39,6 +39,38 @@ test_that("ci.coords merges identical best points from empty ordered levels", {
   expect_error(ci.coords(r, x = "best", boot.n = 3, best.policy = "stop"), "More than one")
 })
 
+test_that("best.policy omit and random merge identical best points, as unique.stop", {
+  # Empty levels of a resample repeat the point of their neighbour on the
+  # ordered curve: they are not several "best" points, and the result is the
+  # same as with the integer-coded predictor
+  resp <- c(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)
+  o <- ordered(c("1", "1", "2", "2", "3", "4", "2", "3", "4", "4", "5", "5"), levels = c("1", "2", "3", "4", "5"))
+  r.ordered <- roc(resp, o, quiet = TRUE)
+  r.integer <- roc(resp, as.integer(o), quiet = TRUE)
+  ret <- c("specificity", "sensitivity")
+  for (seed in 1:3) {
+    set.seed(seed)
+    expect_warning(ci.ordered <- ci.coords(r.ordered, "best", ret = ret, boot.n = 20, best.policy = "omit"), "NA value")
+    set.seed(seed)
+    expect_warning(ci.integer <- ci.coords(r.integer, "best", ret = ret, boot.n = 20, best.policy = "omit"), "NA value")
+    expect_identical(ci.ordered[ret], ci.integer[ret])
+    set.seed(seed)
+    ci.ordered <- ci.coords(r.ordered, "best", ret = ret, boot.n = 20, best.policy = "random")
+    set.seed(seed)
+    ci.integer <- ci.coords(r.integer, "best", ret = ret, boot.n = 20, best.policy = "random")
+    expect_identical(ci.ordered[ret], ci.integer[ret])
+  }
+  # Two distinct points tied on Youden return identical values for
+  # ret = "youden": "omit" keeps the replicate
+  r <- roc(controls = c(1, 3), cases = c(2, 4), quiet = TRUE)
+  expect_equal(nrow(coords(r, "best")), 2)
+  expect_identical(
+    pROC:::bootstrap.coords(r, "best", "threshold", "youden", "youden", c(1, 0.5), "omit"),
+    data.frame(youden = 1.5)
+  )
+  expect_true(all(is.na(pROC:::bootstrap.coords(r, "best", "threshold", ret, "youden", c(1, 0.5), "omit"))))
+})
+
 test_that("best.policy unique.stop still stops on distinct best points", {
   res <- data.frame(threshold = c(1.5, 2.5), specificity = c(0.5, 0.5), sensitivity = c(0.8, 0.8))
   expect_error(enforce.best.policy(res, "unique.stop"), "More than one distinct")

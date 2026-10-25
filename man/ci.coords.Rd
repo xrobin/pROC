@@ -58,9 +58,13 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   	with empty levels of an ordered predictor, whose thresholds are not
   	part of the confidence interval), and abort the processing with
   	\code{\link{stop}} if more than one distinct threshold remains,
-  	\dQuote{stop} will abort the processing with \code{\link{stop}},
-  	\dQuote{omit} will ignore the sample (as in \code{\link{NA}})
+  	\dQuote{stop} will abort the processing with \code{\link{stop}}
+  	(it counts every threshold, including empty levels of an ordered
+  	predictor), \dQuote{omit} will ignore the sample (as in \code{\link{NA}})
   	and \dQuote{random} will select one of the threshold randomly.
+  	\dQuote{omit} and \dQuote{random} first merge the thresholds that are
+  	identical in all the values returned by \code{ret}, like
+  	\dQuote{unique.stop}.
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
     in percent. Default: 0.95, resulting in a 95\% CI.
