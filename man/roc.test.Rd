@@ -166,9 +166,10 @@ na.rm=TRUE, method=NULL, ...)
   If the \code{paired} argument is not provided, the \code{\link{are.paired}} function is
   employed to detect the paired status of the ROC curves. It will test if the original \code{response} is
   identical between the two ROC curves (this is always the case if the call is made with 
-  \code{roc.test.default}). This detection is unlikely to raise false positives, but
-  this possibility cannot be excluded entirely. It would require equal sample sizes
-  and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
+  \code{roc.test.default}). This detection can give false positives: two curves built with
+  \code{controls} and \code{cases} with the same numbers of controls and of
+  cases are always detected as paired, and matched by position. Use
+  \code{paired=FALSE} for independent samples.
   If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
 

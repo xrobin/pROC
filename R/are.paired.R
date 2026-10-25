@@ -134,3 +134,18 @@ are.paired.roc <- function(roc1, roc2,
     }
   }
 }
+
+# The pairing decision of roc.test, cov and power.roc.test: paired = NULL
+# detects it with are.paired(), TRUE requires it, FALSE treats the curves as
+# unpaired. Returns are.paired()'s result (TRUE with the re-paired curves in
+# attributes "roc1" and "roc2"), or FALSE.
+roc_utils_paired <- function(roc1, roc2, paired) {
+  if (!is.null(paired) && !paired) {
+    return(FALSE)
+  }
+  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  if (!is.null(paired) && !rocs.are.paired) {
+    stop(simpleError("'paired = TRUE' cannot be applied to unpaired ROC curves.", sys.call(-1)))
+  }
+  rocs.are.paired
+}

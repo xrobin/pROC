@@ -71,11 +71,11 @@ test_that("roc.test checks conf.level when the method is selected automatically"
 
 test_that("roc.test does not check conf.level for the tests that do not use it", {
   set.seed(42)
-  expect_warning(ref <- roc.test(r.wfns, r.s100b, paired = FALSE), "paired")
+  ref <- roc.test(r.wfns, r.s100b, paired = FALSE)
   for (conf.level in list(2, NA, "0.9")) {
-    expect_warning(ht <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = conf.level), "paired")
+    ht <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = conf.level)
     expect_identical(ht$p.value, ref$p.value)
-    expect_warning(ht <- roc.test(r.wfns, r.s100b, method = "delong", paired = FALSE, conf.level = conf.level), "paired")
+    ht <- roc.test(r.wfns, r.s100b, method = "delong", paired = FALSE, conf.level = conf.level)
     expect_identical(ht$p.value, ref$p.value)
     expect_is(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = conf.level), "htest")
     expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = conf.level), "htest")
@@ -97,10 +97,10 @@ test_that("two.sided roc.test produces identical p values when roc curves are re
 })
 
 test_that("unpaired roc.test works", {
-  # Warns about pairing
-  expect_warning(roc.test_env$t1up <- roc.test(r.wfns, r.s100b, paired = FALSE))
-  expect_warning(roc.test_env$t2up <- roc.test(r.wfns, r.ndka, paired = FALSE))
-  expect_warning(roc.test_env$t3up <- roc.test(r.ndka, r.s100b, paired = FALSE))
+  # No warning: paired = FALSE is the user's decision
+  expect_no_warning(roc.test_env$t1up <- roc.test(r.wfns, r.s100b, paired = FALSE))
+  expect_no_warning(roc.test_env$t2up <- roc.test(r.wfns, r.ndka, paired = FALSE))
+  expect_no_warning(roc.test_env$t3up <- roc.test(r.ndka, r.s100b, paired = FALSE))
 })
 
 test_that("unpaired roc.test statistic and p are as expected", {
@@ -121,15 +121,15 @@ test_that("unpaired roc.test statistic and p are as expected", {
 })
 
 test_that("unpaired two.sided roc.test produces identical p values when roc curves are reversed", {
-  expect_warning(t1upb <- roc.test(r.s100b, r.wfns, paired = FALSE))
+  t1upb <- roc.test(r.s100b, r.wfns, paired = FALSE)
   expect_equal(t1upb$p.value, t1up$p.value)
   expect_equal(t1upb$statistic, -t1up$statistic)
 
-  expect_warning(t2upb <- roc.test(r.ndka, r.wfns, paired = FALSE))
+  t2upb <- roc.test(r.ndka, r.wfns, paired = FALSE)
   expect_equal(t2upb$p.value, t2up$p.value)
   expect_equal(t2upb$statistic, -t2up$statistic)
 
-  expect_warning(t3upb <- roc.test(r.s100b, r.ndka, paired = FALSE))
+  t3upb <- roc.test(r.s100b, r.ndka, paired = FALSE)
   expect_equal(t3upb$p.value, t3up$p.value)
   expect_equal(t3upb$statistic, -t3up$statistic)
 })
@@ -154,8 +154,8 @@ test_that("one-sided roc.test work and produce expected results", {
 })
 
 test_that("unpaired one-sided roc.test work and produce expected results", {
-  expect_warning(t1upgt <- roc.test(r.wfns, r.s100b, alternative = "greater", paired = FALSE))
-  expect_warning(t1uplt <- roc.test(r.wfns, r.s100b, alternative = "less", paired = FALSE))
+  t1upgt <- roc.test(r.wfns, r.s100b, alternative = "greater", paired = FALSE)
+  t1uplt <- roc.test(r.wfns, r.s100b, alternative = "less", paired = FALSE)
 
   expect_equal(t1upgt$statistic, t1up$statistic)
   expect_equal(t1uplt$statistic, t1up$statistic)
@@ -177,7 +177,7 @@ test_that("roc.formula works", {
   expect_match(t1$method, "correlated")
   expect_identical(t1$alternative, "two.sided")
 
-  expect_warning(t1upc <- roc.test(aSAH$outcome ~ aSAH$wfns + aSAH$s100b, quiet = TRUE, paired = FALSE))
+  t1upc <- roc.test(aSAH$outcome ~ aSAH$wfns + aSAH$s100b, quiet = TRUE, paired = FALSE)
   expect_equal(t1upc$statistic, t1up$statistic)
   expect_equal(t1upc$p.value, t1up$p.value)
   expect_match(t1upc$method, "DeLong")
@@ -255,7 +255,7 @@ test_that("paired roc.test works with bootstrap", {
 
 test_that("unpaired roc.test works with bootstrap", {
   skip_slow()
-  expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE), "paired")
+  ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE)
   expect_bootstrap_htest(ht)
   expect_equal(ht$alternative, "two.sided")
   expect_equal(ht$method, "Bootstrap test for two ROC curves")
@@ -273,7 +273,7 @@ test_that("paired, non stratified roc.test works with bootstrap", {
 
 test_that("unpaired, non stratified roc.test works with bootstrap", {
   skip_slow()
-  expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE, boot.stratified = FALSE), "paired")
+  ht <- roc.test(r.s100b, r.wfns, method = "bootstrap", boot.n = 12, paired = FALSE, boot.stratified = FALSE)
   expect_bootstrap_htest(ht)
   expect_equal(ht$alternative, "two.sided")
   expect_equal(ht$method, "Bootstrap test for two ROC curves")
@@ -455,7 +455,7 @@ test_that("bootstrap se/sp tests give D = 0 when the tested values never differ"
   expect_equal(unname(t$statistic), 0)
   expect_equal(t$p.value, 1)
   # unpaired
-  expect_warning(t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, paired = FALSE, boot.n = 20, progress = "none"))
+  t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0, paired = FALSE, boot.n = 20, progress = "none")
   expect_equal(unname(t$statistic), 0)
   expect_equal(t$p.value, 1)
 })
@@ -599,4 +599,34 @@ test_that("one-sided paired DeLong tests return a one-sided conf.int", {
   expect_equal(t$p.value, 0.04963006, tolerance = 1e-6)
   expect_gt(t$conf.int[1], 0)
   expect_identical(t$conf.int[2], Inf)
+})
+
+test_that("roc.test, cov and power.roc.test take the same 'paired' argument", {
+  # Independent samples, given as controls and cases of equal sizes: detected
+  # as paired (matched by position)
+  set.seed(1)
+  r1 <- roc(controls = rnorm(10), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
+  r2 <- roc(controls = rnorm(10), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
+  expect_message(expect_identical(cov(r1, r2, paired = FALSE), 0), "ROC curves are unpaired.")
+  expect_error(power.roc.test(r1, r2, paired = FALSE), "cannot be applied to unpaired ROC curves yet")
+  expect_no_warning(t <- roc.test(r1, r2, paired = FALSE))
+  expect_equal(t$p.value, 0.3245658, tolerance = 1e-6)
+  # The defaults are unchanged
+  expect_equal(roc.test(r1, r2)$p.value, 0.3395865, tolerance = 1e-6)
+  expect_equal(cov(r1, r2), -0.0005869489, tolerance = 1e-6)
+  expect_equal(power.roc.test(r1, r2)$power, power.roc.test(r1, r2, paired = TRUE)$power)
+  # The same patients split by class: paired, as with the formula interface
+  good <- aSAH$outcome == "Good"
+  s1 <- roc(controls = aSAH$s100b[good], cases = aSAH$s100b[!good], quiet = TRUE)
+  s2 <- roc(controls = aSAH$ndka[good], cases = aSAH$ndka[!good], quiet = TRUE)
+  expect_equal(roc.test(s1, s2)$p.value, 0.1642952, tolerance = 1e-6)
+  expect_equal(roc.test(s1, s2)$p.value, roc.test(outcome ~ s100b + ndka, aSAH)$p.value)
+  expect_equal(cov(s1, s2), -0.0007561649, tolerance = 1e-6)
+  expect_equal(cov(s1, s2), cov(r.s100b, r.ndka))
+  # paired = TRUE on curves that cannot be paired
+  r3 <- roc(controls = rnorm(12), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
+  msg <- "'paired = TRUE' cannot be applied to unpaired ROC curves."
+  expect_error(roc.test(r1, r3, paired = TRUE), msg, fixed = TRUE)
+  expect_error(cov(r1, r3, paired = TRUE), msg, fixed = TRUE)
+  expect_error(power.roc.test(r1, r3, paired = TRUE), msg, fixed = TRUE)
 })

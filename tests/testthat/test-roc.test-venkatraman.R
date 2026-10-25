@@ -16,7 +16,7 @@ test_that("paired venkatraman works as expected", {
 
 test_that("unpaired venkatraman works as expected", {
   skip_slow()
-  expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, paired = FALSE), "paired")
+  ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, paired = FALSE)
   expect_venkatraman_htest(ht)
   expect_equal(ht$alternative, "two.sided")
   expect_equal(ht$method, "Venkatraman's test for two unpaired ROC curves")
@@ -42,7 +42,7 @@ test_that("non stratified venkatraman works as expected", {
 
 test_that("non stratified, unpaired venkatraman works as expected", {
   skip_slow()
-  expect_warning(ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE, paired = FALSE), "paired")
+  ht <- roc.test(r.s100b, r.wfns, method = "venkatraman", boot.n = 12, boot.stratified = FALSE, paired = FALSE)
   expect_venkatraman_htest(ht)
   expect_equal(ht$alternative, "two.sided")
   expect_equal(ht$method, "Venkatraman's test for two unpaired ROC curves")

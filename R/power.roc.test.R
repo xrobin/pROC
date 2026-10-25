@@ -24,6 +24,7 @@ power.roc.test <- function(...) {
 power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa = NULL,
                                alternative = c("two.sided", "one.sided"),
                                reuse.auc = TRUE, method = c("delong", "bootstrap", "obuchowski"),
+                               paired = NULL,
                                ...) {
   # Basic sanity checks
   if (!is.null(power) && (!roc_utils_is_single_number(power) || power < 0 || power > 1)) {
@@ -68,7 +69,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       roc2 <- roc_utils_unpercent(roc2)
 
       # Make sure the ROC curves are paired
-      rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+      rocs.are.paired <- roc_utils_paired(roc1, roc2, paired)
       if (!rocs.are.paired) {
         stop("The sample size for a difference in AUC cannot be applied to unpaired ROC curves yet.")
       }

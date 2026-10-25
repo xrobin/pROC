@@ -49,7 +49,8 @@ are.paired(...)
   identity again.
 
   It can raise false positives if the responses are identical but correspond
-  to different patients.
+  to different patients, as with any two curves built with \code{controls}
+  and \code{cases} of equal sizes.
 }
 
 \value{

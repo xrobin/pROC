@@ -20,7 +20,8 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+  progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE,
+  paired = NULL, ...)
 }
 
 \arguments{
@@ -70,6 +71,10 @@ cov(...)
     section of \link{pROC-package}.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
+  \item{paired}{\code{NULL} (default) to detect pairing with
+    \code{\link{are.paired}}, \code{TRUE} to require it, \code{FALSE} to
+    treat the curves as unpaired, as in \code{\link{roc.test}}.
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for

@@ -46,6 +46,7 @@ cov.roc <- function(roc1, roc2,
                     progress = getOption("pROCProgress", interactive()),
                     cl = NULL,
                     parallel = FALSE,
+                    paired = NULL,
                     ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
@@ -77,7 +78,7 @@ cov.roc <- function(roc1, roc2,
   }
 
   # then determine whether the rocs are paired or not
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  rocs.are.paired <- roc_utils_paired(roc1, roc2, paired)
   if (!rocs.are.paired) {
     message("ROC curves are unpaired.")
     return(0)

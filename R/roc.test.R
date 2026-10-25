@@ -165,33 +165,11 @@ roc.test.roc <- function(roc1, roc2,
   }
 
   # Check if we do a paired or unpaired roc.test
-  if (is.null(paired)) {
-    # then determine whether the rocs are paired or not
-    rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
-    if (rocs.are.paired) {
-      paired <- TRUE
-      roc1 <- attr(rocs.are.paired, "roc1")
-      roc2 <- attr(rocs.are.paired, "roc2")
-    } else {
-      paired <- FALSE
-      roc1 <- roc1
-      roc2 <- roc2
-    }
-  } else if (paired) {
-    # make sure the rocs are really paired
-    rocs.are.paired <- rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
-    if (!rocs.are.paired) {
-      stop("The paired ROC test cannot be applied to unpaired curves.")
-    }
+  rocs.are.paired <- roc_utils_paired(roc1, roc2, paired)
+  paired <- isTRUE(rocs.are.paired)
+  if (paired) {
     roc1 <- attr(rocs.are.paired, "roc1")
     roc2 <- attr(rocs.are.paired, "roc2")
-  } else { # assume unpaired
-    rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = FALSE)
-    if (rocs.are.paired) {
-      warning("The ROC curves seem to be paired. Consider performing a paired roc.test.")
-    }
-    roc1 <- roc1
-    roc2 <- roc2
   }
 
   # check that the AUC was computed, or do it now
