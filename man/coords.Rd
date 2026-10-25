@@ -37,7 +37,7 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		labels when \code{input="threshold"} on an ordered ROC curve),
 		or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
-		maximas of the ROC curve) or \dQuote{best} (see \code{best.method}
+		maximas of the ROC curve; not available on smoothed curves) or \dQuote{best} (see \code{best.method}
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
 		Numeric \code{x} is not allowed with \code{input="threshold"} on
 		an ordered ROC curve; pass the level as character or ordered.
@@ -113,7 +113,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
   those within the partial AUC unless \code{ignore.partial.auc=TRUE}), a
   threshold is a local maximum if, for some weighting of sensitivity
   against specificity, it is strictly better than each of its neighbouring
-  thresholds among those considered. Note that \dQuote{best} can
+  thresholds among those considered. Not available on smoothed curves,
+  which have no thresholds. Note that \dQuote{best} can
   return more than one threshold. If \code{x} is a character, and
   \code{ignore.partial.auc=FALSE} (the default), the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
