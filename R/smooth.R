@@ -203,6 +203,11 @@ smooth_roc_binormal <- function(roc, n) {
   }
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
   sp <- predict(model, data.frame(se))
+  if (length(unique(df$sp)) == 1) {
+    # The points share one specificity: the exact slope is 0, a vertical
+    # line, but lm() returns it with a rounding error of either sign
+    sp <- c(Inf, rep(df$sp[1], n - 2), -Inf)
+  }
 
   return(list(
     sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),

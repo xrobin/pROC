@@ -253,6 +253,32 @@ test_that("fitdistr smoothing of ndka with a lognormal density is unchanged", {
   expect_equal(s$sensitivities[c(100, 256, 400)], c(0.820662768031189, 0.578947368421053, 0.317298380377812), tolerance = 1e-12)
 })
 
+test_that("binormal smoothing of points that share one specificity gives the vertical line", {
+  for (percent in c(FALSE, TRUE)) {
+    k <- if (percent) 100 else 1
+    r <- roc(controls = c(1, 2, 3, 10), cases = c(5, 6, 7, 11), quiet = TRUE, percent = percent)
+    s <- smooth(r)
+    inside <- s$sensitivities > 0 & s$sensitivities < k
+    expect_identical(unique(s$specificities[inside]), 0.75 * k)
+    expect_false(is.unsorted(s$specificities))
+    expect_false(is.unsorted(rev(s$sensitivities)))
+    n <- length(s$sensitivities)
+    expect_identical(c(s$specificities[1], s$sensitivities[1]), c(0, k))
+    expect_identical(c(s$specificities[n], s$sensitivities[n]), c(k, 0))
+    expect_equal(as.numeric(s$auc), 0.75 * k)
+  }
+  # lm() returns a slope of exactly 0 here: this failed with "missing value
+  # where TRUE/FALSE needed"
+  r <- roc(controls = c(1, 1, 1, 3, 3, 3), cases = c(1, 2, 3, 3, 3, 3), quiet = TRUE)
+  s <- smooth(r)
+  expect_identical(unname(coef(s$model)[2]), 0)
+  expect_identical(unique(s$specificities[s$sensitivities > 0 & s$sensitivities < 1]), 0.5)
+  expect_equal(as.numeric(s$auc), 0.5)
+  # Curves with more than one specificity are unchanged
+  expect_equal(as.numeric(smooth(r.s100b)$auc), 0.7400128620773111, tolerance = 1e-15)
+  expect_equal(as.numeric(smooth(r.wfns)$auc), 0.84536597931822532, tolerance = 1e-15)
+})
+
 test_that("binormal smoothing of ordered predictors does not depend on unused levels", {
   resp <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
   lv <- c("a", "b", "c", "d", "e")
