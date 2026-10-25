@@ -19,6 +19,23 @@
 
 # Helper functions for the ROC curves. These functions should not be called directly as they perform very specific tasks and do nearly no argument validity checks. Not documented in RD and not exported.
 
+# Internal consistency check failed: save the data needed to reproduce it, and stop
+roc_utils_bug <- function(msg, ...) {
+  data <- list(..., sessionInfo = utils::sessionInfo())
+  file <- tempfile("pROC_bug", fileext = ".RData")
+  if (interactive()) {
+    wd.file <- file.path(getwd(), basename(file))
+    if (isTRUE(utils::askYesNo(sprintf("pROC hit an internal error. Save the data to reproduce it in %s, for a bug report?", wd.file)))) {
+      file <- wd.file
+    }
+  }
+  save(list = names(data), envir = list2env(data), file = file)
+  stop(simpleError(sprintf(
+    "pROC: %s. Data to reproduce it saved in %s. Please report this bug to <%s> (check the file for sensitive data before posting it).",
+    msg, file, utils::packageDescription("pROC")$BugReports
+  ), sys.call(-1)))
+}
+
 # Whether a roc (or smooth.roc) object was built from an ordered predictor.
 # Checks every field that may carry the class so the answer is stable during
 # construction (before original.predictor is assigned) and on finished objects.
@@ -147,9 +164,7 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 
   dups <- dups.pred | dups.sesp
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
-    sessionInfo <- sessionInfo()
-    save(thresholds, controls, cases, direction, sessionInfo, file = "pROC_bug.RData")
-    stop(sprintf("pROC: fast algorithm computed an incorrect number of sensitivities and specificities. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", utils::packageDescription("pROC")$BugReports))
+    roc_utils_bug("fast algorithm computed an incorrect number of sensitivities and specificities", thresholds = thresholds, controls = controls, cases = cases, direction = direction)
   }
   if (direction == "<") {
     se <- rev(c(0, se[!dups]))
@@ -280,9 +295,7 @@ roc_utils_thresholds <- function(predictor, direction) {
         } else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
           thresholds[tie.idx] <- unique.candidates[tie.idx - 1]
         } else {
-          sessionInfo <- sessionInfo()
-          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
-          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+          roc_utils_bug(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction), predictor = predictor, direction = direction)
         }
       }
     } else if (direction == "<") {
@@ -300,9 +313,7 @@ roc_utils_thresholds <- function(predictor, direction) {
         } else if (thresholds[tie.idx] == unique.candidates[tie.idx]) {
           # We're already good, nothing to do
         } else {
-          sessionInfo <- sessionInfo()
-          save(predictor, direction, sessionInfo, file = "pROC_bug.RData")
-          stop(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s. Diagnostic data saved in pROC_bug.RData. Please report this bug to <%s>.", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction, utils::packageDescription("pROC")$BugReports))
+          roc_utils_bug(sprintf("Couldn't fix near ties in thresholds: %s, %s, %s, %s", thresholds[tie.idx], unique.candidates[tie.idx - 1], unique.candidates[tie.idx], direction), predictor = predictor, direction = direction)
         }
       }
     }
