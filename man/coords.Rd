@@ -49,7 +49,9 @@ transpose = FALSE, as.matrix=FALSE, ...)
   	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
   	\dQuote{sensitivity}, but can be any of the monotone coordinate available,
   	see the \dQuote{Valid input} column under \dQuote{Available coordinates}.
-  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold}. Note
+  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold} for
+  	\code{roc} curves. Smoothed curves have no thresholds and no default:
+  	\code{input} is required with a numeric \code{x}. Note
   	that \dQuote{threshold} is not allowed in \code{coords.smooth.roc} and that
   	the argument is ignored when \code{x} is a character.
   }

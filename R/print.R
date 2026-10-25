@@ -231,7 +231,8 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   colnames.grid <- expand.grid(c("low", "median", "high"), attr(x, "ret"))
   colnames.vec <- paste(colnames.grid$Var2, colnames.grid$Var1, sep = ".")
-  colnames(table) <- c(attr(x, "input"), colnames.vec)
+  # No input with x = "best" on a smoothed curve
+  colnames(table) <- c(if (is.null(attr(x, "input"))) "x" else attr(x, "input"), colnames.vec)
   if (anyDuplicated(attr(x, "x")) || anyNA(attr(x, "x"))) {
     # data.frame row names must be unique and not NA (x can be repeated or NA)
     rownames(table) <- NULL

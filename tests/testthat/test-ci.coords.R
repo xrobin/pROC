@@ -173,12 +173,23 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
   point <- as.numeric(coords(s, "best", ret = "sensitivity"))
   expect_equal(as.numeric(best$sensitivity)[2], point, tolerance = 0.05)
 
-  # A numeric x works without naming 'input', which defaults to specificity.
+  # As in coords(), 'input' has no default on a smoothed curve, and is
+  # required with a numeric x
+  expect_error(coords(s, 0.9), 'argument "input" is missing, with no default')
+  expect_error(ci.coords(s, 0.9, boot.n = 20), 'argument "input" is missing, with no default')
   set.seed(1)
-  by.default <- ci.coords(s, 0.5, ret = "sensitivity", boot.n = 20)
+  ci <- ci.coords(s, 0.9, input = "specificity", boot.n = 20)
+  # The values of ci.coords(s, 0.9) when 'input' defaulted to "specificity"
+  expect_equal(unname(ci$sensitivity[1, ]), c(0.253534954671016, 0.436233506088253, 0.585336116009741))
+  expect_equal(unname(ci$specificity[1, ]), c(0.9, 0.9, 0.9))
+  # "best" has no input: print heads the column "x"
+  expect_null(attr(best, "input"))
+  expect_match(capture.output(print(best))[2], "^ +x sensitivity.low")
+  # An NA x gives an NA row
   set.seed(1)
-  explicit <- ci.coords(s, 0.5, input = "specificity", ret = "sensitivity", boot.n = 20)
-  expect_equal(as.numeric(unlist(by.default)), as.numeric(unlist(explicit)))
+  expect_no_warning(ci <- ci.coords(s, c(0.9, NA), input = "specificity", boot.n = 20))
+  expect_true(all(is.na(ci$sensitivity[2, ])))
+  expect_false(anyNA(ci$sensitivity[1, ]))
 })
 
 
@@ -283,7 +294,7 @@ test_that("ci.coords of a smoothed curve with a corrected partial AUC does not w
   resp <- rep(0:1, each = 16)
   pred <- c(controls, controls + 0.05, cases, cases + 0.05)
   s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
-  expect_no_warning(ci.coords(s, x = 0.95, boot.n = 50), message = "Partial AUC correction not defined")
+  expect_no_warning(ci.coords(s, x = 0.95, input = "specificity", boot.n = 50), message = "Partial AUC correction not defined")
 })
 
 test_that("ci.coords warns about unknown or misspelt 'ret' elements", {

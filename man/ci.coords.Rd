@@ -27,7 +27,7 @@ boot.stratified=TRUE,
 progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
 \S3method{ci.coords}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
-input="specificity", ret=c("specificity", "sensitivity"),
+input, ret=c("specificity", "sensitivity"),
 best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
@@ -48,9 +48,14 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
-  \item{x, input, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
+  \item{x, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
     See there for more details. The only difference is on the \code{x} argument which cannot be
     \dQuote{all} or \dQuote{local maximas}.
+  }
+  \item{input}{Passed to \code{\link{coords}}. Defaults to
+    \dQuote{threshold} for \code{roc} curves. Smoothed curves have no
+    thresholds and no default: \code{input} is required with a numeric
+    \code{x}.
   }
   \item{best.policy}{The policy follow when multiple \dQuote{best} thresholds are returned by \code{\link{coords}}.
   	\dQuote{unique.stop} (default) will first merge the thresholds that

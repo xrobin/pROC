@@ -56,7 +56,7 @@ test_that("ci formula and default methods work with smooth = TRUE", {
   for (pair in list(
     list(ci, list(), "ci.auc"),
     list(ci, list(of = "se", specificities = 0.5), "ci.se"),
-    list(ci, list(of = "coords", x = 0.5), "ci.coords"),
+    list(ci, list(of = "coords", x = 0.5, input = "specificity"), "ci.coords"),
     list(ci.auc, list(), "ci.auc"),
     list(ci.se, list(specificities = 0.5), "ci.se"),
     list(ci.sp, list(sensitivities = 0.5), "ci.sp"),
