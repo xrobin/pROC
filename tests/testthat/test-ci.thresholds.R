@@ -118,3 +118,21 @@ test_that("ci.thresholds gives a clear error with no threshold in the partial AU
     )
   }
 })
+
+test_that("ci.thresholds defaults to the local maximas, with unchanged CIs", {
+  set.seed(42)
+  ci <- ci.thresholds(r.s100b, boot.n = 100)
+  thresholds <- attr(ci, "thresholds")
+  expect_length(thresholds, 14)
+  # The CIs of the thresholds that were local maximas before their
+  # definition are the same, for the same seed
+  dropped <- round(r.s100b$thresholds, 3) %in% c(0.075, 0.095, 0.105, 0.135, 0.325)
+  previous <- r.s100b$thresholds[r.s100b$thresholds %in% thresholds | dropped]
+  expect_length(previous, 19)
+  set.seed(42)
+  ci.previous <- ci.thresholds(r.s100b, thresholds = previous, boot.n = 100)
+  kept <- match(thresholds, attr(ci.previous, "thresholds"))
+  expect_false(anyNA(kept))
+  expect_equal(ci$sensitivity, ci.previous$sensitivity[kept, ])
+  expect_equal(ci$specificity, ci.previous$specificity[kept, ])
+})

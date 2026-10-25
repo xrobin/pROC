@@ -321,7 +321,7 @@ coords.roc <- function(roc,
         warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
-      lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se)
+      lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se, ncontrols = length(roc$controls), ncases = length(roc$cases), scale = ifelse(roc$percent, 100, 1))
       res <- roc_utils_coords_basic(thres[lm.idx], sp[lm.idx], se[lm.idx])
     } else { # x == "best"
       # cheat: allow the user to pass "topleft"

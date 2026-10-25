@@ -341,57 +341,28 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
   ordered(thr_levels, levels = thr_levels, exclude = NULL)
 }
 
-# Find all the local maximas of the ROC curve. Returns a logical vector
-roc_utils_max_thresholds_idx <- function(thresholds, sp, se) {
-  reversed <- FALSE
-  if (is.unsorted(sp)) {
-    # make sure SP is sorted increasingly, and sort thresholds accordingly
-    thresholds <- rev(thresholds)
-    sp <- rev(sp)
-    se <- rev(se)
-    reversed <- TRUE
+# Find the local maximas of the ROC curve, as a logical vector: the
+# thresholds that, for some weighting of sensitivity against specificity, are
+# strictly better than each of their neighbours. Exact, on the counts: sorted
+# by tn increasing and tp decreasing, a point is a local maximum iff the cross
+# product of its incoming and outgoing directions is negative. (1, 0) before
+# the first point and (0, -1) after the last compare each end with its single
+# neighbour. Duplicated points count once, keeping 1.19.1's label.
+roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, scale = 1) {
+  tn <- round(sp / scale * ncontrols)
+  tp <- round(se / scale * ncases)
+  idx <- if (is.unsorted(sp)) rev(seq_along(sp)) else seq_along(sp)
+  o <- idx[order(tn[idx], -tp[idx])]
+  o <- o[!duplicated(cbind(tn[o], tp[o]))]
+  local.maximas <- rep(FALSE, length(thresholds))
+  n <- length(o)
+  if (n == 1) {
+    local.maximas[o] <- TRUE
+    return(local.maximas)
   }
-  # TODO: find whether the duplicate check is still needed.
-  # Should have been fixed by passing only c(controls, cases)
-  # instead of whole 'predictor' to roc_utils_thresholds in roc.default
-  # but are there other potential issues like that?
-  dup <- duplicated(data.frame(sp, se))
-  thresholds <- thresholds[!dup]
-  sp <- sp[!dup]
-  se <- se[!dup]
-  # Find the local maximas
-  if (length(thresholds) == 1) {
-    local.maximas <- TRUE # let's consider that if there is only 1 point, we should print it.
-  } else if (length(thresholds) == 2) {
-    local.maximas <- c(se[1] > se[2], sp[2] > sp[1])
-  } else {
-    local.maximas <- se[1] > se[2]
-    for (i in 2:(length(thresholds) - 1)) {
-      if (sp[i] > sp[i - 1] & se[i] > se[i + 1]) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else if (sp[i] > sp[i - 1] & se[i] == 0) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else if (se[i] > se[i - 1] & sp[i] == 1) {
-        local.maximas <- c(local.maximas, TRUE)
-      } else {
-        local.maximas <- c(local.maximas, FALSE)
-      }
-    }
-    local.maximas <- c(local.maximas, sp[length(thresholds)] > sp[length(thresholds) - 1])
-  }
-  if (any(dup)) {
-    lms <- rep(FALSE, length(dup))
-    lms[!dup] <- local.maximas
-    local.maximas <- lms
-  }
-  if (reversed) {
-    rev(local.maximas)
-  }
-
-  # Remove +-Inf at the limits of the curve
-  # local.maximas <- local.maximas & is.finite(thresholds)
-  # Question: why did I do that? It breaks coords.roc when partial.auc contains only the extreme point
-
+  dtn <- c(1, diff(tn[o]), 0)
+  dtp <- c(0, diff(tp[o]), -1)
+  local.maximas[o[dtn[1:n] * dtp[2:(n + 1)] - dtp[1:n] * dtn[2:(n + 1)] < 0]] <- TRUE
   return(local.maximas)
 }
 

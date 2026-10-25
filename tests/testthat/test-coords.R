@@ -77,13 +77,15 @@ test_that("coords with percent works", {
 test_that("coords with local maximas thresholds works", {
   return.rows <- "all"
   obtained <- coords(r.s100b, "local maximas", ret = return.rows)
-  # expected.thresholds <- c(-Inf, 0.065, 0.075, 0.085, 0.095, 0.105, 0.115, 0.135, 0.155, 0.205, 0.245, 0.29, 0.325, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+  # expected.thresholds <- c(-Inf, 0.065, 0.085, 0.115, 0.155, 0.205, 0.245, 0.29, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+  # 0.075, 0.095, 0.105, 0.135 and 0.325 (local maximas before the
+  # definition) are on straight segments or dents of the curve
   expected.thresholds <- c(
-    -Inf, 0x1.0a3d70a3d70a4p-4, 0x1.3333333333334p-4,
-    0x1.5c28f5c28f5c2p-4, 0x1.851eb851eb852p-4, 0x1.ae147ae147ae2p-4,
-    0x1.d70a3d70a3d7p-4, 0x1.147ae147ae148p-3, 0x1.3d70a3d70a3d7p-3,
+    -Inf, 0x1.0a3d70a3d70a4p-4,
+    0x1.5c28f5c28f5c2p-4,
+    0x1.d70a3d70a3d7p-4, 0x1.3d70a3d70a3d7p-3,
     0x1.a3d70a3d70a3ep-3, 0x1.f5c28f5c28f5cp-3, 0x1.28f5c28f5c29p-2,
-    0x1.4cccccccccccdp-2, 0x1.6147ae147ae14p-2, 0x1.947ae147ae148p-2,
+    0x1.6147ae147ae14p-2, 0x1.947ae147ae148p-2,
     0x1.bd70a3d70a3d7p-2, 0x1.e666666666666p-2, 0x1.f0a3d70a3d70ap-2,
     0x1.051eb851eb852p-1
   )
@@ -538,6 +540,73 @@ test_that("coords with x = 'local maximas' takes partial AUC into account", {
   # with se
   obtained <- coords(r.s100b.partial2, "local maximas", ret = "t")
   expect_equal(obtained$threshold, c(0.065, 0.075))
+})
+
+local.maximas <- function(...) coords(roc(..., quiet = TRUE), "local maximas", ret = "threshold")$threshold
+
+test_that("local maximas are the points strictly better than their neighbours for some weighting", {
+  # Points on straight segments are not reported: the flat bottom edge...
+  expect_equal(local.maximas(controls = 1:5, cases = c(0, 2.5), direction = "<"), c(-Inf, 2.25, Inf))
+  # ... the diagonal...
+  expect_equal(local.maximas(controls = 1:3, cases = 1:3), c(-Inf, Inf))
+  # ... and ties: 2.5 is collinear with its neighbours
+  expect_equal(local.maximas(controls = c(1, 2, 3, 5), cases = c(2, 3, 4, 5)), c(1.5, 3.5, Inf))
+  # Dents are not reported (2.5)
+  expect_equal(local.maximas(controls = c(1, 2, 3, 3), cases = c(2, 2, 3, 4)), c(1.5, 3.5))
+  # Corners of a staircase are, and the ends of a partial AUC window are
+  # treated like the ends of the curve
+  staircase <- list(controls = 1:10, cases = c(6.5, 8.5, 11, 12), direction = "<")
+  expect_equal(do.call(local.maximas, staircase), c(6.25, 8.25, 10.5))
+  expect_equal(do.call(local.maximas, c(staircase, list(partial.auc = c(0.9, 0.5)))), c(6.25, 8.25, 9.5))
+  # A window with a single threshold reports it
+  expect_equal(do.call(local.maximas, c(staircase, list(partial.auc = c(0.95, 0.85)))), 9.5)
+  # The ends are dominated by the corner of a perfect separation
+  expect_equal(local.maximas(controls = 1, cases = 2), 1.5)
+})
+
+test_that("local maximas of aSAH curves", {
+  # wfns level 3 is a dent
+  expect_equal(as.character(coords(r.wfns, "local maximas", ret = "threshold")$threshold), c("1", "2", "4", "5", "Inf"))
+  expect_equal(coords(r.wfns.num, "local maximas", ret = "threshold")$threshold, c(-Inf, 1.5, 3.5, 4.5, Inf))
+  # 0.325 is on a straight segment of s100b
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 0.8), quiet = TRUE)
+  expect_equal(coords(r, "local maximas", ret = "threshold")$threshold, c(0.205, 0.245, 0.29, 0.345, 0.395))
+})
+
+test_that("local maximas do not depend on the scale, or on which class is the case", {
+  for (r in list(r.s100b, r.ndka, r.wfns.num, r.s100b.partial1, r.s100b.partial2)) {
+    rp <- roc(controls = r$controls, cases = r$cases, percent = TRUE, quiet = TRUE)
+    expect_identical(
+      coords(rp, "local maximas", ret = "threshold", ignore.partial.auc = TRUE),
+      coords(r, "local maximas", ret = "threshold", ignore.partial.auc = TRUE)
+    )
+    mirror <- roc(controls = r$cases, cases = r$controls, quiet = TRUE)
+    expect_identical(
+      coords(mirror, "local maximas", ret = "threshold")$threshold,
+      rev(coords(r, "local maximas", ret = "threshold", ignore.partial.auc = TRUE)$threshold)
+    )
+  }
+  expect_identical(
+    coords(r.wfns.percent, "local maximas", ret = "threshold"),
+    coords(r.wfns, "local maximas", ret = "threshold")
+  )
+  expect_identical(
+    coords(r.s100b.percent.partial1, "local maximas", ret = "threshold"),
+    coords(r.s100b.partial1, "local maximas", ret = "threshold")
+  )
+})
+
+test_that("a partial AUC window that contains thresholds has local maximas", {
+  set.seed(1)
+  for (i in 1:200) {
+    controls <- sample(1:6, sample(3:8, 1), replace = TRUE)
+    cases <- sample(2:8, sample(3:8, 1), replace = TRUE)
+    r <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE)
+    low <- round(runif(1, 0, 0.8), 2)
+    if (!any(r$specificities >= low & r$specificities <= low + 0.2)) next
+    rp <- roc(controls = controls, cases = cases, direction = "<", partial.auc = c(low + 0.2, low), quiet = TRUE)
+    expect_gt(nrow(coords(rp, "local maximas")), 0)
+  }
 })
 
 test_that("invalid best.weights", {
