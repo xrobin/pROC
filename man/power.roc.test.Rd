@@ -114,8 +114,17 @@ alternative = c("two.sided", "one.sided"), ...)
   supplied) or the power of a test of a difference between to AUCs
   according to the formula by Obuchowski and McClish, 1997
   (formulas 2 and 3, p. 1530--1531). The null hypothesis is that the AUC
-  of \code{roc1} is the same than the AUC of \code{roc2}, with
-  \code{roc1} taken as the reference ROC curve.
+  of \code{roc1} is the same than the AUC of \code{roc2}.
+
+  With \code{method="delong"} or \code{"bootstrap"}, the variance of the
+  AUC difference estimated from the curves is used for both the
+  significance and the power terms, as in Jung (2024), because
+  \code{\link{roc.test}} divides by the variance estimated from the data.
+  The result does not depend on which curve is \code{roc1}.
+  With \code{method="obuchowski"} and binormal parameter lists, the
+  variance under the null hypothesis uses the binormal parameters of
+  \code{roc1} for both curves (\code{roc1} is the reference), as in
+  Obuchowski and McClish (1997), Example 2.
 
   Paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the AUCs, variances, covariance and numbers
@@ -187,6 +196,10 @@ alternative = c("two.sided", "one.sided"), ...)
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Sin-Ho Jung (2024). ``Sample size calculation for comparing two ROC
+  curves''. \emph{Pharmaceutical Statistics}, \bold{23}, 557--569. DOI:
+  \doi{10.1002/pst.2371}.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
   determination for diagnostic accuracy studies involving binormal ROC

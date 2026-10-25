@@ -407,15 +407,16 @@ var_delta_covvar <- function(covvar) {
 
 # Compute variance of a delta from a 'covvar' list (see 'covvar' below)
 # under the null hypothesis
-# roc1 taken as reference.
-# cov0 is the covariance under the null hypothesis (both curves with the
-# parameters of roc1). Without it, the covariance under the alternative
-# is used as an approximation.
+# cov0 is the covariance under the null hypothesis (Obuchowski: both curves
+# with the parameters of roc1, taken as reference).
 var0.delta.covvar <- function(covvar) {
   if (!is.null(covvar$cov0)) {
     2 * covvar$var1 - 2 * covvar$cov0
   } else {
-    2 * covvar$var1 - 2 * covvar$cov12
+    # DeLong and bootstrap: roc.test divides the difference by its standard
+    # error estimated from the data, so the variance of the difference is used
+    # in both terms (Jung, 2024, Eqs. 4-5)
+    var_delta_covvar(covvar)
   }
 }
 
