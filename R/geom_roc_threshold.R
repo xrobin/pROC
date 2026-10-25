@@ -8,6 +8,8 @@ geom_roc_threshold.roc <- function(data,
                                    hjust = -0.05,
                                    vjust = 1.25,
                                    size = 2,
+                                   best.method = c("youden", "closest.topleft"),
+                                   best.weights = c(1, 0.5),
                                    ...) {
   load.ggplot2()
   # A smoothed curve has no thresholds: only "best" can be marked (as with plot.roc's print.thres)
@@ -17,7 +19,7 @@ geom_roc_threshold.roc <- function(data,
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
-  co <- coords(data, thresholds)
+  co <- coords(data, thresholds, best.method = best.method, best.weights = best.weights)
   # Only mark real thresholds: with a partial AUC, coords(data, "all") also
   # returns the interpolated limits of the window, with an NA threshold
   if (!methods::is(data, "smooth.roc") && !is.null(co)) {
