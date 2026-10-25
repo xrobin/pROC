@@ -224,13 +224,13 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   if (is.null(densfun.controls)) {
     densfun.controls <- "normal"
   } else if (is.character(densfun.controls)) {
-    densfun.controls <- match.arg(densfun.controls, names(densfuns.list))
+    densfun.controls <- match.arg(tolower(densfun.controls), names(densfuns.list))
   }
 
   if (is.null(densfun.cases)) {
     densfun.cases <- "normal"
   } else if (is.character(densfun.cases)) {
-    densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
+    densfun.cases <- match.arg(tolower(densfun.cases), names(densfuns.list))
   }
 
   # A class with a single distinct value (one observation or constant

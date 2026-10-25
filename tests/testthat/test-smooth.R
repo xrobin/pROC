@@ -224,6 +224,28 @@ test_that("fitdistr smoothing with discrete distributions requires counts", {
   expect_s3_class(smooth(r2, method = "fitdistr", density.controls = "poisson", density.cases = "normal"), "smooth.roc")
 })
 
+test_that("fitdistr smoothing matches the density names in any case, as MASS::fitdistr", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  r <- roc(response, counts, quiet = TRUE)
+  for (density in c("Poisson", "Normal", "Log-normal")) {
+    expect_identical(
+      smooth(r, method = "fitdistr", density = density)[c("sensitivities", "specificities")],
+      smooth(r, method = "fitdistr", density = tolower(density))[c("sensitivities", "specificities")]
+    )
+  }
+  expect_identical(
+    as.numeric(smooth(r, method = "fitdistr", density.controls = "POISSON", density.cases = "Normal")$auc),
+    as.numeric(smooth(r, method = "fitdistr", density.controls = "poisson", density.cases = "normal")$auc)
+  )
+  # pROC's own partial matching is kept
+  expect_identical(
+    smooth(r, method = "fitdistr", density = "Pois")$sensitivities,
+    smooth(r, method = "fitdistr", density = "poisson")$sensitivities
+  )
+})
+
 test_that("fitdistr smoothing of ndka with a lognormal density is unchanged", {
   testthat::skip_if_not_installed("MASS")
   s <- smooth(r.ndka, method = "fitdistr", density = "lognormal")
