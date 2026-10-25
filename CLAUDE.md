@@ -146,4 +146,4 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 - **One item at a time.** Short, direct answers to the question asked.
 - **Only treat an answer as approval when it clearly answers the question asked.** Never claim the maintainer approved something without a record of it.
 - **Verify by running:** the release and the current code, before reporting numbers. Check delegated work yourself.
-- **Never post to GitHub, push, or merge without explicit approval.**
+- **Never push to `develop` or `master`, merge, or post on GitHub unless the maintainer asked for it.** Pushing to your own working branch is fine.
