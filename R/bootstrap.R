@@ -263,14 +263,21 @@ bootstrap.replicates.parallel <- function(cluster, boot.n, FUN, ...) {
   # quote = TRUE matters. Some of these arguments are unevaluated calls -- the
   # smoothing call each replicate has to make -- and do.call() would otherwise
   # evaluate them here instead of passing them on.
-  worker <- function(i) {
-    assign(".Random.seed", rng.streams[[i]], envir = globalenv())
-    do.call(fun, c(list(i), fun.args), quote = TRUE)
+  #
+  # The worker is made by a factory whose enclosure is the global environment,
+  # so its own environment holds the factory's three arguments and nothing
+  # else. They are forced so that no promise pointing back here is shipped.
+  make.worker <- function(fun, fun.args, rng.streams) {
+    force(fun)
+    force(fun.args)
+    force(rng.streams)
+    function(i) {
+      assign(".Random.seed", rng.streams[[i]], envir = globalenv())
+      do.call(fun, c(list(i), fun.args), quote = TRUE)
+    }
   }
-  environment(worker) <- list2env(
-    list(fun = FUN, fun.args = list(...), rng.streams = streams),
-    parent = globalenv()
-  )
+  environment(make.worker) <- globalenv()
+  worker <- make.worker(FUN, list(...), streams)
   parLapply(cluster, seq_len(boot.n), worker)
 }
 
