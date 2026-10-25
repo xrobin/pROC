@@ -127,6 +127,12 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   explicitly (the returned interval is \code{NA}). Intervals of the other
   \code{ret} coordinates are still computed.
 
+  With \code{boot.stratified=FALSE}, a count \code{input} (\dQuote{tn},
+  \dQuote{tp}, \dQuote{fn}, \dQuote{fp}) is taken in each resample, where
+  the numbers of controls and cases vary, and resamples where it is out of
+  range are ignored; use the corresponding rate (\dQuote{tnr},
+  \dQuote{tpr}, \dQuote{fnr}, \dQuote{fpr}) to keep the point fixed.
+
   For more details about the bootstrap, see the Bootstrap section in
   \link[=pROC-package]{this package's documentation}.
 }

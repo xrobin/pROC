@@ -387,3 +387,37 @@ test_that("ci.coords accepts ret = 'all' with a numeric non-threshold input", {
   ci <- ci.coords(r.s100b, 0.5, input = "threshold", ret = "all", boot.n = 5, progress = "none")
   expect_identical(names(ci)[1], "threshold")
 })
+
+test_that("ci.coords ignores the non-stratified resamples where a count input is out of range", {
+  y <- rep(0:1, each = 10)
+  x <- c(1:10, 6:15)
+  r <- roc(y, x, quiet = TRUE)
+  set.seed(1)
+  expect_warning(
+    ci <- ci.coords(r, 10, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE),
+    "41 NA value(s) produced during bootstrap were ignored.",
+    fixed = TRUE
+  )
+  expect_false(anyNA(ci$tp))
+  # In range in every resample: unchanged
+  set.seed(1)
+  expect_no_warning(ci <- ci.coords(r, 2, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE))
+  expect_equal(unname(ci$tp[1, ]), c(6, 10, 13.525))
+  # Out of range on the curve itself: coords()'s error, with the curve's range
+  set.seed(1)
+  expect_error(ci.coords(r.s100b, 73, input = "tn", ret = "tp", boot.n = 20), "Input tn (73) not in range (0-72)", fixed = TRUE)
+  set.seed(1)
+  expect_error(ci.coords(smooth(r.s100b), 73, input = "tn", ret = "tp", boot.n = 20), "Input tn (73) not in range (0-72)", fixed = TRUE)
+  # Smoothed curve, non-stratified
+  set.seed(1)
+  expect_warning(
+    ci <- ci.coords(smooth(r.s100b), 70, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE),
+    "NA value(s) produced during bootstrap were ignored.",
+    fixed = TRUE
+  )
+  expect_false(anyNA(ci$tp))
+  # Stratified: unchanged
+  set.seed(1)
+  ci <- ci.coords(r.s100b, 36, input = "tn", ret = "tp", boot.n = 100)
+  expect_equal(unname(ci$tp[1, ]), c(25.475, 31.5892857142857, 37.1166666666667), tolerance = 1e-12)
+})

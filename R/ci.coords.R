@@ -101,6 +101,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
     auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
   }
 
+  ci_coords_check_count_input(smooth.roc, x, input)
+
   na <- bootstrap.coords.na(x, ret)
   boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
@@ -192,6 +194,8 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
+  ci_coords_check_count_input(roc, x, input)
+
   na <- bootstrap.coords.na(x, ret)
   boot.n <- roc_utils_check_boot_n(boot.n)
   perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
@@ -255,6 +259,14 @@ enforce.best.policy <- function(res, best.policy) {
     return(res[1, , drop = FALSE])
   } else {
     return(res[sample(seq_len(nrow(res)), size = 1), , drop = FALSE])
+  }
+}
+
+# A count input is taken in each resample (see bootstrap.coords): check x on
+# the curve itself, so that an error gives the curve's range
+ci_coords_check_count_input <- function(curve, x, input) {
+  if (is.numeric(x) && input %in% c("tn", "fp", "tp", "fn")) {
+    coords(curve, x = x, input = input, ret = input)
   }
 }
 

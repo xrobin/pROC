@@ -498,6 +498,11 @@ bootstrap.coords <- function(curve, x, input, ret, best.method, best.weights,
     # No point in the partial AUC range of this resample: NA replicate
     return(NULL)
   }
+  if (is.numeric(x) && input %in% c("tn", "fp", "tp", "fn")) {
+    # A count above the class size of this resample: NA, as coords() gives for an NA x
+    empirical <- if (methods::is(curve, "smooth.roc")) attr(curve, "roc") else curve
+    x[x > length(if (input %in% c("tn", "fp")) empirical$controls else empirical$cases)] <- NA
+  }
   res <- coords(curve,
     x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights
