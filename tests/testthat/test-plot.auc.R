@@ -175,7 +175,7 @@ test_that("polygon_auc/polygon_max_auc/text error on a 'multiclass.auc'", {
   pdf(NULL)
   on.exit(dev.off())
 
-  m.auc <- suppressWarnings(multiclass.roc(aSAH$gos6, aSAH$s100b, quiet = TRUE))$auc
+  m.auc <- multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(3, 4, 5), quiet = TRUE)$auc
   plot(r.s100b)
   expect_error(polygon_auc(m.auc), "multiclass.auc")
   expect_error(polygon_max_auc(m.auc), "multiclass.auc")
@@ -320,10 +320,10 @@ test_that("polygon_ci via panel.first draws the curve once, unlike plot.ci(type=
 
   after <- function() {
     plot(r.s100b)
-    suppressWarnings(plot(ci_se, type = "shape", col = "gainsboro"))
+    expect_warning(plot(ci_se, type = "shape", col = "gainsboro"), "Low definition shape")
   }
   panel_first <- function() {
-    plot(r.s100b, panel.first = suppressWarnings(polygon_ci(ci_se, col = "gainsboro")))
+    plot(r.s100b, panel.first = expect_warning(polygon_ci(ci_se, col = "gainsboro"), "Low definition shape"))
   }
 
   f1 <- tempfile(fileext = ".svg")

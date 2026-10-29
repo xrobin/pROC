@@ -242,7 +242,7 @@ test_that("an exact keyword that is also a level warns and keeps the keyword", {
   pred <- ordered(c("low", "low", "best", "high", "best", "high", "high", "best"), levels = lv)
   r <- roc(resp, pred, quiet = TRUE)
   expect_warning(co <- coords(r, "best"), "both a keyword and a threshold level")
-  expect_equal(nrow(co), nrow(suppressWarnings(coords(r, "bes"))))
+  expect_equal(nrow(co), nrow(coords(r, "bes")))
   co_level <- coords(r, ordered("best", levels = lv), input = "threshold")
   expect_equal(as.character(co_level$threshold), "best")
   expect_equal(nrow(co_level), 1L)
@@ -273,10 +273,14 @@ test_that("roc(smooth=TRUE) with a non-binormal method is rejected for ordered p
 
 test_that("transpose with numeric-only ret stays numeric on an ordered ROC", {
   r <- roc(aSAH$outcome, text.levels, quiet = TRUE)
-  suppressWarnings({
-    obtained <- coords(r, "all", ret = c("specificity", "sensitivity"), transpose = TRUE)
-    obtained_m <- coords(r, "all", ret = c("specificity", "sensitivity"), as.matrix = TRUE)
-  })
+  expect_warning(
+    obtained <- coords(r, "all", ret = c("specificity", "sensitivity"), transpose = TRUE),
+    "'transpose=TRUE' is deprecated"
+  )
+  expect_warning(
+    obtained_m <- coords(r, "all", ret = c("specificity", "sensitivity"), as.matrix = TRUE),
+    "'as.matrix' is deprecated"
+  )
   expect_type(obtained, "double")
   expect_type(obtained_m, "double")
 })
