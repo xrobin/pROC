@@ -87,6 +87,10 @@ cov(...)
   \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
+  Paired curves with different missing values are re-paired as in
+  \code{\link{are.paired}}; the covariance refers to the re-paired
+  curves.
+
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not

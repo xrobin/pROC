@@ -87,11 +87,14 @@ cov.roc <- function(roc1, roc2,
   }
 
   # then determine whether the rocs are paired or not
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
   if (!rocs.are.paired) {
     message("ROC curves are unpaired.")
     return(0)
   }
+  # use the curves without the observations missing in either of them
+  roc1 <- attr(rocs.are.paired, "roc1")
+  roc2 <- attr(rocs.are.paired, "roc2")
 
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
