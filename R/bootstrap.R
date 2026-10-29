@@ -236,20 +236,17 @@ bootstrap.replicates.parallel <- function(cluster, boot.n, FUN, ...) {
 #
 # The seed is drawn from the caller's own stream, so set.seed() still governs
 # the result; the caller's generator is then restored exactly as it was.
+# Restoring .Random.seed is enough: its first element encodes the three
+# RNGkind() kinds, which R switches back to the next time it reads the seed
+# (any draw, or RNGkind()). Unlike setting RNGkind() again, this does not
+# repeat the warning about the "Rounding" sampler.
 roc_utils_rng_streams <- function(boot.n) {
   if (!exists(".Random.seed", envir = globalenv())) {
     set.seed(NULL)
   }
   seed <- sample.int(.Machine$integer.max, 1L)
   caller.seed <- get(".Random.seed", envir = globalenv())
-  caller.kind <- RNGkind()
-  on.exit({
-    # suppressWarnings: restoring sample.kind = "Rounding" re-emits R's
-    # "non-uniform 'Rounding' sampler used" warning, which the caller already
-    # chose and does not need pROC to repeat on every bootstrap.
-    suppressWarnings(RNGkind(caller.kind[1], caller.kind[2], caller.kind[3]))
-    assign(".Random.seed", caller.seed, envir = globalenv())
-  })
+  on.exit(assign(".Random.seed", caller.seed, envir = globalenv()))
   set.seed(seed, kind = "L'Ecuyer-CMRG")
   streams <- vector("list", boot.n)
   stream <- get(".Random.seed", envir = globalenv())
