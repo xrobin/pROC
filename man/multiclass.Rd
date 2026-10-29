@@ -100,9 +100,8 @@ is more subject to bugs. Please report them if you find one.
 }
 
 \section{Warnings}{
-  If \code{response} is an ordered factor and one of the levels
-  specified in \code{levels} is missing, a warning is issued and the
-  level is ignored.
+  If one of the levels specified in \code{levels} has no observation in
+  \code{response}, a warning is issued and the level is ignored.
 }
 
 \references{
