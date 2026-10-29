@@ -210,8 +210,8 @@ test_that("plot.roc(auc.polygon=TRUE, max.auc.polygon=TRUE, print.auc=TRUE) matc
 
   f1 <- tempfile(fileext = ".svg")
   f2 <- tempfile(fileext = ".svg")
-  vdiffr:::write_svg(all_in_one, f1, title = "all_in_one")
-  vdiffr:::write_svg(composed, f2, title = "composed")
+  vdiffr::write_svg(all_in_one, f1, title = "all_in_one")
+  vdiffr::write_svg(composed, f2, title = "composed")
   expect_identical(readLines(f1), readLines(f2))
 })
 
@@ -251,7 +251,7 @@ test_that("polygon_ci() never redraws the curve, unlike plot.ci(type='shape', no
   on.exit({
     suppressMessages(try(untrace(pROC:::plot.roc.roc), silent = TRUE))
     rm(".test_call_count", envir = globalenv())
-  })
+  }, add = TRUE)
 
   plot(r.s100b) # counts too, since the trace is already active; reset after
   assign(".test_call_count", 0L, envir = globalenv())
@@ -275,7 +275,7 @@ test_that("polygon_ci() preserves custom curve styling when used via panel.first
   # means it was drawn exactly once, with no default-styled redraw.
   ci_se <- ci.se(r.s100b, specificities = seq(0, 1, .05), boot.n = 20)
   f <- tempfile(fileext = ".svg")
-  vdiffr:::write_svg(function() {
+  vdiffr::write_svg(function() {
     plot(r.s100b, col = "red", lwd = 4, panel.first = polygon_ci(ci_se))
   }, f, title = "t")
   polylines <- grep("<polyline", readLines(f), value = TRUE, fixed = TRUE)
@@ -328,8 +328,8 @@ test_that("polygon_ci via panel.first draws the curve once, unlike plot.ci(type=
 
   f1 <- tempfile(fileext = ".svg")
   f2 <- tempfile(fileext = ".svg")
-  vdiffr:::write_svg(after, f1, title = "after")
-  vdiffr:::write_svg(panel_first, f2, title = "panel_first")
+  vdiffr::write_svg(after, f1, title = "after")
+  vdiffr::write_svg(panel_first, f2, title = "panel_first")
   count_polylines <- function(f) sum(grepl("<polyline", readLines(f), fixed = TRUE))
   # "after" redraws the curve on top of the shape (one extra <polyline>);
   # panel_first draws it exactly once. Everything else is identical.
