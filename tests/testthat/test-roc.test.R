@@ -105,17 +105,18 @@ test_that("unpaired roc.test works", {
 
 test_that("unpaired roc.test statistic and p are as expected", {
   expect_equal(t1up$statistic, c(D = 1.43490640926908))
-  expect_equal(t1up$p.value, 0.152825378808796)
+  expect_equal(t1up$p.value, 0.151313769072913)
+  expect_null(t1up$parameter)
   expect_match(t1up$method, "DeLong")
   expect_identical(t1up$alternative, "two.sided")
 
   expect_equal(t2up$statistic, c(D = 3.10125096778969))
-  expect_equal(t2up$p.value, 0.00220950791756457)
+  expect_equal(t2up$p.value, 0.00192704888543429)
   expect_match(t2up$method, "DeLong")
   expect_identical(t2up$alternative, "two.sided")
 
   expect_equal(t3up$statistic, c(D = -1.55995743389685))
-  expect_equal(t3up$p.value, 0.120192832430845)
+  expect_equal(t3up$p.value, 0.118769940514783)
   expect_match(t3up$method, "DeLong")
   expect_identical(t3up$alternative, "two.sided")
 })
@@ -160,8 +161,8 @@ test_that("unpaired one-sided roc.test work and produce expected results", {
   expect_equal(t1upgt$statistic, t1up$statistic)
   expect_equal(t1uplt$statistic, t1up$statistic)
 
-  expect_equal(t1upgt$p.value, 0.076412689404398)
-  expect_equal(t1uplt$p.value, 0.923587310595602)
+  expect_equal(t1upgt$p.value, 0.0756568845364565)
+  expect_equal(t1uplt$p.value, 0.924343115463544)
 
   expect_match(t1upgt$method, "DeLong")
   expect_identical(t1upgt$alternative, "greater")
@@ -523,6 +524,30 @@ test_that("roc.test works on curves smoothed in roc() with a partial AUC", {
   }
 })
 
+test_that("unpaired DeLong roc.test compares D to the normal distribution", {
+  # Hanley and McNeil (1983), Eqs. 1 and 3 with r = 0
+  t <- roc.test(r.wfns, r.s100b, paired = FALSE)
+  d <- (as.numeric(auc(r.wfns)) - as.numeric(auc(r.s100b))) / sqrt(var(r.wfns) + var(r.s100b))
+  expect_equal(unname(t$statistic), d)
+  expect_equal(t$p.value, 2 * pnorm(-abs(d)))
+})
+
+test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 0, p = 1", {
+  # AUC == 1: all placements are 1, the variance is exactly 0
+  r1 <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 6), quiet = TRUE)
+  r3 <- roc(c(0, 0, 0, 0, 1, 1, 1, 1), c(1, 2, 3, 4, 5, 6, 7, 8), quiet = TRUE)
+  expect_warning(t <- roc.test(r1, r3), "AUC == 1")
+  expect_equal(unname(t$statistic), 0)
+  expect_equal(t$p.value, 1)
+  expect_null(t$parameter)
+  expect_warning(t <- roc.test(r1, r3, alternative = "greater"), "AUC == 1")
+  expect_equal(t$p.value, 0.5)
+  # Same as the paired test
+  expect_warning(t.paired <- roc.test(r1, r1), "AUC == 1")
+  expect_equal(unname(t.paired$statistic), 0)
+  expect_equal(t.paired$p.value, 1)
+})
+
 test_that("roc.test compares the smoothing arguments of the curves", {
   set.seed(42)
   msg <- "Different smoothing parameters"
@@ -610,7 +635,7 @@ test_that("roc.test, cov and power.roc.test take the same 'paired' argument", {
   expect_message(expect_identical(cov(r1, r2, paired = FALSE), 0), "ROC curves are unpaired.")
   expect_error(power.roc.test(r1, r2, paired = FALSE), "cannot be applied to unpaired ROC curves yet")
   expect_no_warning(t <- roc.test(r1, r2, paired = FALSE))
-  expect_equal(t$p.value, 0.3245658, tolerance = 1e-6)
+  expect_equal(t$p.value, 0.3185433, tolerance = 1e-6)
   # The defaults are unchanged
   expect_equal(roc.test(r1, r2)$p.value, 0.3395865, tolerance = 1e-6)
   expect_equal(cov(r1, r2), -0.0005869489, tolerance = 1e-6)

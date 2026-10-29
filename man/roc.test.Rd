@@ -239,14 +239,13 @@ na.rm=TRUE, method=NULL, ...)
   With \code{method="delong"}, the processing is done as described in
   DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
   of Sun and Xu (2014). Only comparison of
-  two ROC curves is implemented. The method has been extended for
-  unpaired ROC curves where the p-value is computed with an unpaired
-  t-test with unequal sample size and unequal variance, with 
+  two ROC curves is implemented. For unpaired ROC curves, the statistic
   \deqn{
     D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
     D=(\theta^r - \theta^s) / sqrt(S^r + S^s)
   }
+  is compared to the normal distribution (Hanley and McNeil, 1983).
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
@@ -359,8 +358,7 @@ na.rm=TRUE, method=NULL, ...)
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
-    value of \code{boot.n}. For \code{method="delong"} with unpaired
-    curves: the degrees of freedom \code{df} of the t-test.
+    value of \code{boot.n}.
   }
 }
 
@@ -378,6 +376,10 @@ na.rm=TRUE, method=NULL, ...)
   James A. Hanley and Barbara J. McNeil (1982) ``The meaning and use of
   the area under a receiver operating characteristic (ROC)
   curve''. \emph{Radiology} \bold{143}, 29--36.
+
+  James A. Hanley and Barbara J. McNeil (1983) ``A method of comparing
+  the areas under receiver operating characteristic curves derived from
+  the same cases''. \emph{Radiology} \bold{148}, 839--843.
 
   Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
   Comparison of Receiver Operating Characteristic Curves''. \emph{The

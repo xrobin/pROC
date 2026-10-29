@@ -40,7 +40,7 @@ delong.unpaired.test <- function(roc1, roc2) {
 
   # A single case or control: the variance is undefined (as in ci_auc_delong)
   if (min(mR, nR, mS, nS) <= 1) {
-    return(c(NA_real_, NA_real_))
+    return(NA_real_)
   }
 
   VR <- delongPlacements(roc1)
@@ -55,14 +55,13 @@ delong.unpaired.test <- function(roc1, roc2) {
   SR <- SRX / mR + SRY / nR
   SS <- SSX / mS + SSY / nS
 
-  ntotR <- nR + mR
-  ntotS <- nS + mS
-  SSR <- sqrt((SR) + (SS))
-  t <- (VR$theta - VS$theta) / SSR
-  df <- ((SR) + (SS))^2 /
-    (((SR)^2 / (ntotR - 1)) + ((SS)^2 / (ntotS - 1)))
+  stat <- (VR$theta - VS$theta) / sqrt(SR + SS)
 
-  return(c(t, df))
+  if (is.nan(stat) && VR$theta == VS$theta && SR + SS == 0) {
+    stat <- 0
+  } # special case: no difference between theta's with zero variance produces a NaN (as in delong.paired.test)
+
+  return(stat)
 }
 
 ci_auc_delong <- function(roc, conf.level) {
