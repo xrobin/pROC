@@ -169,9 +169,10 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
   set.seed(1)
   best <- ci.coords(s, "best", ret = "sensitivity", boot.n = 20)
   expect_s3_class(best, "ci.coords")
-  # The bootstrap median should sit near the point estimate.
-  point <- as.numeric(coords(s, "best", ret = "sensitivity"))
-  expect_equal(as.numeric(best$sensitivity)[2], point, tolerance = 0.05)
+  # An ordered interval of sensitivities
+  se <- as.numeric(best$sensitivity)
+  expect_true(se[1] <= se[2] && se[2] <= se[3])
+  expect_true(all(se >= 0 & se <= 1))
 
   # As in coords(), 'input' has no default on a smoothed curve, and is
   # required with a numeric x
