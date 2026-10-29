@@ -357,6 +357,7 @@ coords.roc <- function(roc,
       res <- roc_utils_coords_basic(thres, sp, se)
     }
   } else if (input == "threshold") {
+    roc_utils_check_legacy_ordered(roc)
     if (is.character(x) && !roc_utils_is_ordered_roc(roc)) {
       stop("'x' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
     }

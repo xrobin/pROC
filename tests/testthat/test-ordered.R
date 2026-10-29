@@ -328,3 +328,27 @@ test_that("an NA level of an ordered predictor is a level like the others, as in
   # A real NA is still a missing value
   expect_equal(as.numeric(auc(roc(resp, ordered(c("a", "b", NA, "a", "b", "b")), quiet = TRUE))), 0.5833, tolerance = 1e-4)
 })
+
+test_that("curves of ordered predictors saved by pROC 1.19 ask to be rebuilt where their thresholds are read", {
+  # roc(aSAH$outcome, aSAH$wfns) built and saved with saveRDS() by pROC 1.19.1:
+  # numeric thresholds (the level codes), ordered original.predictor
+  old <- readRDS(test_path("roc-wfns-1.19.1.rds"))
+  expect_true(is.numeric(old$thresholds))
+  expect_true(is.ordered(old$original.predictor))
+
+  expect_error(coords(old, 2.5), "built by pROC 1.19 or earlier", fixed = TRUE)
+  expect_error(coords(old, "3"), "built by pROC 1.19 or earlier", fixed = TRUE)
+  expect_error(ci.thresholds(old, thresholds = 2.5), "built by pROC 1.19 or earlier", fixed = TRUE)
+
+  # What doesn't read the thresholds as values still works
+  expect_equal(as.numeric(ci.auc(old)), as.numeric(ci.auc(r.wfns)))
+  best.old <- coords(old, "best")
+  best.new <- coords(r.wfns, "best")
+  expect_equal(best.old$specificity, best.new$specificity)
+  expect_equal(best.old$sensitivity, best.new$sensitivity)
+
+  # The rebuilt curve is the same
+  rebuilt <- roc(old$original.response, old$original.predictor, quiet = TRUE)
+  expect_equal(as.numeric(auc(rebuilt)), as.numeric(auc(old)))
+  expect_equal(coords(rebuilt, "3"), coords(r.wfns, "3"))
+})

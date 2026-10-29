@@ -45,6 +45,14 @@ roc_utils_is_ordered_roc <- function(roc) {
     is.ordered(roc$original.predictor)
 }
 
+# A curve of an ordered predictor built by pROC 1.19 or earlier stores numeric
+# thresholds (the level codes): its thresholds can't be read as levels
+roc_utils_check_legacy_ordered <- function(roc) {
+  if (is.ordered(roc$original.predictor) && is.numeric(roc$thresholds)) {
+    stop(simpleError("This ROC curve of an ordered predictor was built by pROC 1.19 or earlier. Rebuild it with roc(), e.g. roc(x$original.response, x$original.predictor).", sys.call(-1)))
+  }
+}
+
 # Concatenate ordered predictors. On R >= 4.1, c() of ordered inputs
 # stays ordered only when the level sets are identical; mismatched
 # levels become an unordered factor with the union of the labels.

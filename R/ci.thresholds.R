@@ -89,6 +89,7 @@ ci.thresholds.roc <- function(roc,
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
   } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
+    roc_utils_check_legacy_ordered(roc)
     ordered_roc <- roc_utils_is_ordered_roc(roc)
     if (is.numeric(thresholds) && ordered_roc) {
       stop("Numeric 'thresholds' is not supported for ordered ROC curves. Pass level labels as character or ordered.")
