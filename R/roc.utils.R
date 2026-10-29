@@ -203,15 +203,21 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, 
   case_i <- as.integer(cases)
   ctrl_i <- as.integer(controls)
   offset <- as.integer(direction == ">")
-  n <- length(thresholds)
-  se <- numeric(n)
-  sp <- numeric(n)
-  for (i in seq_len(n)) {
-    p <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction, scale)
-    sp[i] <- unname(p["sp"])
-    se[i] <- unname(p["se"])
+  thr_i <- as.integer(thresholds) - offset
+  # The counts of roc_utils_sesp_from_ranks() at every threshold rank at once:
+  # number of codes <= r at index r + 1, for r = 0, ..., nlevels (NAs not counted)
+  nbins <- length(user_levels)
+  case_le <- c(0L, cumsum(tabulate(case_i, nbins)))
+  ctrl_le <- c(0L, cumsum(tabulate(ctrl_i, nbins)))
+  if (direction == ">") {
+    tp <- case_le[thr_i + 1L] # case_i <= thr_i
+    tn <- ctrl_le[nbins + 1L] - ctrl_le[thr_i + 1L] # ctrl_i > thr_i
+  } else if (direction == "<") {
+    tp <- case_le[nbins + 1L] - case_le[thr_i] # case_i >= thr_i
+    tn <- ctrl_le[thr_i] # ctrl_i < thr_i
   }
-  return(list(se = se, sp = sp))
+  # The same expressions as roc_utils_sesp_from_ranks(): the same doubles
+  return(list(se = scale * tp / length(case_i), sp = scale * tn / length(ctrl_i)))
 }
 
 roc_utils_fun_sesp <- function(...) {
