@@ -60,8 +60,8 @@ ci.thresholds.roc <- function(roc,
                               boot.stratified = TRUE,
                               thresholds = "local maximas",
                               progress = getOption("pROCProgress", interactive()),
-                              cl = NULL,
                               parallel = FALSE,
+                              cl = NULL,
                               ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")

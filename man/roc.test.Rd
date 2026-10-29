@@ -29,7 +29,7 @@
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="random", progress = getOption("pROCProgress", interactive()),
-cl = NULL, parallel=FALSE, conf.level=0.95, ...)
+parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)

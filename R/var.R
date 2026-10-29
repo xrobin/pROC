@@ -45,8 +45,8 @@ var.roc <- function(roc,
                     boot.stratified = TRUE,
                     reuse.auc = TRUE,
                     progress = getOption("pROCProgress", interactive()),
-                    cl = NULL,
                     parallel = FALSE,
+                    cl = NULL,
                     ...) {
   # We need an auc
   if (is.null(roc$auc) | !reuse.auc) {

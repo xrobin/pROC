@@ -20,8 +20,8 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE,
-  paired = NULL, ...)
+  progress = getOption("pROCProgress", interactive()), parallel=FALSE,
+  paired = NULL, cl = NULL, ...)
 }
 
 \arguments{

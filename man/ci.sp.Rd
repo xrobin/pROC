@@ -19,11 +19,11 @@
 # ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
 \S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
-cl = NULL, parallel=FALSE, ...)
+parallel=FALSE, cl = NULL, ...)
 \S3method{ci.sp}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }

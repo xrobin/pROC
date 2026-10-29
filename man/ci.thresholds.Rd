@@ -19,7 +19,7 @@
 # ci.thresholds(...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
 \S3method{ci.thresholds}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)

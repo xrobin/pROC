@@ -17,7 +17,7 @@ var(...)
 \S3method{var}{auc}(auc, ...)
 \S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
 }
 

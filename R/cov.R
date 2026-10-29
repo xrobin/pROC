@@ -44,9 +44,9 @@ cov.roc <- function(roc1, roc2,
                     reuse.auc = TRUE,
                     boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
                     progress = getOption("pROCProgress", interactive()),
-                    cl = NULL,
                     parallel = FALSE,
                     paired = NULL,
+                    cl = NULL,
                     ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {

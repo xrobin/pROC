@@ -22,10 +22,10 @@
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...,
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...,
 method = NULL)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
