@@ -48,8 +48,7 @@
 }
 
 \details{
-  Follows the parent \code{\link{ggroc}} plot's axes; there is no
-  \code{legacy.axes} argument.
+  Follows the parent \code{\link{ggroc}} plot's axes.
 }
 
 \seealso{
