@@ -136,13 +136,25 @@ roc_utils_na_thresholds <- function(n, template) {
   }
 }
 
+# The data.frames of coords(), built once with all their columns. data.frame()
+# deparses every column and is most of the cost of a coords() call: list2DF()
+# builds the same data.frame, unless a column (the threshold of a named or
+# matrix 'x') gives row names or columns of its own, or must be recycled (the
+# NA threshold of a smoothed curve).
+roc_utils_coords_df <- function(columns, check.names = TRUE) {
+  plain <- vapply(columns, function(column) is.null(names(column)) && is.null(dim(column)), logical(1))
+  if (all(plain) && length(unique(lengths(columns))) == 1) {
+    return(list2DF(columns))
+  }
+  do.call(data.frame, c(columns, check.names = check.names, stringsAsFactors = FALSE))
+}
+
 roc_utils_coords_basic <- function(threshold, specificity, sensitivity) {
-  data.frame(
+  roc_utils_coords_df(list(
     threshold = threshold,
     specificity = as.vector(specificity),
-    sensitivity = as.vector(sensitivity),
-    stringsAsFactors = FALSE
-  )
+    sensitivity = as.vector(sensitivity)
+  ))
 }
 
 # returns a list of sensitivities (se) and specificities (sp) for the given data. Fast algorithm
@@ -574,7 +586,7 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights, exact = FALSE)
   youden <- roc_utils_optim_crit(se, sp, substr.percent, best.weights, "youden")
   closest.topleft <- -roc_utils_optim_crit(se, sp, substr.percent, best.weights, "closest.topleft") / substr.percent
 
-  return(data.frame(
+  return(roc_utils_coords_df(list(
     threshold = thr,
     sensitivity = se,
     specificity = sp,
@@ -600,10 +612,8 @@ roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights, exact = FALSE)
     "lr_pos" = tp * ncontrols / (fp * ncases),
     "lr_neg" = fn * ncontrols / (tn * ncases),
     youden = youden,
-    closest.topleft = closest.topleft,
-    check.names = FALSE,
-    stringsAsFactors = FALSE
-  ))
+    closest.topleft = closest.topleft
+  ), check.names = FALSE))
 }
 
 # Match arbitrary user-supplied thresholds to the threshold of the ROC curve.

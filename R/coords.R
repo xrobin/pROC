@@ -381,11 +381,9 @@ coords.roc <- function(roc,
     } else {
       thr_template <- roc$thresholds
     }
-    res <- roc_utils_coords_basic(
-      roc_utils_na_thresholds(length(x), thr_template),
-      rep(NA_real_, length(x)),
-      rep(NA_real_, length(x))
-    )
+    # Fill plain vectors, and build the data.frame once after the loop
+    res.thr <- roc_utils_na_thresholds(length(x), thr_template)
+    res.se <- res.sp <- rep(NA_real_, length(x))
     if (input %in% c("sensitivity", "specificity")) {
       # Shortcut slow roc_utils_calc_coords
       se <- roc$sensitivities
@@ -433,9 +431,9 @@ coords.roc <- function(roc,
       }
       if (length(idx) == 1) {
         # Exactly one to pick from
-        res$threshold[i] <- thr[idx]
-        res$sensitivity[i] <- se[idx]
-        res$specificity[i] <- sp[idx]
+        res.thr[i] <- thr[idx]
+        res.se[i] <- se[idx]
+        res.sp[i] <- sp[idx]
       } else {
         # Need to interpolate
         if (coord.is.decreasing[input]) {
@@ -446,10 +444,11 @@ coords.roc <- function(roc,
         proportion <- (value - input_values[idx.next]) / (input_values[idx.next - 1] - input_values[idx.next])
         int.se <- se[idx.next] + proportion * (se[idx.next - 1] - se[idx.next])
         int.sp <- sp[idx.next] + proportion * (sp[idx.next - 1] - sp[idx.next])
-        res$sensitivity[i] <- int.se
-        res$specificity[i] <- int.sp
+        res.se[i] <- int.se
+        res.sp[i] <- int.sp
       }
     }
+    res <- roc_utils_coords_basic(res.thr, res.sp, res.se)
   } else {
     stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
   }
