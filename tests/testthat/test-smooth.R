@@ -180,6 +180,57 @@ test_that("fitdistr smoothing gives the ROC curve of the fitted distributions", 
   expect_equal(as.numeric(smooth(r2, method = "fitdistr", n = 1000)$auc), as.numeric(s$auc), tolerance = 1e-6)
 })
 
+test_that("fitdistr smoothing with discrete distributions gives the ROC curve of the fitted distributions", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  r <- roc(response, counts, quiet = TRUE)
+  k <- 0:2000
+  densfuns <- list(poisson = dpois, geometric = dgeom, "negative binomial" = dnbinom)
+  for (density in names(densfuns)) {
+    expect_silent(s <- smooth(r, method = "fitdistr", density = density))
+    d.controls <- do.call(densfuns[[density]], c(list(k), as.list(s$fit.controls$estimate)))
+    d.cases <- do.call(densfuns[[density]], c(list(k), as.list(s$fit.cases$estimate)))
+    # P(case > control) + P(case = control) / 2 (Bamber, 1975, eq. 3)
+    expected <- sum(d.cases * (cumsum(d.controls) - d.controls / 2))
+    expect_equal(as.numeric(s$auc), expected, tolerance = 1e-6)
+  }
+  # The quantiles are integers: the curve goes through the vertices
+  s <- smooth(r, method = "fitdistr", density = "poisson")
+  lambda.controls <- s$fit.controls$estimate[["lambda"]]
+  lambda.cases <- s$fit.cases$estimate[["lambda"]]
+  t <- 2:6
+  expect_equal(
+    coords(s, ppois(t, lambda.controls), input = "specificity", ret = "sensitivity")$sensitivity,
+    1 - ppois(t, lambda.cases)
+  )
+})
+
+test_that("fitdistr smoothing with discrete distributions requires counts", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  for (density in c("poisson", "geometric", "negative binomial")) {
+    msg <- sprintf("Density \"%s\" requires non-negative integer (count) values.", density)
+    expect_error(smooth(r.ndka, method = "fitdistr", density = density), msg, fixed = TRUE)
+    expect_error(smooth(roc(response, counts - 2, quiet = TRUE), method = "fitdistr", density = density), msg, fixed = TRUE)
+  }
+  # Only the class with a discrete density must be counts
+  r <- roc(response, counts, quiet = TRUE)
+  s <- smooth(r, method = "fitdistr", density.controls = "poisson", density.cases = "normal")
+  expect_s3_class(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), 0.8394853, tolerance = 1e-6)
+  r2 <- roc(response, c(counts[1:8], counts[9:16] + 0.5), quiet = TRUE)
+  expect_s3_class(smooth(r2, method = "fitdistr", density.controls = "poisson", density.cases = "normal"), "smooth.roc")
+})
+
+test_that("fitdistr smoothing of ndka with a lognormal density is unchanged", {
+  testthat::skip_if_not_installed("MASS")
+  s <- smooth(r.ndka, method = "fitdistr", density = "lognormal")
+  expect_equal(as.numeric(s$auc), 0.606443698904361, tolerance = 1e-12)
+  expect_equal(s$sensitivities[c(100, 256, 400)], c(0.820662768031189, 0.578947368421053, 0.317298380377812), tolerance = 1e-12)
+})
+
 test_that("binormal smoothing of ordered predictors does not depend on unused levels", {
   resp <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
   lv <- c("a", "b", "c", "d", "e")

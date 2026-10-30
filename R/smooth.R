@@ -237,6 +237,10 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   # values) has no spread to estimate: optim fails inside fitdistr for most
   # densities. Return NULL then, and keep any other error as it is.
   fit <- function(values, densfun, start) {
+    if (is.character(densfun) && densfun %in% c("geometric", "negative binomial", "poisson") &&
+      any(values < 0 | values != round(values))) {
+      stop(sprintf("Density \"%s\" requires non-negative integer (count) values.", densfun))
+    }
     tryCatch(
       MASS::fitdistr(values, densfun, start, ...),
       error = function(e) if (length(unique(values)) < 2) NULL else stop(e)
@@ -269,15 +273,11 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     fit.cases$densfun <- densfun.cases
   }
 
-  # Named continuous distributions: the ROC curve of the fitted distributions
-  # is computed exactly from their CDFs over their whole support, at
-  # thresholds spread over the quantiles of both fits
-  cdf.densfuns <- c(
-    "beta", "cauchy", "chi-squared", "exponential", "f", "gamma",
-    "log-normal", "lognormal", "logistic", "normal", "t", "weibull"
-  )
-  if (is.character(densfun.controls) && is.character(densfun.cases) &&
-    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns)) {
+  # Named distributions: the ROC curve of the fitted distributions is
+  # computed exactly from their CDFs over their whole support, at
+  # thresholds spread over the quantiles of both fits (integers for the
+  # discrete distributions: the vertices of the curve).
+  if (is.character(densfun.controls) && is.character(densfun.cases)) {
     fitted.fun <- function(prefix, densfun, fit) {
       f <- match.fun(sub("^d", prefix, densfuns.list[[densfun]]))
       dots <- list(...)[names(list(...)) %in% setdiff(names(formals(f)), c("q", "p", "lower.tail", "log.p"))]
