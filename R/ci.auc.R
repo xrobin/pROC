@@ -21,22 +21,38 @@ ci.auc <- function(...) {
   UseMethod("ci.auc")
 }
 
-ci.auc.formula <- function(formula, data, ...) {
+ci.auc.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.auc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.auc.roc(roc.default(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc_utils_roc_ci(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.auc(smooth.roc = roc, ...))
+  } else {
+    return(ci.auc(roc = roc, ...))
+  }
 }
 
 ci.auc.default <- function(response, predictor, ...) {
-  roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (inherits(response, "mv.multiclass.roc")) {
+    stop("CI of a multiclass ROC curve not implemented")
+  } else if (inherits(response, "mv.multiclass.auc")) {
+    stop("CI of a multiclass AUC not implemented")
+  }
+  roc <- roc_utils_roc_ci(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.auc(smooth.roc = roc, ...))
   } else {
@@ -56,11 +72,17 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               boot.stratified = TRUE,
                               reuse.auc = TRUE,
                               progress = getOption("pROCProgress", interactive()),
-                              cl = NULL,
                               parallel = FALSE,
-                              ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("conf.level must be within the interval [0,1].")
+                              cl = NULL,
+                              ...,
+                              method = NULL) {
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("conf.level must be a single number within the interval [0,1].")
+  }
+
+  # Smoothed curves are always bootstrapped
+  if (identical(pmatch(method, c("delong", "bootstrap")), 1L)) {
+    warning("DeLong method is not supported for smoothed ROCs. Using bootstrap instead.")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
@@ -72,17 +94,15 @@ ci.auc.smooth.roc <- function(smooth.roc,
 
   # We need an auc
   if (is.null(smooth.roc$auc) | !reuse.auc) {
-    smooth.roc$auc <- auc(smooth.roc, ...)
+    # Named: smooth = TRUE in ... (from ci.auc.default/formula) would
+    # partially match the smooth.roc argument of auc.smooth.roc
+    smooth.roc$auc <- auc(smooth.roc = smooth.roc, ...)
   }
 
-  # Check if called with density.cases or density.controls
-  if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls)) {
-    stop("Cannot compute CI of ROC curves smoothed with numeric density.controls and density.cases.")
-  }
+  roc_utils_stop_if_numeric_density(smooth.roc, "CI of")
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
 
   # do all the computations in fraction, re-transform in percent later if necessary
   percent <- smooth.roc$percent
@@ -96,16 +116,13 @@ ci.auc.smooth.roc <- function(smooth.roc,
     }
   }
 
-  # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-  auc.args <- attributes(smooth.roc$auc)[grep("partial.auc", names(attributes(smooth.roc$auc)))]
-  auc.args$allow.invalid.partial.auc.correct <- TRUE
-  auc.call <- as.call(c(utils::getS3method("auc", "smooth.roc"), auc.args))
-
+  boot.n <- roc_utils_check_boot_n(boot.n)
   aucs <- roc_utils_drop_na_replicates(
-    bootstrap.replicates(boot.n, bootstrap.smooth.auc,
+    bootstrap.replicates(boot.n, bootstrap.replicate,
       roc = roc, stratified = boot.stratified,
-      smooth.roc.call = smooth.roc.call, auc.call = auc.call, simplify = "vector", progress = progress, cl = cl
+      statistic = bootstrap.auc, auc.args = bootstrap.auc.args(smooth.roc$auc), na = NA_real_,
+      smoothing.args = smooth.roc$smoothing.args,
+      FUN.VALUE = NA_real_, progress = progress, cl = cl
     )
   )
   # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
@@ -131,11 +148,11 @@ ci.auc.roc <- function(roc,
                        boot.stratified = TRUE,
                        reuse.auc = TRUE,
                        progress = getOption("pROCProgress", interactive()),
-                       cl = NULL,
                        parallel = FALSE,
+                       cl = NULL,
                        ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("conf.level must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("conf.level must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
@@ -181,6 +198,7 @@ ci.auc.roc <- function(roc,
   if (method == "delong") {
     ci <- ci_auc_delong(roc, conf.level)
   } else {
+    boot.n <- roc_utils_check_boot_n(boot.n)
     ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }
 

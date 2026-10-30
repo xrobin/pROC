@@ -19,12 +19,12 @@
 # ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
 \S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
-cl = NULL, parallel=FALSE, ...)
-\S3method{ci.sp}{formula}(formula, data, ...)
+parallel=FALSE, cl = NULL, ...)
+\S3method{ci.sp}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }
 		   
@@ -36,6 +36,9 @@ cl = NULL, parallel=FALSE, ...)
   \item{response, predictor}{arguments for the \code{\link{roc}} function.}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
+  }
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.
   }
   \item{sensitivities}{on which sensitivities to evaluate the CI.
   }
@@ -69,8 +72,6 @@ cl = NULL, parallel=FALSE, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.sp.roc}
     when calling \code{ci.sp.default} or \code{ci.sp.formula}.
-    Arguments for \code{\link{txtProgressBar}} (only 
-    \code{char} and \code{style}) if applicable.
   }
 }
 
@@ -108,9 +109,8 @@ cl = NULL, parallel=FALSE, ...)
 }
 
 \section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-  curves smoothed with density.controls and density.cases.} is issued.
+  If the ROC curve was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 }
 
 \value{
@@ -130,7 +130,7 @@ cl = NULL, parallel=FALSE, ...)
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -141,11 +141,8 @@ cl = NULL, parallel=FALSE, ...)
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

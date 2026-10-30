@@ -21,25 +21,36 @@ ci.sp <- function(...) {
   UseMethod("ci.sp")
 }
 
-ci.sp.formula <- function(formula, data, ...) {
+ci.sp.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
     call = match.call()
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'ci.sp'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  ci.sp(roc(response, predictor, ci = FALSE, ...), ...)
+  roc <- roc(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
+  if (methods::is(roc, "smooth.roc")) {
+    return(ci.sp(smooth.roc = roc, ...))
+  } else {
+    return(ci.sp(roc = roc, ...))
+  }
 }
 
 ci.sp.default <- function(response, predictor, ...) {
-  if (methods::is(response, "multiclass.roc") || methods::is(response, "multiclass.auc")) {
+  if (inherits(response, c("multiclass.roc", "multiclass.auc", "mv.multiclass.roc", "mv.multiclass.auc"))) {
     stop("'ci.sp' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
+    return(roc) # NA or NaN from roc(): propagate it
+  }
   if (methods::is(roc, "smooth.roc")) {
     return(ci.sp(smooth.roc = roc, ...))
   } else {
@@ -53,11 +64,11 @@ ci.sp.smooth.roc <- function(smooth.roc,
                              boot.n = 2000,
                              boot.stratified = TRUE,
                              progress = getOption("pROCProgress", interactive()),
-                             cl = NULL,
                              parallel = FALSE,
+                             cl = NULL,
                              ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
@@ -66,26 +77,23 @@ ci.sp.smooth.roc <- function(smooth.roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
-  # Check if called with density.cases or density.controls
-  if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls)) {
-    stop("Cannot compute CI of ROC curves smoothed with numeric density.controls and density.cases.")
-  }
+  roc_utils_stop_if_numeric_density(smooth.roc, "CI of")
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
 
-  # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
-
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.sp,
-    roc = roc, stratified = boot.stratified, se = sensitivities,
-    smooth.roc.call = smooth.roc.call, simplify = "rows", progress = progress, cl = cl
+  # One NA per requested value for a replicate that cannot be computed
+  na <- rep(NA_real_, length(sensitivities))
+  boot.n <- roc_utils_check_boot_n(boot.n)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.sp, se = sensitivities, na = na, smoothing.args = smooth.roc$smoothing.args,
+    FUN.VALUE = na, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.sp", "ci", class(ci))
@@ -103,11 +111,11 @@ ci.sp.roc <- function(roc,
                       boot.n = 2000,
                       boot.stratified = TRUE,
                       progress = getOption("pROCProgress", interactive()),
-                      cl = NULL,
                       parallel = FALSE,
+                      cl = NULL,
                       ...) {
-  if (conf.level > 1 | conf.level < 0) {
-    stop("'conf.level' must be within the interval [0,1].")
+  if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
+    stop("'conf.level' must be a single number within the interval [0,1].")
   }
 
   if (roc_utils_is_perfect_curve(roc)) {
@@ -116,13 +124,18 @@ ci.sp.roc <- function(roc,
   progress <- roc_utils_normalise_progress(progress)
   roc_utils_warn_deprecated_parallel(parallel)
 
-  perfs <- bootstrap.replicates(boot.n, bootstrap.sp,
-    roc = roc, stratified = boot.stratified, se = sensitivities, simplify = "rows", progress = progress, cl = cl
+  # One NA per requested value for a replicate that cannot be computed
+  na <- rep(NA_real_, length(sensitivities))
+  boot.n <- roc_utils_check_boot_n(boot.n)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.sp, se = sensitivities, na = na,
+    FUN.VALUE = na, simplify = "rows", progress = progress, cl = cl
   )
 
-  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L)
+  perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(sensitivities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)))
+  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
   rownames(ci) <- paste(sensitivities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.sp", "ci", class(ci))

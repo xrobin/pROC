@@ -200,3 +200,58 @@ test_that("auc.formula behaves", {
   auc2 <- auc(aSAH[21:113, ]$outcome[aSAH[21:113, ]$gender == "Female"], aSAH[21:113, ]$ndka[aSAH[21:113, ]$gender == "Female"])
   expect_equal(as.numeric(auc1), as.numeric(auc2))
 })
+
+test_that("has.partial.auc requires a partial.auc of length 2", {
+  a <- auc(r.s100b)
+  expect_false(has.partial.auc(a))
+  expect_true(has.partial.auc(auc(r.s100b, partial.auc = c(1, 0.8))))
+  attr(a, "partial.auc") <- 0.8
+  expect_false(has.partial.auc(a))
+  attr(a, "partial.auc") <- c(1, 0.9, 0.8)
+  expect_false(has.partial.auc(a))
+})
+
+test_that("auc rejects out of range partial.auc bounds", {
+  expect_error(auc(r.s100b, partial.auc = c(1, -0.2)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(1.2, 0.8)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b, partial.auc = c(-0.1, -0.5)), "within \\[0, 1\\]")
+  expect_error(auc(r.s100b.percent, partial.auc = c(100, 120)), "within \\[0, 100\\]")
+  expect_error(auc(r.s100b.percent, partial.auc = c(1, 0.8), partial.auc.focus = "se"), NA)
+  # Bounds at the limits are fine
+  expect_equal(as.numeric(auc(r.s100b, partial.auc = c(1, 0))), as.numeric(auc(r.s100b)))
+  expect_equal(as.numeric(auc(r.s100b.percent, partial.auc = c(100, 0))), as.numeric(auc(r.s100b.percent)))
+})
+
+test_that("auc returns NA for NA partial.auc bounds", {
+  a <- auc(r.s100b, partial.auc = c(NA, 0.8))
+  expect_identical(as.numeric(a), NA_real_)
+  expect_identical(attr(a, "partial.auc"), c(0.8, NA))
+  expect_true(has.partial.auc(a))
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(NA, 0.8), partial.auc.correct = TRUE)), NA_real_)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, NA))), NA_real_)
+  # The range check still applies to the other bound
+  expect_error(auc(r.s100b, partial.auc = c(NA, 1.2)), "within \\[0, 1\\]")
+})
+
+test_that("auc returns NaN for equal partial.auc bounds with the correction", {
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8))), 0)
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8), partial.auc.correct = TRUE)), NaN)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, 80), partial.auc.correct = TRUE)), NaN)
+})
+
+test_that("auc stores the partial AUC specification in a canonical form", {
+  set.seed(42)
+  y <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  a <- c(1, 2, 3, 5, 7, 4, 6, 8, 9, 10)
+  r <- roc(y, a, quiet = TRUE)
+  # partial.auc.correct = 1 is the corrected pAUC, and printed so
+  a1 <- expect_no_warning(auc(r, partial.auc = c(1, 0.8), partial.auc.correct = 1))
+  aT <- auc(r, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)
+  expect_identical(a1, aT)
+  expect_match(capture.output(print(a1)), "^Corrected partial area", all = FALSE)
+  # integer bounds are the same specification as double bounds
+  p1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, partial.auc = c(100, 80), quiet = TRUE)
+  p2 <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE, partial.auc = c(100L, 80L), quiet = TRUE)
+  expect_identical(attributes(p1$auc)[c("partial.auc", "partial.auc.correct")], attributes(p2$auc)[c("partial.auc", "partial.auc.correct")])
+  expect_no_warning(roc.test(p1, p2, boot.n = 2), message = "Different AUC specifications")
+})

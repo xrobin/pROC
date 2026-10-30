@@ -32,9 +32,9 @@ test_that("progress = FALSE draws nothing", {
 
 test_that("the bar does not change the result", {
   set.seed(42)
-  with.bar <- suppressWarnings(utils::capture.output(
+  with.bar <- utils::capture.output(
     quiet <- ci.auc(r.wfns, method = "bootstrap", boot.n = B, progress = TRUE)
-  ))
+  )
   set.seed(42)
   without.bar <- ci.auc(r.wfns, method = "bootstrap", boot.n = B, progress = FALSE)
   expect_equal(as.numeric(quiet), as.numeric(without.bar))
@@ -52,8 +52,9 @@ test_that("every bootstrap entry point accepts progress", {
                                    progress = TRUE)), "100%")
   expect_match(progress_output(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = B,
                                    progress = TRUE)), "100%")
-  expect_match(progress_output(suppressWarnings(
-    roc.test(r.wfns, r.ndka, method = "bootstrap", boot.n = B, progress = TRUE))), "100%")
+  expect_match(progress_output(
+    roc.test(r.wfns, r.ndka, method = "bootstrap", boot.n = B, progress = TRUE)
+  ), "100%")
 })
 
 

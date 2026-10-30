@@ -21,7 +21,7 @@ lines.roc <- function(x, ...) {
   UseMethod("lines.roc")
 }
 
-lines.roc.formula <- function(x, data, subset, na.action, ...) {
+lines.roc.formula <- function(x, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   names(call)[2] <- "formula" # forced to be x by definition of lines
@@ -30,22 +30,26 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.name) > 1) {
+  if (length(roc.data$predictor.names) > 1) {
     stop("Only one predictor supported in 'lines.roc'.")
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ...)
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
+  }
   lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  invisible(roc)
+  invisible(roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name))
 }
 
 lines.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, ...)
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
+  }
   lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  invisible(roc)
+  invisible(roc_utils_set_call_names(roc, match.call()))
 }
 
 lines.roc.smooth.roc <- lines.smooth.roc <- function(x, ...) {

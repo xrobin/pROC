@@ -14,3 +14,18 @@ test_that("geom_text_auc includes ci.auc when present", {
   p <- ggroc(roc_ci) + geom_text_auc(roc_ci)
   expect_true("GeomText" %in% layer_geom_classes(p))
 })
+
+test_that("geom_text_auc gives a clear error on a curve without AUC", {
+  r <- roc(aSAH$outcome, aSAH$s100b, auc = FALSE, quiet = TRUE)
+  expect_error(geom_text_auc(r), "'data' has no 'auc'")
+})
+
+test_that("geom_text_auc(roc, ci = ) uses the given ci.auc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  ci1 <- ci.auc(r.s100b)
+  expect_identical(ggplot2::layer_data(ggroc(r.s100b) + geom_text_auc(r.s100b, ci = ci1), 2)$label, ggroc_auc_label(r.s100b$auc, ci1))
+  # it takes precedence over the stored CI
+  roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
+  ci90 <- ci.auc(roc_ci, conf.level = 0.9)
+  expect_identical(ggplot2::layer_data(ggroc(roc_ci) + geom_text_auc(roc_ci, ci = ci90), 2)$label, ggroc_auc_label(roc_ci$auc, ci90))
+})

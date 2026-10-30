@@ -242,7 +242,7 @@ test_that("an exact keyword that is also a level warns and keeps the keyword", {
   pred <- ordered(c("low", "low", "best", "high", "best", "high", "high", "best"), levels = lv)
   r <- roc(resp, pred, quiet = TRUE)
   expect_warning(co <- coords(r, "best"), "both a keyword and a threshold level")
-  expect_equal(nrow(co), nrow(suppressWarnings(coords(r, "bes"))))
+  expect_equal(nrow(co), nrow(coords(r, "bes")))
   co_level <- coords(r, ordered("best", levels = lv), input = "threshold")
   expect_equal(as.character(co_level$threshold), "best")
   expect_equal(nrow(co_level), 1L)
@@ -273,10 +273,14 @@ test_that("roc(smooth=TRUE) with a non-binormal method is rejected for ordered p
 
 test_that("transpose with numeric-only ret stays numeric on an ordered ROC", {
   r <- roc(aSAH$outcome, text.levels, quiet = TRUE)
-  suppressWarnings({
-    obtained <- coords(r, "all", ret = c("specificity", "sensitivity"), transpose = TRUE)
-    obtained_m <- coords(r, "all", ret = c("specificity", "sensitivity"), as.matrix = TRUE)
-  })
+  expect_warning(
+    obtained <- coords(r, "all", ret = c("specificity", "sensitivity"), transpose = TRUE),
+    "'transpose=TRUE' is deprecated"
+  )
+  expect_warning(
+    obtained_m <- coords(r, "all", ret = c("specificity", "sensitivity"), as.matrix = TRUE),
+    "'as.matrix' is deprecated"
+  )
   expect_type(obtained, "double")
   expect_type(obtained_m, "double")
 })
@@ -292,9 +296,63 @@ test_that("ci.coords default ret omits threshold on an ordered ROC", {
 test_that("unknown and missing threshold labels have clear messages", {
   r <- roc(aSAH$outcome, text.levels, quiet = TRUE, direction = "<")
   expect_error(coords(r, "-Inf", input = "threshold"), "Inf\" sentinel")
-  expect_error(coords(r, c("low", NA), input = "threshold"), "Missing values")
+  # A missing label gives a NA row, as a missing value of any other input
+  expect_true(all(is.na(coords(r, c("low", NA), input = "threshold")[2, ])))
 })
 
 test_that("coords on a numeric ROC restores the match.arg error", {
   expect_error(coords(r.ndka, "foo"), "arg")
+})
+
+test_that("an NA level of an ordered predictor is a level like the others, as in 1.19.1", {
+  # Ranked at its position in levels(), as base R does (addNA() puts it last)
+  resp <- c(0, 0, 0, 1, 1, 1)
+  o <- addNA(ordered(c("a", "b", NA, "a", "b", "b")))
+  expected.se <- c(1, 2 / 3, 0, 0)
+  expected.sp <- c(0, 1 / 3, 2 / 3, 1)
+  r <- roc(resp, o, quiet = TRUE)
+  expect_equal(as.numeric(auc(r)), 7 / 18) # 0.3889, as in 1.19.1
+  expect_equal(r$sensitivities, expected.se)
+  expect_equal(r$specificities, expected.sp)
+  expect_identical(levels(r$thresholds), c("a", "b", NA, "Inf"))
+  # The same curve as with a regular level in place of NA
+  z <- roc(resp, ordered(c("a", "b", "z", "a", "b", "b")), quiet = TRUE)
+  expect_identical(r$sensitivities, z$sensitivities)
+  expect_identical(r$specificities, z$specificities)
+  # na.rm = FALSE and controls/cases give the same curve
+  r.na <- roc(resp, o, na.rm = FALSE, quiet = TRUE)
+  expect_equal(as.numeric(auc(r.na)), 7 / 18)
+  expect_equal(r.na$sensitivities, expected.se)
+  rcc <- roc(controls = o[1:3], cases = o[4:6], quiet = TRUE)
+  expect_equal(as.numeric(auc(rcc)), 7 / 18)
+  expect_equal(rcc$specificities, expected.sp)
+  # Numeric labels are ranked by level too (1.19.1 converted them to numbers
+  # and dropped the NA level: 0.5833)
+  expect_equal(as.numeric(auc(roc(resp, addNA(ordered(c(1, 2, NA, 1, 2, 2))), quiet = TRUE))), 7 / 18)
+  # A real NA is still a missing value
+  expect_equal(as.numeric(auc(roc(resp, ordered(c("a", "b", NA, "a", "b", "b")), quiet = TRUE))), 0.5833, tolerance = 1e-4)
+})
+
+test_that("curves of ordered predictors saved by pROC 1.19 ask to be rebuilt where their thresholds are read", {
+  # roc(aSAH$outcome, aSAH$wfns) built and saved with saveRDS() by pROC 1.19.1:
+  # numeric thresholds (the level codes), ordered original.predictor
+  old <- readRDS(test_path("roc-wfns-1.19.1.rds"))
+  expect_true(is.numeric(old$thresholds))
+  expect_true(is.ordered(old$original.predictor))
+
+  expect_error(coords(old, 2.5), "built by pROC 1.19 or earlier", fixed = TRUE)
+  expect_error(coords(old, "3"), "built by pROC 1.19 or earlier", fixed = TRUE)
+  expect_error(ci.thresholds(old, thresholds = 2.5), "built by pROC 1.19 or earlier", fixed = TRUE)
+
+  # What doesn't read the thresholds as values still works
+  expect_equal(as.numeric(ci.auc(old)), as.numeric(ci.auc(r.wfns)))
+  best.old <- coords(old, "best")
+  best.new <- coords(r.wfns, "best")
+  expect_equal(best.old$specificity, best.new$specificity)
+  expect_equal(best.old$sensitivity, best.new$sensitivity)
+
+  # The rebuilt curve is the same
+  rebuilt <- roc(old$original.response, old$original.predictor, quiet = TRUE)
+  expect_equal(as.numeric(auc(rebuilt)), as.numeric(auc(old)))
+  expect_equal(coords(rebuilt, "3"), coords(r.wfns, "3"))
 })

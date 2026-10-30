@@ -15,16 +15,27 @@
 
 \details{
   The basic unit of the pROC package is the \code{\link{roc}} function. It
-  will build a ROC curve, smooth it if requested (if \code{smooth=TRUE}),
-  compute the AUC (if \code{auc=TRUE}), the confidence interval (CI) if 
-  requested (if \code{ci=TRUE}) and plot the curve if requested (if
-  \code{plot=TRUE}). 
+  builds a ROC curve, which is then passed to the other functions:
+  \code{\link[=smooth.roc]{smooth}} to smooth it, \code{\link{auc}} to
+  compute the (partial) area under the curve, \code{\link{ci}} for a
+  confidence interval (CI), \code{\link{coords}} for the coordinates of
+  the curve and \code{\link[=plot.roc]{plot}} to plot it:
 
-  The \code{\link{roc}} function will call \code{\link[=smooth.roc]{smooth}},
-  \code{\link{auc}},
-  \code{\link{ci}} and \code{\link{plot}} as necessary. See these
-  individual functions for the arguments that can be passed to them
-  through \code{\link{roc}}. These function can be called separately.
+  \preformatted{
+  rocobj <- roc(aSAH$outcome, aSAH$s100b)
+  auc(rocobj, partial.auc = c(1, 0.8))
+  ci(rocobj)
+  plot(smooth(rocobj))
+  }
+
+  Each argument then goes to the function it belongs to, and each
+  function documents its own arguments.
+
+  As a shortcut, \code{\link{roc}} can also smooth the curve
+  (\code{smooth=TRUE}), compute the AUC (\code{auc=TRUE}, the default), the
+  CI (\code{ci=TRUE}) and plot the curve (\code{plot=TRUE}), with the
+  arguments of these functions passed through its \code{...}. See
+  \code{\link{roc}} for the limits of this shortcut.
 
   Two paired (that is \code{\link{roc}} objects with the same
   \code{response}) or unpaired (with different \code{response}) ROC
@@ -83,7 +94,7 @@
 }
 
 \section{Dataset}{
-  This package comes with a dataset of 141 patients with aneurysmal
+  This package comes with a dataset of 113 patients with aneurysmal
   subarachnoid hemorrhage: \code{\link{aSAH}}.
 }
 
@@ -137,7 +148,7 @@ aSAH \%>\%
   cases or controls.
 
   The number of bootstrap replicates is controlled by \code{boot.n}. Higher numbers will give a more precise estimate of the significance tests and confidence intervals
-  but take more time to compute. 2000 is recommanded by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
+  but take more time to compute. 2000 is recommended by Carpenter and Bithell (2000) for confidence intervals. In our experience this is sufficient for a good estimation of the 
   first significant digit only, so we recommend the use of 10000 bootstrap replicates to obtain a good estimate of the second significant digit whenever possible.
 
 	\subsection{Speed}{
@@ -168,7 +179,9 @@ aSAH \%>\%
 	  functions, or set the default for the session with
 	  \code{options(pROCProgress = FALSE)}. The bar costs essentially nothing:
 	  it is redrawn about a hundred times over the whole bootstrap, not once per
-	  replicate.
+	  replicate. When the bootstrap runs in parallel (see \code{cl} below), no
+	  bar is drawn: a single message such as \dQuote{Bootstrapping 2000
+	  replicates on 2 workers...} is printed instead.
 	}
 
 	\subsection{Parallel processing}{
@@ -215,7 +228,7 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
 }
 
 \references{
-  James Carpenter and John Bithell (2000) ``Bootstrap condence intervals:
+  James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
@@ -238,16 +251,13 @@ Maintainer: Xavier Robin <pROC-cran@xavamail.net>
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 
   DOI: \doi{10.1109/LSP.2014.2337313}.
-  
-  Hadley Wickham (2011) ``The Split-Apply-Combine Strategy for Data Analysis''. \emph{Journal of Statistical Software}, \bold{40}, 1--29.
-  URL: \doi{10.18637/jss.v040.i01}.
 }
 
 \seealso{

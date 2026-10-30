@@ -19,7 +19,7 @@
 
 plot.ci.thresholds <- function(x, length = .01 * ifelse(attr(x, "roc")$percent, 100, 1), col = par("fg"), ...) {
   roc_utils_stop_if_no_device("plot.ci.thresholds")
-  bounds <- cbind(x$sp, x$se)
+  bounds <- cbind(x$specificity, x$sensitivity)
   apply(bounds, 1, function(x, ...) {
     suppressWarnings(segments(x[2], x[4], x[2], x[6], col = col, ...))
     suppressWarnings(segments(x[2] - length, x[4], x[2] + length, x[4], col = col, ...))
@@ -45,7 +45,9 @@ plot.ci.sp <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
     if (length(x[, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[, 1], 0, rev(x[, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), c(0, attr(x, "sensitivities"), 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "sensitivities")), 0), col = col, ...))
+    # Draw the band by increasing sensitivity, whatever order the CI was computed in
+    o <- order(attr(x, "sensitivities"))
+    suppressWarnings(polygon(c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[o, 1], 0, rev(x[o, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), c(0, attr(x, "sensitivities")[o], 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "sensitivities")[o]), 0), col = col, ...))
     if (!no.roc) {
       plot(attr(x, "roc"), add = TRUE)
     }
@@ -68,7 +70,9 @@ plot.ci.se <- function(x, type = c("bars", "shape"), length = .01 * ifelse(attr(
     if (length(x[, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(0, attr(x, "specificities"), 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "specificities")), 0), c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[, 1], 0, rev(x[, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), col = col, ...))
+    # Draw the band by increasing specificity, whatever order the CI was computed in
+    o <- order(attr(x, "specificities"))
+    suppressWarnings(polygon(c(0, attr(x, "specificities")[o], 1 * ifelse(attr(x, "roc")$percent, 100, 1), rev(attr(x, "specificities")[o]), 0), c(1 * ifelse(attr(x, "roc")$percent, 100, 1), x[o, 1], 0, rev(x[o, 3]), 1 * ifelse(attr(x, "roc")$percent, 100, 1)), col = col, ...))
     if (!no.roc) {
       plot(attr(x, "roc"), add = TRUE)
     }
@@ -104,9 +108,16 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
   if (length(x) > 1) {
     warning(sprintf("'ci.coords' object contains multiple coordinates, only %s will be plotted", names(x)[1]))
   }
+  if (!is.numeric(attr(x, "x"))) {
+    stop(sprintf("Only 'ci.coords' with a numeric 'x' can be plotted, not '%s'.", paste(attr(x, "x"), collapse = "', '")))
+  }
   if (is.null(length)) {
     x_range <- range(attr(x, "x"))
     length <- (x_range[2] - x_range[1]) / length(attr(x, "x")) / 5
+    if (!is.finite(length) || length == 0) {
+      # Single x: no range to scale on, use 1% of the plot's x axis
+      length <- abs(diff(par("usr")[1:2])) / 100
+    }
   }
   if (type == "bars") {
     x_val <- attr(x, "x")
@@ -117,7 +128,32 @@ plot.ci.coords <- function(x, type = c("bars", "shape"), length = NULL, col = if
     if (length(x[[1]][, 1]) < 15) {
       warning("Low definition shape.")
     }
-    suppressWarnings(polygon(c(attr(x, "x"), rev(attr(x, "x"))), c(x[[1]][, 1], rev(x[[1]][, 3])), col = col, ...))
+    # Draw the band by increasing x, whatever order the CI was computed in
+    o <- order(attr(x, "x"))
+    suppressWarnings(polygon(c(attr(x, "x")[o], rev(attr(x, "x")[o])), c(x[[1]][o, 1], rev(x[[1]][o, 3])), col = col, ...))
+  }
+  invisible(x)
+}
+
+# Draw a ci.coords on the axes of a ROC plot (x = specificity, y = sensitivity)
+# with plot.ci.coords. It draws attr(x, "x") horizontally and the first 'ret'
+# vertically, which maps onto the ROC axes only for the sensitivity at given
+# specificities. Other coordinates are skipped with a warning.
+roc_utils_plot_ci_coords_on_roc <- function(x, type, col, ...) {
+  ret.se <- NA
+  if (attr(x, "input") %in% c("specificity", "tnr")) {
+    ret.se <- intersect(names(x), c("sensitivity", "tpr", "recall"))[1]
+  }
+  skipped <- setdiff(names(x), ret.se)
+  if (length(skipped) > 0) {
+    warning(simpleWarning(sprintf(
+      "Only the sensitivity at given specificities of a 'ci.coords' can be drawn on a ROC curve, not '%s' with input '%s'.",
+      paste(skipped, collapse = "', '"), attr(x, "input")
+    ), call = sys.call(-1)))
+  }
+  if (!is.na(ret.se)) {
+    x[skipped] <- NULL
+    plot.ci.coords(x, type = type, col = col, ...)
   }
   invisible(x)
 }
