@@ -17,3 +17,4 @@ codecov.yml
 ^last\.dump\.rda$
 ^bin$
 ^tools$
+^CLAUDE\.md$

@@ -187,35 +187,42 @@ bootstrap.replicates.parallel <- function(cluster, boot.n, FUN, ...) {
   # quote = TRUE matters. The smoothing.args of a smoothed curve can hold
   # unevaluated expressions (such as a plotmath title), and do.call() would
   # otherwise evaluate them here instead of passing them on.
-  worker <- function(i) {
-    # The cluster may be the user's, its generator seeded for their own work
-    # (clusterSetRNGStream()): leave it as it was, as on the master.
-    had.seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
-    if (had.seed) {
-      worker.seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
-    }
-    worker.kind <- RNGkind()
-    on.exit({
-      # Set only the kinds the replicate changed: setting an unchanged
-      # sample.kind = "Rounding" again would repeat its warning
-      kinds <- list(kind = worker.kind[1], normal.kind = worker.kind[2], sample.kind = worker.kind[3])
-      changed <- RNGkind() != worker.kind
-      if (any(changed)) {
-        do.call(RNGkind, kinds[changed])
-      }
+  #
+  # The worker is made by a factory whose enclosure is the global environment,
+  # so its own environment holds the factory's three arguments and nothing
+  # else. They are forced so that no promise pointing back here is shipped.
+  make.worker <- function(fun, fun.args, rng.streams) {
+    force(fun)
+    force(fun.args)
+    force(rng.streams)
+    function(i) {
+      # The cluster may be the user's, its generator seeded for their own work
+      # (clusterSetRNGStream()): leave it as it was, as on the master.
+      had.seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
       if (had.seed) {
-        assign(".Random.seed", worker.seed, envir = globalenv())
-      } else {
-        rm(".Random.seed", envir = globalenv())
+        worker.seed <- get(".Random.seed", envir = globalenv(), inherits = FALSE)
       }
-    })
-    assign(".Random.seed", rng.streams[[i]], envir = globalenv())
-    do.call(fun, c(list(i), fun.args), quote = TRUE)
+      worker.kind <- RNGkind()
+      on.exit({
+        # Set only the kinds the replicate changed: setting an unchanged
+        # sample.kind = "Rounding" again would repeat its warning
+        kinds <- list(kind = worker.kind[1], normal.kind = worker.kind[2], sample.kind = worker.kind[3])
+        changed <- RNGkind() != worker.kind
+        if (any(changed)) {
+          do.call(RNGkind, kinds[changed])
+        }
+        if (had.seed) {
+          assign(".Random.seed", worker.seed, envir = globalenv())
+        } else {
+          rm(".Random.seed", envir = globalenv())
+        }
+      })
+      assign(".Random.seed", rng.streams[[i]], envir = globalenv())
+      do.call(fun, c(list(i), fun.args), quote = TRUE)
+    }
   }
-  environment(worker) <- list2env(
-    list(fun = FUN, fun.args = list(...), rng.streams = streams),
-    parent = globalenv()
-  )
+  environment(make.worker) <- globalenv()
+  worker <- make.worker(FUN, list(...), streams)
   parLapply(cluster, seq_len(boot.n), worker)
 }
 
