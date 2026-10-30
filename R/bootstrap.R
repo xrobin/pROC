@@ -448,7 +448,7 @@ roc_utils_drop_na_replicates <- function(x, margin = 1L, ignore = FALSE) {
   }
   warning(sprintf(
     "%i NA value(s) produced during bootstrap were ignored.", sum(bad)
-  ))
+  ), call. = FALSE)
   if (!is.matrix(x)) {
     x[!bad]
   } else if (margin == 1L) {

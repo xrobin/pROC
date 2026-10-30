@@ -268,6 +268,14 @@ test_that("non-stratified ci.auc and var drop the resamples that lose the contro
   expect_true(is.numeric(v))
 })
 
+test_that("the bootstrap NA warning does not name an internal call", {
+  # 2 controls out of 10: some of 200 resamples always lose both (none does with p < 1e-9)
+  r <- roc(c(0, 0, rep(1, 8)), c(1, 3, 2, 4:10), quiet = TRUE)
+  w <- tryCatch(ci.auc(r, method = "bootstrap", boot.stratified = FALSE, boot.n = 200), warning = function(w) w)
+  expect_s3_class(w, "warning")
+  expect_null(conditionCall(w))
+})
+
 test_that("non-stratified bootstraps of ordered predictors drop the resamples that lose a class", {
   set.seed(42)
   pred <- factor(c("a", "c", "b", "b", "c", "c", "d", "d", "d", "d"), levels = c("a", "b", "c", "d"), ordered = TRUE)
