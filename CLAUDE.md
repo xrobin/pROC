@@ -97,7 +97,8 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 - **P5:** test hygiene, as in "Tests" and "Bootstrap tests" above.
 - **P6:** classes from packages pROC doesn't depend on (e.g. bit64's integer64) are out of scope.
 - **P7:** statistical changes need a source that was actually read, quoted with page and equation in the commit message. If a source is inaccessible, ask the maintainer for it.
-- **P8:** a bug that only occurs through a shortcut, while the modular call works, is fixed only if it is a regression from the release or breaks a documented example. Otherwise document the modular call.
+- **P8:** the shortcuts share one `...` between several functions. Don't add routing machinery (allow-lists, filters, re-matching of argument names) to make an argument combination work through a shortcut when the modular call works: document the modular call instead.
+  - A local fix in the shortcut's own code (no new routing, no copies of existing code) is fine. It is preferred when it makes twin entry points (default/formula, `ci`/`ci.auc`) behave the same.
   - The shortcuts: `roc(smooth/ci/plot=TRUE)`, the curve-building default and formula methods of `auc`, `ci*`, `plot.roc`, `lines.roc` and `roc.test`, and `roc_`/`roc.data.frame` passing arguments on.
 
 ### Arguments and behaviour

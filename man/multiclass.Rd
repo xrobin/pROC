@@ -7,12 +7,12 @@
  Multi-class AUC
 }
 \description{
-  This function builds builds multiple ROC curve to compute the
-  multi-class AUC as defined by Hand and Till.
+  This function builds multiple ROC curves to compute a multi-class
+  AUC, following Hand and Till (2001).
 }
 \usage{
 multiclass.roc(...)
-\S3method{multiclass.roc}{formula}(formula, data, ...)
+\S3method{multiclass.roc}{formula}(formula, data, ..., subset, na.action)
 \S3method{multiclass.roc}{default}(response, predictor,
 levels=base::levels(as.factor(response)), 
 percent=FALSE, direction = c("auto", "<", ">"), ...)
@@ -31,6 +31,9 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
   \item{formula}{a formula of the type \code{response~predictor}.}
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
+  }
   \item{levels}{the value of the response for controls and cases
     respectively. In contrast with \code{levels} argument to
     \code{\link{roc}}, all the levels are used and
@@ -54,7 +57,7 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
   }
 }
 \details{
-This function performs multiclass AUC as defined by Hand and Till
+This function computes a multiclass AUC following Hand and Till
 (2001). A multiclass AUC is a mean of several \code{\link{auc}} and
 cannot be plotted. Only AUCs can be computed for such curves.
 Confidence intervals, standard deviation, smoothing and
@@ -67,30 +70,38 @@ I the multivariate case, a \code{\link{matrix}} or \code{\link{data.frame}}
 is passed as \code{predictor}. The columns must be named according to the
 levels of the \code{response}.
 
+Only the multivariate case, with one column of predictions per class,
+computes the measure \eqn{M} defined by Hand and Till. In the univariate
+case, a two-class ROC curve is built on the single predictor for each
+pair of levels, and the multi-class AUC is the mean of their AUCs, in
+the form of Hand and Till's equation 7. With the default
+\code{direction="auto"}, the direction of each of these curves is
+chosen separately for each pair of levels (see \code{\link{roc}}).
+
 This function has been much less tested than the rest of the package and
 is more subject to bugs. Please report them if you find one.
 }
 
 \value{
-  If \code{predictor} is a vector, a list of class \dQuote{multiclass.roc} 
-  (univariate) or \dQuote{mv.multiclass.roc} (multivariate), 
-  with the following fields: 
-  \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
-    defined in \code{\link{auc}}. Note that this is not the standard AUC
-    but the multi-class AUC as defined by Hand and Till.
+  A list of class \dQuote{multiclass.roc} if \code{predictor} is a vector
+  (univariate), or \dQuote{mv.multiclass.roc} if it is a matrix or
+  data.frame (multivariate), with the following fields: 
+  \item{auc}{the multi-class AUC, always computed: a numeric of class
+    \dQuote{multiclass.auc} (univariate) or \dQuote{mv.multiclass.auc}
+    (multivariate). Note that this is not the standard AUC
+    but a multi-class AUC (see \sQuote{Details}).
   }
-  \item{ci}{if called with \code{ci=TRUE}, a numeric of class \dQuote{ci} as
-    defined in \code{\link{ci}}.
+  \item{response}{the response vector as passed in argument.
   }
-  \item{response}{the response vector as passed in argument. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
+  \item{predictor}{the predictor vector, matrix or data.frame as passed in argument.
   }
-  \item{predictor}{the predictor vector as passed in argument. If
-    \code{NA} values were removed, a \code{na.action} attribute similar
-    to \code{\link{na.omit}} stores the row numbers.
-  }
-  \item{levels}{the levels of the response as defined in argument.}
+  \item{levels}{the levels of the response used to build the curves: the
+    levels defined in argument, without those that were ignored (see
+    \sQuote{Warnings}).}
+  \item{rocs}{the pairwise ROC curves: a list of \dQuote{\link{roc}}
+    objects (univariate), or a list named by pair of levels (such as
+    \dQuote{a/b}) of two \dQuote{\link{roc}} objects each, built on the
+    predictor columns of the two levels (multivariate).}
   \item{percent}{if the sensitivities, specificities and AUC are
     reported in percent, as defined in argument.
   }
@@ -100,9 +111,8 @@ is more subject to bugs. Please report them if you find one.
 }
 
 \section{Warnings}{
-  If \code{response} is an ordered factor and one of the levels
-  specified in \code{levels} is missing, a warning is issued and the
-  level is ignored.
+  If one of the levels specified in \code{levels} has no observation in
+  \code{response}, a warning is issued and the level is ignored.
 }
 
 \references{

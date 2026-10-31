@@ -44,8 +44,9 @@ cov.roc <- function(roc1, roc2,
                     reuse.auc = TRUE,
                     boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
                     progress = getOption("pROCProgress", interactive()),
-                    cl = NULL,
                     parallel = FALSE,
+                    paired = NULL,
+                    cl = NULL,
                     ...) {
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
@@ -63,55 +64,40 @@ cov.roc <- function(roc1, roc2,
 
   # store which objects are smoothed, and how
   smoothing.args <- list()
-  if ("smooth.roc" %in% class(roc1)) {
+  smooth1 <- methods::is(roc1, "smooth.roc")
+  if (smooth1) {
+    roc_utils_stop_if_numeric_density(roc1, "the covariance of")
     smoothing.args$roc1 <- roc1$smoothing.args
-    smoothing.args$roc1$smooth <- TRUE
-    roc1 <- attr(roc1, "roc")
-    # oroc1$auc <- roc1$auc
-  } else {
-    smoothing.args$roc1 <- list(smooth = FALSE)
+    roc1 <- roc_utils_unsmooth(roc1)
   }
-  if ("smooth.roc" %in% class(roc2)) {
+  smooth2 <- methods::is(roc2, "smooth.roc")
+  if (smooth2) {
+    roc_utils_stop_if_numeric_density(roc2, "the covariance of")
     smoothing.args$roc2 <- roc2$smoothing.args
-    smoothing.args$roc2$smooth <- TRUE
-    roc2 <- attr(roc2, "roc")
-    # oroc2$auc <- roc2$auc
-  } else {
-    smoothing.args$roc2 <- list(smooth = FALSE)
+    roc2 <- roc_utils_unsmooth(roc2)
   }
 
   # then determine whether the rocs are paired or not
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
+  rocs.are.paired <- roc_utils_paired(roc1, roc2, paired)
   if (!rocs.are.paired) {
     message("ROC curves are unpaired.")
     return(0)
   }
+  # use the curves without the observations missing in either of them
+  roc1 <- attr(rocs.are.paired, "roc1")
+  roc2 <- attr(rocs.are.paired, "roc2")
 
   # check that the AUC was computed, or do it now
   if (is.null(roc1$auc) | !reuse.auc) {
-    if (smoothing.args$roc1$smooth) {
-      roc1$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc1), smoothing.args$roc1)), ...)
-      # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
-      # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
-      # This removal should be safe because we always use smoothing.args with roc1 in the following processing,
-      # however it is a potential source of bugs.
-      smoothing.args$roc1$partial.auc <- NULL
-      smoothing.args$roc1$partial.auc.correct <- NULL
-      smoothing.args$roc1$partial.auc.focus <- NULL
+    if (smooth1) {
+      roc1$auc <- auc(smooth.roc = roc_utils_resmooth(roc1, smoothing.args$roc1), ...)
     } else {
       roc1$auc <- auc(roc1, ...)
     }
   }
   if (is.null(roc2$auc) | !reuse.auc) {
-    if (smoothing.args$roc2$smooth) {
-      roc2$auc <- auc(smooth.roc = do.call("smooth.roc", c(list(roc = roc2), smoothing.args$roc2)), ...)
-      # remove partial.auc.* arguments that are now in roc1$auc and that will mess later processing
-      # (formal argument "partial.auc(.*)" matched by multiple actual arguments)
-      # This removal should be safe because we always use smoothing.args with roc2 in the following processing,
-      # however it is a potential source of bugs.
-      smoothing.args$roc2$partial.auc <- NULL
-      smoothing.args$roc2$partial.auc.correct <- NULL
-      smoothing.args$roc2$partial.auc.focus <- NULL
+    if (smooth2) {
+      roc2$auc <- auc(smooth.roc = roc_utils_resmooth(roc2, smoothing.args$roc2), ...)
     } else {
       roc2$auc <- auc(roc2, ...)
     }
@@ -129,10 +115,10 @@ cov.roc <- function(roc1, roc2,
   # Check the method
   if (missing(method) | is.null(method)) {
     # determine method if missing
-    if (has.partial.auc(roc1)) {
+    if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
-    } else if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+    } else if (smooth1 || smooth2) {
       # smoothing in one or both: bootstrap
       method <- "bootstrap"
     } else if (roc1$direction != roc2$direction) {
@@ -148,14 +134,14 @@ cov.roc <- function(roc1, roc2,
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
       }
-      if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+      if (smooth1 || smooth2) {
         stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if (roc1$direction != roc2$direction) {
         warning("DeLong method should not be applied to ROC curves with a different direction.")
       }
     } else if (method == "obuchowski") {
-      if (smoothing.args$roc1$smooth || smoothing.args$roc2$smooth) {
+      if (smooth1 || smooth2) {
         stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }
       if ((has.partial.auc(roc1) && attr(roc1$auc, "partial.auc.focus") == "sensitivity") ||
@@ -184,17 +170,13 @@ cov.roc <- function(roc1, roc2,
       cov <- cov * (100^2)
     }
   } else if (method == "obuchowski") {
-    cov <- cov_roc_obuchowski(roc1, roc2) / length(roc1$cases)
+    # the computations are done in fraction, re-transformed in percent below
+    cov <- cov_roc_obuchowski(roc_utils_unpercent(roc1), roc_utils_unpercent(roc2)) / length(roc1$cases)
 
     if (roc1$percent) {
       cov <- cov * (100^2)
     }
   } else { # method == "bootstrap"
-    # Check if called with density.cases or density.controls
-    if (is.null(smoothing.args) || is.numeric(smoothing.args$density.cases) || is.numeric(smoothing.args$density.controls)) {
-      stop("Cannot compute the covariance of ROC curves smoothed with numeric density.controls and density.cases.")
-    }
-
     cov <- bootstrap.cov(roc1, roc2, boot.n, boot.stratified, boot.return, smoothing.args,
       progress = progress, cl = cl
     )

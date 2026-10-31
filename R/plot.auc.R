@@ -86,7 +86,7 @@ roc_utils_draw_auc_text <- function(auc, ci = NULL, pattern = NULL, xy = NULL,
     xy <- c(ifelse(percent, 50, .5), ifelse(percent, 50, .5))
   }
   label <- ggroc_auc_label(auc, ci, pattern)
-  suppressWarnings(text(xy[1], xy[2], label, adj = adj, cex = cex, col = col, ...))
+  suppressWarnings(text(xy[1], xy[2], labels = label, adj = adj, cex = cex, col = col, ...))
   invisible(label)
 }
 
@@ -158,9 +158,9 @@ text.ci.auc <- function(x, ...) {
   text.auc(attr(x, "auc"), ci = x, ...)
 }
 
-text.roc <- function(x, ...) {
+text.roc <- function(x, ci = x$ci, ...) {
   roc_utils_stop_if_no_auc(x)
-  text.auc(x$auc, ci = x$ci, ...)
+  text.auc(x$auc, ci = ci, ...)
 }
 
 text.smooth.roc <- text.roc

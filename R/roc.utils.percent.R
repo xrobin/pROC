@@ -40,10 +40,16 @@ roc_utils_unpercent.roc <- function(x) {
     if (!is.null(x$ci)) {
       x$ci <- roc_utils_unpercent(x$ci)
     }
+    if (!is.null(attr(x, "roc"))) {
+      # the curve a smoothed curve was built from
+      attr(x, "roc") <- roc_utils_unpercent(attr(x, "roc"))
+    }
   }
 
   return(x)
 }
+
+roc_utils_unpercent.smooth.roc <- roc_utils_unpercent.roc
 
 roc_utils_unpercent.auc <- function(x) {
   if (attr(x, "percent")) {
@@ -98,8 +104,9 @@ roc_utils_unpercent.ci.se <- function(x) {
   return(x)
 }
 
+# A ci.coords cannot be converted: the callers compute on the curve, so drop it
 roc_utils_unpercent.ci.coords <- function(x) {
-  stop("Cannot convert ci.coords object to percent = FALSE")
+  NULL
 }
 
 # Returns a ROC curve with percent=TRUE
@@ -121,10 +128,16 @@ roc_utils_topercent.roc <- function(x) {
     if (!is.null(x$ci)) {
       x$ci <- roc_utils_topercent(x$ci)
     }
+    if (!is.null(attr(x, "roc"))) {
+      # the curve a smoothed curve was built from
+      attr(x, "roc") <- roc_utils_topercent(attr(x, "roc"))
+    }
   }
 
   return(x)
 }
+
+roc_utils_topercent.smooth.roc <- roc_utils_topercent.roc
 
 roc_utils_topercent.auc <- function(x) {
   if (!attr(x, "percent")) {
@@ -179,6 +192,7 @@ roc_utils_topercent.ci.se <- function(x) {
   return(x)
 }
 
+# A ci.coords cannot be converted: the callers compute on the curve, so drop it
 roc_utils_topercent.ci.coords <- function(x) {
-  stop("Cannot convert ci.coords object to percent = TRUE")
+  NULL
 }

@@ -39,6 +39,38 @@ test_that("ci.coords merges identical best points from empty ordered levels", {
   expect_error(ci.coords(r, x = "best", boot.n = 3, best.policy = "stop"), "More than one")
 })
 
+test_that("best.policy omit and random merge identical best points, as unique.stop", {
+  # Empty levels of a resample repeat the point of their neighbour on the
+  # ordered curve: they are not several "best" points, and the result is the
+  # same as with the integer-coded predictor
+  resp <- c(0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)
+  o <- ordered(c("1", "1", "2", "2", "3", "4", "2", "3", "4", "4", "5", "5"), levels = c("1", "2", "3", "4", "5"))
+  r.ordered <- roc(resp, o, quiet = TRUE)
+  r.integer <- roc(resp, as.integer(o), quiet = TRUE)
+  ret <- c("specificity", "sensitivity")
+  for (seed in 1:3) {
+    set.seed(seed)
+    expect_warning(ci.ordered <- ci.coords(r.ordered, "best", ret = ret, boot.n = 20, best.policy = "omit"), "NA value")
+    set.seed(seed)
+    expect_warning(ci.integer <- ci.coords(r.integer, "best", ret = ret, boot.n = 20, best.policy = "omit"), "NA value")
+    expect_identical(ci.ordered[ret], ci.integer[ret])
+    set.seed(seed)
+    ci.ordered <- ci.coords(r.ordered, "best", ret = ret, boot.n = 20, best.policy = "random")
+    set.seed(seed)
+    ci.integer <- ci.coords(r.integer, "best", ret = ret, boot.n = 20, best.policy = "random")
+    expect_identical(ci.ordered[ret], ci.integer[ret])
+  }
+  # Two distinct points tied on Youden return identical values for
+  # ret = "youden": "omit" keeps the replicate
+  r <- roc(controls = c(1, 3), cases = c(2, 4), quiet = TRUE)
+  expect_equal(nrow(coords(r, "best")), 2)
+  expect_identical(
+    pROC:::bootstrap.coords(r, "best", "threshold", "youden", "youden", c(1, 0.5), "omit"),
+    data.frame(youden = 1.5)
+  )
+  expect_true(all(is.na(pROC:::bootstrap.coords(r, "best", "threshold", ret, "youden", c(1, 0.5), "omit"))))
+})
+
 test_that("best.policy unique.stop still stops on distinct best points", {
   res <- data.frame(threshold = c(1.5, 2.5), specificity = c(0.5, 0.5), sensitivity = c(0.8, 0.8))
   expect_error(enforce.best.policy(res, "unique.stop"), "More than one distinct")
@@ -137,16 +169,28 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
   set.seed(1)
   best <- ci.coords(s, "best", ret = "sensitivity", boot.n = 20)
   expect_s3_class(best, "ci.coords")
-  # The bootstrap median should sit near the point estimate.
-  point <- as.numeric(coords(s, "best", ret = "sensitivity"))
-  expect_equal(as.numeric(best$sensitivity)[2], point, tolerance = 0.05)
+  # An ordered interval of sensitivities
+  se <- as.numeric(best$sensitivity)
+  expect_true(se[1] <= se[2] && se[2] <= se[3])
+  expect_true(all(se >= 0 & se <= 1))
 
-  # A numeric x works without naming 'input', which defaults to specificity.
+  # As in coords(), 'input' has no default on a smoothed curve, and is
+  # required with a numeric x
+  expect_error(coords(s, 0.9), 'argument "input" is missing, with no default')
+  expect_error(ci.coords(s, 0.9, boot.n = 20), 'argument "input" is missing, with no default')
   set.seed(1)
-  by.default <- ci.coords(s, 0.5, ret = "sensitivity", boot.n = 20)
+  ci <- ci.coords(s, 0.9, input = "specificity", boot.n = 20)
+  # The values of ci.coords(s, 0.9) when 'input' defaulted to "specificity"
+  expect_equal(unname(ci$sensitivity[1, ]), c(0.253534954671016, 0.436233506088253, 0.585336116009741))
+  expect_equal(unname(ci$specificity[1, ]), c(0.9, 0.9, 0.9))
+  # "best" has no input: print heads the column "x"
+  expect_null(attr(best, "input"))
+  expect_match(capture.output(print(best))[2], "^ +x sensitivity.low")
+  # An NA x gives an NA row
   set.seed(1)
-  explicit <- ci.coords(s, 0.5, input = "specificity", ret = "sensitivity", boot.n = 20)
-  expect_equal(as.numeric(unlist(by.default)), as.numeric(unlist(explicit)))
+  expect_no_warning(ci <- ci.coords(s, c(0.9, NA), input = "specificity", boot.n = 20))
+  expect_true(all(is.na(ci$sensitivity[2, ])))
+  expect_false(anyNA(ci$sensitivity[1, ]))
 })
 
 
@@ -155,4 +199,226 @@ test_that("ci.coords rejects input = 'threshold' on a smoothed curve", {
   s <- smooth(r.s100b)
   expect_error(ci.coords(s, 0.5, input = "threshold", ret = "sp", boot.n = 3))
   expect_error(coords(s, 0.5, input = "threshold", ret = "sp"))
+})
+
+test_that("ci.coords on a smoothed curve keeps replicates aligned when smoothing fails", {
+  set.seed(42)
+  # A replicate that fails to smooth has the shape of a successful one
+  failing <- list(method = "density", density.controls = function(x, ...) stop("cannot smooth"))
+  res <- pROC:::bootstrap.replicate(1, attr(smooth(r.s100b), "roc"), TRUE, pROC:::bootstrap.coords,
+    x = c(0.5, 0.9), input = "specificity", ret = c("sensitivity", "specificity"),
+    best.method = "youden", best.weights = c(1, 0.5), best.policy = "stop",
+    na = pROC:::bootstrap.coords.na(c(0.5, 0.9), c("sensitivity", "specificity")),
+    smoothing.args = failing
+  )
+  expect_equal(dim(res), c(2, 2))
+  expect_named(res, c("sensitivity", "specificity"))
+  expect_true(all(is.na(res)))
+
+  # Every other replicate fails to smooth
+  n.calls <- 0
+  flaky.density <- function(x, ...) {
+    n.calls <<- n.calls + 1
+    if (n.calls %% 2 == 0) {
+      stop("flaky density")
+    }
+    density(x, ...)
+  }
+  s <- smooth(r.s100b, method = "density", density.controls = flaky.density)
+  expect_warning(
+    ci <- ci.coords(s,
+      x = c(0.5, 0.9), input = "specificity",
+      ret = c("sensitivity", "specificity"), boot.n = 10
+    ),
+    "NA value\\(s\\) produced during bootstrap were ignored"
+  )
+  # Every successful replicate returns the input specificity
+  for (i in 1:3) {
+    expect_equal(as.numeric(ci$specificity[, i]), c(0.5, 0.9))
+  }
+})
+
+test_that("ci.coords 'best' ignores resamples with no point in the partial AUC range", {
+  set.seed(42)
+  resp <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
+  pred <- c(1, 2, 3, 4, 6, 5, 7, 8, 9, 10)
+  # With 5 controls the only specificity in the range is 0.8, missing in many resamples
+  r <- roc(resp, pred, partial.auc = c(0.9, 0.7), quiet = TRUE)
+  expect_warning(
+    ci <- ci.coords(r, "best", ret = c("specificity", "sensitivity"), boot.n = 50),
+    "NA value\\(s\\) produced during bootstrap were ignored"
+  )
+  expect_s3_class(ci, "ci.coords")
+  expect_equal(as.numeric(ci$specificity), c(0.8, 0.8, 0.8))
+})
+
+test_that("ci.coords 'best' on smoothed curves ignores resamples with no point in the partial AUC range", {
+  set.seed(42)
+  s <- smooth(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.899)))
+  # About 12% of the resamples have no point in the range: some of 150 always do
+  expect_warning(
+    ci <- ci.coords(s, "best", boot.n = 150, progress = "none"),
+    "NA value\\(s\\) produced during bootstrap were ignored"
+  )
+  expect_s3_class(ci, "ci.coords")
+  # Every resample is restricted to the (tiny) range, or NA if it has no point in it
+  sp <- as.numeric(ci$specificity)
+  expect_true(all(is.na(sp) | (sp >= 0.899 - 1e-6 & sp <= 0.9 + 1e-6)))
+})
+
+test_that("ci.coords 'x' passed through roc() or ci.coords() does not collide with plot.roc's 'x'", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  args <- list(x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 5, progress = "none", quiet = TRUE)
+  r <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", plot = TRUE), args))
+  expect_s3_class(r, "roc")
+  expect_equal(r$sensitivities, r.s100b$sensitivities)
+  expect_s3_class(r$ci, "ci.coords")
+  expect_identical(attr(r$ci, "x"), 0.5)
+
+  s <- do.call(roc, c(list(aSAH$outcome, aSAH$s100b, ci = TRUE, of = "coords", smooth = TRUE, plot = TRUE), args))
+  expect_s3_class(s, "smooth.roc")
+  expect_s3_class(s$ci, "ci.coords")
+
+  ci <- do.call(ci.coords, c(list(aSAH$outcome, aSAH$s100b, plot = TRUE), args))
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(attr(ci, "x"), 0.5)
+})
+
+test_that("ci.coords of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  set.seed(42)
+  # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
+  # Each value twice (once shifted by 0.05), so that nearly all the resamples can be smoothed
+  controls <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9)
+  cases <- c(0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  resp <- rep(0:1, each = 16)
+  pred <- c(controls, controls + 0.05, cases, cases + 0.05)
+  s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
+  expect_no_warning(ci.coords(s, x = 0.95, input = "specificity", boot.n = 50), message = "Partial AUC correction not defined")
+})
+
+test_that("ci.coords warns about unknown or misspelt 'ret' elements", {
+  set.seed(42)
+  expect_warning(
+    res <- ci.coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "Youden"), boot.n = 3),
+    "Youden"
+  )
+  expect_equal(names(res), "sensitivity")
+  w <- tryCatch(ci.coords(r.s100b, 0.9, input = "specificity", ret = c("sensitivity", "Youden"), boot.n = 3), warning = identity)
+  expect_identical(conditionMessage(w), "Invalid coordinate(s) in 'ret' ignored: 'Youden'.")
+  expect_identical(w$call[[1]], as.name("ci.coords.roc"))
+  # nothing matches: a clear error
+  expect_error(ci.coords(r.s100b, 0.9, input = "specificity", ret = "bogus", boot.n = 3), "Invalid coordinate(s) in 'ret': 'bogus'.", fixed = TRUE)
+  expect_error(ci.coords(smooth(r.s100b), "best", ret = "threshold", boot.n = 3), "Invalid coordinate(s) in 'ret': 'threshold'.", fixed = TRUE)
+  # the default ret does not warn when the threshold is dropped
+  expect_no_warning(
+    ci.coords(r.s100b, 0.9, input = "specificity", boot.n = 3),
+    message = "'ret'"
+  )
+})
+
+test_that("ci.coords on a smoothed curve has no threshold column, as coords", {
+  s <- smooth(r.s100b)
+  # ret = "all" expands without threshold
+  res <- ci.coords(s, 0.9, input = "specificity", ret = "all", boot.n = 5)
+  expect_equal(names(res), names(coords(s, 0.9, input = "specificity", ret = "all")))
+  expect_false("threshold" %in% names(res))
+  expect_true(all(res$sensitivity >= 0 & res$sensitivity <= 1))
+  expect_true(all(res$tp >= 0 & res$tp <= length(r.s100b$cases)))
+  # "threshold" is ignored with a warning, the other columns are unchanged
+  set.seed(42)
+  expect_warning(
+    res.thr <- ci.coords(s, 0.9, input = "specificity", ret = c("threshold", "sensitivity", "youden"), boot.n = 5),
+    "threshold"
+  )
+  set.seed(42)
+  res.nothr <- ci.coords(s, 0.9, input = "specificity", ret = c("sensitivity", "youden"), boot.n = 5)
+  expect_equal(res.thr, res.nothr)
+  # only "threshold": an error, as coords
+  expect_error(ci.coords(s, 0.9, input = "specificity", ret = "threshold", boot.n = 5))
+  expect_error(coords(s, 0.9, input = "specificity", ret = "threshold"))
+})
+
+test_that("ci.coords of a smoothed curve with numeric x uses best.weights", {
+  s <- smooth(r.s100b)
+  set.seed(42)
+  res <- ci.coords(s, 0.9, input = "specificity", ret = c("sensitivity", "youden"), best.weights = c(2, 0.2), boot.n = 5)
+  # youden = se + r * sp with r = 2 and sp = 0.9 in every replicate
+  expect_equal(res$youden, res$sensitivity + 2 * 0.9, ignore_attr = TRUE)
+})
+
+test_that("ci.coords with NA in a numeric x gives NA rows", {
+  set.seed(42)
+  ci <- ci.coords(r.s100b, x = c(0.5, NA), input = "specificity", ret = "sensitivity", boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.coords(r.s100b, x = 0.5, input = "specificity", ret = "sensitivity", boot.n = 10)
+  expect_identical(ci$sensitivity[1, ], ci1$sensitivity[1, ])
+  expect_identical(unname(ci$sensitivity[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
+})
+
+test_that("ci.coords 'best' on smoothed curves searches every resample within the partial AUC range", {
+  set.seed(42)
+  # The resamples lost the partial AUC range and returned the global best
+  s <- smooth(r.s100b.partial)
+  s2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), smooth = TRUE, quiet = TRUE)
+  for (curve in list(s, s2)) {
+    ci <- ci.coords(curve, "best", boot.n = 20, progress = "none")
+    sp <- as.numeric(ci$specificity)
+    expect_true(all(sp >= 0.9 - 1e-6 & sp <= 1 + 1e-6))
+  }
+  # Focus on sensitivity, in percent
+  s3 <- smooth(r.s100b.percent.partial2)
+  ci <- ci.coords(s3, "best", boot.n = 20, progress = "none")
+  se <- as.numeric(ci$sensitivity)
+  expect_true(all(se >= 90 - 1e-4 & se <= 99 + 1e-4))
+})
+
+test_that("ci.coords accepts ret = 'all' with a numeric non-threshold input", {
+  set.seed(42)
+  # "all" included the threshold, which is only available for x = "best" or a threshold input
+  ci <- ci.coords(r.s100b, 0.5, input = "specificity", ret = "all", boot.n = 5, progress = "none")
+  expect_s3_class(ci, "ci.coords")
+  expect_identical(names(ci), setdiff(colnames(coords(r.s100b, 0.5, input = "specificity", ret = "all")), "threshold"))
+  expect_equal(as.numeric(ci$specificity), c(0.5, 0.5, 0.5))
+  # the threshold asked explicitly is still an error
+  expect_error(ci.coords(r.s100b, 0.5, input = "specificity", ret = "threshold", boot.n = 5, progress = "none"), "only supported")
+  # with a threshold input, "all" still has the threshold
+  ci <- ci.coords(r.s100b, 0.5, input = "threshold", ret = "all", boot.n = 5, progress = "none")
+  expect_identical(names(ci)[1], "threshold")
+})
+
+test_that("ci.coords ignores the non-stratified resamples where a count input is out of range", {
+  y <- rep(0:1, each = 10)
+  x <- c(1:10, 6:15)
+  r <- roc(y, x, quiet = TRUE)
+  set.seed(1)
+  expect_warning(
+    ci <- ci.coords(r, 10, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE),
+    "41 NA value(s) produced during bootstrap were ignored.",
+    fixed = TRUE
+  )
+  expect_false(anyNA(ci$tp))
+  # In range in every resample: unchanged
+  set.seed(1)
+  expect_no_warning(ci <- ci.coords(r, 2, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE))
+  expect_equal(unname(ci$tp[1, ]), c(6, 10, 13.525))
+  # Out of range on the curve itself: coords()'s error, with the curve's range
+  set.seed(1)
+  expect_error(ci.coords(r.s100b, 73, input = "tn", ret = "tp", boot.n = 20), "Input tn (73) not in range (0-72)", fixed = TRUE)
+  set.seed(1)
+  expect_error(ci.coords(smooth(r.s100b), 73, input = "tn", ret = "tp", boot.n = 20), "Input tn (73) not in range (0-72)", fixed = TRUE)
+  # Smoothed curve, non-stratified
+  set.seed(1)
+  expect_warning(
+    ci <- ci.coords(smooth(r.s100b), 70, input = "tn", ret = "tp", boot.n = 100, boot.stratified = FALSE),
+    "NA value(s) produced during bootstrap were ignored.",
+    fixed = TRUE
+  )
+  expect_false(anyNA(ci$tp))
+  # Stratified: unchanged
+  set.seed(1)
+  ci <- ci.coords(r.s100b, 36, input = "tn", ret = "tp", boot.n = 100)
+  expect_equal(unname(ci$tp[1, ]), c(25.475, 31.5892857142857, 37.1166666666667), tolerance = 1e-12)
 })

@@ -6,8 +6,8 @@
  Subarachnoid hemorrhage data
 }
 \description{
-  This dataset summarizes several clinical and one laboratory variable
-  of 113 patients with an aneurysmal subarachnoid hemorrhage.
+  This dataset summarizes several clinical and two laboratory variables
+  (s100b and ndka) of 113 patients with an aneurysmal subarachnoid hemorrhage.
 }
 \usage{aSAH}
 
@@ -37,7 +37,7 @@
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and
-  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{7}, 77.
+  compare ROC curves''. \emph{BMC Bioinformatics}, \bold{12}, 77.
   DOI: \doi{10.1186/1471-2105-12-77}
 }
 
@@ -45,7 +45,7 @@
 # load the dataset
 data(aSAH)
 
-# Gender, outcome and set
+# Gender and outcome
 with(aSAH, table(gender, outcome))
 
 # Age

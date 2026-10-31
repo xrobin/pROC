@@ -439,3 +439,160 @@ test_that("roc works with `with` and formula", {
 # 	}
 # }
 # save("expected.roc", system.file("extdata", "test-roc-expected.R", package="pROC"), file = "dump_roc_expected.R")
+
+test_that("formula and data.frame interfaces return NA and NaN like roc.default", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, NA, 3, 4, 5, 6))
+  expect_identical(roc(d$y, d$x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc(y ~ x, d, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc(d, y, x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc_(d, "y", "x", na.rm = FALSE, quiet = TRUE), NA)
+  expect_identical(roc_(d, "y", "x", ret = "coords", na.rm = FALSE, quiet = TRUE), NA)
+  d$z <- d$x + 1
+  expect_identical(roc(y ~ x + z, d, na.rm = FALSE, quiet = TRUE), list(x = NA, z = NA))
+  d2 <- data.frame(y = c(0, 0, 1, 1), x = c(1, 2, 3, Inf))
+  expect_warning(r <- roc(y ~ x, d2, quiet = TRUE), "Infinite")
+  expect_identical(r, NaN)
+  pdf(NULL)
+  on.exit(dev.off())
+  expect_warning(r <- withVisible(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+})
+
+test_that("roc with densities resolves direction = 'auto' even if auc = FALSE", {
+  x <- seq(-5, 10, length.out = 200)
+  dc <- dnorm(x, 0, 1)
+  dk <- dnorm(x, 2, 1)
+  expect_identical(roc(density.controls = dc, density.cases = dk)$direction, "<")
+  expect_identical(roc(density.controls = dc, density.cases = dk, auc = FALSE)$direction, "<")
+  a <- roc(density.controls = dk, density.cases = dc, auc = TRUE)
+  b <- roc(density.controls = dk, density.cases = dc, auc = FALSE)
+  expect_identical(a$direction, ">")
+  expect_identical(b$direction, ">")
+  expect_null(b$auc)
+  expect_equal(b$sensitivities, a$sensitivities)
+  expect_equal(b$specificities, a$specificities)
+  expect_equal(as.numeric(auc(b)), as.numeric(a$auc))
+})
+
+test_that("formulas without response or with unsupported terms give a clear error", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, 3, 2, 4, 2.5, 6), z = c(2, 1, 3, 5, 4, 6))
+  expect_error(roc(~x, d), "a response is required")
+  expect_error(auc(~x, d), "a response is required")
+  expect_error(roc.test(~ x + z, d), "a response is required")
+  expect_error(roc(y ~ . - z, d), "only formulas of type response~predictor")
+  expect_error(roc(y ~ x:z, d), "only formulas of type response~predictor")
+  expect_named(roc(y ~ ., d, quiet = TRUE), c("x", "z"))
+})
+
+test_that("na.action attribute is kept when responses outside levels are removed", {
+  r <- roc(c(0, 0, 1, 1, 2, NA, 0, 1), c(1, 2, 3, 4, 5, 6, 7, NA), levels = c(0, 1), quiet = TRUE)
+  expected <- structure(c(6L, 8L), class = "omit")
+  expect_identical(attr(r$response, "na.action"), expected)
+  expect_identical(attr(r$predictor, "na.action"), expected)
+  r <- roc(factor(c("a", "a", "b", "b", "c", NA, "a", "b")), c(1, 2, 3, 4, 5, 6, 7, NA), levels = c("a", "b"), quiet = TRUE)
+  expect_identical(attr(r$response, "na.action"), expected)
+  # No NA: no attribute
+  r <- roc(c(0, 0, 1, 1, 2), c(1, 2, 3, 4, 5), levels = c(0, 1), quiet = TRUE)
+  expect_null(attr(r$response, "na.action"))
+})
+
+test_that("density with cases/controls error names the right arguments", {
+  x <- seq(0, 1, length.out = 10)
+  expect_error(
+    roc(controls = 1:2, cases = 3:4, density.controls = x, density.cases = rev(x)),
+    "'density.*' arguments incompatible with 'cases/controls'.", fixed = TRUE
+  )
+})
+
+test_that("roc_ works when called from a function through Map", {
+  d <- data.frame(y = c(0, 0, 0, 1, 1, 1), x = c(1, 3, 2, 4, 2.5, 6), z = c(2, 1, 3, 5, 4, 6))
+  f <- function(pred) {
+    a <- 1
+    roc_(d, "y", pred, quiet = TRUE)
+  }
+  rocs <- Map(f, c("x", "z"))
+  expect_s3_class(rocs$x, "roc")
+  expect_s3_class(rocs$z, "roc")
+  expect_error(roc_(d, "y", "w"), "Column 'w' not present in data d", fixed = TRUE)
+  expect_warning(expect_error(roc(d, y, w), "Column 'w' not present in data d", fixed = TRUE), "non-standard evaluation")
+})
+
+test_that("roc with densities, direction = 'auto' and a corrected partial AUC below the diagonal", {
+  x <- seq(-4, 6, length.out = 256)
+  expect_warning(r <- roc(density.controls = dnorm(x, 2), density.cases = dnorm(x, 0), partial.auc = c(1, .8), partial.auc.correct = TRUE), NA)
+  expect_equal(r$direction, ">")
+  r.gt <- roc(density.controls = dnorm(x, 2), density.cases = dnorm(x, 0), partial.auc = c(1, .8), partial.auc.correct = TRUE, direction = ">")
+  expect_equal(as.numeric(r$auc), as.numeric(r.gt$auc))
+})
+
+test_that("formula methods with subset can plot and smooth", {
+  set.seed(42)
+  pdf(NULL)
+  on.exit(dev.off())
+  r.female <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", quiet = TRUE)
+  r <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(r$auc), as.numeric(r.female$auc))
+  s <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)
+  expect_equal(s$sensitivities, smooth(r.female)$sensitivities)
+  rl <- roc(outcome ~ s100b + ndka, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(as.numeric(rl$s100b$auc), as.numeric(r.female$auc))
+  expect_equal(
+    as.numeric(auc(outcome ~ s100b, aSAH, subset = gender == "Female", smooth = TRUE, quiet = TRUE)),
+    as.numeric(auc(smooth(r.female)))
+  )
+  expect_equal(
+    as.numeric(ci(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci(r.female))
+  )
+  expect_equal(
+    as.numeric(ci.auc(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, quiet = TRUE)),
+    as.numeric(ci.auc(r.female))
+  )
+  expect_s3_class(ci.se(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.se")
+  expect_s3_class(ci.sp(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.sp")
+  expect_s3_class(ci.thresholds(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.thresholds")
+})
+
+test_that("a data.frame response gives a clear error", {
+  set.seed(42)
+  expect_error(auc(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+  expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
+})
+
+test_that("duplicated levels give a clear error", {
+  expect_error(roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Good"), quiet = TRUE), "'levels' must contain two different values")
+  y <- as.numeric(aSAH$outcome == "Poor")
+  expect_error(roc(y, aSAH$s100b, levels = c(0, 0), quiet = TRUE), "'levels' must contain two different values")
+  expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
+})
+
+test_that("roc.test and multiclass.roc formula methods with subset can plot and smooth", {
+  pdf(NULL)
+  on.exit(dev.off())
+  # gos6 has no observation for level 2
+  data <- transform(aSAH, gos6 = droplevels(gos6))
+  female <- data[data$gender == "Female", ]
+  male <- data[data$gender == "Male", ]
+  set.seed(42)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", smooth = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.female <- roc.test(outcome ~ s100b + ndka, female, smooth = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(t$p.value, t.female$p.value)
+  expect_equal(t$estimate, t.female$estimate)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, female, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, subset = gender == "Male", plot = TRUE, quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, male, quiet = TRUE)$auc)
+  )
+  # sub (subtitle) is a plot argument, not a partial match of subset
+  t <- roc.test(outcome ~ s100b + ndka, data, plot = TRUE, sub = "All patients", quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, data, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, plot = TRUE, sub = "All patients", quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, quiet = TRUE)$auc)
+  )
+})

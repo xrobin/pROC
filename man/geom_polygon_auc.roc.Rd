@@ -13,7 +13,7 @@
   EXPERIMENTAL - Add an AUC polygon to a ggroc plot.
 }
 \usage{
-\S3method{geom_polygon_auc}{auc}(data, ...)
+\S3method{geom_polygon_auc}{auc}(data, fill = "gainsboro", colour = NA, ...)
 \S3method{geom_polygon_auc}{roc}(data, ...)
 \S3method{geom_polygon_auc}{smooth.roc}(data, ...)
 }
@@ -22,8 +22,11 @@
   \item{data}{a roc object from the \link{roc} function, or its
     \code{auc}, same as the one used to build the ggroc initially.
   }
+  \item{fill, colour}{fill and border of the polygon. The default fill
+    matches \code{auc.polygon.col} in \code{\link{plot.roc}}.
+  }
   \item{...}{additional aesthetics for \code{\link[ggplot2:geom_polygon]{geom_polygon}}
-    to set: \code{alpha}, \code{colour}, \code{linetype} and \code{linewidth}.
+    to set: \code{alpha}, \code{linetype} and \code{linewidth}.
   }
 }
 

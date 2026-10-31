@@ -56,7 +56,7 @@ test_that("print.multiclass_roc_multivariate works", {
   ))
   expect_known_output(print(multiclass.roc(responses, predictor)), "print_output/mv_multiclass")
 
-  expect_warning(expect_known_output(print(multiclass.roc(responses, predictor, levels = c("X2", "X3"))), "print_output/mv_multiclass_levels"), "X1")
+  expect_warning(expect_known_output(print(multiclass.roc(responses, predictor, levels = c("X2", "X3"))), "print_output/mv_multiclass_levels"), NA)
   expect_known_output(print(multiclass.roc(responses, predictor, percent = TRUE)), "print_output/mv_multiclass_percent")
   expect_known_output(print(multiclass.roc(responses, predictor, partial.auc = c(1, .9))), "print_output/mv_multiclass_partial")
   expect_known_output(print(multiclass.roc(responses, predictor, partial.auc = c(1, .9), partial.auc.focus = "se")), "print_output/mv_multiclass_partial_se")
@@ -74,9 +74,9 @@ test_that("print works without the auc", {
 
 test_that("print works with the CI", {
   skip_slow()
-  if (getRversion() > "3.6.0") {
-    suppressWarnings(RNGkind(sample.kind = "Rounding"))
-  }
+  previous.kind <- RNGkind()
+  on.exit(suppressWarnings(do.call(RNGkind, as.list(previous.kind))), add = TRUE)
+  suppressWarnings(RNGkind(sample.kind = "Rounding"))
   set.seed(42) # For reproducible CI
   expect_known_output(print(roc(outcome ~ ndka, aSAH, ci = TRUE)), "print_output/r.ndka.formula.ci")
 })
@@ -102,7 +102,6 @@ test_that("print.smooth.roc with logcondens works", {
 
 test_that("print works with ci.auc", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -111,7 +110,6 @@ test_that("print works with ci.auc", {
 
 test_that("print works with ci.coords", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -120,7 +118,6 @@ test_that("print works with ci.coords", {
 
 test_that("print works with ci.thresholds", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -129,7 +126,6 @@ test_that("print works with ci.thresholds", {
 
 test_that("print works with ci.se", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -138,7 +134,6 @@ test_that("print works with ci.se", {
 
 test_that("print works with ci.sp", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
 
   set.seed(42) # For reproducible CI
@@ -162,4 +157,96 @@ test_that("print works with a formula with data attached with 'with'", {
   x <- outcome ~ ndka
   expect_known_output(with(aSAH, print(roc(x))), "print_output/ndka_formula_var_attached")
   expect_known_output(with(aSAH, print(roc(outcome ~ ndka))), "print_output/ndka_formula_attached")
+})
+
+test_that("smoothed curves from the formula and data.frame interfaces print the data names", {
+  d <- data.frame(y = c(0, 0, 0, 0, 1, 1, 1, 1), x = c(1, 3, 5, 7, 2, 4, 6, 8), z = c(2, 1, 4, 3, 6, 5, 8, 7))
+  dataline <- "Data: x in 4 controls (y 0) < 4 cases (y 1)."
+  expect_output(print(roc(y ~ x, d, smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+  expect_output(print(roc(y ~ x + z, d, smooth = TRUE, smooth.method = "density", quiet = TRUE)$x), dataline, fixed = TRUE)
+  expect_output(print(roc(d, y, x, smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+  expect_output(print(roc_(d, "y", "x", smooth = TRUE, smooth.method = "density", quiet = TRUE)), dataline, fixed = TRUE)
+})
+
+test_that("smoothed curves from the plot.roc and lines.roc formula methods print the variable names", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- plot.roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE)
+  expect_output(print(r), "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).", fixed = TRUE)
+  r <- lines.roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE)
+  expect_output(print(r), "Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).", fixed = TRUE)
+})
+
+test_that("print.mv.multiclass.roc separates formula predictor names", {
+  d <- data.frame(
+    resp = factor(rep(c("x", "y", "z"), 4)),
+    x = c(1, 5, 9, 2, 6, 7, 3, 4, 8, 2, 6, 9),
+    y = c(9, 5, 1, 8, 4, 2, 7, 6, 3, 8, 5, 1),
+    z = c(2, 3, 9, 1, 4, 8, 3, 2, 7, 1, 5, 9)
+  )
+  expect_output(print(multiclass.roc(resp ~ x + y + z, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+  expect_output(print(multiclass.roc(resp ~ ., d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+})
+
+test_that("print.smooth.roc of a curve built with numeric densities has no data line", {
+  x <- seq(-3, 5, length.out = 50)
+  s <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  out <- capture.output(print(s))
+  expect_false(any(grepl("^Data:", out)))
+  expect_true(any(grepl("^Smoothing: density with controls: dnorm\\(x\\); and cases: dnorm\\(x, 1\\)", out)))
+})
+
+test_that("no partial matching of list elements", {
+  set.seed(42)
+  old <- options(warnPartialMatchDollar = TRUE)
+  on.exit(options(old))
+  pdf(NULL)
+  on.exit(dev.off(), add = TRUE)
+  expect_warning(smooth(r.s100b), NA)
+  expect_warning(r <- roc(outcome ~ s100b, aSAH, smooth = TRUE, quiet = TRUE), NA)
+  expect_warning(ci.t <- ci.thresholds(r.s100b, boot.n = 2, thresholds = 0.5), NA)
+  expect_warning(capture.output(print(ci.t)), NA)
+  expect_warning(plot(r.s100b), NA)
+  expect_warning(plot(ci.t), NA)
+  for (f in list(auc, ci, ci.auc)) {
+    expect_warning(f(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  }
+  expect_warning(ci.se(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.sp(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.thresholds(outcome ~ s100b, aSAH, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(ci.coords(outcome ~ s100b, aSAH, x = 0.5, quiet = TRUE, boot.n = 2), NA)
+  expect_warning(plot.roc(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  expect_warning(lines.roc(outcome ~ s100b, aSAH, quiet = TRUE), NA)
+  expect_warning(roc.test(outcome ~ s100b + ndka, aSAH, quiet = TRUE), NA)
+})
+
+test_that("print.multiclass.roc works with a formula passed as variable", {
+  d <- data.frame(
+    resp = factor(rep(c("x", "y", "z"), 4)),
+    x = c(1, 5, 9, 2, 6, 7, 3, 4, 8, 2, 6, 9),
+    y = c(9, 5, 1, 8, 4, 2, 7, 6, 3, 8, 5, 1),
+    z = c(2, 3, 9, 1, 4, 8, 3, 2, 7, 1, 5, 9)
+  )
+  fo <- resp ~ x
+  expect_output(print(multiclass.roc(fo, d, quiet = TRUE)), "Data: x with 3 levels of resp: x, y, z.", fixed = TRUE)
+  fo.mv <- resp ~ x + y + z
+  expect_output(print(multiclass.roc(fo.mv, d)), "Data: multivariate predictor x, y, z with 3 levels of resp: x, y, z.", fixed = TRUE)
+})
+
+test_that("print shows the labels of factor levels", {
+  r <- roc(aSAH$outcome, aSAH$s100b, levels = unique(aSAH$outcome), quiet = TRUE)
+  expect_output(print(r), "controls \\(aSAH\\$outcome Good\\) < 41 cases \\(aSAH\\$outcome Poor\\)")
+})
+
+test_that("print.ci.coords works with a repeated x", {
+  set.seed(42)
+  ci <- ci.coords(r.s100b, c(0.9, 0.9), input = "specificity", ret = "sensitivity", boot.n = 3)
+  out <- capture.output(print(ci))
+  expect_length(out, 4) # header + column names + 2 rows
+  expect_equal(sum(grepl("^ *0\\.9 ", out)), 2)
+  set.seed(42)
+  ci2 <- ci.coords(r.s100b, c(0.9, 0.9), input = "specificity", ret = c("sensitivity", "accuracy"), boot.n = 3)
+  out2 <- capture.output(print(ci2))
+  expect_true(any(grepl("accuracy.high", out2)))
+  expect_false(any(grepl("X0.9", out2, fixed = TRUE)))
 })

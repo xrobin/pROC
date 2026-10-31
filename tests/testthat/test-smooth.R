@@ -55,16 +55,16 @@ test_that("smooth with fitdistr works", {
   smoothed <- smooth(r.ndka, method = "fitdistr", n = 10)
   expect_is(smoothed, "smooth.roc")
   expect_equal(smoothed$sensitivities, c(
-    1, 1, 0.65584212882921, 0.303849532306639, 0.0922807400203477,
-    0.017547821937714, 0.00203415264061833, 0.000141550295211778,
-    5.86072275643637e-06, 1.43622216786009e-07, 2.05997195401133e-09,
-    0
+    1, 0.818181818181818, 0.683063106156167, 0.636363636363636,
+    0.629229378820631, 0.591536044948605, 0.555151655671379, 0.51056251520327,
+    0.454545454545455, 0.272727272727273, 0.0909090909090908, 0
   ))
   expect_equal(smoothed$specificities, c(
-    0, 0, 0.961731211013412, 0.999999997253703, 1, 1, 1, 1, 1,
-    1, 1, 1
+    0, 0.000240703151138483, 0.090909090909091, 0.24225342148073,
+    0.272727272727273, 0.454545454545455, 0.636363636363636, 0.818181818181818,
+    0.946312019857331, 0.999975065500302, 0.999999999999993, 1
   ))
-  expect_equal(as.numeric(smoothed$auc), 0.814600645965216)
+  expect_equal(as.numeric(smoothed$auc), 0.580858400167636)
 })
 
 test_that("smooth with fitdistr different densities works", {
@@ -72,16 +72,16 @@ test_that("smooth with fitdistr different densities works", {
   smoothed <- smooth(r.ndka, method = "fitdistr", density.controls = "normal", density.cases = "lognormal", n = 10)
   expect_is(smoothed, "smooth.roc")
   expect_equal(smoothed$sensitivities, c(
-    1, 1, 0.174065394158716, 0.0241224684680268, 0.00565556180305715,
-    0.0017644346804079, 0.000654794610631603, 0.000269912354252342,
-    0.000116632088037343, 4.89426737202444e-05, 1.6544031070368e-05,
-    0
+    1, 1, 0.832447986812911, 0.818181818181818, 0.636363636363636,
+    0.580641313705266, 0.454545454545455, 0.405633021041487, 0.272727272727273,
+    0.267512440925326, 0.0909090909090908, 0
   ))
   expect_equal(smoothed$specificities, c(
-    0, 0, 0.961731211013412, 0.999999997253703, 1, 1, 1, 1, 1,
-    1, 1, 1
+    0, 0.090909090909091, 0.272727272727273, 0.281542026457948,
+    0.407900467583373, 0.454545454545455, 0.579603793209369, 0.636363636363636,
+    0.81102519760261, 0.818181818181818, 0.994940831852285, 1
   ))
-  expect_equal(as.numeric(smoothed$auc), 0.568359871182632)
+  expect_equal(as.numeric(smoothed$auc), 0.567273983384952)
 })
 
 test_that("smooth with fitdistr with a density function works", {
@@ -103,4 +103,495 @@ test_that("smooth with fitdistr with a density function works", {
     1, 1, 1
   ))
   expect_equal(as.numeric(smoothed$auc), 0.568359799581078)
+})
+
+test_that("logcondens smoothing respects direction", {
+  testthat::skip_if_not_installed("logcondens")
+  controls <- c(-1.2, -0.8, -0.5, -0.3, 0, 0.1, 0.4, 0.6, 0.9, 1.3)
+  cases <- c(0.2, 0.5, 0.7, 1.0, 1.1, 1.4, 1.8, 2.1, 2.5)
+  r.lt <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE)
+  # Same values with direction ">": the point reflection of the "<" curve
+  r.gt <- roc(controls = controls, cases = cases, direction = ">", quiet = TRUE)
+  # Negated values with direction ">": the same curve as r.lt
+  r.neg <- roc(controls = -controls, cases = -cases, direction = ">", quiet = TRUE)
+  for (method in c("logcondens", "logcondens.smooth")) {
+    s.lt <- smooth(r.lt, method = method, n = 10)
+    s.gt <- smooth(r.gt, method = method, n = 10)
+    expect_identical(s.gt$specificities, s.lt$specificities)
+    expect_identical(s.gt$sensitivities, 1 - rev(s.lt$sensitivities))
+    expect_equal(as.numeric(s.gt$auc), 1 - as.numeric(s.lt$auc))
+    expect_gt(as.numeric(smooth(r.neg, method = method, n = 10)$auc), 0.5)
+  }
+})
+
+test_that("smooth with reuse.ci recomputes the CI on the smoothed curve", {
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.auc(r, method = "bootstrap", boot.n = 10, conf.level = 0.9, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_is(s, "smooth.roc")
+  expect_is(s$ci, "ci.auc")
+  expect_equal(attr(s$ci, "conf.level"), 0.9)
+  expect_equal(attr(s$ci, "boot.n"), 10)
+  expect_true(s$ci[1] <= s$ci[3])
+
+  r$ci <- ci.se(r, specificities = c(0.5, 0.9), boot.n = 10, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_is(s$ci, "ci.se")
+  expect_equal(attr(s$ci, "specificities"), c(0.5, 0.9))
+})
+
+test_that("fitdistr smoothing works with the t distribution", {
+  skip_if_not_installed("MASS")
+  r <- roc(rep(0:1, each = 30), c(qt(ppoints(30), 5), qt(ppoints(30), 5) * 2 + 2), quiet = TRUE)
+  # lower bounds keep optim() in the parameter space (s > 0, df >= 1): no NaNs produced
+  s <- smooth(r, method = "fitdistr", density = "t", lower = c(-Inf, 0.001, 1))
+  expect_s3_class(s, "smooth.roc")
+  # The density is the location-scale t that MASS::fitdistr fits
+  fit <- MASS::fitdistr(r$controls, "t", lower = c(-Inf, 0.001, 1))
+  expect_equal(
+    sum(log(pROC:::dt_location_scale(r$controls, fit$estimate[["m"]], fit$estimate[["s"]], fit$estimate[["df"]]))),
+    fit$loglik
+  )
+  # The exact AUC of the two fitted distributions: P(case > control)
+  e0 <- s$fit.controls$estimate
+  e1 <- s$fit.cases$estimate
+  exact <- integrate(function(x) {
+    pROC:::dt_location_scale(x, e1[["m"]], e1[["s"]], e1[["df"]]) * pROC:::pt_location_scale(x, e0[["m"]], e0[["s"]], e0[["df"]])
+  }, -Inf, Inf)$value
+  expect_equal(as.numeric(s$auc), exact, tolerance = 1e-4)
+})
+
+test_that("fitdistr smoothing gives the ROC curve of the fitted distributions", {
+  testthat::skip_if_not_installed("MASS")
+  r <- roc(controls = c(-0.5, -0.2, 0, 0.1, 0.3, 0.6), cases = c(-2, 0.5, 1, 1.5, 3, 4.5), direction = "<", quiet = TRUE)
+  s <- smooth(r, method = "fitdistr", n = 1000)
+  m0 <- s$fit.controls$estimate
+  m1 <- s$fit.cases$estimate
+  # Binormal AUC of the fitted normal distributions
+  expect_equal(as.numeric(s$auc), unname(pnorm((m1["mean"] - m0["mean"]) / sqrt(m0["sd"]^2 + m1["sd"]^2))), tolerance = 1e-5)
+  expect_equal(
+    coords(s, 0.5, input = "specificity", ret = "sensitivity")[1, 1],
+    unname(1 - pnorm(m0["mean"], m1["mean"], m1["sd"])),
+    tolerance = 1e-5
+  )
+  # Same with direction ">" on the negated predictor
+  r2 <- roc(controls = -r$controls, cases = -r$cases, direction = ">", quiet = TRUE)
+  expect_equal(as.numeric(smooth(r2, method = "fitdistr", n = 1000)$auc), as.numeric(s$auc), tolerance = 1e-6)
+})
+
+test_that("fitdistr smoothing with discrete distributions gives the ROC curve of the fitted distributions", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  r <- roc(response, counts, quiet = TRUE)
+  k <- 0:2000
+  densfuns <- list(poisson = dpois, geometric = dgeom, "negative binomial" = dnbinom)
+  for (density in names(densfuns)) {
+    expect_silent(s <- smooth(r, method = "fitdistr", density = density))
+    d.controls <- do.call(densfuns[[density]], c(list(k), as.list(s$fit.controls$estimate)))
+    d.cases <- do.call(densfuns[[density]], c(list(k), as.list(s$fit.cases$estimate)))
+    # P(case > control) + P(case = control) / 2 (Bamber, 1975, eq. 3)
+    expected <- sum(d.cases * (cumsum(d.controls) - d.controls / 2))
+    expect_equal(as.numeric(s$auc), expected, tolerance = 1e-6)
+  }
+  # The quantiles are integers: the curve goes through the vertices
+  s <- smooth(r, method = "fitdistr", density = "poisson")
+  lambda.controls <- s$fit.controls$estimate[["lambda"]]
+  lambda.cases <- s$fit.cases$estimate[["lambda"]]
+  t <- 2:6
+  expect_equal(
+    coords(s, ppois(t, lambda.controls), input = "specificity", ret = "sensitivity")$sensitivity,
+    1 - ppois(t, lambda.cases)
+  )
+})
+
+test_that("fitdistr smoothing with discrete distributions requires counts", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  for (density in c("poisson", "geometric", "negative binomial")) {
+    msg <- sprintf("Density \"%s\" requires non-negative integer (count) values.", density)
+    expect_error(smooth(r.ndka, method = "fitdistr", density = density), msg, fixed = TRUE)
+    expect_error(smooth(roc(response, counts - 2, quiet = TRUE), method = "fitdistr", density = density), msg, fixed = TRUE)
+  }
+  # Only the class with a discrete density must be counts
+  r <- roc(response, counts, quiet = TRUE)
+  s <- smooth(r, method = "fitdistr", density.controls = "poisson", density.cases = "normal")
+  expect_s3_class(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), 0.8394853, tolerance = 1e-6)
+  r2 <- roc(response, c(counts[1:8], counts[9:16] + 0.5), quiet = TRUE)
+  expect_s3_class(smooth(r2, method = "fitdistr", density.controls = "poisson", density.cases = "normal"), "smooth.roc")
+})
+
+test_that("fitdistr smoothing matches the density names in any case, as MASS::fitdistr", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 8)
+  counts <- c(1, 2, 2, 3, 3, 4, 5, 7, 3, 4, 5, 6, 6, 8, 9, 12)
+  r <- roc(response, counts, quiet = TRUE)
+  for (density in c("Poisson", "Normal", "Log-normal")) {
+    expect_identical(
+      smooth(r, method = "fitdistr", density = density)[c("sensitivities", "specificities")],
+      smooth(r, method = "fitdistr", density = tolower(density))[c("sensitivities", "specificities")]
+    )
+  }
+  expect_identical(
+    as.numeric(smooth(r, method = "fitdistr", density.controls = "POISSON", density.cases = "Normal")$auc),
+    as.numeric(smooth(r, method = "fitdistr", density.controls = "poisson", density.cases = "normal")$auc)
+  )
+  # pROC's own partial matching is kept
+  expect_identical(
+    smooth(r, method = "fitdistr", density = "Pois")$sensitivities,
+    smooth(r, method = "fitdistr", density = "poisson")$sensitivities
+  )
+})
+
+test_that("fitdistr smoothing of ndka with a lognormal density is unchanged", {
+  testthat::skip_if_not_installed("MASS")
+  s <- smooth(r.ndka, method = "fitdistr", density = "lognormal")
+  expect_equal(as.numeric(s$auc), 0.606443698904361, tolerance = 1e-12)
+  expect_equal(s$sensitivities[c(100, 256, 400)], c(0.820662768031189, 0.578947368421053, 0.317298380377812), tolerance = 1e-12)
+})
+
+test_that("binormal smoothing of points that share one specificity gives the vertical line", {
+  for (percent in c(FALSE, TRUE)) {
+    k <- if (percent) 100 else 1
+    r <- roc(controls = c(1, 2, 3, 10), cases = c(5, 6, 7, 11), quiet = TRUE, percent = percent)
+    s <- smooth(r)
+    inside <- s$sensitivities > 0 & s$sensitivities < k
+    expect_identical(unique(s$specificities[inside]), 0.75 * k)
+    expect_false(is.unsorted(s$specificities))
+    expect_false(is.unsorted(rev(s$sensitivities)))
+    n <- length(s$sensitivities)
+    expect_identical(c(s$specificities[1], s$sensitivities[1]), c(0, k))
+    expect_identical(c(s$specificities[n], s$sensitivities[n]), c(k, 0))
+    expect_equal(as.numeric(s$auc), 0.75 * k)
+  }
+  # lm() returns a slope of exactly 0 here: this failed with "missing value
+  # where TRUE/FALSE needed"
+  r <- roc(controls = c(1, 1, 1, 3, 3, 3), cases = c(1, 2, 3, 3, 3, 3), quiet = TRUE)
+  s <- smooth(r)
+  expect_identical(unname(coef(s$model)[2]), 0)
+  expect_identical(unique(s$specificities[s$sensitivities > 0 & s$sensitivities < 1]), 0.5)
+  expect_equal(as.numeric(s$auc), 0.5)
+  # Curves with more than one specificity are unchanged
+  expect_equal(as.numeric(smooth(r.s100b)$auc), 0.7400128620773111, tolerance = 1e-15)
+  expect_equal(as.numeric(smooth(r.wfns)$auc), 0.84536597931822532, tolerance = 1e-15)
+})
+
+test_that("binormal smoothing of ordered predictors does not depend on unused levels", {
+  resp <- c(0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1)
+  lv <- c("a", "b", "c", "d", "e")
+  pred <- c("a", "a", "b", "b", "c", "c", "d", "e", "b", "c", "c", "d", "d", "e", "e", "e")
+  o <- roc(resp, factor(pred, levels = lv, ordered = TRUE), quiet = TRUE)
+  oe <- roc(resp, factor(pred, levels = c("a", "b", "bc", "c", "d", "e"), ordered = TRUE), quiet = TRUE)
+  rn <- roc(resp, as.integer(factor(pred, levels = lv)), quiet = TRUE)
+  expect_equal(coef(smooth(oe)$model), coef(smooth(o)$model))
+  expect_equal(coef(smooth(o)$model), coef(smooth(rn)$model))
+})
+
+test_that("fitdistr smoothing with a density function accepts other ... arguments", {
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  # location-scale t density with a fixed df: only m and s are fitted
+  # abs(s): optim() may try a negative scale, which would give NaNs
+  dens <- function(x, m, s, df = 30) dt((x - m) / abs(s), df) / abs(s)
+  expected <- smooth(r, method = "fitdistr", density = dens, start = list(m = 2, s = 1), df = 5)
+  # with an optim() argument for fitdistr (maxit = 500 is the default)
+  s <- smooth(r,
+    method = "fitdistr", density = dens, start = list(m = 2, s = 1), df = 5,
+    control = list(maxit = 500)
+  )
+  expect_equal(s$sensitivities, expected$sensitivities)
+  expect_equal(s$specificities, expected$specificities)
+  # with an auc argument forwarded by roc()
+  r2 <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = dens, start = list(m = 2, s = 1), df = 5, partial.auc = c(1, .8)
+  )
+  expect_equal(as.numeric(r2$auc), as.numeric(auc(expected, partial.auc = c(1, .8))))
+})
+
+test_that("fitdistr smoothing of a single case gives an NA curve", {
+  testthat::skip_if_not_installed("MASS")
+  # fitdistr estimates an NA sd for a single observation, as in 1.19.1
+  r <- roc(controls = c(0.5, 0.5, 0.5, 1.5), cases = 2.5, quiet = TRUE)
+  for (density in c("normal", "lognormal")) {
+    s <- smooth(r, method = "fitdistr", density = density)
+    expect_true(anyNA(s$sensitivities))
+    expect_true(is.na(s$auc))
+  }
+  # Also for a single control, and one observation in each class (not an AUC of 0.5)
+  for (r in list(roc(controls = 1, cases = 2, quiet = TRUE), roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE))) {
+    for (density in c("normal", "lognormal")) {
+      s <- smooth(r, method = "fitdistr", density = density)
+      expect_true(anyNA(s$sensitivities))
+      expect_true(is.na(s$auc))
+    }
+  }
+  # Constant classes have an sd of 0, not NA
+  expect_equal(as.numeric(smooth(roc(controls = c(1, 1, 1), cases = c(2, 2, 2), quiet = TRUE), method = "fitdistr")$auc), 1)
+  set.seed(1)
+  r <- roc(controls = c(1, 1, 1), cases = rnorm(20, 3), quiet = TRUE)
+  expect_equal(as.numeric(smooth(r, method = "fitdistr")$auc), 0.994585999818758, tolerance = 1e-12)
+})
+
+test_that("missing, infinite or all-zero density values give a NA/NaN AUC", {
+  x <- seq(-4, 6, length.out = 200)
+  dc <- dnorm(x)
+  dk <- dnorm(x, 1.5)
+  aucs <- function(d) {
+    c(
+      roc(density.controls = dc, density.cases = d)$auc,
+      roc(density.controls = dc, density.cases = d, direction = "<")$auc,
+      smooth(r.s100b, method = "density", density.controls = dc, density.cases = d)$auc,
+      smooth(r.s100b, method = "density", density.controls = d, density.cases = dk)$auc
+    )
+  }
+  expect_true(all(is.na(aucs(c(NA, dc[-1])))))
+  # An all-negative density becomes all zero
+  for (d in list(c(NaN, dc[-1]), c(Inf, dc[-1]), 0 * dc, -dc)) {
+    expect_true(all(is.nan(aucs(d))))
+  }
+  # -Inf is a negative value: it becomes 0
+  expect_identical(aucs(c(-Inf, dc[-1])), aucs(c(0, dc[-1])))
+  expect_equal(aucs(c(-Inf, dc[-1])), c(0.5, 0.5, 0.5, 0.8555), tolerance = 1e-4)
+})
+
+test_that("negative density values are set to 0, as density() does", {
+  d1 <- dnorm(seq(-3, 3, length.out = 512))
+  d2 <- dnorm(seq(-2, 4, length.out = 512))
+  with.value <- function(v) {
+    d <- d2
+    d[100] <- v
+    d
+  }
+  ref <- roc(density.controls = d1, density.cases = with.value(0))
+  # 1.19.1's AUC for the rounding-sized values
+  for (v in c(-1e-17, -1e-14, -1e-12, -0.05)) {
+    r <- roc(density.controls = d1, density.cases = with.value(v))
+    expect_identical(r$direction, ref$direction)
+    expect_identical(r$sensitivities, ref$sensitivities)
+    expect_identical(r$specificities, ref$specificities)
+    expect_identical(as.numeric(r$auc), as.numeric(ref$auc))
+  }
+  expect_equal(as.numeric(ref$auc), 0.7547, tolerance = 1e-4)
+  # Also through smooth()
+  s <- smooth(r.s100b, method = "density", density.controls = d1, density.cases = with.value(-1e-14))
+  s.ref <- smooth(r.s100b, method = "density", density.controls = d1, density.cases = with.value(0))
+  expect_identical(s$sensitivities, s.ref$sensitivities)
+  expect_identical(s$specificities, s.ref$specificities)
+})
+
+test_that("smooth with reuse.ci skips a stored ci.thresholds", {
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.thresholds(r, thresholds = 0.5, boot.n = 2)
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  expect_equal(as.numeric(s$auc), as.numeric(smooth(r.s100b)$auc))
+})
+
+test_that("smooth with reuse.ci skips a stored ci.coords of thresholds", {
+  set.seed(42)
+  r <- r.s100b
+  # default ret of x = "best": the threshold is ignored, as in ci.coords(<smoothed curve>)
+  r$ci <- ci.coords(r, "best", best.policy = "random", boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "Invalid coordinate(s) in 'ret' ignored: 'threshold'.", fixed = TRUE)
+  expect_s3_class(s$ci, "ci.coords")
+  expect_identical(names(s$ci), c("specificity", "sensitivity"))
+  # only the threshold: nothing left to compute
+  r$ci <- ci.coords(r, "best", ret = "threshold", best.policy = "random", boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_s3_class(s, "smooth.roc")
+  expect_null(s$ci)
+  r$ci <- ci.coords(r, 0.2, input = "threshold", ret = c("se", "sp"), boot.n = 2, progress = "none")
+  expect_warning(s <- smooth(r, reuse.ci = TRUE), "not available for smoothed ROC curves", fixed = TRUE)
+  expect_null(s$ci)
+  # other inputs are still recomputed
+  r$ci <- ci.coords(r, 0.9, input = "specificity", ret = "se", boot.n = 2, progress = "none")
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_s3_class(s$ci, "ci.coords")
+})
+
+test_that("smooth with reuse.ci recomputes a stored ci.coords of the best point", {
+  set.seed(42)
+  r <- r.s100b
+  # x = "best": the default input = "threshold" is irrelevant
+  r$ci <- ci.coords(r, "best", ret = c("specificity", "sensitivity"), best.policy = "random", boot.n = 2, progress = "none")
+  expect_identical(attr(r$ci, "input"), "threshold")
+  expect_no_warning(s <- smooth(r, reuse.ci = TRUE), message = "not re-used")
+  expect_s3_class(s$ci, "ci.coords")
+  expect_identical(attr(s$ci, "x"), "best")
+  expect_identical(names(s$ci), c("specificity", "sensitivity"))
+})
+
+test_that("logcondens smoothing of a class with a single value is not smoothable", {
+  skip_if_not_installed("logcondens")
+  one <- roc(controls = 1, cases = c(2, 3, 4), quiet = TRUE)
+  flat <- roc(controls = c(1, 2, 3), cases = c(4, 4, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (logcondens needs at least two distinct values in each class)."
+  for (r in list(one, flat)) {
+    expect_error(smooth(r, method = "logcondens"), msg, fixed = TRUE)
+    expect_error(smooth(r, method = "logcondens.smooth"), msg, fixed = TRUE)
+  }
+})
+
+test_that("roc(smooth = TRUE) records the name of a fitdistr density function", {
+  testthat::skip_if_not_installed("MASS")
+  st <- list(meanlog = -2, sdlog = 1)
+  # lower keeps sdlog > 0 in optim(): no NaNs produced
+  s <- roc(aSAH$outcome, aSAH$s100b,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = dlnorm, start.controls = st, start.cases = st, lower = c(-Inf, 0.001), quiet = TRUE
+  )
+  expect_identical(s$fit.controls$densfun, "dlnorm")
+  expect_identical(s$fit.cases$densfun, "dlnorm")
+  s <- roc(outcome ~ s100b, data = aSAH,
+    smooth = TRUE, smooth.method = "fitdistr",
+    density = dlnorm, start.controls = st, start.cases = st, lower = c(-Inf, 0.001), quiet = TRUE
+  )
+  expect_true(any(grepl("fitting dlnorm distribution for controls", capture.output(print(s)))))
+})
+
+test_that("fitdistr smoothing of a constant class is not smoothable", {
+  skip_if_not_installed("MASS")
+  flat <- roc(controls = c(1, 1, 1), cases = c(2, 3, 4), quiet = TRUE)
+  msg <- "ROC curve not smoothable (fitdistr could not estimate the distribution parameters)."
+  # optim() tries a negative scale on the constant class: dlogis() gives NaNs
+  expect_warning(expect_error(smooth(flat, method = "fitdistr", density = "logistic"), msg, fixed = TRUE), "NaNs produced")
+  expect_error(smooth(flat, method = "fitdistr", density = "weibull"), msg, fixed = TRUE)
+  # Errors unrelated to a constant class are kept
+  expect_error(smooth(r.s100b, method = "fitdistr", density = dnorm), "'start' must be a named list")
+})
+
+test_that("fitdistr smoothing rejects fixed parameters of closed-form densities", {
+  skip_if_not_installed("MASS")
+  # fitdistr estimates all the parameters of these densities, ignoring the fixed ones
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "normal", mean = 0.2), "'mean' cannot be held fixed with density \"normal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density.controls = "normal", density.cases = "lognormal", sdlog = 1), "'sdlog' cannot be held fixed with density \"lognormal\"")
+  expect_error(smooth(r.s100b, method = "fitdistr", density = "exponential", rate = 2), "'rate' cannot be held fixed with density \"exponential\"")
+  # Parameters held fixed by fitdistr are still accepted
+  # (lower: optim() warns that Nelder-Mead is unreliable in one dimension)
+  s <- smooth(r.s100b, method = "fitdistr", density = dnorm, start = list(sd = 0.1), mean = 0.2, lower = 0.001)
+  expect_named(s$fit.controls$estimate, "sd")
+  s <- smooth(r.s100b, method = "fitdistr", density = "weibull", shape = 2, lower = 0.001)
+  expect_named(s$fit.controls$estimate, "scale")
+})
+
+test_that("roc(smooth=TRUE, smooth.method='fitdistr') does not pass auc arguments to fitdistr", {
+  set.seed(42)
+  testthat::skip_if_not_installed("MASS")
+  response <- rep(0:1, each = 6)
+  predictor <- c(0.5, 1.1, 1.6, 2.0, 2.4, 3.1, 1.9, 2.8, 3.5, 4.2, 5.0, 6.3)
+  r <- roc(response, predictor, quiet = TRUE)
+  expected <- auc(smooth(r, method = "fitdistr", density = "weibull"), partial.auc = c(1, .8))
+  s <- roc(response, predictor,
+    quiet = TRUE, smooth = TRUE, smooth.method = "fitdistr",
+    density = "weibull", partial.auc = c(1, .8)
+  )
+  expect_is(s, "smooth.roc")
+  expect_equal(as.numeric(s$auc), as.numeric(expected))
+})
+
+test_that("density smoothing passes only density arguments from roc() to density", {
+  response <- rep(0:1, each = 10)
+  predictor <- c(1, 2, 2.5, 3, 3.5, 4, 5, 5.5, 6, 8, 3, 4.5, 5, 6, 6.5, 7, 7.5, 8, 9, 10)
+  r <- smooth(roc(response, predictor, quiet = TRUE), method = "density", adjust = 2)
+  set.seed(42)
+  expected <- ci.coords(r, x = 0.9, input = "specificity", ret = "se", boot.n = 3)
+  # ci.coords' x must not reach density() as its data
+  set.seed(42)
+  obtained <- ci.coords(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  set.seed(42)
+  obtained <- roc(response, predictor, smooth = TRUE, smooth.method = "density", adjust = 2, ci = TRUE, of = "coords", x = 0.9, input = "specificity", ret = "se", boot.n = 3, quiet = TRUE)$ci
+  expect_equal(obtained$sensitivity, expected$sensitivity)
+  # same with a density function
+  dens <- function(x, ...) stats::density(x, ...)
+  s <- smooth(roc(response, predictor, quiet = TRUE), method = "density", density = dens, adjust = 2)
+  s2 <- roc(response, predictor, quiet = TRUE, smooth = TRUE, smooth.method = "density", density = dens, adjust = 2, x = 0.9)
+  expect_equal(s2$sensitivities, s$sensitivities)
+  expect_equal(s$sensitivities, r$sensitivities)
+})
+
+test_that("the graphical adj argument does not change density smoothing", {
+  pdf(NULL)
+  on.exit(dev.off())
+  s <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0.5, quiet = TRUE)
+  expect_equal(s.adj$sensitivities, s$sensitivities)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", plot = TRUE, main = "S100b", adj = 0, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+  s.adj <- plot.roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, smooth.method = "density", adj = 0.5, quiet = TRUE)
+  expect_equal(as.numeric(s.adj$auc), as.numeric(s$auc))
+})
+
+test_that("roc(smooth = TRUE) forwards ... to smooth.roc as R matches arguments", {
+  # Expected values are those of pROC 1.19.1, except sub= and adj=, which failed there
+  pdf(NULL)
+  on.exit(dev.off())
+  y <- aSAH$outcome
+  x <- aSAH$s100b
+  r <- roc(y, x, quiet = TRUE)
+  s <- roc(y, x, smooth = TRUE, smooth.method = "density", quiet = TRUE)
+  expect_equal(as.numeric(s$auc), as.numeric(auc(smooth(r, method = "density"))))
+  # sub is the plot subtitle, not subset (failed in 1.19.1)
+  expect_equal(
+    as.numeric(auc(roc(outcome ~ s100b, data = aSAH, plot = TRUE, sub = "All patients", quiet = TRUE))),
+    as.numeric(r$auc)
+  )
+  # adj is the graphical parameter, not adjust (failed in 1.19.1: 'bw' is not positive)
+  expect_equal(
+    as.numeric(auc(roc(y, x, smooth = TRUE, smooth.method = "density", plot = TRUE, print.auc = TRUE, adj = 0, quiet = TRUE))),
+    as.numeric(s$auc)
+  )
+  # kern partially matches the kernel of density smoothing
+  expect_equal(
+    as.numeric(auc(roc(y, x, smooth = TRUE, smooth.method = "density", kern = "rectangular", quiet = TRUE))),
+    as.numeric(auc(smooth(r, method = "density", kernel = "rectangular")))
+  )
+  # method is not the smoothing method: use smooth.method
+  expect_error(roc(y, x, smooth = TRUE, method = "density", quiet = TRUE), "matched by multiple actual arguments")
+  # smooth() keeps R's partial matching: adj is adjust
+  expect_equal(
+    as.numeric(auc(smooth(r, method = "density", adj = 2))),
+    as.numeric(auc(smooth(r, method = "density", adjust = 2)))
+  )
+  # control partially matches the controls of roc(): pass it to smooth()
+  expect_error(
+    roc(y, x, smooth = TRUE, smooth.method = "fitdistr", control = list(maxit = 100), quiet = TRUE),
+    "incompatible with 'response/predictor'"
+  )
+})
+
+test_that("smooth with reuse.ci keeps the best.method, best.weights and best.policy of a stored ci.coords", {
+  set.seed(42)
+  r <- r.s100b
+  r$ci <- ci.coords(r, "best",
+    input = "specificity", ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  expect_identical(attr(r$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(r$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(r$ci, "best.policy"), "random")
+  set.seed(1)
+  s <- smooth(r, reuse.ci = TRUE)
+  expect_identical(attr(s$ci, "best.method"), "closest.topleft")
+  expect_identical(attr(s$ci, "best.weights"), c(10, 0.1))
+  expect_identical(attr(s$ci, "best.policy"), "random")
+  # same as the specification given directly on the smoothed curve
+  set.seed(1)
+  direct <- ci.coords(smooth(r), "best",
+    ret = c("specificity", "sensitivity"),
+    best.method = "closest.topleft", best.weights = c(10, 0.1), best.policy = "random",
+    boot.n = 2, progress = "none"
+  )
+  expect_equal(s$ci$specificity, direct$specificity)
+  expect_equal(s$ci$sensitivity, direct$sensitivity)
 })

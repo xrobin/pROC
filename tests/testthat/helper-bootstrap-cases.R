@@ -68,7 +68,34 @@ bootstrap.cases <- list(
   ## ---- roc.test -------------------------------------------------------
   roctest.boot       = quote(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = bootstrap.B)),
   roctest.boot.ns    = quote(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = bootstrap.B, boot.stratified = FALSE)),
-  roctest.venk       = quote(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = bootstrap.B))
+  roctest.venk       = quote(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = bootstrap.B)),
+
+  ## ---- paths of the replicate wrapper not pinned above -----------------
+  ## (cluster F decision on PR #148, generated before the refactor)
+  roctest.smooth     = quote(roc.test(smooth(r.s100b), smooth(r.ndka, method = "density"), boot.n = bootstrap.B)),
+  roctest.smooth.ns  = quote(roc.test(smooth(r.s100b), smooth(r.ndka), boot.n = bootstrap.B, boot.stratified = FALSE)),
+  cov.smooth         = quote(cov(smooth(r.s100b), smooth(r.ndka), boot.n = bootstrap.B)),
+  roctest.unpaired   = quote(roc.test(r.s100b, roc(aSAH$outcome[1:70], aSAH$wfns[1:70], quiet = TRUE),
+                                      method = "bootstrap", paired = FALSE, boot.n = bootstrap.B)),
+  roctest.unpaired.ns = quote(roc.test(r.s100b, roc(aSAH$outcome[1:70], aSAH$wfns[1:70], quiet = TRUE),
+                                       method = "bootstrap", paired = FALSE, boot.n = bootstrap.B,
+                                       boot.stratified = FALSE)),
+  # Both curves lose a class in some resamples (3 cases in 30, 2 in 10)
+  roctest.lost.class = quote(roc.test(
+    roc(c(rep(0, 27), rep(1, 3)), c(1:27, 20.5, 25.5, 28), quiet = TRUE),
+    roc(c(rep(0, 8), rep(1, 2)), c(1:8, 4.5, 9), quiet = TRUE),
+    method = "bootstrap", paired = FALSE, boot.stratified = FALSE, boot.n = 50
+  )),
+  roctest.sp         = quote(roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0.9, boot.n = bootstrap.B)),
+  roctest.pauc.percent = quote(roc.test(
+    roc(aSAH$outcome, aSAH$s100b, percent = TRUE, partial.auc = c(100, 80), partial.auc.correct = TRUE, quiet = TRUE),
+    roc(aSAH$outcome, aSAH$ndka, percent = TRUE, partial.auc = c(100, 80), partial.auc.correct = TRUE, quiet = TRUE),
+    method = "bootstrap", boot.n = bootstrap.B
+  )),
+  ci.coords.smooth   = quote(ci.coords(smooth(r.ndka), x = c(0.5, 0.9), input = "specificity",
+                                       ret = c("sensitivity", "specificity"), boot.n = bootstrap.B)),
+  ci.coords.random   = quote(ci.coords(r.s100b, x = "best", best.policy = "random",
+                                       ret = c("sensitivity", "specificity"), boot.n = bootstrap.B))
 )
 
 # Run one case reproducibly. Warnings are expected on some paths (NA replicates,

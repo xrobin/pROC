@@ -60,9 +60,19 @@ test_that("any non-FALSE 'parallel' warns, not just TRUE", {
 
 test_that("the deprecated argument does not change the result", {
   set.seed(42)
-  with.arg <- suppressWarnings(
-    ci.auc(r.wfns, method = "bootstrap", boot.n = 20, parallel = TRUE))
+  expect_warning(
+    with.arg <- ci.auc(r.wfns, method = "bootstrap", boot.n = 20, parallel = TRUE),
+    "Parallel processing is deprecated"
+  )
   set.seed(42)
   without.arg <- ci.auc(r.wfns, method = "bootstrap", boot.n = 20)
   expect_equal(as.numeric(with.arg), as.numeric(without.arg))
+})
+
+test_that("deprecated algorithm argument warns with its value", {
+  expect_warning(
+    r <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), algorithm = 3, quiet = TRUE),
+    "Ignoring algorithm=3 argument", fixed = TRUE
+  )
+  expect_equal(as.numeric(r$auc), 1)
 })

@@ -8,31 +8,31 @@ geom_roc_threshold.roc <- function(data,
                                    hjust = -0.05,
                                    vjust = 1.25,
                                    size = 2,
+                                   best.method = c("youden", "closest.topleft"),
+                                   best.weights = c(1, 0.5),
                                    ...) {
   load.ggplot2()
+  # A smoothed curve has no thresholds: only "best" can be marked (as with plot.roc's print.thres)
+  if (methods::is(data, "smooth.roc") && !identical(coords_special_x(thresholds, roc = data), "best")) {
+    stop("Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds.")
+  }
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
-  ordered_roc <- !methods::is(data, "smooth.roc") && roc_utils_is_ordered_roc(data)
-  if (is.null(pattern)) {
-    pattern <- if (ordered_roc) {
-      ifelse(percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
-    } else {
-      ifelse(percent, "%.1f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
-    }
+  co <- coords(data, thresholds, best.method = best.method, best.weights = best.weights)
+  # Only mark real thresholds: with a partial AUC, coords(data, "all") also
+  # returns the interpolated limits of the window, with an NA threshold
+  if (!methods::is(data, "smooth.roc") && !is.null(co)) {
+    co <- co[!is.na(co$threshold), , drop = FALSE]
   }
-  co <- coords(data, thresholds)
+  if (is.null(co)) { # no coordinates (e.g. no point in the partial AUC window): empty layer
+    co <- data.frame(threshold = numeric(0), specificity = numeric(0), sensitivity = numeric(0))
+  }
   co <- ggroc_add_one_or_hundred(co, percent)
   if (is.null(co$threshold)) {
     co$threshold <- NA_real_
   }
-  thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) {
-    # Defensive conversion to avoid users passing %f on ordered rocs
-    as.character(co$threshold)
-  } else {
-    co$threshold
-  }
-  co$label <- sprintf(pattern, thres.lab, co$specificity, co$sensitivity)
+  co$label <- roc_utils_threshold_labels(pattern, co$threshold, co$specificity, co$sensitivity, percent)
   new_ggroc_layer(
     behind = FALSE,
     make_layers = function(plot) {
