@@ -80,7 +80,7 @@ partial_auc_consumers <- function(roc, partial.auc, focus) {
 
   roc.partial <- roc
   roc.partial$auc <- auc(roc, partial.auc = partial.auc, partial.auc.focus = focus, partial.auc.correct = FALSE)
-  coords.res <- suppressWarnings(coords(roc.partial, "all", ret = c("specificity", "sensitivity"), transpose = FALSE))
+  coords.res <- coords(roc.partial, "all", ret = c("specificity", "sensitivity"), transpose = FALSE)
   if (is.null(coords.res)) {
     coords.vertices <- NULL
   } else {
@@ -158,16 +158,16 @@ partial_auc_windows <- function(roc, focus) {
 }
 
 # coords() results restricted to a partial AUC window for the "best",
-# "local maximas" (and, for smooth curves, "all") special values. Only the
-# specificity, sensitivity and threshold columns are recorded.
+# "local maximas" (and, for smooth curves, "all") special values, for the
+# windows that contain at least one point of the curve (but "all", which adds
+# the window limits). Only the specificity, sensitivity and, if any, threshold
+# columns are recorded.
 partial_auc_coords_snapshot <- function() {
   curves <- partial_auc_curves()
   coords_matrix <- function(roc, x, ...) {
-    res <- tryCatch(
-      suppressWarnings(coords(roc, x, ret = c("specificity", "sensitivity", "threshold"), transpose = FALSE, ...)),
-      error = function(e) NULL
-    )
-    if (is.null(res)) NULL else unname(as.matrix(res))
+    # smoothed curves have no thresholds
+    ret <- c("specificity", "sensitivity", if (!methods::is(roc, "smooth.roc")) "threshold")
+    unname(as.matrix(coords(roc, x, ret = ret, transpose = FALSE, ...)))
   }
   out <- list()
   for (curve.name in c("s100b", "s100b.percent", "ties", "wfns.ordered")) {
@@ -177,6 +177,7 @@ partial_auc_coords_snapshot <- function() {
       for (window.name in intersect(names(windows), c("between", "on.points", "same.segment", "hi.on.point"))) {
         roc.partial <- roc
         roc.partial$auc <- auc(roc, partial.auc = windows[[window.name]], partial.auc.focus = focus, partial.auc.correct = FALSE)
+        if (!any(roc_utils_in_partial_auc(roc.partial))) next # no point: coords() warns, tested elsewhere
         id <- paste(curve.name, focus, window.name, sep = "/")
         out[paste(id, "local maximas", sep = "/")] <- list(coords_matrix(roc.partial, "local maximas"))
         out[paste(id, "best youden", sep = "/")] <- list(coords_matrix(roc.partial, "best", best.method = "youden"))
@@ -191,6 +192,7 @@ partial_auc_coords_snapshot <- function() {
       smooth.partial$auc <- auc(smooth.roc, partial.auc = bounds, partial.auc.focus = focus, partial.auc.correct = FALSE)
       id <- paste("smooth", focus, paste(bounds, collapse = "-"), sep = "/")
       out[paste(id, "all", sep = "/")] <- list(coords_matrix(smooth.partial, "all"))
+      if (!any(roc_utils_in_partial_auc(smooth.partial))) next # no point: "best" warns, tested elsewhere
       out[paste(id, "best youden", sep = "/")] <- list(coords_matrix(smooth.partial, "best", best.method = "youden"))
       out[paste(id, "best closest.topleft", sep = "/")] <- list(coords_matrix(smooth.partial, "best", best.method = "closest.topleft"))
     }

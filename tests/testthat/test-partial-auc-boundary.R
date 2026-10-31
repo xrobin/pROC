@@ -147,7 +147,7 @@ test_that("auc(), coords() and polygon_auc() agree on smooth.roc curves", {
     for (bounds in list(c(0.99, 0.9), c(0.93, 0.91))) {
       info <- paste(focus, paste(bounds, collapse = "-"))
       smooth.roc$auc <- auc(smooth.roc, partial.auc = bounds, partial.auc.focus = focus, partial.auc.correct = FALSE)
-      coords.res <- suppressWarnings(coords(smooth.roc, "all", ret = c("specificity", "sensitivity"), transpose = FALSE))
+      coords.res <- coords(smooth.roc, "all", ret = c("specificity", "sensitivity"), transpose = FALSE)
       polygon.res <- partial_auc_capture_polygon({
         plot(smooth.roc)
         polygon_auc(smooth.roc)
@@ -291,6 +291,4 @@ test_that("coords() special values restricted to a partial AUC are unchanged by 
   for (id in names(partial_auc_coords_expected)) {
     expect_equal(actual[[id]], partial_auc_coords_expected[[id]], info = id)
   }
-  # some windows legitimately contain no point at all
-  expect_true(any(vapply(partial_auc_coords_expected, is.null, NA)))
 })
