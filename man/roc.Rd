@@ -112,35 +112,37 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 	 when \code{direction} and \code{levels} are auto-detected.
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
-    to be smoothed. This is a shortcut for \code{smooth(roc(\dots))}, which
-    is preferred (see \dQuote{Shortcuts} below).
+    to be smoothed. Superseded by \code{smooth(roc(\dots))} (see
+    \link{all_in_one_calls}).
   }
   \item{auc}{compute the area under the curve (AUC)? If \code{TRUE}
     (default), additional arguments can be passed to \code{\link{auc}}.
-    For a partial AUC, prefer calling \code{\link{auc}} on the curve
-    (see \dQuote{Shortcuts} below).
+    These partial AUC arguments are superseded by calling
+    \code{\link{auc}} on the curve (see \link{all_in_one_calls}).
   }
   \item{ci}{compute the confidence interval (CI)? If set to \code{TRUE}, 
-    additional arguments can be passed to \code{\link{ci}}. This is a
-    shortcut for calling \code{\link{ci}} on the curve, which is preferred
-    (see \dQuote{Shortcuts} below).
+    additional arguments can be passed to \code{\link{ci}}. Superseded by
+    calling \code{\link{ci}} on the curve or on its \code{auc} (see
+    \link{all_in_one_calls}).
   }
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
-    arguments can be passed to \code{\link{plot.roc}}. This is a
-    shortcut for calling \code{\link[=plot.roc]{plot}} on the curve, which
-    is preferred (see \dQuote{Shortcuts} below).
+    arguments can be passed to \code{\link{plot.roc}}. Superseded by
+    calling \code{\link[=plot.roc]{plot}} on the curve (see
+    \link{all_in_one_calls}).
   }
-  \item{smooth.method, smooth.n, ci.method}{with the shortcuts only. Prefer
-	\code{\link[=smooth.roc]{smooth}(rocobj, method=\dots, n=\dots)} and
+  \item{smooth.method, smooth.n, ci.method}{with the shortcuts only.
+	Superseded by \code{\link[=smooth.roc]{smooth}(rocobj, method=\dots, n=\dots)} and
 	\code{\link{ci.auc}(rocobj, method=\dots)} on the curve returned by
-	\code{roc}. In \code{roc.formula} and \code{roc.default}, the
+	\code{roc} (see \link{all_in_one_calls}). In \code{roc.formula} and \code{roc.default}, the
 	\code{method} and \code{n} arguments to
 	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
 	\code{method} argument to \code{\link{ci.auc}} (if \code{ci=TRUE} and
 	\code{of="auc"}) must be passed as
 	\code{smooth.method}, \code{smooth.n} and \code{ci.method} to avoid confusions.
   }
-  \item{density}{\code{density} argument passed to \code{\link[=smooth.roc]{smooth}}.}
+  \item{density}{\code{density} argument passed to
+    \code{\link[=smooth.roc]{smooth}}. Superseded by
+    \code{smooth(rocobj, density=\dots)} (see \link{all_in_one_calls}).}
   \item{\dots}{further arguments passed to or from other methods, and
     especially:
     \itemize{
@@ -170,7 +172,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \code{\link[=smooth.roc]{smooth}}, \code{\link{auc}}, \code{\link{ci}}
   and \code{\link{plot.roc}} functions if the \code{smooth}, \code{auc},
   \code{ci} and \code{plot} (respectively) arguments are set to TRUE. By
-  default, only \code{auc} is called.
+  default, only \code{auc} is called. These shortcuts are superseded by
+  calling the functions on the curve (see \link{all_in_one_calls}).
 
   Data can be provided as \code{response, predictor}, where the
   predictor is the numeric (or ordered) level of the evaluated signal, and
@@ -227,25 +230,13 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     plot(myRoc)
   }
 
-  the plot will not have the AUC polygon nor the grid. Similarly, when
-  comparing \dQuote{roc} objects, the following is not possible:
+  the plot will not have the AUC polygon nor the grid. To compare partial
+  AUCs, compute them with \code{\link{auc}} and pass the \code{auc}
+  objects:
 
   \preformatted{
-    roc1 <- roc(..., partial.auc=c(1, 0.8), auc=FALSE)
-    roc2 <- roc(..., partial.auc=c(1, 0.8), auc=FALSE)
-    roc.test(roc1, roc2)
+    roc.test(auc(roc1, partial.auc=c(1, 0.8)), auc(roc2, partial.auc=c(1, 0.8)))
   }
-
-  This will produce a test on the full AUC, not the partial AUC. To make
-  a comparison on the partial AUC, you must repeat the specifications
-  when calling \code{\link{roc.test}}:
-
-  \preformatted{
-    roc.test(roc1, roc2, partial.auc=c(1, 0.8))
-  }
-
-  Note that if \code{roc} was called with \code{auc=TRUE}, the latter syntax will not
-  allow redefining the AUC specifications. You must use \code{reuse.auc=FALSE} for that.
 }
 
 \section{Shortcuts}{
@@ -265,11 +256,12 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \preformatted{
     rocobj <- roc(aSAH$outcome, aSAH$s100b)
     smoothed <- smooth(rocobj, method = "density", adjust = 2)
-    auc(smoothed, partial.auc = c(1, 0.8))
-    ci(smoothed, boot.n = 100)
+    pauc <- auc(smoothed, partial.auc = c(1, 0.8))
+    ci(pauc, boot.n = 100)
     plot(smoothed, main = "S100b")
   }
-  
+
+  The shortcuts are superseded by these calls: see \link{all_in_one_calls}.
 }
 \value{
   If the data contained any \code{NA} value and \code{na.rm=FALSE}, \code{NA} is

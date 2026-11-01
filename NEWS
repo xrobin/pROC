@@ -196,6 +196,7 @@
   * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
   * 'power.roc.test', 'ci.coords' and 'ci.thresholds' accept 'auc' objects and use their partial AUC (issue #149)
   * 'power.roc.test' takes an 'auc' object given first as its curve, as 'var' and 'roc.test' do: 'power.roc.test(auc(r1), auc(r2))' returned a one-curve power with the second AUC as 'ncontrols'. Pass 'as.numeric(auc(r1))' to use the value as an expected AUC
+  * The all-in-one calls (shortcuts of 'roc', partial AUC arguments outside 'auc', 'reuse.auc', 'reuse.ci', the curve-building default and formula methods, and the display arguments of 'plot.roc') are superseded by modular calls, described in the new '?all_in_one_calls' help page. They keep working without a warning (issue #149)
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette
