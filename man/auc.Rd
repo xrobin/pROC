@@ -35,7 +35,9 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 	\code{\link[=smooth.roc]{smooth}} function, or a \dQuote{multiclass.roc}
 	or \dQuote{mv.multiclass.roc} from the \code{\link{multiclass.roc}} function.
   }
-  \item{response, predictor}{arguments for the \code{\link{roc}} function.}
+  \item{response, predictor}{arguments for the \code{\link{roc}} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{formula, data}{a formula (and possibly a data object) of type response~predictor for the \code{\link{roc}} function.}
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curve.

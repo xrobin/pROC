@@ -53,7 +53,9 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
     \dQuote{<}: if the predictor values for the control group are lower
     or equal than the values of the case group (controls < t <= cases).
   }
-  \item{...}{further arguments passed to \code{\link{roc}}.
+  \item{...}{further arguments passed to \code{\link{roc}}. The partial
+    AUC arguments of \code{\link{auc}} are superseded by calling
+    \code{\link{auc}} on the result (see \link{all_in_one_calls}).
   }
 }
 \details{
