@@ -136,3 +136,15 @@ test_that("ci.thresholds defaults to the local maximas, with unchanged CIs", {
   expect_equal(ci$sensitivity, ci.previous$sensitivity[kept, ])
   expect_equal(ci$specificity, ci.previous$specificity[kept, ])
 })
+
+test_that("ci.thresholds takes the partial AUC of auc objects", {
+  pauc <- auc(r.s100b, partial.auc = c(1, 0.9))
+  set.seed(42)
+  ci.auc.obj <- ci.thresholds(pauc, boot.n = 20)
+  set.seed(42)
+  ci.roc.obj <- ci.thresholds(r.s100b.partial, boot.n = 20)
+  expect_equal(unclass(ci.auc.obj)[c("specificity", "sensitivity")], unclass(ci.roc.obj)[c("specificity", "sensitivity")])
+  # The local maximas within the partial AUC only
+  expect_equal(as.numeric(attr(ci.auc.obj, "thresholds")), c(0.435, 0.475, 0.485, 0.51))
+  expect_error(ci.thresholds(auc(smooth(r.s100b))), "not available for smoothed ROC curves")
+})

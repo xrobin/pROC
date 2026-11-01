@@ -422,3 +422,29 @@ test_that("ci.coords ignores the non-stratified resamples where a count input is
   ci <- ci.coords(r.s100b, 36, input = "tn", ret = "tp", boot.n = 100)
   expect_equal(unname(ci$tp[1, ]), c(25.475, 31.5892857142857, 37.1166666666667), tolerance = 1e-12)
 })
+
+test_that("ci.coords takes the partial AUC of auc objects", {
+  pauc <- auc(r.s100b, partial.auc = c(1, 0.9))
+  set.seed(42)
+  ci.auc.obj <- ci.coords(pauc, "best", boot.n = 20, progress = "none")
+  set.seed(42)
+  ci.roc.obj <- ci.coords(r.s100b.partial, "best", boot.n = 20, progress = "none")
+  expect_equal(unclass(ci.auc.obj)[c("threshold", "specificity", "sensitivity")], unclass(ci.roc.obj)[c("threshold", "specificity", "sensitivity")])
+  expect_identical(attr(ci.auc.obj, "roc")$auc, pauc)
+  # "best" within the partial AUC in every resample
+  expect_true(all(ci.auc.obj$specificity >= 0.9))
+})
+
+test_that("ci.coords takes auc objects of smoothed curves", {
+  skip_slow()
+  s <- smooth(r.s100b)
+  pauc <- auc(s, partial.auc = c(1, 0.9))
+  sp <- s
+  sp$auc <- pauc
+  set.seed(42)
+  ci.auc.obj <- ci.coords(pauc, "best", boot.n = 20, progress = "none")
+  set.seed(42)
+  ci.roc.obj <- ci.coords(sp, "best", boot.n = 20, progress = "none")
+  expect_equal(unclass(ci.auc.obj)[c("specificity", "sensitivity")], unclass(ci.roc.obj)[c("specificity", "sensitivity")])
+  expect_true(all(ci.auc.obj$specificity >= 0.9))
+})
