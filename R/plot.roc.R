@@ -245,12 +245,13 @@ plot.roc.roc <- function(x,
       border = auc.polygon.border, ...
     )
   }
-  draw.thres <- function(..., co, labels, pch, cex, adj) {
-    if (is.null(co) || nrow(co) == 0) {
-      return(invisible()) # no threshold to mark (e.g. none in the partial AUC window)
-    }
-    suppressWarnings(points(co$specificity, co$sensitivity, pch = print.thres.pch, cex = print.thres.cex, col = print.thres.col, ...))
-    suppressWarnings(text(co$specificity, co$sensitivity, labels = labels, adj = print.thres.adj, cex = print.thres.pattern.cex, col = print.thres.col, ...))
+  draw.thres <- function(..., thresholds, pattern, pch, adj, cex, pattern.cex, best.method, best.weights, labels) {
+    points.roc(x, print.thres,
+      pattern = print.thres.pattern, pch = print.thres.pch,
+      adj = print.thres.adj, col = print.thres.col, cex = print.thres.cex,
+      pattern.cex = print.thres.pattern.cex, best.method = print.thres.best.method,
+      best.weights = print.thres.best.weights, ...
+    )
   }
   draw.auc.text <- function(..., ci.auc.obj, adj, cex) {
     roc_utils_draw_auc_text(x$auc,
@@ -293,25 +294,8 @@ plot.roc.roc <- function(x,
       }
     }
   }
-  if (!print.thres.requested) {
-    # do nothing
-  } else if (methods::is(x, "smooth.roc")) {
-    if (is.numeric(print.thres)) {
-      stop("Numeric 'print.thres' unsupported on a smoothed ROC plot.")
-    } else if (print.thres == "all" || print.thres == "local maximas") {
-      stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.")
-    } else if (print.thres == "best") {
-      co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
-      draw.thres(co = co, labels = roc_utils_threshold_labels(print.thres.pattern, NA, co$specificity, co$sensitivity, x$percent), ...)
-    }
-  } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
-    co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
-    # Only mark real thresholds: with a partial AUC, coords(x, "all") also
-    # returns the interpolated limits of the window, with an NA threshold
-    if (identical(print.thres, "all") && !is.null(co)) {
-      co <- co[!is.na(co$threshold), , drop = FALSE]
-    }
-    draw.thres(co = co, labels = roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), ...)
+  if (print.thres.requested) {
+    draw.thres(...)
   }
 
   # Print the AUC on the plot

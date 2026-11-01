@@ -165,6 +165,10 @@ S3method("polygon_max_auc", "smooth.roc")
 S3method("polygon_max_auc", "multiclass.auc")
 S3method("polygon_max_auc", "mv.multiclass.auc")
 
+S3method("points", "roc")
+S3method("points", "smooth.roc")
+S3method("points", "auc")
+
 S3method("text", "auc")
 S3method("text", "ci.auc")
 S3method("text", "roc")
@@ -203,6 +207,7 @@ S3method("geom_text_auc", "smooth.roc")
 export(geom_roc_threshold)
 S3method("geom_roc_threshold", "roc")
 S3method("geom_roc_threshold", "smooth.roc")
+S3method("geom_roc_threshold", "auc")
 
 export(geom_polygon_ci)
 S3method("geom_polygon_ci", "ci.se")

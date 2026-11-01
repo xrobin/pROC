@@ -8,9 +8,10 @@
   * 'ci.coords' now rejects input="threshold" on smoothed curves, as 'coords' does
   * Added tests for bootstrap operations (issue #28)
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
-    'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
-    'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc',
-    so the auc.polygon/max.auc.polygon/print.auc appearance of 'plot.roc'
+    'polygon_ci', 'text' methods for 'auc', 'ci.auc', 'roc' and
+    'smooth.roc', 'points' methods for 'roc', 'smooth.roc' and 'auc'
+    (issue #149), and 'panel.first'/'panel.last' arguments to 'plot.roc',
+    so the auc.polygon/max.auc.polygon/print.auc/print.thres appearance of 'plot.roc'
     can be built from separate roc(), auc() and ci() calls instead of
     one-shot arguments (issue #70). 'polygon_ci' always draws with
     'no.roc=TRUE', so unlike 'plot.ci(type="shape")' it never redraws the

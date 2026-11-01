@@ -12,26 +12,11 @@ geom_roc_threshold.roc <- function(data,
                                    best.weights = c(1, 0.5),
                                    ...) {
   load.ggplot2()
-  # A smoothed curve has no thresholds: only "best" can be marked (as with plot.roc's print.thres)
-  if (methods::is(data, "smooth.roc") && !identical(coords_special_x(thresholds, roc = data), "best")) {
-    stop("Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds.")
-  }
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
   percent <- data$percent
-  co <- coords(data, thresholds, best.method = best.method, best.weights = best.weights)
-  # Only mark real thresholds: with a partial AUC, coords(data, "all") also
-  # returns the interpolated limits of the window, with an NA threshold
-  if (!methods::is(data, "smooth.roc") && !is.null(co)) {
-    co <- co[!is.na(co$threshold), , drop = FALSE]
-  }
-  if (is.null(co)) { # no coordinates (e.g. no point in the partial AUC window): empty layer
-    co <- data.frame(threshold = numeric(0), specificity = numeric(0), sensitivity = numeric(0))
-  }
+  co <- roc_utils_marked_thresholds(data, thresholds, best.method, best.weights)
   co <- ggroc_add_one_or_hundred(co, percent)
-  if (is.null(co$threshold)) {
-    co$threshold <- NA_real_
-  }
   co$label <- roc_utils_threshold_labels(pattern, co$threshold, co$specificity, co$sensitivity, percent)
   new_ggroc_layer(
     behind = FALSE,
@@ -71,3 +56,10 @@ geom_roc_threshold.roc <- function(data,
 }
 
 geom_roc_threshold.smooth.roc <- geom_roc_threshold.roc
+
+geom_roc_threshold.auc <- function(data, ...) {
+  # The curve, with the (partial) AUC specification of the auc object
+  roc <- attr(data, "roc")
+  roc$auc <- data
+  geom_roc_threshold(roc, ...)
+}

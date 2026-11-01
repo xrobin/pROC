@@ -349,3 +349,108 @@ test_that("text(roc, ci = ) uses the given ci.auc", {
   expect_identical(text(roc_ci, ci = ci90), ggroc_auc_label(roc_ci$auc, ci90))
   expect_identical(text(smooth(r.s100b), ci = ci1), ggroc_auc_label(smooth(r.s100b)$auc, ci1))
 })
+
+# Two drawings give the same SVG
+expect_same_drawing <- function(fig1, fig2) {
+  f1 <- tempfile(fileext = ".svg")
+  f2 <- tempfile(fileext = ".svg")
+  on.exit(unlink(c(f1, f2)))
+  vdiffr::write_svg(fig1, f1, title = "fig")
+  vdiffr::write_svg(fig2, f2, title = "fig")
+  expect_identical(readLines(f1), readLines(f2))
+}
+
+test_that("points() marks the thresholds as plot.roc(print.thres = ...)", {
+  skip_if_not_installed("vdiffr")
+  skip_if(getRversion() < "4.1")
+  sm <- smooth(r.s100b)
+  cases <- list(
+    list(r.s100b, "best"),
+    list(r.s100b.percent, "local maximas"),
+    list(r.s100b.partial, "all"),
+    list(r.s100b, c(0.205, 0.5)),
+    list(r.wfns, "best"),
+    list(sm, "best")
+  )
+  for (case in cases) {
+    curve <- case[[1]]
+    expect_same_drawing(
+      function() plot(curve, print.thres = case[[2]]),
+      function() {
+        plot(curve)
+        points(curve, case[[2]])
+      }
+    )
+  }
+  # With the styling and best arguments
+  expect_same_drawing(
+    function() {
+      plot(r.s100b,
+        print.thres = "best", print.thres.pattern = "%.2f: %.2f, %.2f", print.thres.col = "red",
+        print.thres.pch = 3, print.thres.cex = 2, print.thres.pattern.cex = 0.5,
+        print.thres.adj = c(0, 0), print.thres.best.method = "closest.topleft",
+        print.thres.best.weights = c(2, 0.3)
+      )
+    },
+    function() {
+      plot(r.s100b)
+      points(r.s100b, "best",
+        pattern = "%.2f: %.2f, %.2f", col = "red", pch = 3, cex = 2, pattern.cex = 0.5,
+        adj = c(0, 0), best.method = "closest.topleft", best.weights = c(2, 0.3)
+      )
+    }
+  )
+})
+
+test_that("points() of an auc object marks the thresholds within its partial AUC", {
+  skip_if_not_installed("vdiffr")
+  skip_if(getRversion() < "4.1")
+  pauc <- auc(r.s100b, partial.auc = c(1, 0.9))
+  expect_same_drawing(
+    function() plot(r.s100b.partial, print.thres = "best"),
+    function() {
+      plot(r.s100b)
+      points(pauc, "best")
+    }
+  )
+  sm <- smooth(r.s100b)
+  spauc <- auc(sm, partial.auc = c(1, 0.9))
+  smp <- sm
+  smp$auc <- spauc
+  expect_same_drawing(
+    function() plot(smp, print.thres = "best"),
+    function() {
+      plot(sm)
+      points(spauc)
+    }
+  )
+})
+
+test_that("points() returns its argument invisibly, and needs an open plot", {
+  pdf(NULL)
+  on.exit(dev.off())
+  plot(r.s100b)
+  expect_invisible(points(r.s100b))
+  expect_identical(points(r.s100b), r.s100b)
+  expect_identical(points(r.s100b.partial$auc), r.s100b.partial$auc)
+  sm <- smooth(r.s100b)
+  expect_identical(points(sm), sm)
+  msg <- "Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds."
+  for (thresholds in list("all", "local maximas", 0.5)) {
+    expect_error(points(sm, thresholds), msg, fixed = TRUE)
+  }
+})
+
+test_that("points() needs an open plot", {
+  skip_if(dev.cur() != 1, "a device is already open outside this test")
+  expect_error(points(r.s100b), "plot")
+  expect_error(points(r.s100b$auc), "plot")
+})
+
+test_that("points() draws nothing when no threshold is in the partial AUC window", {
+  pdf(NULL)
+  on.exit(dev.off())
+  r <- roc(controls = c(1, 3), cases = c(2, 4), partial.auc = c(0.8, 0.6), quiet = TRUE)
+  plot(r)
+  expect_warning(points(r), "No coordinates found")
+})

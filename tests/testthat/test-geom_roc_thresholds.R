@@ -91,3 +91,17 @@ test_that("geom_roc_threshold uses best.method and best.weights as plot.roc", {
   # the default is still Youden's point
   expect_identical(as.character(point.data(geom_roc_threshold(r.wfns))$threshold), as.character(coords(r.wfns, "best")$threshold))
 })
+
+test_that("geom_roc_threshold of an auc object marks the thresholds within its partial AUC", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  pauc <- auc(r.s100b, partial.auc = c(1, 0.9))
+  label_of <- function(layer) {
+    p <- ggroc(r.s100b) + layer
+    p@layers[[match("GeomText", layer_geom_classes(p))]]$data$label
+  }
+  expect_identical(label_of(geom_roc_threshold(pauc)), "0.475 (0.958, 0.341)")
+  expect_identical(label_of(geom_roc_threshold(pauc)), label_of(geom_roc_threshold(r.s100b.partial)))
+  expect_identical(label_of(geom_roc_threshold(pauc, "all")), label_of(geom_roc_threshold(r.s100b.partial, "all")))
+  # The full curve has another best threshold
+  expect_identical(label_of(geom_roc_threshold(r.s100b)), "0.205 (0.806, 0.634)")
+})
