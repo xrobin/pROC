@@ -33,7 +33,7 @@ test_that("text(auc), text(ci.auc) and text(roc) match ggroc_auc_label()", {
 
   plot(r.s100b)
   expect_identical(text(r.s100b$auc), ggroc_auc_label(r.s100b$auc))
-  expect_identical(text(r.s100b), ggroc_auc_label(r.s100b$auc, r.s100b$ci))
+  expect_identical(text(r.s100b), ggroc_auc_label(r.s100b$auc))
 
   plot(r.s100b.percent)
   expect_identical(text(r.s100b.percent$auc), ggroc_auc_label(r.s100b.percent$auc))
@@ -43,7 +43,8 @@ test_that("text(auc), text(ci.auc) and text(roc) match ggroc_auc_label()", {
 
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, boot.n = 100, quiet = TRUE)
   plot(roc_ci)
-  expect_identical(text(roc_ci), ggroc_auc_label(roc_ci$auc, roc_ci$ci))
+  # The CI stored in the curve is not used by default
+  expect_identical(text(roc_ci), ggroc_auc_label(roc_ci$auc))
   expect_identical(text(roc_ci$ci), ggroc_auc_label(roc_ci$auc, roc_ci$ci))
 })
 
