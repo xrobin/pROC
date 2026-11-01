@@ -185,7 +185,7 @@ text.ci.auc <- function(x, ...) {
   text.auc(attr(x, "auc"), ci = x, ...)
 }
 
-text.roc <- function(x, ci = x$ci, ...) {
+text.roc <- function(x, ci = NULL, ...) {
   roc_utils_stop_if_no_auc(x)
   text.auc(x$auc, ci = ci, ...)
 }

@@ -37,7 +37,7 @@ roc_ndka <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE)
 
 set.seed(42)
 rocobj_ci <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
-rocobj_ci$ci <- ci(rocobj_ci, boot.n = 100)
+ci_auc <- ci(rocobj_ci, boot.n = 100)
 ci_se <- ci.se(rocobj_ci, specificities = seq(0, 100, 5), boot.n = 100)
 ci_sp <- ci.sp(rocobj_ci, sensitivities = seq(0, 100, 5), boot.n = 100)
 ci_th <- ci.thresholds(rocobj_ci, thresholds = "best", boot.n = 100)
@@ -117,7 +117,7 @@ plot(rocobj_ci,
   main = "Confidence intervals",
   panel.first = polygon_ci(ci_se, col = "#1c61b6AA"),
   panel.last = {
-    text(rocobj_ci)
+    text(ci_auc)
     plot(ci_th)
   }
 )
@@ -127,7 +127,7 @@ plot(rocobj_ci,
 ggroc(rocobj_ci) +
   geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0xAA / 255) +
   geom_errorbar_ci(ci_th) +
-  geom_text_auc(rocobj_ci) +
+  geom_text_auc(rocobj_ci, ci = ci_auc) +
   ggtitle("Confidence intervals") +
   theme_ggroc_screenshot(rocobj)
 ```

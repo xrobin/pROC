@@ -81,7 +81,7 @@ test_that("Advanced screenshot 2 works correctly", {
       main = "Confidence intervals", percent = TRUE,
       ci = TRUE # compute AUC (of AUC by default)
     ))
-    text(rocobj) # print the AUC (will contain the CI)
+    text(rocobj$ci) # print the AUC with its CI
 
     ciobj <- ci.se(rocobj, # CI of sensitivity
       specificities = seq(0, 100, 5)
