@@ -193,6 +193,8 @@
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
   * Fixed bootstrap 'roc.test' and 'cov' of a curve smoothed with an extra argument (such as 'smooth(r, percent=FALSE)' or 'direction') failing with "duplicated argument(s) in AUC skeleton" and writing a 'pROC_bug.RData' file into the working directory
   * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
+  * 'power.roc.test', 'ci.coords' and 'ci.thresholds' accept 'auc' objects and use their partial AUC (issue #149)
+  * 'power.roc.test' takes an 'auc' object given first as its curve, as 'var' and 'roc.test' do: 'power.roc.test(auc(r1), auc(r2))' returned a one-curve power with the second AUC as 'ncontrols'. Pass 'as.numeric(auc(r1))' to use the value as an expected AUC
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

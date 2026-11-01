@@ -3,6 +3,7 @@
 \alias{power.roc.test}
 \alias{power.roc.test.numeric}
 \alias{power.roc.test.roc}
+\alias{power.roc.test.auc}
 \alias{power.roc.test.list}
 
 \title{
@@ -18,6 +19,7 @@ power.roc.test(...)
 power = NULL, kappa = NULL, alternative = c("two.sided", "one.sided"),
 reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"),
 paired = NULL, ...)
+\S3method{power.roc.test}{auc}(roc1, roc2, ...)
 # One ROC curve with a given AUC:
 \S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
 ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
@@ -30,10 +32,14 @@ alternative = c("two.sided", "one.sided"), ...)
 
 \arguments{
   \item{roc1, roc2}{one or two \dQuote{roc} object from the
-	\code{\link{roc}} function.
+	\code{\link{roc}} function, or \dQuote{auc} objects from the
+	\code{\link{auc}} function, whose curves are used with their
+	(partial) AUC specifications.
   }
   \item{auc}{
-    expected AUC: a number, or the \code{auc} object of a full AUC.
+    expected AUC, a number. An \dQuote{auc} object given as the first
+    argument is taken as its curve (\code{roc1}): pass
+    \code{as.numeric()} of it to use its value as the expected AUC.
   }
   \item{parslist}{
     a \code{\link{list}} of parameters for the two ROC curves test with
@@ -108,7 +114,7 @@ alternative = c("two.sided", "one.sided"), ...)
   and \code{power} are solved as quadratic equations.
 
   \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
-  function, but the empirical ROC will not be used, only the number of
+  function or an \code{auc} object from the \code{\link{auc}} function, but the empirical ROC will not be used, only the number of
   patients and the AUC. Only the full AUC is supported.
 }
 
@@ -241,7 +247,7 @@ power.roc.test(ncases=41, ncontrols=72, auc=0.73, sig.level=0.05)
 power.roc.test(ncases=41, ncontrols=72, auc=0.73)
 
 # Determine ncases & ncontrols:
-power.roc.test(auc=rocobj$auc, sig.level=0.05, power=0.95, kappa=1.7)
+power.roc.test(auc=as.numeric(rocobj$auc), sig.level=0.05, power=0.95, kappa=1.7)
 power.roc.test(auc=0.73, sig.level=0.05, power=0.95, kappa=1.7)
 
 # Determine sig.level:

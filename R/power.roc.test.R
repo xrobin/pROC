@@ -21,6 +21,13 @@ power.roc.test <- function(...) {
   UseMethod("power.roc.test")
 }
 
+power.roc.test.auc <- function(roc1, roc2, ...) {
+  # Change roc1 from an auc to a roc object but keep the auc specifications
+  roc <- attr(roc1, "roc")
+  roc$auc <- roc1
+  power.roc.test.roc(roc, roc2, ...)
+}
+
 power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa = NULL,
                                alternative = c("two.sided", "one.sided"),
                                reuse.auc = TRUE, method = c("delong", "bootstrap", "obuchowski"),
@@ -58,6 +65,12 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       sig.level <- sig.level / 2
     }
 
+    # If roc2 is an auc, take the roc but keep the auc specifications
+    if (methods::is(roc2, "auc")) {
+      auc2 <- roc2
+      roc2 <- attr(roc2, "roc")
+      roc2$auc <- auc2
+    }
     if ("roc" %in% class(roc2)) {
       # check that the AUC of roc2 was computed, or do it now
       if (is.null(roc2$auc) | !reuse.auc) {

@@ -50,6 +50,13 @@ ci.thresholds.default <- function(response, predictor, ...) {
   ci.thresholds(roc, ...)
 }
 
+ci.thresholds.auc <- function(auc, ...) {
+  # The curve, with the (partial) AUC specification of the auc object
+  roc <- attr(auc, "roc")
+  roc$auc <- auc
+  ci.thresholds(roc, ...)
+}
+
 ci.thresholds.smooth.roc <- function(smooth.roc, ...) {
   stop("'ci.thresholds' is not available for smoothed ROC curves.")
 }
