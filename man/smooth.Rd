@@ -74,7 +74,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     \code{FALSE}, the object returned will not contain
     \dQuote{auc} or \dQuote{ci} fields. It is currently not possible to
     redefine \code{\link{auc}} and \code{\link{ci}} options directly: you need to call \code{\link{auc}} or
-    \code{\link{ci}} later for that.
+    \code{\link{ci}} later for that. Superseded by calling \code{\link{auc}}
+    and \code{\link{ci}} on the smoothed curve (see \link{all_in_one_calls}).
   }
   \item{\dots}{further arguments passed to or from other methods, and
     especially to \code{\link{density}} (only \code{cut}, \code{adjust},

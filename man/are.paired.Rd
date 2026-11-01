@@ -31,7 +31,10 @@ are.paired(...)
   \item{reuse.auc, reuse.ci, reuse.smooth}{
     if \code{return.paired.rocs=TRUE}, determines if \code{\link{auc}},
     \code{\link{ci}} and \code{\link[=smooth.roc]{smooth}} should be re-computed
-    (with the same parameters than the original ROC curves)
+    (with the same parameters than the original ROC curves).
+    \code{reuse.auc} and \code{reuse.ci} are superseded by calling
+    \code{\link{auc}} and \code{\link{ci}} on the paired curves (see
+    \link{all_in_one_calls}).
   }
   \item{\dots}{additional arguments for \code{are.paired.roc}. Ignored
     in \code{are.paired.roc}

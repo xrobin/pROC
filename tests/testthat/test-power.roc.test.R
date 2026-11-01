@@ -40,7 +40,7 @@ test_that("power.roc.test sig.level can be omitted", {
 })
 
 test_that("power.roc.test can determine ncases & ncontrols", {
-  res <- power.roc.test(auc = r.s100b$auc, sig.level = 0.05, power = 0.95, kappa = 1.7)
+  res <- power.roc.test(auc = as.numeric(r.s100b$auc), sig.level = 0.05, power = 0.95, kappa = 1.7)
   expect_equal(as.numeric(res$auc), as.numeric(r.s100b$auc))
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$power, 0.95)
@@ -352,10 +352,11 @@ test_that("power.roc.test re-pairs curves with NAs at different positions", {
 })
 
 test_that("power.roc.test accepts the auc of a percent ROC curve", {
-  res <- power.roc.test(auc = r.s100b.percent$auc, ncases = 41, ncontrols = 72)
+  # Not first: an auc object as the first argument is its curve (power.roc.test.auc)
+  res <- power.roc.test(ncases = 41, ncontrols = 72, auc = r.s100b.percent$auc)
   expect_equal(as.numeric(res$auc), as.numeric(r.s100b$auc))
   expect_equal(res$power, 0.9904833, tolerance = 0.000001)
-  res <- power.roc.test(auc = r.s100b.percent$auc, sig.level = 0.05, power = 0.95, kappa = 1.7)
+  res <- power.roc.test(sig.level = 0.05, power = 0.95, kappa = 1.7, auc = r.s100b.percent$auc)
   expect_equal(res$ncases, 29.29764, tolerance = 0.000001)
   expect_equal(res$ncontrols, 49.806, tolerance = 0.000001)
 })
@@ -405,19 +406,20 @@ test_that("power.roc.test refuses a partial AUC with one ROC curve", {
     power.roc.test(r.s100b, reuse.auc = FALSE, partial.auc = c(1, 0.8)),
     "only available for the full AUC"
   )
-  # The auc object of a partial AUC, also when given as 'auc'
-  expect_error(power.roc.test(auc = r.s100b.partial$auc, ncases = 41, ncontrols = 72), "only available for the full AUC")
+  # The auc object of a partial AUC, as a curve or as the 'auc' of the numeric method
+  expect_error(power.roc.test(r.s100b.partial$auc), "only available for the full AUC")
   expect_error(power.roc.test(r.s100b.partial$auc, power = 0.9), "only available for the full AUC")
-  expect_error(power.roc.test(auc = r.s100b.percent.partial1$auc, power = 0.9), "only available for the full AUC")
-  expect_error(power.roc.test(auc = auc(r.s100b, partial.auc = c(1, 0.8)), power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(ncases = 41, ncontrols = 72, auc = r.s100b.partial$auc), "only available for the full AUC")
+  expect_error(power.roc.test(power = 0.9, auc = r.s100b.percent.partial1$auc), "only available for the full AUC")
+  expect_error(power.roc.test(power = 0.9, auc = auc(r.s100b, partial.auc = c(1, 0.8))), "only available for the full AUC")
   corrected <- auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)
-  expect_error(power.roc.test(auc = corrected, power = 0.9), "only available for the full AUC")
+  expect_error(power.roc.test(power = 0.9, auc = corrected), "only available for the full AUC")
   # Full AUC still works, also when recomputed
   expect_equal(power.roc.test(r.s100b, reuse.auc = FALSE)$power, power.roc.test(r.s100b)$power)
   # Plain numbers and full auc objects are unchanged
   expect_equal(power.roc.test(auc = 0.16, power = 0.9)$ncases, 12.262971, tolerance = 1e-6)
   expect_equal(
-    power.roc.test(auc = r.s100b$auc, power = 0.9)$ncases,
+    power.roc.test(power = 0.9, auc = r.s100b$auc)$ncases,
     power.roc.test(auc = as.numeric(r.s100b$auc), power = 0.9)$ncases
   )
   expect_equal(
@@ -598,4 +600,26 @@ test_that("power.roc.test with DeLong is finite when the better, correlated curv
   expect_true(is.finite(res$ncases))
   expect_no_warning(res <- power.roc.test(r[[1]], r[[2]]))
   expect_true(is.finite(res$power))
+})
+
+test_that("power.roc.test takes auc objects as their curves", {
+  # One curve: the AUC and the sample size of the curve
+  expect_equal(power.roc.test(r.s100b$auc), power.roc.test(r.s100b))
+  expect_equal(power.roc.test(r.s100b$auc, power = 0.9), power.roc.test(r.s100b, power = 0.9))
+  # Two curves, as auc objects or mixed with a curve: 1.19.1 read the
+  # second auc as 'ncontrols' and returned a one-curve power
+  ref <- power.roc.test(r.s100b, r.ndka)
+  expect_equal(unclass(power.roc.test(r.s100b$auc, r.ndka$auc)), unclass(ref))
+  expect_equal(unclass(power.roc.test(r.s100b$auc, r.ndka)), unclass(ref))
+  expect_equal(unclass(power.roc.test(r.s100b, r.ndka$auc)), unclass(ref))
+  expect_equal(power.roc.test(r.s100b$auc, r.ndka$auc)$power, 0.2846123, tolerance = 1e-6)
+})
+
+test_that("power.roc.test uses the partial AUC of auc objects", {
+  pauc1 <- auc(r.s100b, partial.auc = c(1, 0.9))
+  pauc2 <- auc(r.ndka, partial.auc = c(1, 0.9))
+  res.auc <- power.roc.test(pauc1, pauc2, method = "obuchowski")
+  res.roc <- power.roc.test(r.s100b.partial, r.ndka.partial, method = "obuchowski")
+  expect_equal(res.auc$power, res.roc$power)
+  expect_equal(as.numeric(res.auc$auc1), as.numeric(pauc1))
 })

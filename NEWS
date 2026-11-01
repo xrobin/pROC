@@ -8,9 +8,10 @@
   * 'ci.coords' now rejects input="threshold" on smoothed curves, as 'coords' does
   * Added tests for bootstrap operations (issue #28)
   * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc',
-    'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and
-    'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc',
-    so the auc.polygon/max.auc.polygon/print.auc appearance of 'plot.roc'
+    'polygon_ci', 'text' methods for 'auc', 'ci.auc', 'roc' and
+    'smooth.roc', 'points' methods for 'roc', 'smooth.roc' and 'auc'
+    (issue #149), and 'panel.first'/'panel.last' arguments to 'plot.roc',
+    so the auc.polygon/max.auc.polygon/print.auc/print.thres appearance of 'plot.roc'
     can be built from separate roc(), auc() and ci() calls instead of
     one-shot arguments (issue #70). 'polygon_ci' always draws with
     'no.roc=TRUE', so unlike 'plot.ci(type="shape")' it never redraws the
@@ -193,6 +194,9 @@
   * Fixed 'ci', 'var', 'cov', 'roc.test' and 'are.paired' of smoothed curves whose smoothing arguments hold an unevaluated expression, such as 'roc(..., smooth=TRUE, plot=TRUE, main=quote(italic(x)))', also in curves saved by older versions: the smoothing is now repeated with the stored values instead of evaluating them again
   * Fixed bootstrap 'roc.test' and 'cov' of a curve smoothed with an extra argument (such as 'smooth(r, percent=FALSE)' or 'direction') failing with "duplicated argument(s) in AUC skeleton" and writing a 'pROC_bug.RData' file into the working directory
   * multiclass.roc() with smooth = TRUE now gives a clear 'not implemented' error instead of failing in the AUC computation
+  * 'power.roc.test', 'ci.coords' and 'ci.thresholds' accept 'auc' objects and use their partial AUC (issue #149)
+  * 'power.roc.test' takes an 'auc' object given first as its curve, as 'var' and 'roc.test' do: 'power.roc.test(auc(r1), auc(r2))' returned a one-curve power with the second AUC as 'ncontrols'. Pass 'as.numeric(auc(r1))' to use the value as an expected AUC
+  * The all-in-one calls (shortcuts of 'roc', partial AUC arguments outside 'auc', 'reuse.auc', 'reuse.ci', the curve-building default and formula methods, and the display arguments of 'plot.roc') are superseded by modular calls, described in the new '?all_in_one_calls' help page. They keep working without a warning (issue #149)
 
 1.19.1 (2026-08-27)
   * Added a FAQ vignette

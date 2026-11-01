@@ -58,6 +58,13 @@ ci.coords.default <- function(response, predictor, ...) {
   }
 }
 
+ci.coords.auc <- function(auc, ...) {
+  # The curve, with the (partial) AUC specification of the auc object
+  roc <- attr(auc, "roc")
+  roc$auc <- auc
+  ci.coords(roc, ...)
+}
+
 ci.coords.smooth.roc <- function(smooth.roc,
                                  x,
                                  input, ret = c("specificity", "sensitivity"),

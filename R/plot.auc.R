@@ -146,6 +146,33 @@ polygon_max_auc.multiclass.auc <- function(x, ...) {
 
 polygon_max_auc.mv.multiclass.auc <- polygon_max_auc.multiclass.auc
 
+# points() methods: the thresholds, matching plot.roc(print.thres = ...).
+# The base graphics twin of geom_roc_threshold().
+
+points.roc <- function(x, thresholds = "best", pattern = NULL, pch = 20,
+                       adj = c(-.05, 1.25), col = "black", cex = par("cex"),
+                       pattern.cex = cex, best.method = c("youden", "closest.topleft"),
+                       best.weights = c(1, 0.5), ...) {
+  roc_utils_stop_if_no_device("points")
+  co <- roc_utils_marked_thresholds(x, thresholds, best.method, best.weights)
+  if (nrow(co) > 0) {
+    labels <- roc_utils_threshold_labels(pattern, co$threshold, co$specificity, co$sensitivity, x$percent)
+    suppressWarnings(points(co$specificity, co$sensitivity, pch = pch, cex = cex, col = col, ...))
+    suppressWarnings(text(co$specificity, co$sensitivity, labels = labels, adj = adj, cex = pattern.cex, col = col, ...))
+  }
+  invisible(x)
+}
+
+points.smooth.roc <- points.roc
+
+points.auc <- function(x, ...) {
+  # The curve, with the (partial) AUC specification of the auc object
+  roc <- attr(x, "roc")
+  roc$auc <- x
+  points(roc, ...)
+  invisible(x)
+}
+
 # text() methods: the AUC (+ CI) label, matching plot.roc(print.auc = TRUE).
 
 text.auc <- function(x, ci = NULL, pattern = NULL, xy = NULL, adj = c(0, 1),
@@ -158,7 +185,7 @@ text.ci.auc <- function(x, ...) {
   text.auc(attr(x, "auc"), ci = x, ...)
 }
 
-text.roc <- function(x, ci = x$ci, ...) {
+text.roc <- function(x, ci = NULL, ...) {
   roc_utils_stop_if_no_auc(x)
   text.auc(x$auc, ci = ci, ...)
 }

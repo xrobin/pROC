@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{ci.coords}
 \alias{ci.coords}
+\alias{ci.coords.auc}
 \alias{ci.coords.default}
 \alias{ci.coords.formula}
 \alias{ci.coords.roc}
@@ -17,6 +18,7 @@
 
 \usage{
 # ci.coords(...)
+\S3method{ci.coords}{auc}(auc, ...)
 \S3method{ci.coords}{roc}(roc, x,
 input="threshold",
 ret=c("threshold", "specificity", "sensitivity"),
@@ -37,11 +39,15 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
 }
 		   
 \arguments{
-  \item{roc, smooth.roc}{a \dQuote{roc} object from the
-	\code{\link{roc}} function, or a \dQuote{smooth.roc} object from the
-	\code{\link[=smooth.roc]{smooth}} function.
+  \item{auc, roc, smooth.roc}{a \dQuote{roc} object from the
+	\code{\link{roc}} function, a \dQuote{smooth.roc} object from the
+	\code{\link[=smooth.roc]{smooth}} function, or an \dQuote{auc} object
+	from the \code{\link{auc}} function, whose curve is used with its
+	(partial) AUC specification.
   }
-  \item{response, predictor}{arguments for the \code{\link{roc}} function.}
+  \item{response, predictor}{arguments for the \code{\link{roc}} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
   }
@@ -99,6 +105,8 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.coords.roc}
     when calling \code{ci.coords.default} or \code{ci.coords.formula}.
+    For \code{ci.coords.auc}, the arguments of \code{ci.coords.roc} or
+    \code{ci.coords.smooth.roc}.
   }
 }
 

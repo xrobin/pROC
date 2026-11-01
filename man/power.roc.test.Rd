@@ -3,6 +3,7 @@
 \alias{power.roc.test}
 \alias{power.roc.test.numeric}
 \alias{power.roc.test.roc}
+\alias{power.roc.test.auc}
 \alias{power.roc.test.list}
 
 \title{
@@ -18,6 +19,7 @@ power.roc.test(...)
 power = NULL, kappa = NULL, alternative = c("two.sided", "one.sided"),
 reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"),
 paired = NULL, ...)
+\S3method{power.roc.test}{auc}(roc1, roc2, ...)
 # One ROC curve with a given AUC:
 \S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
 ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
@@ -30,10 +32,14 @@ alternative = c("two.sided", "one.sided"), ...)
 
 \arguments{
   \item{roc1, roc2}{one or two \dQuote{roc} object from the
-	\code{\link{roc}} function.
+	\code{\link{roc}} function, or \dQuote{auc} objects from the
+	\code{\link{auc}} function, whose curves are used with their
+	(partial) AUC specifications.
   }
   \item{auc}{
-    expected AUC: a number, or the \code{auc} object of a full AUC.
+    expected AUC, a number. An \dQuote{auc} object given as the first
+    argument is taken as its curve (\code{roc1}): pass
+    \code{as.numeric()} of it to use its value as the expected AUC.
   }
   \item{parslist}{
     a \code{\link{list}} of parameters for the two ROC curves test with
@@ -73,6 +79,8 @@ alternative = c("two.sided", "one.sided"), ...)
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
     test. See the \emph{AUC specification} section for more details.
+    Superseded: pass an \code{auc} object instead (see
+    \link{all_in_one_calls}).
   }
   \item{method}{the method to compute \link[=var.roc]{variance} and
     \link[=cov.roc]{covariance}, either \dQuote{delong},
@@ -108,7 +116,7 @@ alternative = c("two.sided", "one.sided"), ...)
   and \code{power} are solved as quadratic equations.
 
   \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
-  function, but the empirical ROC will not be used, only the number of
+  function or an \code{auc} object from the \code{\link{auc}} function, but the empirical ROC will not be used, only the number of
   patients and the AUC. Only the full AUC is supported.
 }
 
@@ -157,30 +165,10 @@ alternative = c("two.sided", "one.sided"), ...)
 }
 
 \section{AUC specification}{
-  The comparison of the AUC of the ROC curves needs a specification of the
-  AUC. The specification is defined by:
-  \enumerate{
-    \item the \dQuote{auc} field in the \dQuote{\link{roc}} objects if
-    \code{reuse.auc} is set to \code{TRUE} (default)
-    \item passing the specification to \code{\link{auc}} with \dots
-    (arguments \code{partial.auc}, \code{partial.auc.correct} and
-    \code{partial.auc.focus}). In this case, you must ensure either that
-    the \code{\link{roc}} object do not contain an \code{auc} field (if
-    you called \code{\link{roc}} with \code{auc=FALSE}), or set
-    \code{reuse.auc=FALSE}.
-  }
-
-  If \code{reuse.auc=FALSE} the \code{\link{auc}} function will always
-  be called with \code{\dots} to determine the specification, even if
-  the \dQuote{\link{roc}} objects do contain an \code{auc} field.
-
-  As well if the \dQuote{\link{roc}} objects do not contain an \code{auc}
-  field, the \code{\link{auc}} function will always be called with
-  \code{\dots} to determine the specification.
-
-  Warning: if the roc object passed to roc.test contains an \code{auc}
-  field and \code{reuse.auc=TRUE}, \link{auc} is not called and
-  arguments such as \code{partial.auc} are silently ignored.
+  For a partial AUC, pass an \code{auc} object from \code{\link{auc}}
+  instead of a curve. With a curve, the \dQuote{auc} field of the curve is
+  used, or the partial AUC arguments in \code{\dots}, depending on
+  \code{reuse.auc}: this is superseded (see \link{all_in_one_calls}).
 
   Corrected partial AUCs (\code{partial.auc.correct=TRUE}) are not
   supported.
@@ -241,7 +229,7 @@ power.roc.test(ncases=41, ncontrols=72, auc=0.73, sig.level=0.05)
 power.roc.test(ncases=41, ncontrols=72, auc=0.73)
 
 # Determine ncases & ncontrols:
-power.roc.test(auc=rocobj$auc, sig.level=0.05, power=0.95, kappa=1.7)
+power.roc.test(auc=as.numeric(rocobj$auc), sig.level=0.05, power=0.95, kappa=1.7)
 power.roc.test(auc=0.73, sig.level=0.05, power=0.95, kappa=1.7)
 
 # Determine sig.level:

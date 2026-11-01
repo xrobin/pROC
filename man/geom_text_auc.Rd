@@ -14,15 +14,14 @@
 \usage{
 \S3method{geom_text_auc}{auc}(data, ci = NULL, x = NULL, y = NULL, pattern = NULL,
       hjust = 0, vjust = 1, ...)
-\S3method{geom_text_auc}{roc}(data, ci = data$ci, ...)
-\S3method{geom_text_auc}{smooth.roc}(data, ci = data$ci, ...)
+\S3method{geom_text_auc}{roc}(data, ci = NULL, ...)
+\S3method{geom_text_auc}{smooth.roc}(data, ci = NULL, ...)
 }
 
 \arguments{
   \item{data}{a \code{\link{roc}} or \code{\link{auc}} object.
   }
-  \item{ci}{optional \code{\link{ci.auc}} object. Defaults to
-    \code{data$ci} when \code{data} is a ROC curve.
+  \item{ci}{optional \code{\link{ci.auc}} object.
   }
   \item{x, y}{position in plot coordinates. Defaults to the centre of
     the ROC space (0.5 or 50).
@@ -43,8 +42,8 @@
 \examples{
 data(aSAH)
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
-rocobj$ci <- ci(rocobj)
+ciobj <- ci(rocobj)
 if (require(ggplot2)) {
-  ggroc(rocobj) + geom_text_auc(rocobj)
+  ggroc(rocobj) + geom_text_auc(rocobj, ci = ciobj)
 }
 }

@@ -1072,6 +1072,27 @@ roc_utils_set_call_names <- function(roc, call, predictor.name = NULL, response.
 # specificity, sensitivity. With the default pattern (NULL), the threshold is
 # shown as R prints a number, each one on its own (format() of the vector
 # would pad them to common decimals); a custom pattern gets the number.
+# The coordinates of the thresholds marked by points() and
+# geom_roc_threshold(), with a 'threshold' column (NA on smoothed curves).
+# Only real thresholds are marked: with a partial AUC, coords(curve, "all")
+# also returns the interpolated limits of the window, with an NA threshold.
+roc_utils_marked_thresholds <- function(curve, thresholds, best.method, best.weights) {
+  smoothed <- methods::is(curve, "smooth.roc")
+  # A smoothed curve has no thresholds: only "best" can be marked
+  if (smoothed && !identical(coords_special_x(thresholds, roc = curve), "best")) {
+    stop("Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds.", call. = FALSE)
+  }
+  co <- coords(curve, thresholds, best.method = best.method, best.weights = best.weights)
+  if (is.null(co)) { # no coordinates (e.g. no point in the partial AUC window)
+    co <- data.frame(threshold = numeric(0), specificity = numeric(0), sensitivity = numeric(0))
+  } else if (smoothed) {
+    co$threshold <- rep(NA_real_, nrow(co))
+  } else {
+    co <- co[!is.na(co$threshold), , drop = FALSE]
+  }
+  co
+}
+
 roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitivity, percent) {
   if (is.ordered(threshold) || is.character(threshold)) {
     threshold <- as.character(threshold)

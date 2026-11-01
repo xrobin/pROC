@@ -3,6 +3,7 @@
 \alias{geom_roc_threshold}
 \alias{geom_roc_threshold.roc}
 \alias{geom_roc_threshold.smooth.roc}
+\alias{geom_roc_threshold.auc}
 
 \title{
   Print thresholds on a ggroc plot
@@ -20,10 +21,14 @@
       hjust = -0.05, vjust = 1.25, size = 2,
       best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
       ...)
+\S3method{geom_roc_threshold}{auc}(data, ...)
 }
 
 \arguments{
-  \item{data}{a \code{\link{roc}} or \code{\link{smooth.roc}} object.
+  \item{data}{a \code{\link{roc}} or \code{\link{smooth.roc}} object,
+    or an \code{\link{auc}} object, whose curve is used with its
+    (partial) AUC specification: with a partial AUC, the thresholds
+    (including \dQuote{best}) are searched within it.
   }
   \item{thresholds}{passed as \code{x} to \code{\link{coords}}:
     \code{"best"}, \code{"all"}, \code{"local maximas"}, numeric
@@ -44,6 +49,8 @@
     arguments \code{best.method} and \code{best.weights} for details.
   }
   \item{\dots}{additional aesthetics for the point and text layers.
+    For \code{geom_roc_threshold.auc}, the arguments of
+    \code{geom_roc_threshold.roc}.
   }
 }
 
@@ -52,7 +59,8 @@
 }
 
 \seealso{
-  \code{\link{ggroc}}, \code{\link{coords}}, \code{\link{plot.roc}}
+  \code{\link{ggroc}}, \code{\link{coords}}, \code{\link{plot.roc}},
+  \code{\link{points.roc}}
 }
 \examples{
 data(aSAH)

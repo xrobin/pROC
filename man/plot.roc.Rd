@@ -107,7 +107,9 @@ panel.last=NULL,
     plot.roc.smooth.roc), a formula (for plot.roc.formula) or a response
     vector (for plot.roc.default).
   }
-  \item{predictor, data}{arguments for the \link{roc} function.}
+  \item{predictor, data}{arguments for the \link{roc} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{subset,na.action}{arguments for \code{\link{model.frame}}}
   \item{add}{if TRUE, the ROC curve will be added to an existing
     plot. If FALSE (default), a new plot will be created.
@@ -116,6 +118,8 @@ panel.last=NULL,
     contains an \dQuote{auc} field, re-use these specifications for the
     plot (specifically \code{print.auc}, \code{auc.polygon},
     \code{max.auc.polygon} and \code{print.thres} arguments). See details.
+    Superseded: pass an \code{auc} object instead (see
+    \link{all_in_one_calls}).
   }
   \item{axes}{a logical indicating if the plot axes must be drawn.}
   \item{legacy.axes}{a logical indicating if the specificity axis (x
@@ -148,6 +152,8 @@ panel.last=NULL,
 	ROC curve. Character or ordered: level labels to display on an
 	ordered ROC curve (numeric values are not allowed then).
 	Note that on a smoothed ROC curve, only \dQuote{best} is supported.
+	Superseded by \code{\link[=points.roc]{points}}, whose arguments
+	replace the \code{print.thres.*} arguments (see \link{all_in_one_calls}).
   }
   \item{print.thres.pch, print.thres.adj, print.thres.col,
     print.thres.cex}{the plotting character (pch), text string
@@ -172,7 +178,9 @@ panel.last=NULL,
     \code{\link{coords}} for more details.
   }
   \item{print.auc}{boolean. Should the numeric value of AUC be printed
-    on the plot?
+    on the plot? Superseded by \code{\link[=text.auc]{text}}, whose
+    arguments replace the \code{print.auc.*} arguments (see
+    \link{all_in_one_calls}).
   }
   \item{print.auc.pattern}{the text pattern for the AUC, as a
     \link{sprintf} format. If NULL, a reasonable value is computed that
@@ -207,7 +215,8 @@ panel.last=NULL,
     case it specifies the vertical (1) and horizontal (2) lines.
   }
   \item{auc.polygon}{boolean. Whether or not to display the area as a
-    polygon.
+    polygon. Superseded by \code{\link{polygon_auc}}, whose arguments
+    replace the \code{auc.polygon.*} arguments (see \link{all_in_one_calls}).
   }
   \item{auc.polygon.col, auc.polygon.lty, auc.polygon.density,
     auc.polygon.angle, auc.polygon.border}{color (col), line type
@@ -215,7 +224,9 @@ panel.last=NULL,
     \code{\link{polygon}} and \code{\link{par}} for more details.
   }
   \item{max.auc.polygon}{boolean. Whether or not to display the maximal
-    possible area as a polygon.
+    possible area as a polygon. Superseded by
+    \code{\link{polygon_max_auc}}, whose arguments replace the
+    \code{max.auc.polygon.*} arguments (see \link{all_in_one_calls}).
   }
   \item{max.auc.polygon.col, max.auc.polygon.lty, max.auc.polygon.density,
     max.auc.polygon.angle, max.auc.polygon.border}{color (col), line type
@@ -229,7 +240,9 @@ panel.last=NULL,
     \code{\link{plot.ci.coords}} only for the sensitivity at given
     specificities (\code{input="specificity"}, \code{ret="sensitivity"}),
     the only coordinates that map onto the ROC axes; other coordinates are
-    skipped with a warning.}
+    skipped with a warning. Superseded by \code{\link[=plot.ci]{plot}},
+    \code{\link{polygon_ci}} and \code{\link[=text.auc]{text}} on the
+    CI (see \link{all_in_one_calls}).}
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
@@ -304,37 +317,17 @@ panel.last=NULL,
 }
 
 \section{AUC specification}{
-  For \code{print.auc}, \code{auc.polygon} and \code{max.auc.polygon}
-  arguments, an AUC specification is
-  required. By default, the total AUC is plotted, but you may want a
-  partial AUCs. The specification is also used for \code{print.thres}:
-  with a partial AUC, the \dQuote{best}, \dQuote{all} and
-  \dQuote{local maximas} thresholds are looked for only inside its
-  window (see \code{\link{coords}}). The specification is defined by:
-  \enumerate{
-    \item the \dQuote{auc} field in the \dQuote{\link{roc}} object if
-    \code{reuse.auc} is set to \code{TRUE} (default). It is naturally
-    inherited from any call to \code{\link{roc}} and fits most cases.
-    \item passing the specification to \code{\link{auc}} with \dots
-    (arguments \code{partial.auc}, \code{partial.auc.correct} and
-    \code{partial.auc.focus}). In this case, you must ensure either that
-    the \code{\link{roc}} object do not contain an \code{auc} field (if
-    you called \code{\link{roc}} with \code{auc=FALSE}), or set
-    \code{reuse.auc=FALSE}.
-  }
-
-  If \code{reuse.auc=FALSE} the \code{\link{auc}} function will always
-  be called with \code{\dots} to determine the specification, even if
-  the \dQuote{\link{roc}} object do contain an \code{auc} field.
-
-  As well if the \dQuote{\link{roc}} object do not contain an \code{auc}
-  field, the \code{\link{auc}} function will always be called with
-  \code{\dots} to determine the specification.
-
-  Warning: if the roc object passed to plot.roc contains an \code{auc}
-  field and \code{reuse.auc=TRUE}, \link{auc} is not called and
-  arguments such as \code{partial.auc} are silently ignored.
-  
+  \code{print.auc}, \code{auc.polygon} and \code{max.auc.polygon} draw
+  the AUC of the curve, full or partial. The specification is also used
+  for \code{print.thres}: with a partial AUC, the \dQuote{best},
+  \dQuote{all} and \dQuote{local maximas} thresholds are looked for only
+  inside its window (see \code{\link{coords}}). It is the \dQuote{auc}
+  field of the curve, or the partial AUC arguments in \code{\dots},
+  depending on \code{reuse.auc}: this is superseded (see
+  \link{all_in_one_calls}). To draw a partial AUC, pass an \code{auc} object from
+  \code{\link{auc}} to \code{\link{polygon_auc}},
+  \code{\link{polygon_max_auc}}, \code{\link[=text.auc]{text}} and
+  \code{\link[=points.roc]{points}}.
 }
 
 \value{
