@@ -49,7 +49,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{density, density.controls, density.cases}{if
     \code{method="density"}, a numeric value of density (over the y
     axis) or a function returning a density (such as
-    \code{\link{density}}. If \code{method="fitdistr"}, a \code{densfun}
+    \code{\link{density}}. Negative density values are set to 0, as
+    \code{\link{density}} does. If \code{method="fitdistr"}, a \code{densfun}
     argument for \code{\link[MASS]{fitdistr}}.
     If the value is different for control and case observations,
     \code{density.controls} and \code{density.cases} can be employed
@@ -139,16 +140,16 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \code{start.cases}). \code{density} can be one of the character values
   allowed by \code{\link[MASS]{fitdistr}} or a density function (such
   as \code{\link{dnorm}}, \code{\link{dweibull}}, ...).
-  For the continuous distributions named by a character value
-  (\dQuote{beta}, \dQuote{cauchy}, \dQuote{chi-squared},
-  \dQuote{exponential}, \dQuote{f}, \dQuote{gamma}, \dQuote{lognormal},
-  \dQuote{logistic}, \dQuote{normal} and \dQuote{weibull}), the smoothed
-  curve is the exact ROC curve of the fitted distributions, computed from
-  their cumulative distribution functions at \code{n} thresholds spread
-  over the quantiles of both fits. With a density function, the fitted
-  densities are evaluated at \code{n} equally spaced points over the range of
-  the observations only, so that the curve is an approximation that ignores
-  the tails of the fitted distributions outside of this range.
+  For the distributions named by a character value, the smoothed curve is
+  the exact ROC curve of the fitted distributions, computed from their
+  cumulative distribution functions at \code{n} thresholds spread over
+  the quantiles of both fits. With a density function, the fitted
+  densities are evaluated at \code{n}
+  equally spaced points over the range of the observations only, so that
+  the curve is an approximation that ignores the tails of the fitted distributions outside of this range.
+  The discrete distributions (\dQuote{geometric}, \dQuote{negative
+  binomial} and \dQuote{poisson}) require non-negative integer (count)
+  values.
 
   The \code{method="logcondens"} and \code{method="logcondens.smooth"} use the
     \pkg{logcondens} package to generate a non smoothed or smoothed
@@ -179,9 +180,17 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
-  \item{smoothing.args}{a list of the arguments used for the
-    smoothing. Will serve to apply the smoothing again in further
-    bootstrap operations.
+  \item{smoothing.args}{a list of the arguments given to \code{smooth}:
+    \code{method}, \code{n}, \code{bw}, the \code{density.*} and
+    \code{start.*} arguments, and everything passed in \dots. With the
+    \code{\link{roc}(..., smooth=TRUE)} shortcut, this includes the
+    arguments meant for the other functions (such as \code{\link{plot.roc}}
+    or \code{\link{ci}}). Defaults filled in by the smoothers themselves
+    are not recorded. The list serves to apply the smoothing again in
+    bootstrap operations, \code{\link{roc.test}}, \code{\link{cov}} and
+    \code{\link{are.paired}}: the stored values are passed again as values,
+    not evaluated again. \code{\link{roc.test}} and \code{\link{cov}}
+    compare these lists to detect curves smoothed differently.
   }
   \item{auc}{if the original ROC curve contained an AUC, it is computed
     again on the smoothed ROC.
@@ -215,16 +224,13 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   will be displayed if the returned value differ in length.
 
   Binormal smoothing cannot smooth ROC curve defined by only one
-  point, or whose points all have the same specificity (or the same
-  sensitivity), ignoring the points with a sensitivity or specificity
-  of 0 or 1 (100\%). Any such attempt will fail with the error
-  \dQuote{ROC curve not smoothable (not enough points).}.
+  point. Any such attempt will fail with the error \dQuote{ROC curve not
+    smoothable (not enough points).}.
 
-  If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} cannot
-  estimate the parameters of the distribution (for example the standard
-  deviation of a normal distribution with a single case or control), the
-  error \dQuote{ROC curve not smoothable (fitdistr could not estimate the
-  distribution parameters).} is issued.
+  If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
+  estimate the parameters of the distribution because the controls or
+  the cases take a single distinct value (for example with a
+  \dQuote{weibull} or \dQuote{logistic} density), an error is issued.
   With the \dQuote{normal}, \dQuote{lognormal}, \dQuote{exponential},
   \dQuote{poisson} and \dQuote{geometric} densities, \code{fitdistr}
   estimates all the parameters in closed form, so parameters of the
@@ -232,9 +238,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \dots is an error. Use a density function with \code{start} instead.
 
   If \code{method="logcondens"} or \code{method="logcondens.smooth"} and
-  the controls or the cases take fewer than two distinct values, the
-  error \dQuote{ROC curve not smoothable (logcondens needs at least two
-  distinct values in each class).} is issued.
+  the controls or the cases take fewer than two distinct values, an
+  error is issued.
 
   If the smooth ROC curve was generated by \code{\link{roc}} with
   \code{density.controls} and \code{density.cases} numeric arguments, it
@@ -251,9 +256,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
   require additional packages (\pkg{MASS} and \pkg{logcondens},
   respectively). In an interactive session, you will be offered to install
-  a missing package. If it is not installed, the error \dQuote{Package
-  'MASS' not available.} (or \dQuote{Package 'logcondens' not
-  available.}) is issued.
+  a missing package; otherwise an error is issued.
 }
 
 \references{
@@ -297,8 +300,7 @@ data(aSAH)
 ##  Basic example
 rocobj <- roc(aSAH$outcome, aSAH$s100b)
 smooth(rocobj)
-# or directly with roc()
-roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
+# roc(aSAH$outcome, aSAH$s100b, smooth=TRUE) is a shortcut for the same curve
 
 # plotting
 plot(rocobj)

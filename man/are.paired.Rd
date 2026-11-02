@@ -49,17 +49,8 @@ are.paired(...)
   identity again.
 
   It can raise false positives if the responses are identical but correspond
-  to different patients.
-
-  Curves built with \code{controls} and \code{cases} (see
-  \code{\link{roc}}) carry no information on which observations come
-  from the same patients (their \code{response} is made of the controls
-  followed by the cases), so \code{are.paired} returns \code{FALSE}
-  if either curve was built this way, unless both curves were built on
-  the same \code{controls} and \code{cases} (for instance a curve and
-  its smoothed version). Use \code{paired=TRUE} in
-  \code{\link{roc.test}} to match their observations by their position
-  in the \code{controls} and \code{cases} vectors.
+  to different patients, as with any two curves built with \code{controls}
+  and \code{cases} of equal sizes.
 }
 
 \value{

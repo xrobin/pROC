@@ -21,7 +21,7 @@ roc <- function(...) {
   UseMethod("roc")
 }
 
-roc.formula <- function(formula, data, subset, na.action, ...) {
+roc.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
@@ -36,37 +36,21 @@ roc.formula <- function(formula, data, subset, na.action, ...) {
 
   if (ncol(predictors) == 1) {
     roc <- roc.default(response, predictors[, 1], ...)
-    if (!inherits(roc, c("roc", "smooth.roc"))) {
+    if (!roc_utils_is_curve(roc)) {
       return(roc) # NA or NaN: nothing to decorate
     }
-    roc$call <- match.call()
-    roc$predictor.name <- roc.data$predictor.names
-    roc$response.name <- roc.data$response.name
-    if (methods::is(roc, "smooth.roc")) {
-      attr(roc, "roc")$call <- roc$call
-      attr(roc, "roc")$predictor.name <- roc$predictor.name
-      attr(roc, "roc")$response.name <- roc$response.name
-    }
-    return(roc)
+    return(roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name))
   } else if (ncol(predictors) > 1) {
     roclist <- lapply(roc.data$predictor.names, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
       roc <- roc.default(response, m.data[[predictor]], ...)
-      if (!inherits(roc, c("roc", "smooth.roc"))) {
+      if (!roc_utils_is_curve(roc)) {
         return(roc) # NA or NaN: nothing to decorate
       }
       # Update the call to reflect the parents
       formula[3] <- call(predictor) # replace the predictor in formula
       call$formula <- formula # Replace modified formula
-      roc$call <- call
-      roc$predictor.name <- predictor
-      roc$response.name <- roc.data$response.name
-      if (methods::is(roc, "smooth.roc")) {
-        attr(roc, "roc")$call <- roc$call
-        attr(roc, "roc")$predictor.name <- roc$predictor.name
-        attr(roc, "roc")$response.name <- roc$response.name
-      }
-      return(roc)
+      return(roc_utils_set_call_names(roc, call, predictor, roc.data$response.name))
     }, formula = formula, m.data = predictors, call = match.call(), ...)
     # Set the list names
     names(roclist) <- roc.data$predictor.names
@@ -100,11 +84,8 @@ roc.data.frame <- function(data, response, predictor,
 
   r <- roc_(data, response_name, predictor_name, ret = ret, ...)
 
-  if (ret == "roc" && inherits(r, c("roc", "smooth.roc"))) {
-    r$call <- match.call()
-    if (methods::is(r, "smooth.roc")) {
-      attr(r, "roc")$call <- r$call
-    }
+  if (ret == "roc" && roc_utils_is_curve(r)) {
+    r <- roc_utils_set_call_names(r, match.call())
   }
   return(r)
 }
@@ -131,14 +112,10 @@ roc_ <- function(data, response, predictor,
 
   r <- roc(data[[response]], data[[predictor]], ...)
 
-  if (!inherits(r, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(r)) {
     return(r) # NA or NaN: no curve, no coordinates
   } else if (ret == "roc") {
-    r$call <- match.call()
-    if (methods::is(r, "smooth.roc")) {
-      attr(r, "roc")$call <- r$call
-    }
-    return(r)
+    return(roc_utils_set_call_names(r, match.call()))
   } else if (ret == "coords") {
     co <- coords(r, x = "all", transpose = FALSE)
     rownames(co) <- NULL
@@ -193,14 +170,9 @@ roc.default <- function(response, predictor,
     if (is.list(response)) {
       stop("'response' must be a vector or factor, not a data.frame or list.")
     }
-    # Before the default levels are computed from it
-    response <- roc_utils_response_na_level(response)
 
     # Validate levels
     if (missing(levels)) {
-      # An NA level of the response (addNA()) codes missing values: it is not
-      # a class (as in multiclass.roc)
-      levels <- levels[!is.na(levels)]
       if (length(levels) > 2) {
         warning("'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead")
         levels <- levels[1:2]
@@ -228,8 +200,6 @@ roc.default <- function(response, predictor,
     if (length(predictor) != length(response)) {
       stop("Response and predictor must be vectors of the same length.")
     }
-    predictor <- roc_utils_ordered_na_level(predictor)
-    predictor <- roc_utils_integer64_as_numeric(predictor)
     # remove NAs if requested
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor)
@@ -279,8 +249,6 @@ roc.default <- function(response, predictor,
     if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
       stop("'density.*' arguments incompatible with 'cases/controls'.")
     }
-    controls <- roc_utils_integer64_as_numeric(roc_utils_ordered_na_level(controls))
-    cases <- roc_utils_integer64_as_numeric(roc_utils_ordered_na_level(cases))
     # remove nas
     if (na.rm) {
       if (any(is.na(controls))) {
@@ -335,19 +303,14 @@ roc.default <- function(response, predictor,
     smooth.roc$percent <- percent # keep some basic roc specifications
     smooth.roc$direction <- dir
     smooth.roc$call <- match.call()
-    # The AUC is needed to resolve direction = "auto", even if auc = FALSE
-    if (auc || direction == "auto") {
-      correction.undefined <- FALSE
-      smooth.auc <- withCallingHandlers(auc(smooth.roc, ...), warning = function(w) {
-        # With direction = "auto", a corrected partial AUC below the diagonal
-        # (NA) only means that the curve must be flipped below
-        if (direction == "auto" && grepl("Partial AUC correction not defined", conditionMessage(w))) {
-          correction.undefined <<- TRUE
-          invokeRestart("muffleWarning")
-        }
-      })
-      if (direction == "auto" && ((correction.undefined && is.na(smooth.auc)) ||
-        isTRUE(smooth.auc < roc_utils_min_partial_auc_auc(smooth.auc) - roc_utils_coords_tol(ifelse(percent, 100, 1))))) {
+    # The AUC is needed to resolve direction = "auto", even if auc = FALSE.
+    # Use the uncorrected (partial) AUC: the corrected partial AUC is not
+    # defined for a curve below the diagonal, which is when it must be flipped
+    if (direction == "auto") {
+      auc.args <- list(...)
+      auc.args$partial.auc.correct <- FALSE
+      uncorrected.auc <- do.call(auc.smooth.roc, c(list(smooth.roc), auc.args))
+      if (isTRUE(uncorrected.auc < roc_utils_min_partial_auc_auc(uncorrected.auc))) {
         smooth.roc <- roc.default(
           density.controls = density.controls, density.cases = density.cases, levels = levels,
           percent = percent, direction = ">", auc = auc, ci = ci, plot = plot, ...
@@ -355,9 +318,9 @@ roc.default <- function(response, predictor,
         smooth.roc$call <- match.call()
         return(smooth.roc)
       }
-      if (auc) {
-        smooth.roc$auc <- smooth.auc
-      }
+    }
+    if (auc) {
+      smooth.roc$auc <- auc(smooth.roc, ...)
     }
     if (ci) {
       warning("CI can not be computed with densities.")
@@ -435,20 +398,6 @@ roc.default <- function(response, predictor,
   return(roc)
 }
 
-# Creates a ROC object from response, predictor, ... without argument checking. Not to be exposed to the end user
-roc_rp_nochecks <- function(response, predictor, levels, ...) {
-  splitted <- split(predictor, response)
-  controls <- splitted[[as.character(levels[1])]]
-  if (length(controls) == 0) {
-    stop("No control observation.")
-  }
-  cases <- splitted[[as.character(levels[2])]]
-  if (length(cases) == 0) {
-    stop("No case observation.")
-  }
-  roc_cc_nochecks(controls, cases, ...)
-}
-
 # Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
 roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.method, smooth.n, auc, ...) {
   # create the roc object
@@ -458,15 +407,10 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
 
   # compute SE / SP
   thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), direction)
-  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction)
+  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction, scale = ifelse(percent, 100, 1))
 
   se <- perfs$se
   sp <- perfs$sp
-
-  if (percent) {
-    se <- se * 100
-    sp <- sp * 100
-  }
 
   # store the computations in the roc object
   roc$sensitivities <- se

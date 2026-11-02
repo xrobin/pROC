@@ -19,8 +19,8 @@
 # ci.thresholds(...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
-\S3method{ci.thresholds}{formula}(formula, data, subset, na.action, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
+\S3method{ci.thresholds}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
 }
@@ -128,11 +128,6 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
-
-  With \code{response} and \code{predictor} (or a \code{formula}),
-  \code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
-  returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-  predictor values).
 }
 
 \references{

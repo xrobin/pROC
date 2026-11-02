@@ -21,7 +21,7 @@ ci(...)
 \S3method{ci}{smooth.roc}(smooth.roc, of = c("auc", "sp", "se", "coords"), ...)
 \S3method{ci}{multiclass.roc}(multiclass.roc, of = "auc", ...)
 \S3method{ci}{multiclass.auc}(multiclass.auc, of = "auc", ...)
-\S3method{ci}{formula}(formula, data, subset, na.action, ...)
+\S3method{ci}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci}{default}(response, predictor, ...)
 }
 		   
@@ -51,14 +51,18 @@ ci(...)
 }
 
 \details{
-  \code{ci.formula} and \code{ci.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{ci.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{ci.smooth.roc}). \code{roc(\dots, ci=TRUE)} is a shortcut that
+  calls it after building the curve, and \code{ci.formula} and
+  \code{ci.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{ci.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{ci.roc}. Simply use \code{ci}
+  \code{\link{roc}} and \code{ci.roc}, with the limits described in the
+  \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use \code{ci}
   that will dispatch to the correct method.
   
-  This function is typically called from \code{\link{roc}} when \code{ci=TRUE} (not by
-  default). Depending on the \code{of} argument, the specific
+  Depending on the \code{of} argument, the specific
   \code{ci} functions \code{\link{ci.auc}}, \code{\link{ci.thresholds}},
   \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}} are called.
   
@@ -75,11 +79,6 @@ ci(...)
 The return value of the specific \code{ci} functions
 \code{\link{ci.auc}}, \code{\link{ci.thresholds}}, \code{\link{ci.sp}}, \code{\link{ci.se}} or \code{\link{ci.coords}}, depending on the
 \code{of} argument.
-
-With \code{response} and \code{predictor} (or a \code{formula}),
-\code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
-returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-predictor values).
 }
 
 \references{

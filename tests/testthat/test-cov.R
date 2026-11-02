@@ -70,7 +70,6 @@ test_that("cov with delong, percent, direction = > and mixed roc/auc", {
 
 test_that("cov with bootstrap works", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   RNGkind(sample.kind = "Rejection")
   set.seed(42)
   expect_equal(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = 100), -0.000648524)
@@ -99,7 +98,6 @@ test_that("bootstrap cov works with mixed roc, auc and smooth.roc objects", {
 
 test_that("bootstrap cov works with smooth and !reuse.auc", {
   skip_slow()
-  skip_if(getRversion() < "3.6.0") # added sample.kind
   # First calculate cov by giving full curves
   roc1 <- smooth(roc(aSAH$outcome, aSAH$wfns, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
   roc2 <- smooth(roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 1), partial.auc.focus = "sensitivity"))
@@ -133,17 +131,19 @@ test_that("cov keeps the partial AUC of auc objects of smoothed curves", {
 })
 
 test_that("cov errors on curves smoothed with numeric densities", {
+  set.seed(42)
   x <- seq(0, 1, length.out = 64)
   s1 <- smooth(r.s100b, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .5, .2))
   s2 <- smooth(r.ndka, method = "density", density.controls = dnorm(x, .2, .2), density.cases = dnorm(x, .4, .2))
-  expect_error(suppressWarnings(cov(s1, s2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+  expect_error(cov(s1, s2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
 })
 
 test_that("cov errors on curves built from numeric densities", {
+  set.seed(42)
   x <- seq(-4, 6, length.out = 64)
   d1 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
   d2 <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 2))
-  expect_error(suppressWarnings(cov(d1, d2, boot.n = 2)), "smoothed with numeric density.controls and density.cases")
+  expect_error(cov(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
 })
 
 test_that("obuchowski cov of percent curves with partial AUC is the fraction cov times 100^2", {
@@ -174,9 +174,9 @@ test_that("cov re-pairs curves with NAs at different positions", {
 
 test_that("cov selects the bootstrap when only roc2 has a partial AUC", {
   set.seed(42)
-  res.12 <- suppressWarnings(cov(r.ndka, r.s100b.partial1, boot.n = 10))
+  expect_warning(res.12 <- cov(r.ndka, r.s100b.partial1, boot.n = 10), "Different AUC specifications")
   set.seed(42)
-  res.21 <- suppressWarnings(cov(r.s100b.partial1, r.ndka, boot.n = 10))
+  expect_warning(res.21 <- cov(r.s100b.partial1, r.ndka, boot.n = 10), "Different AUC specifications")
   expect_equal(res.12, res.21)
 })
 
@@ -191,22 +191,16 @@ test_that("cov works on curves smoothed in roc() with a partial AUC", {
   expect_equal(cov(r1, r2, boot.n = 10), expected)
 })
 
-test_that("cov compares only the smoothing arguments of the curves", {
-  warnings.of <- function(expr) {
-    warnings <- character(0)
-    withCallingHandlers(expr, warning = function(w) {
-      warnings <<- c(warnings, conditionMessage(w))
-      invokeRestart("muffleWarning")
-    })
-    warnings
-  }
+test_that("cov compares the smoothing arguments of the curves", {
+  set.seed(42)
+  msg <- "Different smoothing parameters"
   s2 <- smooth(r.ndka)
-  # plot and ci arguments of roc(smooth = TRUE) end up in smoothing.args
-  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
-  expect_false(any(grepl("Different smoothing parameters", warnings.of(cov(s1.col, s2, boot.n = 5)))))
   # curves returned by roc.test
   t <- roc.test(smooth(r.s100b), s2, boot.n = 5)
-  expect_false(any(grepl("Different smoothing parameters", warnings.of(cov(t$roc1, s2, boot.n = 5)))))
-  # real differences are still reported
-  expect_true(any(grepl("Different smoothing parameters", warnings.of(cov(smooth(r.s100b, n = 100), s2, boot.n = 5)))))
+  expect_no_warning(cov(t$roc1, s2, boot.n = 5), message = msg)
+  # real differences are reported
+  expect_warning(cov(smooth(r.s100b, n = 100), s2, boot.n = 5), msg)
+  # and so are the other arguments given to smooth, as in 1.19.1
+  s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
+  expect_warning(cov(s1.col, s2, boot.n = 5), msg)
 })

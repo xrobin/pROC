@@ -69,3 +69,25 @@ test_that("roc_utils_match_coords_ret_args works", {
   # Ignoring for now
   # expect_error(pROC:::roc_utils_match_coords_ret_args(c("sensitivity", "blah")))
 })
+
+test_that("roc_utils_bug saves the data in the temporary directory and stops", {
+  # The non-interactive path; an interactive session asks before saving
+  skip_if(interactive())
+  pattern <- "^pROC_bug.*\\.RData$"
+  before <- list.files(tempdir(), pattern = pattern, full.names = TRUE)
+  wd.before <- list.files(getwd(), pattern = pattern)
+  on.exit(unlink(setdiff(list.files(tempdir(), pattern = pattern, full.names = TRUE), before)))
+  expect_error(
+    pROC:::roc_utils_bug("internal check failed", x = 1:3, direction = "<"),
+    "pROC: internal check failed. Data to reproduce it saved in .*pROC_bug.*\\.RData. Please report this bug to <https://github.com/xrobin/pROC/issues>"
+  )
+  new <- setdiff(list.files(tempdir(), pattern = pattern, full.names = TRUE), before)
+  expect_length(new, 1)
+  saved <- new.env()
+  load(new, envir = saved)
+  expect_setequal(ls(saved), c("x", "direction", "sessionInfo"))
+  expect_identical(saved$x, 1:3)
+  expect_identical(saved$direction, "<")
+  expect_s3_class(saved$sessionInfo, "sessionInfo")
+  expect_identical(list.files(getwd(), pattern = pattern), wd.before)
+})

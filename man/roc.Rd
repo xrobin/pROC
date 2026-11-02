@@ -18,7 +18,7 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, subset, na.action, ...)
+\S3method{roc}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc}{data.frame}(data, response, predictor,
 ret = c("roc", "coords", "all_coords"), ...)
 \S3method{roc}{default}(response, predictor, controls, cases,
@@ -57,7 +57,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{density.controls, density.cases}{a smoothed ROC curve can be
     built directly from two densities on identical \code{x} points, as in
-    \code{\link[=smooth.roc]{smooth}}.
+    \code{\link[=smooth.roc]{smooth}}. Negative values are set to 0, as
+    \code{\link{density}} does.
   }
   \item{formula, data}{a formula of the type \code{response~predictor}. If multiple predictors 
     are passed, a named list of \code{roc} objects will be returned. Additional arguments
@@ -84,10 +85,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{percent}{if the sensitivities, specificities and AUC must be
     given in percent (\code{TRUE}) or in fraction (\code{FALSE}, default).
   }
-  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.
-    This also applies to \code{roc.formula}, which passes the
-    \code{NA} values to \code{roc.default} (\code{na.action=na.pass}).
-  }
+  \item{na.rm}{if \code{TRUE}, the \code{NA} values will be removed.}
   \item{direction}{how are positive observations defined?
     \dQuote{<}: observations are positive when they
     are greater than or equal (\code{>=}) to the threshold.
@@ -107,26 +105,36 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 	all the coordinates at all thresholds (\dQuote{all_coords}) or the
 	\code{roc} object (\dQuote{roc}). As it has the same name, the \code{ret}
 	argument of \code{\link{ci.coords}} cannot be passed through
-	\code{roc.data.frame} and \code{roc_} (use
-	\code{roc(response ~ predictor, data, ci=TRUE, of="coords", ret=\dots)}
-	instead).}
+	\code{roc.data.frame} and \code{roc_}: call
+	\code{\link{ci.coords}(rocobj, ret=\dots)} on the curve returned by
+	\code{roc} instead.}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
   }
   \item{smooth}{if TRUE, the ROC curve is passed to \code{\link{smooth}}
-    to be smoothed.
+    to be smoothed. This is a shortcut for \code{smooth(roc(\dots))}, which
+    is preferred (see \dQuote{Shortcuts} below).
   }
   \item{auc}{compute the area under the curve (AUC)? If \code{TRUE}
     (default), additional arguments can be passed to \code{\link{auc}}.
+    For a partial AUC, prefer calling \code{\link{auc}} on the curve
+    (see \dQuote{Shortcuts} below).
   }
   \item{ci}{compute the confidence interval (CI)? If set to \code{TRUE}, 
-    additional arguments can be passed to \code{\link{ci}}.
+    additional arguments can be passed to \code{\link{ci}}. This is a
+    shortcut for calling \code{\link{ci}} on the curve, which is preferred
+    (see \dQuote{Shortcuts} below).
   }
   \item{plot}{plot the ROC curve? If \code{TRUE}, additional
-    arguments can be passed to \code{\link{plot.roc}}.
+    arguments can be passed to \code{\link{plot.roc}}. This is a
+    shortcut for calling \code{\link[=plot.roc]{plot}} on the curve, which
+    is preferred (see \dQuote{Shortcuts} below).
   }
-  \item{smooth.method, smooth.n, ci.method}{in \code{roc.formula} and
-	\code{roc.default}, the \code{method} and \code{n} arguments to
+  \item{smooth.method, smooth.n, ci.method}{with the shortcuts only. Prefer
+	\code{\link[=smooth.roc]{smooth}(rocobj, method=\dots, n=\dots)} and
+	\code{\link{ci.auc}(rocobj, method=\dots)} on the curve returned by
+	\code{roc}. In \code{roc.formula} and \code{roc.default}, the
+	\code{method} and \code{n} arguments to
 	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
 	\code{method} argument to \code{\link{ci.auc}} (if \code{ci=TRUE} and
 	\code{of="auc"}) must be passed as
@@ -155,12 +163,14 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 }
 \details{
   This function's main job is to build a ROC object. See the
-  \dQuote{Value} section to this page for more details. Before
-  returning, it will call (in this order) the \code{\link[=smooth.roc]{smooth}},
-  \code{\link{auc}}, \code{\link{ci}} and \code{\link{plot.roc}}
-  functions if \code{smooth} \code{auc}, \code{ci} and \code{plot.roc}
-  (respectively) arguments are set to TRUE. By default, only \code{auc}
-  is called.
+  \dQuote{Value} section to this page for more details. The curve is
+  then passed to \code{\link[=smooth.roc]{smooth}}, \code{\link{auc}},
+  \code{\link{ci}}, \code{\link{coords}} or \code{\link[=plot.roc]{plot}}.
+  As a shortcut, before returning, \code{roc} will call (in this order) the
+  \code{\link[=smooth.roc]{smooth}}, \code{\link{auc}}, \code{\link{ci}}
+  and \code{\link{plot.roc}} functions if the \code{smooth}, \code{auc},
+  \code{ci} and \code{plot} (respectively) arguments are set to TRUE. By
+  default, only \code{auc} is called.
 
   Data can be provided as \code{response, predictor}, where the
   predictor is the numeric (or ordered) level of the evaluated signal, and
@@ -204,8 +214,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \dQuote{>} otherwise. The AUC is not guaranteed to be above 0.5: in
   particular, when both medians are equal (frequent with binary or
   ordered predictors with few levels), \dQuote{<} is chosen whatever the
-  AUC. Set \code{direction} explicitly whenever the expected direction
-  is known. With \code{density.controls, density.cases}, the curve is built
+  AUC. With \code{density.controls, density.cases}, the curve is built
   with \dQuote{<} and turned to \dQuote{>} if its AUC is below that of the
   diagonal (0.5 for a full AUC).
 
@@ -237,11 +246,37 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 
   Note that if \code{roc} was called with \code{auc=TRUE}, the latter syntax will not
   allow redefining the AUC specifications. You must use \code{reuse.auc=FALSE} for that.
+}
+
+\section{Shortcuts}{
+  The \code{smooth}, \code{auc}, \code{ci} and \code{plot} arguments are
+  shortcuts for calling these functions on the curve. With them, a single
+  \code{\dots} is shared by \code{\link[=smooth.roc]{smooth}},
+  \code{\link{auc}}, \code{\link{ci}} and \code{\link{plot.roc}}, and
+  arguments are matched by R as for any function call. Care is needed:
+  arguments must be spelled in full, as an abbreviation can match an
+  argument of \code{roc} itself (\code{control} for \code{\link{optim}}
+  is taken as \code{controls}) or of another function; and names used by
+  several of these functions, such as \code{method}, \code{x} or \code{n},
+  can collide or reach the wrong function. Calling the functions
+  separately avoids all of this, as each argument then goes to the
+  function it belongs to:
+
+  \preformatted{
+    rocobj <- roc(aSAH$outcome, aSAH$s100b)
+    smoothed <- smooth(rocobj, method = "density", adjust = 2)
+    auc(smoothed, partial.auc = c(1, 0.8))
+    ci(smoothed, boot.n = 100)
+    plot(smoothed, main = "S100b")
+  }
   
 }
 \value{
   If the data contained any \code{NA} value and \code{na.rm=FALSE}, \code{NA} is
-  returned. Otherwise, if \code{smooth=FALSE}, a list of class
+  returned. The functions that build the curve from \code{response} and
+  \code{predictor} (or a \code{formula}), such as \code{\link{auc}},
+  \code{\link{ci}} and \code{\link{plot.roc}}, return \code{NA} (or
+  \code{NaN}) too in that case. Otherwise, if \code{smooth=FALSE}, a list of class
   \dQuote{roc} with the following fields: 
   \item{auc}{if called with \code{auc=TRUE}, a numeric of class \dQuote{auc} as
     defined in \code{\link{auc}}.
@@ -349,8 +384,7 @@ aSAH  \%>\%
   Infinite values of the predictor cannot always be thresholded by
   infinity and can cause ROC curves to not reach 0 or 100\% 
   specificity or sensitivity. Since version 1.13.0, pROC returns \code{NaN}
-  with a warning message \dQuote{Infinite value(s) in predictor, cannot
-  build a valid ROC curve. NaN returned instead.} if
+  with a warning message \dQuote{Infinite value(s) in predictor} if
   \code{predictor} contains any \link[=is.infinite]{infinite} values.
 }
 
@@ -426,11 +460,12 @@ ci(rocobj)
 plot(rocobj)
 
 # Smoothed ROC curve
-roc(aSAH$outcome, aSAH$s100b, smooth=TRUE)
-# this gives the same smoothed curve and AUC as
-smooth(roc(aSAH$outcome, aSAH$s100b))
-# but the returned objects differ in their call and in the data stored
-# (the former also contains the predictor, response and levels)
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+smooth(rocobj)
+# roc(aSAH$outcome, aSAH$s100b, smooth=TRUE) is a shortcut that gives the
+# same smoothed curve and AUC, but the returned objects differ in their
+# call and in the data stored (the shortcut also contains the predictor,
+# response and levels)
 }
 
 \keyword{univar}

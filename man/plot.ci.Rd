@@ -60,9 +60,8 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   \code{x} are drawn on the horizontal axis and the confidence interval of
   the first \code{ret} coordinate on the vertical axis (a warning is
   issued if there are several): on a ROC plot this matches the axes only
-  for \code{input="specificity"} and \code{ret="sensitivity"} (to draw
-  other coordinates on a ROC curve, store the CI in the curve and use
-  \code{\link{plot.roc}(ci = TRUE)}). \code{x} must be numeric:
+  for \code{input="specificity"} and \code{ret="sensitivity"}. \code{x}
+  must be numeric:
   \dQuote{best} or level labels of an ordered predictor give an error.
 
   These functions must be called on an existing plot
@@ -118,9 +117,8 @@ ci.sp.obj <- ci.sp(rocobj, sensitivities=seq(0, 1, .01), boot.n=100)
 plot(rocobj) # restart a new plot
 plot(ci.sp.obj, type="shape", col="blue")
 
-# Direct syntax (response, predictor): ci() (like auc(), roc() and plot())
-# accepts a response/predictor pair directly, with no roc object needed:
-ci.thresh.obj <- ci(aSAH$outcome, aSAH$s100b, of="thresholds")
+# Thresholds
+ci.thresh.obj <- ci(rocobj, of="thresholds")
 plot(rocobj) # restart a new plot
 plot(ci.thresh.obj)
 

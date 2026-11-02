@@ -25,7 +25,7 @@ auc(...)
 allow.invalid.partial.auc.correct = FALSE, ...)
 \S3method{auc}{smooth.roc}(smooth.roc, ...)
 \S3method{auc}{multiclass.roc}(multiclass.roc, ...)
-\S3method{auc}{formula}(formula, data, subset, na.action, ...)
+\S3method{auc}{formula}(formula, data, ..., subset, na.action)
 \S3method{auc}{default}(response, predictor, ...)
 }
 
@@ -145,11 +145,6 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   \item{percent}{whether the AUC is given in percent or fraction.}
   \item{roc}{the original ROC curve, as a \dQuote{\link{roc}},
     \dQuote{\link{smooth.roc}} or \dQuote{\link{multiclass.roc}} object.}
-
-  With \code{response} and \code{predictor} (or a \code{formula}),
-  \code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
-  returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-  predictor values).
 }
 \references{
   Tom Fawcett (2006) ``An introduction to ROC analysis''. \emph{Pattern

@@ -21,7 +21,7 @@ multiclass.roc <- function(...) {
   UseMethod("multiclass.roc")
 }
 
-multiclass.roc.formula <- function(formula, data, ...) {
+multiclass.roc.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   roc.data <- roc_utils_extract_formula(formula, data, ...,
@@ -62,13 +62,7 @@ multiclass_roc_univariate <- function(response, predictor,
     percent = percent
   )
   class(multiclass.roc) <- "multiclass.roc"
-  # observations with an NA predictor are removed by roc() (na.rm = TRUE):
-  # a level with only such observations has no observation either
-  observed <- response
-  if (multiclass_na_rm(...)) {
-    observed <- response[!is.na(roc_utils_ordered_na_level(predictor))]
-  }
-  missing.levels.requested <- levels[!(levels %in% observed)]
+  missing.levels.requested <- levels[!(levels %in% response)]
   if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
@@ -93,11 +87,6 @@ multiclass_roc_univariate <- function(response, predictor,
   #  multiclass.roc$ci <- ci.multiclass.roc(multiclass.roc, ...)
 
   return(multiclass.roc)
-}
-
-# The na.rm argument of roc() in ...
-multiclass_na_rm <- function(..., na.rm = TRUE) {
-  isTRUE(na.rm)
 }
 
 # auc and ci in ... (see multiclass.roc.default) are not passed again to roc()
@@ -128,15 +117,6 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
     stop("'direction=\"auto\"' not available for multivariate multiclass.roc")
   }
   missing.levels.requested <- levels[!(levels %in% response)]
-  # observations with an NA predictor are removed by roc() (na.rm = TRUE): a
-  # level needs a non-NA value in each column of the levels to be compared
-  if (multiclass_na_rm(...)) {
-    columns <- intersect(colnames(predictor), levels)
-    no.values <- vapply(levels, function(level) {
-      any(colSums(!is.na(predictor[which(response %in% level), columns, drop = FALSE])) == 0)
-    }, logical(1))
-    missing.levels.requested <- union(missing.levels.requested, levels[no.values])
-  }
   if (length(missing.levels.requested) > 0) {
     warning(paste("No observation for response level(s):", paste(missing.levels.requested, collapse = ", ")))
     levels <- levels[!(levels %in% missing.levels.requested)]
@@ -146,7 +126,9 @@ multiclass_roc_multivariate <- function(response, predictor, levels, percent, di
   m <- match(colnames(predictor), levels)
   missing.classes <- levels[setdiff(seq_along(levels), m)]
   levels <- colnames(predictor)[!is.na(m)]
-  if (length(levels) == 1) {
+  if (length(levels) == 1 && ncol(predictor) > 1) {
+    stop(sprintf("Only one column of 'predictor' (%s) could be matched to the levels of 'response'.", sQuote(levels, FALSE)))
+  } else if (length(levels) == 1) {
     stop("For a single decision value, please provide 'predictor' as a vector.")
   } else if (length(levels) == 0) {
     stop("The column names of 'predictor' could not be matched to the levels of 'response'.")
@@ -200,10 +182,6 @@ multiclass.roc.default <- function(response, predictor,
   if (is.list(response)) {
     stop("'response' must be a vector or factor, not a data.frame or list.")
   }
-  # An NA level of the response (addNA()) codes missing values: it is not a
-  # class that can be compared
-  levels <- levels[!is.na(levels)]
-
   # smooth = TRUE would smooth the pairwise curves, whose AUCs then fail.
   # Look only at 'smooth': other arguments in ... (e.g. subset) must not be evaluated here
   smooth.requested <- function(..., smooth = FALSE) isTRUE(smooth)

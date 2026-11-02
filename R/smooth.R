@@ -109,12 +109,13 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
       warning("'ci.thresholds' is not available for smoothed ROC curves: the CI is not re-used.")
     } else if (methods::is(roc$ci, "ci.coords") &&
       ((identical(attr(roc$ci, "input"), "threshold") && !identical(attr(roc$ci, "x"), "best")) ||
-        "threshold" %in% attr(roc$ci, "ret"))) {
+        all(attr(roc$ci, "ret") == "threshold"))) {
       # A smoothed curve has no thresholds
       warning("'ci.coords' of thresholds is not available for smoothed ROC curves: the CI is not re-used.")
     } else {
       args <- attributes(roc$ci)
       args$roc <- NULL
+      args$method <- NULL # smoothed curves are always bootstrapped
       if (methods::is(roc$ci, "ci.coords") && identical(args$x, "best")) {
         # input is ignored for x = "best" (and "threshold" is not a valid
         # input on a smoothed curve)
@@ -142,19 +143,8 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
     from <- min(predictor) - (cut * bw)
     to <- max(predictor) + (cut * bw)
   }
-  # Only pass the arguments of the density function (or of density() if it
-  # takes ...) from ...: when called from roc(), ... also contains the
-  # arguments of auc, ci and plot, such as the 'x' of ci.coords
-  density.dots <- function(densfun) {
-    allowed <- names(formals(densfun))
-    if ("..." %in% allowed) {
-      allowed <- c(allowed, names(formals(stats::density.default)))
-    }
-    allowed <- setdiff(allowed, c("x", "n", "from", "to", "bw", "kernel", "..."))
-    list(...)[names(list(...)) %in% allowed]
-  }
   if (mode(density.controls) == "function") {
-    density.controls <- do.call(density.controls, c(list(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density.controls)))
+    density.controls <- density.controls(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel, ...)
     if (!is.numeric(density.controls)) {
       if (is.list(density.controls) && !is.null(density.controls$y) && is.numeric(density.controls$y)) {
         density.controls <- density.controls$y
@@ -163,12 +153,12 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
       }
     }
   } else if (is.null(density.controls)) {
-    density.controls <- suppressWarnings(do.call(density, c(list(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density))))$y
+    density.controls <- suppressWarnings(density(roc$controls, n = n, from = from, to = to, bw = bw, kernel = kernel, ...))$y
   } else if (!is.numeric(density.controls)) {
     stop("'density.controls' must be either NULL, a function or numeric values of density (over the y axis).")
   }
   if (mode(density.cases) == "function") {
-    density.cases <- do.call(density.cases, c(list(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density.cases)))
+    density.cases <- density.cases(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel, ...)
     if (!is.numeric(density.cases)) {
       if (is.list(density.cases) && !is.null(density.cases$y) && is.numeric(density.cases$y)) {
         density.cases <- density.cases$y
@@ -177,25 +167,18 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
       }
     }
   } else if (is.null(density.cases)) {
-    density.cases <- suppressWarnings(do.call(density, c(list(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel), density.dots(density))))$y
+    density.cases <- suppressWarnings(density(roc$cases, n = n, from = from, to = to, bw = bw, kernel = kernel, ...))$y
   } else if (!is.numeric(density.cases)) {
     stop("'density.cases' must be either NULL, a function or numeric values of density (over the y axis).")
   }
   if (length(density.controls) != length(density.cases)) {
     stop("Length of 'density.controls' and 'density.cases' differ.")
   }
-  # A single density value is one bin: controls and cases are then
-  # indistinguishable, which is not a density curve
-  if (length(density.controls) < 2) {
-    stop("'density.controls' and 'density.cases' must contain at least two density values.")
-  }
-  # Even tiny negative values (e.g. -1e-17 from KernSmooth::bkde) make
-  # the curve non-monotonic and the AUC wrong
-  for (dens in list(density.controls, density.cases)) {
-    if (anyNA(dens) || any(is.infinite(dens)) || any(dens < 0) || sum(dens) == 0) {
-      stop("'density.controls' and 'density.cases' must be finite, non-negative and not all zero.")
-    }
-  }
+  # Negative values (e.g. -1e-17 from KernSmooth::bkde) make the curve
+  # non-monotonic and the AUC wrong: set them to 0, as density() does with
+  # pmax.int(0, y).
+  density.controls <- pmax.int(0, density.controls)
+  density.cases <- pmax.int(0, density.cases)
 
   perfs <- sapply((1:length(density.controls)) + .5, roc_utils_perfs_dens, x = (1:length(density.controls)) + .5, dens.controls = density.controls, dens.cases = density.cases, direction = direction)
 
@@ -207,20 +190,24 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
 
 smooth_roc_binormal <- function(roc, n) {
   df <- data.frame(sp = qnorm(roc$specificities * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$sensitivities * ifelse(roc$percent, 1 / 100, 1)))
-  df <- df[apply(df, 1, function(x) all(is.finite(x))), ]
-  # Empty levels of ordered predictors give the same ROC point several times:
-  # count each point once in the fit
-  df <- unique(df)
+  df <- df[is.finite(df$sp) & is.finite(df$se), ]
+  # Empty levels of ordered predictors give the same ROC point several times,
+  # next to each other in curve order: count each point once in the fit
+  df <- df[c(TRUE, diff(df$sp) != 0 | diff(df$se) != 0), ]
   if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
     stop("ROC curve not smoothable (not enough points).")
   }
   model <- lm(sp ~ se, df)
-  # A constant sp gives a slope of 0 up to rounding, and a degenerate curve
-  if (any(is.na(model$coefficients[2])) || length(unique(df$sp)) < 2) {
+  if (any(is.na(model$coefficients[2]))) {
     stop("ROC curve not smoothable (not enough points).")
   }
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
   sp <- predict(model, data.frame(se))
+  if (length(unique(df$sp)) == 1) {
+    # The points share one specificity: the exact slope is 0, a vertical
+    # line, but lm() returns it with a rounding error of either sign
+    sp <- c(Inf, rep(df$sp[1], n - 2), -Inf)
+  }
 
   return(list(
     sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),
@@ -229,53 +216,44 @@ smooth_roc_binormal <- function(roc, n) {
   ))
 }
 
-smooth_roc_fitdistr_densfuns <- list(
-  beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
-  gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
-  logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
-  t = "dt_location_scale", weibull = "dweibull"
-)
-
 smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.controls, start.cases, ...) {
   load.suggested.package("MASS")
 
-  densfuns.list <- smooth_roc_fitdistr_densfuns
+  densfuns.list <- list(
+    beta = "dbeta", cauchy = "dcauchy", "chi-squared" = "dchisq", exponential = "dexp", f = "df",
+    gamma = "dgamma", geometric = "dgeom", "log-normal" = "dlnorm", lognormal = "dlnorm",
+    logistic = "dlogis", "negative binomial" = "dnbinom", normal = "dnorm", poisson = "dpois",
+    t = "dt_location_scale", weibull = "dweibull"
+  )
 
   if (is.null(densfun.controls)) {
     densfun.controls <- "normal"
   } else if (is.character(densfun.controls)) {
-    densfun.controls <- match.arg(densfun.controls, names(densfuns.list))
+    densfun.controls <- match.arg(tolower(densfun.controls), names(densfuns.list))
   }
 
   if (is.null(densfun.cases)) {
     densfun.cases <- "normal"
   } else if (is.character(densfun.cases)) {
-    densfun.cases <- match.arg(densfun.cases, names(densfuns.list))
+    densfun.cases <- match.arg(tolower(densfun.cases), names(densfuns.list))
   }
 
-  # Only pass the arguments of densfun or optim to fitdistr: when called
-  # from roc(), ... also contains the arguments of auc, ci and plot
-  fitdistr.dots <- function(densfun) {
-    if (is.character(densfun)) {
-      densfun <- match.fun(densfuns.list[[densfun]])
-    }
-    allowed <- setdiff(c(names(formals(densfun)), "gr", "lower", "upper", "control"), c("x", "..."))
-    list(...)[names(list(...)) %in% allowed]
-  }
   # A class with a single distinct value (one observation or constant
   # values) has no spread to estimate: optim fails inside fitdistr for most
   # densities. Return NULL then, and keep any other error as it is.
   fit <- function(values, densfun, start) {
+    if (is.character(densfun) && densfun %in% c("geometric", "negative binomial", "poisson") &&
+      any(values < 0 | values != round(values))) {
+      stop(sprintf("Density \"%s\" requires non-negative integer (count) values.", densfun))
+    }
     tryCatch(
-      do.call(MASS::fitdistr, c(list(values, densfun, start), fitdistr.dots(densfun))),
+      MASS::fitdistr(values, densfun, start, ...),
       error = function(e) if (length(unique(values)) < 2) NULL else stop(e)
     )
   }
   fit.controls <- fit(roc$controls, densfun.controls, start.controls)
   fit.cases <- if (!is.null(fit.controls)) fit(roc$cases, densfun.cases, start.cases)
-  # fitdistr gives an NA sd for a normal or log-normal fit of a single observation
-  if (is.null(fit.cases) ||
-    !all(is.finite(fit.controls$estimate)) || !all(is.finite(fit.cases$estimate))) {
+  if (is.null(fit.cases)) {
     stop("ROC curve not smoothable (fitdistr could not estimate the distribution parameters).")
   }
   # Parameters in ... are held fixed by fitdistr, except for the densities it
@@ -300,15 +278,11 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     fit.cases$densfun <- densfun.cases
   }
 
-  # Named continuous distributions: the ROC curve of the fitted distributions
-  # is computed exactly from their CDFs over their whole support, at
-  # thresholds spread over the quantiles of both fits
-  cdf.densfuns <- c(
-    "beta", "cauchy", "chi-squared", "exponential", "f", "gamma",
-    "log-normal", "lognormal", "logistic", "normal", "weibull"
-  )
-  if (is.character(densfun.controls) && is.character(densfun.cases) &&
-    all(c(densfun.controls, densfun.cases) %in% cdf.densfuns)) {
+  # Named distributions: the ROC curve of the fitted distributions is
+  # computed exactly from their CDFs over their whole support, at
+  # thresholds spread over the quantiles of both fits (integers for the
+  # discrete distributions: the vertices of the curve).
+  if (is.character(densfun.controls) && is.character(densfun.cases)) {
     fitted.fun <- function(prefix, densfun, fit) {
       f <- match.fun(sub("^d", prefix, densfuns.list[[densfun]]))
       dots <- list(...)[names(list(...)) %in% setdiff(names(formals(f)), c("q", "p", "lower.tail", "log.p"))]
@@ -316,10 +290,12 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
     }
     # interior probabilities, alternately for controls and cases
     p <- seq(0, 1, length.out = n + 2)[-c(1, n + 2)]
+    # An NA parameter (e.g. the sd of a single value) gives NA thresholds:
+    # keep them, for an NA curve
     thresholds <- sort(c(
       fitted.fun("q", densfun.controls, fit.controls)(p[seq(1, n, by = 2)]),
       fitted.fun("q", densfun.cases, fit.cases)(p[seq_len(n %/% 2) * 2])
-    ))
+    ), na.last = TRUE)
     cdf.controls <- fitted.fun("p", densfun.controls, fit.controls)(thresholds)
     cdf.cases <- fitted.fun("p", densfun.cases, fit.cases)(thresholds)
     if (roc$direction == "<") {
@@ -378,10 +354,13 @@ smooth_roc_logcondens <- function(roc, n) {
   }
 
   sp <- seq(0, 1, 1 / (n - 1))
-  # logConROC assumes cases > controls: negate the values for direction ">"
-  sign <- ifelse(roc$direction == ">", -1, 1)
-  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
+  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC
+  # logConROC assumes cases > controls: for direction ">", take the point
+  # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
+  if (roc$direction == ">") {
+    se <- 1 - rev(se)
+  }
 
   return(list(
     sensitivities = se * ifelse(roc$percent, 100, 1),
@@ -398,10 +377,13 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
   }
 
   sp <- seq(0, 1, 1 / (n - 1))
-  # logConROC assumes cases > controls: negate the values for direction ">"
-  sign <- ifelse(roc$direction == ">", -1, 1)
-  logcondens <- logcondens::logConROC(sign * roc$cases, sign * roc$controls, sp)
+  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
   se <- logcondens$fROC.smooth
+  # logConROC assumes cases > controls: for direction ">", take the point
+  # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
+  if (roc$direction == ">") {
+    se <- 1 - rev(se)
+  }
 
   return(list(
     sensitivities = se * ifelse(roc$percent, 100, 1),
@@ -415,3 +397,5 @@ smooth_roc_logcondens_smooth <- function(roc, n) {
 dt_location_scale <- function(x, m, s, df) {
   dt((x - m) / s, df) / s
 }
+pt_location_scale <- function(q, m, s, df) pt((q - m) / s, df)
+qt_location_scale <- function(p, m, s, df) m + s * qt(p, df)

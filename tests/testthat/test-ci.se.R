@@ -43,25 +43,12 @@ for (stratified in c(TRUE, FALSE)) {
 }
 
 test_that("ci.se names itself in the multiclass error", {
-  mc <- multiclass.roc(aSAH$gos6, aSAH$s100b, quiet = TRUE)
+  mc <- multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(3, 4, 5), quiet = TRUE)
   expect_error(ci.se(mc), "'ci.se' not available for multiclass ROC curves.", fixed = TRUE)
 })
 
-test_that("ci.se gives the same result on percent and fraction curves", {
-  # sp = 23/40 is a vertical segment: (23/40) * 100 != 57.5 in floating point
-  controls <- c(1:23, 30:46)
-  cases <- c(23.6, 23.7, 23.8, 50:55)
-  r <- roc(controls = controls, cases = cases, quiet = TRUE)
-  rp <- roc(controls = controls, cases = cases, percent = TRUE, quiet = TRUE)
-  seed <- sample.int(1e6, 1)
-  set.seed(seed)
-  obtained <- ci.se(r, specificities = c(0.575, 0.6), boot.n = 50)
-  set.seed(seed)
-  obtained.percent <- ci.se(rp, specificities = c(57.5, 60), boot.n = 50)
-  expect_equal(as.numeric(obtained.percent), as.numeric(obtained) * 100)
-})
-
 test_that("ci.se of a smoothed curve gives an NA interval when no resample can be smoothed", {
+  set.seed(42)
   s <- smooth(r.s100b)
   # Every resample fails to smooth
   s$smoothing.args$method <- "density"
@@ -72,18 +59,23 @@ test_that("ci.se of a smoothed curve gives an NA interval when no resample can b
 })
 
 test_that("ci.se of a smoothed curve with a corrected partial AUC does not warn for each resample", {
+  set.seed(42)
   # smooth() recomputed the corrected pAUC of every resample, warning when below the diagonal
-  resp <- rep(0:1, each = 8)
-  pred <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9, 0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  # Each value twice (once shifted by 0.05), so that nearly all the resamples can be smoothed
+  controls <- c(0.1, 0.5, 0.9, 1.3, 1.6, 2.0, 2.4, 2.9)
+  cases <- c(0.3, 0.8, 1.2, 1.7, 2.2, 2.6, 3.1, 3.4)
+  resp <- rep(0:1, each = 16)
+  pred <- c(controls, controls + 0.05, cases, cases + 0.05)
   s <- smooth(roc(resp, pred, partial.auc = c(1, 0.9), partial.auc.correct = TRUE, quiet = TRUE))
-  warnings <- character(0)
-  withCallingHandlers(ci.se(s, boot.n = 50), warning = function(w) {
-    warnings <<- c(warnings, conditionMessage(w))
-    invokeRestart("muffleWarning")
-  })
-  expect_false(any(grepl("Partial AUC correction not defined", warnings)))
+  expect_no_warning(ci.se(s, boot.n = 50), message = "Partial AUC correction not defined")
 })
 
-test_that("ci.se with NA specificities gives a clear error", {
-  expect_error(ci.se(r.s100b, specificities = c(0.5, NA), boot.n = 2), "Missing values are not allowed", fixed = TRUE)
+test_that("ci.se with NA specificities gives NA rows", {
+  set.seed(42)
+  ci <- ci.se(r.s100b, specificities = c(0.5, NA), boot.n = 10)
+  set.seed(42)
+  ci1 <- ci.se(r.s100b, specificities = 0.5, boot.n = 10)
+  expect_identical(unclass(ci)[1, ], unclass(ci1)[1, ])
+  expect_identical(unname(unclass(ci)[2, ]), rep(NA_real_, 3))
+  expect_output(print(ci), "NA")
 })

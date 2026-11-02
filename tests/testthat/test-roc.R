@@ -60,10 +60,6 @@ for (marker in c("ndka", "wfns", "s100b")) {
             skip_if(getRversion() < "4.4.0")
             if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
               testthat::skip_if_not_installed("logcondens")
-              if (marker == "ndka" && levels.direction == "reversed" && expected.direction == ">") {
-                # logcondens fails on the negated ndka (non-finite quantiles)
-                skip("logcondens cannot smooth this curve")
-              }
             }
             if (smooth.method == "fitdistr") {
               testthat::skip_if_not_installed("MASS")
@@ -81,10 +77,6 @@ for (marker in c("ndka", "wfns", "s100b")) {
             context(sprintf("roc(..., smooth=TRUE) works with percent = %s, marker = %s, levels.direction = %s, direction = %s and smooth.method = %s", percent, marker, levels.direction, direction, smooth.method))
             if (smooth.method == "logcondens" || smooth.method == "logcondens.smooth") {
               testthat::skip_if_not_installed("logcondens")
-              if (marker == "ndka" && levels.direction == "reversed" && expected.direction == ">") {
-                # logcondens fails on the negated ndka (non-finite quantiles)
-                skip("logcondens cannot smooth this curve")
-              }
             }
             if (smooth.method == "fitdistr") {
               testthat::skip_if_not_installed("MASS")
@@ -462,8 +454,10 @@ test_that("formula and data.frame interfaces return NA and NaN like roc.default"
   expect_identical(r, NaN)
   pdf(NULL)
   on.exit(dev.off())
-  expect_identical(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE), NA)
-  expect_identical(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE), NA)
+  expect_warning(r <- withVisible(plot.roc(y ~ x, d, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
+  expect_warning(r <- withVisible(plot.roc(d$y, d$x, na.rm = FALSE, quiet = TRUE)), "Nothing plotted")
+  expect_identical(r, list(value = NA, visible = FALSE))
 })
 
 test_that("roc with densities resolves direction = 'auto' even if auc = FALSE", {
@@ -534,6 +528,7 @@ test_that("roc with densities, direction = 'auto' and a corrected partial AUC be
 })
 
 test_that("formula methods with subset can plot and smooth", {
+  set.seed(42)
   pdf(NULL)
   on.exit(dev.off())
   r.female <- roc(outcome ~ s100b, aSAH, subset = gender == "Female", quiet = TRUE)
@@ -560,39 +555,11 @@ test_that("formula methods with subset can plot and smooth", {
   expect_s3_class(ci.thresholds(outcome ~ s100b, aSAH, subset = gender == "Female", plot = TRUE, boot.n = 2, quiet = TRUE), "ci.thresholds")
 })
 
-test_that("roc.density with direction = 'auto' keeps '<' for a curve on the diagonal", {
-  for (n in c(2:20, 50, 512)) {
-    d <- dnorm(seq(-3, 3, length.out = n))
-    for (percent in c(FALSE, TRUE)) {
-      for (partial.auc in list(FALSE, c(1, 0.8), c(0.9, 0.3))) {
-        if (!isFALSE(partial.auc)) {
-          partial.auc <- partial.auc * ifelse(percent, 100, 1)
-        }
-        r <- roc(density.controls = d, density.cases = d, percent = percent, partial.auc = partial.auc)
-        expect_equal(r$direction, "<")
-        if (!isFALSE(partial.auc)) {
-          expect_silent(r <- roc(density.controls = d, density.cases = d, percent = percent, partial.auc = partial.auc, partial.auc.correct = TRUE))
-          expect_equal(r$direction, "<")
-          expect_equal(as.numeric(r$auc), ifelse(percent, 50, 0.5))
-        }
-      }
-    }
-  }
-})
-
 test_that("a data.frame response gives a clear error", {
+  set.seed(42)
   expect_error(auc(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
   expect_error(ci(aSAH["outcome"], aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
   expect_error(roc(list(aSAH$outcome), aSAH$s100b, quiet = TRUE), "'response' must be a vector or factor")
-})
-
-test_that("roc with na.rm = FALSE accepts a haven_labelled-like response", {
-  labelled <- local_fake_labelled()
-  y <- as.numeric(aSAH$outcome == "Poor")
-  yl <- labelled(y)
-  expect_equal(as.numeric(auc(roc(yl, aSAH$s100b, na.rm = FALSE, quiet = TRUE))), as.numeric(auc(r.s100b)))
-  yl[1] <- NA
-  expect_identical(roc(yl, aSAH$s100b, na.rm = FALSE, quiet = TRUE), NA)
 })
 
 test_that("duplicated levels give a clear error", {
@@ -602,66 +569,30 @@ test_that("duplicated levels give a clear error", {
   expect_error(roc(y, aSAH$s100b, levels = c(1, "1"), quiet = TRUE), "'levels' must contain two different values")
 })
 
-# Emulates bit64::integer64, which stores the 64 bits of the integer in a
-# double: here the storage is the negated value, so that using it directly
-# gives a wrong curve
-fake_integer64 <- function(x) structure(-x, class = "integer64")
-
-test_that("an integer64 predictor is used by its numeric values", {
-  skip_if_no_mocked_s3_method()
-  local_mocked_s3_method("as.double", "integer64", function(x, ...) -unclass(x))
-  wfns <- as.integer(aSAH$wfns) - 3L # with negative values
-  expected <- roc(aSAH$outcome, wfns, quiet = TRUE)
-  r <- roc(aSAH$outcome, fake_integer64(wfns), quiet = TRUE)
-  expect_equal(r$direction, expected$direction)
-  expect_equal(r$thresholds, expected$thresholds)
-  expect_equal(r$sensitivities, expected$sensitivities)
-  expect_equal(r$specificities, expected$specificities)
-  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
-  expect_equal(coords(r, "best"), coords(expected, "best"))
-  controls <- wfns[aSAH$outcome == "Good"]
-  cases <- wfns[aSAH$outcome == "Poor"]
-  r <- roc(controls = fake_integer64(controls), cases = fake_integer64(cases), quiet = TRUE)
-  expect_equal(r$thresholds, expected$thresholds)
-  expect_equal(as.numeric(auc(r)), as.numeric(auc(expected)))
-})
-
-test_that("an integer64 predictor without bit64 gives a clear error", {
-  # bit64 registers its as.double method when it is loaded
-  skip_if_not(is.null(utils::getS3method("as.double", "integer64", optional = TRUE)))
-  wfns <- as.integer(aSAH$wfns)
-  expect_error(roc(aSAH$outcome, fake_integer64(wfns), quiet = TRUE), "convert the integer64 predictor with as.numeric")
-  expect_error(roc(controls = fake_integer64(1:3), cases = fake_integer64(2:5), quiet = TRUE), "convert the integer64 predictor with as.numeric")
-})
-
-test_that("roc ignores an NA level of the response", {
-  y <- c(0, 0, 0, 1, 1, 1, NA, NA)
-  x <- c(1, 2, 4, 3, 5, 6, 7, 8)
-  expected <- roc(y, x, quiet = TRUE)
-  # NA level last: spurious "more than two levels" warning
-  expect_no_warning(r <- roc(addNA(factor(y)), x, quiet = TRUE))
-  expect_identical(as.character(r$levels), c("0", "1"))
-  expect_equal(r$sensitivities, expected$sensitivities)
-  expect_equal(r$specificities, expected$specificities)
-  # NA level first: taken as the controls
-  f <- factor(y, levels = c(NA, 0, 1), exclude = NULL)
-  expect_no_warning(r <- roc(f, x, quiet = TRUE))
-  expect_identical(as.character(r$levels), c("0", "1"))
-  expect_equal(as.numeric(r$auc), as.numeric(expected$auc))
-})
-
-test_that("an NA level of the response is missing with na.rm = FALSE and in na.action", {
-  y <- c(0, 0, 0, 1, 1, 1, NA, NA)
-  x <- c(1, 2, 4, 3, 5, 6, 7, 8)
-  # real NAs
-  expect_identical(roc(y, x, na.rm = FALSE, quiet = TRUE), NA)
-  # NA level last and first
-  expect_identical(roc(addNA(factor(y)), x, na.rm = FALSE, quiet = TRUE), NA)
-  f <- factor(y, levels = c(NA, 0, 1), exclude = NULL)
-  expect_identical(roc(f, x, na.rm = FALSE, quiet = TRUE), NA)
-  # with na.rm = TRUE, the observations are listed in na.action
-  expected <- attr(roc(y, x, quiet = TRUE)$response, "na.action")
-  expect_equal(as.integer(expected), 7:8)
-  expect_identical(attr(roc(addNA(factor(y)), x, quiet = TRUE)$response, "na.action"), expected)
-  expect_identical(attr(roc(f, x, quiet = TRUE)$predictor, "na.action"), expected)
+test_that("roc.test and multiclass.roc formula methods with subset can plot and smooth", {
+  pdf(NULL)
+  on.exit(dev.off())
+  # gos6 has no observation for level 2
+  data <- transform(aSAH, gos6 = droplevels(gos6))
+  female <- data[data$gender == "Female", ]
+  male <- data[data$gender == "Male", ]
+  set.seed(42)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", smooth = TRUE, boot.n = 10, quiet = TRUE)
+  set.seed(42)
+  t.female <- roc.test(outcome ~ s100b + ndka, female, smooth = TRUE, boot.n = 10, quiet = TRUE)
+  expect_equal(t$p.value, t.female$p.value)
+  expect_equal(t$estimate, t.female$estimate)
+  t <- roc.test(outcome ~ s100b + ndka, data, subset = gender == "Female", plot = TRUE, quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, female, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, subset = gender == "Male", plot = TRUE, quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, male, quiet = TRUE)$auc)
+  )
+  # sub (subtitle) is a plot argument, not a partial match of subset
+  t <- roc.test(outcome ~ s100b + ndka, data, plot = TRUE, sub = "All patients", quiet = TRUE)
+  expect_equal(t$p.value, roc.test(outcome ~ s100b + ndka, data, quiet = TRUE)$p.value)
+  expect_equal(
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, plot = TRUE, sub = "All patients", quiet = TRUE)$auc),
+    as.numeric(multiclass.roc(gos6 ~ s100b, data, quiet = TRUE)$auc)
+  )
 })

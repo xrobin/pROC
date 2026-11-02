@@ -5,13 +5,11 @@ context("ci.formula")
 
 test_that("bootstrap cov works with smooth and !reuse.auc", {
   skip_slow()
-  if (getRversion() > "3.6.0") {
-    # Restore it: leaving sample.kind set leaks into every test file that runs
-    # after this one, making their results depend on the order tests ran in.
-    previous.kind <- RNGkind()
-    on.exit(suppressWarnings(do.call(RNGkind, as.list(previous.kind))), add = TRUE)
-    suppressWarnings(RNGkind(sample.kind = "Rounding"))
-  }
+  # Restore it: leaving sample.kind set leaks into every test file that runs
+  # after this one, making their results depend on the order tests ran in.
+  previous.kind <- RNGkind()
+  on.exit(suppressWarnings(do.call(RNGkind, as.list(previous.kind))), add = TRUE)
+  suppressWarnings(RNGkind(sample.kind = "Rounding"))
 
   for (pair in list(
     list(ci, list()),
@@ -58,7 +56,7 @@ test_that("ci formula and default methods work with smooth = TRUE", {
   for (pair in list(
     list(ci, list(), "ci.auc"),
     list(ci, list(of = "se", specificities = 0.5), "ci.se"),
-    list(ci, list(of = "coords", x = 0.5), "ci.coords"),
+    list(ci, list(of = "coords", x = 0.5, input = "specificity"), "ci.coords"),
     list(ci.auc, list(), "ci.auc"),
     list(ci.se, list(specificities = 0.5), "ci.se"),
     list(ci.sp, list(sensitivities = 0.5), "ci.sp"),
@@ -66,12 +64,11 @@ test_that("ci formula and default methods work with smooth = TRUE", {
   )) {
     fun <- pair[[1]]
     args <- c(list(smooth = TRUE, boot.n = 5, quiet = TRUE), pair[[2]])
-    seed <- sample.int(1e6, 1)
-    set.seed(seed)
+    set.seed(42)
     obs.smooth <- do.call(fun, c(list(s), args[!names(args) %in% c("smooth", "quiet")]))
-    set.seed(seed)
+    set.seed(42)
     obs.default <- do.call(fun, c(list(response = aSAH$outcome, predictor = aSAH$s100b), args))
-    set.seed(seed)
+    set.seed(42)
     obs.formula <- do.call(fun, c(list(formula = outcome ~ s100b, data = aSAH), args))
     expect_s3_class(obs.default, pair[[3]])
     expect_s3_class(obs.formula, pair[[3]])
@@ -81,6 +78,7 @@ test_that("ci formula and default methods work with smooth = TRUE", {
 })
 
 test_that("auc and ci default/formula return the NA/NaN of roc()", {
+  set.seed(42)
   d <- data.frame(
     y = c(0, 0, 0, 1, 1, 1),
     xna = c(1, 2, NA, 4, 5, 6),
@@ -89,11 +87,15 @@ test_that("auc and ci default/formula return the NA/NaN of roc()", {
   for (fun in list(auc, ci, ci.auc, ci.se, ci.sp, ci.thresholds)) {
     expect_identical(fun(d$y, d$xna, na.rm = FALSE, quiet = TRUE), NA)
     expect_identical(fun(y ~ xna, d, na.rm = FALSE, quiet = TRUE), NA)
-    expect_identical(suppressWarnings(fun(d$y, d$xinf, quiet = TRUE)), NaN)
-    expect_identical(suppressWarnings(fun(y ~ xinf, d, quiet = TRUE)), NaN)
+    expect_warning(r <- fun(d$y, d$xinf, quiet = TRUE), "Infinite")
+    expect_identical(r, NaN)
+    expect_warning(r <- fun(y ~ xinf, d, quiet = TRUE), "Infinite")
+    expect_identical(r, NaN)
   }
   expect_identical(ci.coords(d$y, d$xna, x = 3, na.rm = FALSE, quiet = TRUE), NA)
   expect_identical(ci.coords(y ~ xna, d, x = 3, na.rm = FALSE, quiet = TRUE), NA)
-  expect_identical(suppressWarnings(ci.coords(d$y, d$xinf, x = 3, quiet = TRUE)), NaN)
-  expect_identical(suppressWarnings(ci.coords(y ~ xinf, d, x = 3, quiet = TRUE)), NaN)
+  expect_warning(r <- ci.coords(d$y, d$xinf, x = 3, quiet = TRUE), "Infinite")
+  expect_identical(r, NaN)
+  expect_warning(r <- ci.coords(y ~ xinf, d, x = 3, quiet = TRUE), "Infinite")
+  expect_identical(r, NaN)
 })

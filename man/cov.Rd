@@ -20,7 +20,8 @@ cov(...)
 \S3method{cov}{smooth.roc}(roc1, roc2, ...)
 \S3method{cov}{roc}(roc1, roc2, method=c("delong", "bootstrap", "obuchowski"),
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
-  progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+  progress = getOption("pROCProgress", interactive()), parallel=FALSE,
+  paired = NULL, cl = NULL, ...)
 }
 
 \arguments{
@@ -70,6 +71,10 @@ cov(...)
     section of \link{pROC-package}.}
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
+  \item{paired}{\code{NULL} (default) to detect pairing with
+    \code{\link{are.paired}}, \code{TRUE} to require it, \code{FALSE} to
+    treat the curves as unpaired, as in \code{\link{roc.test}}.
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
@@ -85,15 +90,9 @@ cov(...)
   \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
-  If the paired curves do not have the same missing (\code{NA})
-  predictor values, the observations missing in either curve are
-  removed from both, and the covariance is computed on the two curves
-  rebuilt on the observations they have in common (see
-  \code{\link{are.paired}}).
-
-  Curves built with \code{controls} and \code{cases} are not
-  considered paired, unless both were built on the same data (see
-  \code{\link{are.paired}}): their covariance is \code{0}.
+  Paired curves with different missing values are re-paired as in
+  \code{\link{are.paired}}; the covariance refers to the re-paired
+  curves.
 
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
@@ -158,10 +157,10 @@ cov(...)
 
   With \code{method="obuchowski"}, the processing is done as described
   in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
-  computation of \eqn{g} for partial area under the ROC curve is
-  modified as: 
-
-  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
+  formulas of Table 1 are used as published. The binormal parameters
+  \eqn{A} and \eqn{B} are taken from pROC's binormal smoothing of the curve
+  (see \code{\link[=smooth.roc]{smooth}}), not from maximum-likelihood
+  estimates as in the paper.
 }
 
 \section{Binormality assumption}{
@@ -188,24 +187,13 @@ cov(...)
 }
 
 \section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the covariance of ROC
-    curves smoothed with numeric density.controls and density.cases.} is
-  issued.
+  If one of the ROC curves was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 
   If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, or one of the ROC curves is smoothed, the error \dQuote{DeLong
-    method is not supported for partial AUC. Use method="bootstrap"
-    instead.} (or \dQuote{DeLong method is not supported for smoothed
-    ROCs. Use method="bootstrap" instead.}) is issued.
-
-  If \code{method="obuchowski"} and one of the ROC curves is smoothed, or the
-  AUC specification specifies a partial AUC with
-  \code{partial.auc.focus="sensitivity"}, the error
-  \dQuote{Obuchowski method is not supported for smoothed ROCs. Use
-    method="bootstrap" instead.} (or \dQuote{Obuchowski method is not
-    supported for partial AUC on sensitivity region. Use
-    method="bootstrap" instead.}) is issued.
+  partial AUC, or one of the ROC curves is smoothed, an error is issued.
+  The same applies to \code{method="obuchowski"} with a smoothed curve or
+  with \code{partial.auc.focus="sensitivity"}.
 }
 
 \section{Warnings}{
@@ -218,16 +206,19 @@ cov(...)
   different smoothing specifications, the warning 
   \dQuote{Different smoothing parameters in the ROC curves. Enforcing
     the inconsistency, but unexpected results may be produced.} is issued.
-  This warning can be benign, especially if ROC curves were generated
-  with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
-  functions (such as plot), or if you really want to compare two ROC
-  curves smoothed differently.
+  This warning is benign if you really want to compare two ROC curves
+  smoothed differently. To smooth both curves the same way, call
+  \code{\link[=smooth.roc]{smooth}} on each curve with the same arguments
+  (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
+  using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
+  other functions (such as plot) also reach the smoothing.
+  The arguments are compared as they were given (see \code{smoothing.args}
+  in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
+  default value or an abbreviation (such as \code{kernel="e"} for
+  \code{"epanechnikov"}) counts as a difference.
 
   If \code{method="delong"} or \code{method="obuchowski"} and the two
-  ROC curves have a different \code{direction}, the warning
-  \dQuote{DeLong method should not be applied to ROC curves with a
-  different direction.} (or \dQuote{Obuchowski method should not be
-  applied to ROC curves with a different direction.}) is printed.
+  ROC curves have a different \code{direction}, a warning is issued.
   However, the spurious computation is enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between

@@ -17,7 +17,7 @@ var(...)
 \S3method{var}{auc}(auc, ...)
 \S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
 }
 
@@ -140,10 +140,10 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
   With \code{method="obuchowski"}, the processing is done as described
   in Obuchowski and McClish (1997), Table 1 and Equation 4, p. 1530--1531. The
-  computation of \eqn{g} for partial area under the ROC curve is
-  modified as: 
-
-  \deqn{expr1 * (2 * pi * expr2) ^ {(-1)} * (-expr4) - A * B * expr1 * (2 * pi * expr2^3) ^ {(-1/2)} * expr3}.
+  formulas of Table 1 are used as published. The binormal parameters
+  \eqn{A} and \eqn{B} are taken from pROC's binormal smoothing of the curve
+  (see \code{\link[=smooth.roc]{smooth}}), not from maximum-likelihood
+  estimates as in the paper.
 }
 
 \section{Binormality assumption}{
@@ -180,24 +180,13 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the variance of ROC
-    curves smoothed with numeric density.controls and density.cases.} is
-  issued.
+  If the ROC curve was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 
   If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, or the ROC curve is smoothed, the error \dQuote{DeLong
-    method is not supported for partial AUC. Use method="bootstrap"
-    instead.} (or \dQuote{DeLong method is not supported for smoothed
-    ROCs. Use method="bootstrap" instead.}) is issued.
-
-  If \code{method="obuchowski"} and the ROC curve is smoothed, or the
-  AUC specification specifies a partial AUC with
-  \code{partial.auc.focus="sensitivity"}, the error
-  \dQuote{Obuchowski method is not supported for smoothed ROCs. Use
-    method="bootstrap" instead.} (or \dQuote{Obuchowski method is not
-    supported for partial AUC on sensitivity region. Use
-    method="bootstrap" instead.}) is issued.
+  partial AUC, or the ROC curve is smoothed, an error is issued. The same
+  applies to \code{method="obuchowski"} with a smoothed curve or with
+  \code{partial.auc.focus="sensitivity"}.
 }
 
 \references{

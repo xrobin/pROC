@@ -21,7 +21,7 @@ lines.roc <- function(x, ...) {
   UseMethod("lines.roc")
 }
 
-lines.roc.formula <- function(x, data, subset, na.action, ...) {
+lines.roc.formula <- function(x, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   names(call)[2] <- "formula" # forced to be x by definition of lines
@@ -36,32 +36,20 @@ lines.roc.formula <- function(x, data, subset, na.action, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
-    stop("Cannot add a ROC curve: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
   }
   lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  roc$predictor.name <- roc.data$predictor.names
-  roc$response.name <- roc.data$response.name
-  if (methods::is(roc, "smooth.roc")) {
-    attr(roc, "roc")$call <- roc$call
-    attr(roc, "roc")$predictor.name <- roc$predictor.name
-    attr(roc, "roc")$response.name <- roc$response.name
-  }
-  invisible(roc)
+  invisible(roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name))
 }
 
 lines.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
-    stop("Cannot add a ROC curve: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
+  if (!roc_utils_is_curve(roc, plot = TRUE)) {
+    return(invisible(roc))
   }
   lines.roc.roc(roc, ...)
-  roc$call <- match.call()
-  if (methods::is(roc, "smooth.roc")) {
-    attr(roc, "roc")$call <- roc$call
-  }
-  invisible(roc)
+  invisible(roc_utils_set_call_names(roc, match.call()))
 }
 
 lines.roc.smooth.roc <- lines.smooth.roc <- function(x, ...) {

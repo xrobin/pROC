@@ -37,17 +37,21 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		labels when \code{input="threshold"} on an ordered ROC curve),
 		or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
-		maximas of the ROC curve) or \dQuote{best} (see \code{best.method}
+		maximas of the ROC curve; not available on smoothed curves) or \dQuote{best} (see \code{best.method}
 		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
 		Numeric \code{x} is not allowed with \code{input="threshold"} on
 		an ordered ROC curve; pass the level as character or ordered.
+		A missing value (\code{NA}) in \code{x} gives a row of \code{NA},
+		whatever the \code{input}.
     }
   \item{input}{
   	If \code{x} is numeric, the kind of input coordinate (x).
   	Typically one of \dQuote{threshold}, \dQuote{specificity} or 
   	\dQuote{sensitivity}, but can be any of the monotone coordinate available,
   	see the \dQuote{Valid input} column under \dQuote{Available coordinates}.
-  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold}. Note
+  	Can be shortened like \code{ret}. Defaults to \dQuote{threshold} for
+  	\code{roc} curves. Smoothed curves have no thresholds and no default:
+  	\code{input} is required with a numeric \code{x}. Note
   	that \dQuote{threshold} is not allowed in \code{coords.smooth.roc} and that
   	the argument is ignored when \code{x} is a character.
   }
@@ -105,9 +109,14 @@ transpose = FALSE, as.matrix=FALSE, ...)
   are reported, even if the exact threshold do not define the ROC
   curve. The following convenience characters are allowed: \dQuote{all},
   \dQuote{local maximas} and \dQuote{best}. They will return all the
-  thresholds, only the thresholds defining local maximas (upper angles of the
-  ROC curve), or only the threshold(s) corresponding to the best sum of
-  sensitivity + specificity respectively. Note that \dQuote{best} can
+  thresholds, only the local maximas, or only the threshold(s)
+  corresponding to the best sum of sensitivity + specificity
+  respectively. Among the thresholds considered (the whole curve, or only
+  those within the partial AUC unless \code{ignore.partial.auc=TRUE}), a
+  threshold is a local maximum if, for some weighting of sensitivity
+  against specificity, it is strictly better than each of its neighbouring
+  thresholds among those considered. Not available on smoothed curves,
+  which have no thresholds. Note that \dQuote{best} can
   return more than one threshold. If \code{x} is a character, and
   \code{ignore.partial.auc=FALSE} (the default), the coordinates are limited to the
   thresholds within the partial AUC if it has been defined, and not
@@ -131,12 +140,16 @@ transpose = FALSE, as.matrix=FALSE, ...)
   For a numeric \code{x} with any other \code{input} than
   \dQuote{threshold} (\dQuote{specificity}, \dQuote{sensitivity},
   \dQuote{fpr}, \dQuote{tp}, ...), the function checks if the value is
-  one of the points of the ROC curve (up to floating-point error, for
-  example with \code{percent=TRUE} or counts). More than one point may
+  one of the points of the ROC curve. More than one point may
   match (in \emph{step} curves), then only the upper-left-most point
   coordinates are returned. Otherwise, the point is interpolated
   between the two neighbouring points of the curve and \code{NA} is returned
   as threshold.
+  The points are matched exactly (\code{==}), as \code{\link{match}} does.
+  An empirical curve stores \eqn{k / n} (\eqn{100 k / n} with
+  \code{percent=TRUE}), so a typed decimal such as 0.575 or 57.5 matches
+  the point it denotes, while a computed value such as
+  \code{seq(0, 1, 0.1)[7]} may not (R FAQ 7.31).
 
   The coords function in this package is a generic, but it might be
   superseded by functions in other packages such as
@@ -190,7 +203,10 @@ transpose = FALSE, as.matrix=FALSE, ...)
   By default, prevalence is 0.5 and cost is 1 so that no weight is
   applied in effect.
 
-  Note that several thresholds might be equally optimal.
+  Note that several thresholds might be equally optimal. With the default
+  \code{best.weights}, \dQuote{best} returns every threshold that is
+  exactly tied (the criterion is compared on the counts of true and false
+  positives). With other weights, ties are decided in floating point.
 }
 
 \subsection{Available coordinates}{

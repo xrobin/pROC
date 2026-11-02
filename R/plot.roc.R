@@ -21,7 +21,7 @@ plot.roc <- function(x, ...) {
   UseMethod("plot.roc")
 }
 
-plot.roc.formula <- function(x, data, subset, na.action, ...) {
+plot.roc.formula <- function(x, data, ..., subset, na.action) {
   data.missing <- missing(data)
   call <- match.call()
   names(call)[2] <- "formula" # forced to be x by definition of plot
@@ -37,26 +37,16 @@ plot.roc.formula <- function(x, data, subset, na.action, ...) {
   predictor <- roc.data$predictors[, 1]
 
   roc <- roc(response, predictor, plot = TRUE, ...)
-  if (inherits(roc, c("roc", "smooth.roc"))) {
-    roc$call <- match.call()
-    roc$predictor.name <- roc.data$predictor.names
-    roc$response.name <- roc.data$response.name
-    if (methods::is(roc, "smooth.roc")) {
-      attr(roc, "roc")$call <- roc$call
-      attr(roc, "roc")$predictor.name <- roc$predictor.name
-      attr(roc, "roc")$response.name <- roc$response.name
-    }
+  if (roc_utils_is_curve(roc, plot = TRUE)) {
+    roc <- roc_utils_set_call_names(roc, match.call(), roc.data$predictor.names, roc.data$response.name)
   }
   invisible(roc)
 }
 
 plot.roc.default <- function(x, predictor, ...) {
   roc <- roc(x, predictor, plot = TRUE, ...)
-  if (inherits(roc, c("roc", "smooth.roc"))) {
-    roc$call <- match.call()
-    if (methods::is(roc, "smooth.roc")) {
-      attr(roc, "roc")$call <- roc$call
-    }
+  if (roc_utils_is_curve(roc, plot = TRUE)) {
+    roc <- roc_utils_set_call_names(roc, match.call())
   }
   invisible(roc)
 }
@@ -163,7 +153,7 @@ plot.roc.roc <- function(x,
                          panel.last = NULL,
                          ...) {
   percent <- x$percent
-  if (ci && is.null(x$ci)) {
+  if (ci && is.null(x$ci) && match.arg(ci.type) != "no") {
     stop("'x' has no confidence interval; compute it with ci() first (or roc(..., ci = TRUE)), or set ci = FALSE.")
   }
 
@@ -303,14 +293,6 @@ plot.roc.roc <- function(x,
       }
     }
   }
-  if (is.null(print.thres.pattern)) {
-    print.thres.pattern <- if (!methods::is(x, "smooth.roc") && roc_utils_is_ordered_roc(x)) {
-      ifelse(x$percent, "%s (%.1f%%, %.1f%%)", "%s (%.3f, %.3f)")
-    } else {
-      ifelse(x$percent, "%.3f (%.1f%%, %.1f%%)", "%.3f (%.3f, %.3f)")
-    }
-  }
-
   if (!print.thres.requested) {
     # do nothing
   } else if (methods::is(x, "smooth.roc")) {
@@ -320,7 +302,7 @@ plot.roc.roc <- function(x,
       stop("'all' and 'local maximas' 'print.thres' unsupported on a smoothed ROC plot.")
     } else if (print.thres == "best") {
       co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
-      draw.thres(co = co, labels = sprintf(print.thres.pattern, NA, co$specificity, co$sensitivity), ...)
+      draw.thres(co = co, labels = roc_utils_threshold_labels(print.thres.pattern, NA, co$specificity, co$sensitivity, x$percent), ...)
     }
   } else if (is.numeric(print.thres) || is.character(print.thres) || is.ordered(print.thres)) {
     co <- coords(x, print.thres, best.method = print.thres.best.method, best.weights = print.thres.best.weights, transpose = FALSE)
@@ -329,8 +311,7 @@ plot.roc.roc <- function(x,
     if (identical(print.thres, "all") && !is.null(co)) {
       co <- co[!is.na(co$threshold), , drop = FALSE]
     }
-    thres.lab <- if (is.ordered(co$threshold) || is.character(co$threshold)) as.character(co$threshold) else co$threshold
-    draw.thres(co = co, labels = sprintf(print.thres.pattern, thres.lab, co$specificity, co$sensitivity), ...)
+    draw.thres(co = co, labels = roc_utils_threshold_labels(print.thres.pattern, co$threshold, co$specificity, co$sensitivity, x$percent), ...)
   }
 
   # Print the AUC on the plot

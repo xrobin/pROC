@@ -21,7 +21,7 @@ ci <- function(...) {
   UseMethod("ci")
 }
 
-ci.formula <- function(formula, data, subset, na.action, ...) {
+ci.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
@@ -32,8 +32,8 @@ ci.formula <- function(formula, data, subset, na.action, ...) {
   }
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
-  roc <- roc(response, predictor, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  roc <- roc_utils_roc_ci(response, predictor, ...)
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {
@@ -49,8 +49,8 @@ ci.default <- function(response, predictor, ...) {
   } else if (inherits(response, "mv.multiclass.auc")) {
     stop("CI of a multiclass AUC not implemented")
   }
-  roc <- roc.default(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  roc <- roc_utils_roc_ci(response, predictor, ci = FALSE, ...)
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {

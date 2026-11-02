@@ -21,7 +21,7 @@ ci.coords <- function(...) {
   UseMethod("ci.coords")
 }
 
-ci.coords.formula <- function(formula, data, subset, na.action, ...) {
+ci.coords.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
@@ -33,7 +33,7 @@ ci.coords.formula <- function(formula, data, subset, na.action, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {
@@ -48,7 +48,7 @@ ci.coords.default <- function(response, predictor, ...) {
     stop("'ci.coords' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   if (methods::is(roc, "smooth.roc")) {
@@ -60,7 +60,7 @@ ci.coords.default <- function(response, predictor, ...) {
 
 ci.coords.smooth.roc <- function(smooth.roc,
                                  x,
-                                 input = "specificity", ret = c("specificity", "sensitivity"),
+                                 input, ret = c("specificity", "sensitivity"),
                                  best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
                                  best.policy = c("unique.stop", "stop", "omit", "random"),
                                  conf.level = 0.95,
@@ -78,9 +78,10 @@ ci.coords.smooth.roc <- function(smooth.roc,
   }
   progress <- roc_utils_normalise_progress(progress)
 
-  # A smoothed curve has no thresholds, hence threshold = FALSE, as in
-  # coords.smooth.roc().
-  input <- roc_utils_match_coords_input_args(input, threshold = FALSE)
+  # A smoothed curve has no thresholds, hence threshold = FALSE, and no
+  # default input: it is only matched (and required) with a non-character
+  # x, as in coords.smooth.roc().
+  input <- if (!is.character(x)) roc_utils_match_coords_input_args(input, threshold = FALSE)
   ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
   best.policy <- match.arg(best.policy)
   special <- coords_special_x(x, roc = smooth.roc)
@@ -91,39 +92,32 @@ ci.coords.smooth.roc <- function(smooth.roc,
     }
   }
 
-  # Check if called with density.cases or density.controls
-  if (is.null(smooth.roc$smoothing.args) || is.numeric(smooth.roc$smoothing.args$density.cases) || is.numeric(smooth.roc$smoothing.args$density.controls)) {
-    stop("Cannot compute CI of ROC curves smoothed with numeric density.controls and density.cases.")
-  }
+  roc_utils_stop_if_numeric_density(smooth.roc, "CI of")
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
-  roc$ci <- NULL # remove potential ci in roc to avoid infinite loop with smooth.roc()
-  # remove the auc too: smooth.roc() would recompute it on each replicate (and
-  # warn if a corrected partial AUC is not defined). Only the partial AUC range
-  # is needed (for "best"): bootstrap.smooth.coords() restores it.
-  roc$auc <- NULL
   auc.args <- NULL
   if (!is.null(smooth.roc$auc) && !identical(attr(smooth.roc$auc, "partial.auc"), FALSE)) {
     auc.args <- attributes(smooth.roc$auc)[c("partial.auc", "partial.auc.focus")]
   }
 
-  # prepare the calls
-  smooth.roc.call <- as.call(c(utils::getS3method("smooth", "roc"), smooth.roc$smoothing.args))
+  ci_coords_check_count_input(smooth.roc, x, input)
 
-  perfs <- bootstrap.replicates(boot.n, bootstrap.smooth.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
+  na <- bootstrap.coords.na(x, ret)
+  boot.n <- roc_utils_check_boot_n(boot.n)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, x = x, input = input, ret = ret,
     best.method = best.method, best.weights = best.weights,
-    smooth.roc.call = smooth.roc.call, best.policy = best.policy, auc.args = auc.args,
-    simplify = "list", progress = progress, cl = cl
+    best.policy = best.policy, window = auc.args, na = na,
+    smoothing.args = smooth.roc$smoothing.args,
+    FUN.VALUE = as.matrix(na), progress = progress, cl = cl
   )
-  # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
-  perfs_array <- array(unlist(perfs),
-    dim = c(length(x), length(ret), boot.n),
-    dimnames = list(x, ret, NULL)
-  )
+  # An array of length(x) x length(ret) x boot.n suited for summary (each
+  # replicate has the length of na: checked by bootstrap.replicates)
+  perfs_array <- array(perfs, dim = c(length(x), length(ret), length(perfs) / length(x) / length(ret)), dimnames = list(x, ret, NULL))
 
-  if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
+  if (any(which.ones <- apply(perfs_array, 3, function(x) all(is.na(x))))) {
     if (all(which.ones)) {
       warning("All bootstrap iterations produced NA values only.")
     } else {
@@ -140,6 +134,9 @@ ci.coords.smooth.roc <- function(smooth.roc,
   attr(ci, "input") <- input
   attr(ci, "x") <- x
   attr(ci, "ret") <- ret
+  attr(ci, "best.method") <- best.method
+  attr(ci, "best.weights") <- best.weights
+  attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -197,19 +194,22 @@ ci.coords.roc <- function(roc,
     stop("'threshold' output is only supported for best ROC point ('x = \"best\"') or if \"threshold\" was given as input.")
   }
 
-  perfs <- bootstrap.replicates(boot.n, bootstrap.coords,
-    roc = roc, stratified = boot.stratified, x = x, input = input, ret = ret,
-    best.method = best.method, best.weights = best.weights,
-    best.policy = best.policy, simplify = "list", progress = progress, cl = cl
-  )
-  perfs <- lapply(perfs, ci_coords_numeric_columns)
-  # Reshape into an array of length(x) x length(ret) x boot.n suited for summary
-  perfs_array <- array(unlist(perfs),
-    dim = c(length(x), length(ret), boot.n),
-    dimnames = list(x, ret, NULL)
-  )
+  ci_coords_check_count_input(roc, x, input)
 
-  if (any(which.ones <- sapply(perfs, function(x) all(is.na(x))))) {
+  na <- bootstrap.coords.na(x, ret)
+  boot.n <- roc_utils_check_boot_n(boot.n)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified,
+    statistic = bootstrap.coords, x = x, input = input, ret = ret,
+    best.method = best.method, best.weights = best.weights,
+    best.policy = best.policy, na = na,
+    FUN.VALUE = as.matrix(na), progress = progress, cl = cl
+  )
+  # An array of length(x) x length(ret) x boot.n suited for summary (each
+  # replicate has the length of na: checked by bootstrap.replicates)
+  perfs_array <- array(perfs, dim = c(length(x), length(ret), length(perfs) / length(x) / length(ret)), dimnames = list(x, ret, NULL))
+
+  if (any(which.ones <- apply(perfs_array, 3, function(x) all(is.na(x))))) {
     if (all(which.ones)) {
       warning("All bootstrap iterations produced NA values only.")
     } else {
@@ -226,6 +226,9 @@ ci.coords.roc <- function(roc,
   attr(ci, "input") <- input
   attr(ci, "x") <- x
   attr(ci, "ret") <- ret
+  attr(ci, "best.method") <- best.method
+  attr(ci, "best.weights") <- best.weights
+  attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -240,21 +243,30 @@ ci.coords.roc <- function(roc,
 # return(enforce.best.policy(res, best.policy))
 # }
 enforce.best.policy <- function(res, best.policy) {
-  if (best.policy == "unique.stop") {
-    # Rows that are identical in all the values summarized into the CI are the
-    # same point (ie. thresholds at empty levels of an ordered predictor).
-    distinct <- !duplicated(ci_coords_numeric_columns(res))
-    if (sum(distinct) == 1) {
-      return(res[distinct, , drop = FALSE])
-    }
-    stop("More than one distinct \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
-  } else if (best.policy == "stop") {
+  if (best.policy == "stop") {
     stop("More than one \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
+  }
+  # Rows that are identical in all the values summarized into the CI are the
+  # same point (ie. thresholds at empty levels of an ordered predictor).
+  res <- res[!duplicated(ci_coords_numeric_columns(res)), , drop = FALSE]
+  if (nrow(res) == 1) {
+    return(res)
+  }
+  if (best.policy == "unique.stop") {
+    stop("More than one distinct \"best\" threshold was found, aborting. Change 'best.policy' to alter this behavior.")
   } else if (best.policy == "omit") {
     res[1, ] <- NA
     return(res[1, , drop = FALSE])
   } else {
     return(res[sample(seq_len(nrow(res)), size = 1), , drop = FALSE])
+  }
+}
+
+# A count input is taken in each resample (see bootstrap.coords): check x on
+# the curve itself, so that an error gives the curve's range
+ci_coords_check_count_input <- function(curve, x, input) {
+  if (is.numeric(x) && input %in% c("tn", "fp", "tp", "fn")) {
+    coords(curve, x = x, input = input, ret = input)
   }
 }
 

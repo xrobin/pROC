@@ -29,10 +29,10 @@
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="random", progress = getOption("pROCProgress", interactive()),
-cl = NULL, parallel=FALSE, conf.level=0.95, ...)
+parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
-\S3method{roc.test}{formula}(formula, data, ...)
+\S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
 na.rm=TRUE, method=NULL, ...)
 }
@@ -54,6 +54,9 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
+  }
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
     two curves are built (only when \code{predictor1} and
@@ -78,8 +81,7 @@ na.rm=TRUE, method=NULL, ...)
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
     If \code{TRUE} but the paired status cannot be assessed by \code{\link{are.paired}}
-    will produce an error. Curves built with \code{controls} and
-    \code{cases} are paired only with \code{paired=TRUE} (see Details).
+    will produce an error.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -98,11 +100,12 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{ties.method}{for \code{method="venkatraman"} only: argument for
     \code{\link{rank}} specifying how ties are handled. Defaults to
-    \dQuote{random}, so that the result does not depend on the order of
-    the observations in the data (with \dQuote{first}, tied observations
-    are ranked by position, and the same data sorted differently can
-    give very different p-values). Set the seed with
-    \code{\link{set.seed}} for reproducible results.
+    \dQuote{random}. With paired curves, the ties of both
+    predictors are broken with the same random order of the observations,
+    so that identical predictors give identical ranks. No random numbers
+    are drawn when there are no ties. The test is designed for continuous
+    predictors: with many ties, the p-value depends on the random
+    tie-breaking (Venkatraman and Begg, 1996, section 5).
   }
   \item{progress}{whether to display a text progress bar during the
     bootstrap. Defaults to \code{getOption("pROCProgress", interactive())},
@@ -163,28 +166,16 @@ na.rm=TRUE, method=NULL, ...)
   If the \code{paired} argument is not provided, the \code{\link{are.paired}} function is
   employed to detect the paired status of the ROC curves. It will test if the original \code{response} is
   identical between the two ROC curves (this is always the case if the call is made with 
-  \code{roc.test.default}). This detection is unlikely to raise false positives, but
-  this possibility cannot be excluded entirely. It would require equal sample sizes
-  and \code{response} values and order in both ROC curves. If it happens to you, use \code{paired=FALSE}.
-  Curves built with \code{controls} and \code{cases} (see
-  \code{\link{roc}}) carry no information on which observations come
-  from the same patients, and are not detected as paired (unless both
-  curves were built on the same \code{controls} and \code{cases}, for
-  instance a curve and its smoothed version). If they were
-  measured on the same patients, given in the same order, pass
-  \code{paired=TRUE}: their observations are then matched by their
-  position in the \code{controls} and \code{cases} vectors (this requires
-  the same numbers of controls and of cases).
-  If you know the ROC curves are paired you can pass \code{paired=TRUE}. Except for
-  curves built with \code{controls} and \code{cases}, this is
+  \code{roc.test.default}). This detection can give false positives: two curves built with
+  \code{controls} and \code{cases} with the same numbers of controls and of
+  cases are always detected as paired, and matched by position. Use
+  \code{paired=FALSE} for independent samples.
+  If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
   useless as it will be tested anyway.
 
-  If paired curves do not have the same missing (\code{NA}) predictor
-  values, the observations missing in either curve are removed from both,
-  and both curves are rebuilt on the observations they have in common (see
-  \code{\link{are.paired}}). The test and the \code{estimate} then refer
-  to these rebuilt curves, whose AUC can differ from that of the curves
-  passed in. They are returned as \code{roc1} and \code{roc2}.
+  Paired curves with different missing values are re-paired as in
+  \code{\link{are.paired}}; the test and the \code{estimate} refer to
+  the re-paired curves, returned as \code{roc1} and \code{roc2}.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -248,19 +239,18 @@ na.rm=TRUE, method=NULL, ...)
   With \code{method="delong"}, the processing is done as described in
   DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
   of Sun and Xu (2014). Only comparison of
-  two ROC curves is implemented. The method has been extended for
-  unpaired ROC curves where the p-value is computed with an unpaired
-  t-test with unequal sample size and unequal variance, with 
+  two ROC curves is implemented. For unpaired ROC curves, the statistic
   \deqn{
     D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
     D=(\theta^r - \theta^s) / sqrt(S^r + S^s)
   }
+  is compared to the normal distribution (Hanley and McNeil, 1983).
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
   (2000) (for unpaired ROC curves) with \code{boot.n} permutation of
-  sample ranks (with ties breaking). For consistency reasons, the same argument \code{boot.n} as
+  sample ranks (ties broken at random, see \code{ties.method}). For consistency reasons, the same argument \code{boot.n} as
   in bootstrap defines the number of permutations to execute,
   even though no bootstrap is performed.
 
@@ -284,18 +274,21 @@ na.rm=TRUE, method=NULL, ...)
   different smoothing specifications, the warning 
   \dQuote{Different smoothing parameters in the ROC curves. Enforcing
     the inconsistency, but unexpected results may be produced.} is issued.
-  This warning can be benign, especially if ROC curves were generated
-  with \code{roc(\ldots, smooth=TRUE)} with different arguments to other
-  functions (such as plot), or if you really want to compare two ROC
-  curves smoothed differently.
+  This warning is benign if you really want to compare two ROC curves
+  smoothed differently. To smooth both curves the same way, call
+  \code{\link[=smooth.roc]{smooth}} on each curve with the same arguments
+  (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
+  using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
+  other functions (such as plot) also reach the smoothing.
+  The arguments are compared as they were given (see \code{smoothing.args}
+  in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
+  default value or an abbreviation (such as \code{kernel="e"} for
+  \code{"epanechnikov"}) counts as a difference.
 
   Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
   ROC curves have a different value of
-  \code{direction}, the warning \dQuote{DeLong's test should not be
-    applied to ROC curves with a different direction.} (or
-  \dQuote{Venkatraman's test should not be applied to ROC curves with
-    different directions.}) is
-  printed. However, the spurious test is enforced.
+  \code{direction}, a warning is issued. However, the spurious test is
+  enforced.
 
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
@@ -319,22 +312,14 @@ na.rm=TRUE, method=NULL, ...)
   columns, or if you do not give a \code{predictor2} when
   \code{predictor1} is a vector.
   
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute the statistic on ROC
-    curves smoothed with numeric density.controls and density.cases.} is
-  issued.
+  If one of the ROC curves was smoothed with numeric
+  \code{density.controls} and \code{density.cases}, an error is issued.
 
   If \code{method="venkatraman"} and one of the ROC curves is smoothed,
-  the error \dQuote{Venkatraman's test is not supported for smoothed
-    ROCs} is produced.
-
-  If \code{method="venkatraman"} and one of the ROC curves has a partial
-  AUC specification, the error \dQuote{Partial AUC is not supported for
-    Venkatraman's test.} is produced.
+  an error is issued.
 
   If \code{method="venkatraman"}, and \code{alternative} is
-  \dQuote{less} or \dQuote{greater}, the error \dQuote{Only two-sided
-    tests are available for Venkatraman.} is produced.
+  \dQuote{less} or \dQuote{greater}, an error is issued.
 
   With \code{method="specificity"}, the error \dQuote{Argument
     'specificity' must be numeric of length 1 for a specificity test.}
@@ -364,19 +349,16 @@ na.rm=TRUE, method=NULL, ...)
     hypothesis, that is 0.}
   \item{estimate}{the AUC of the two ROC curves (with paired curves,
     the curves rebuilt on the observations complete in both, see
-    Details), or with
-    \code{method="sensitivity"} and \code{method="specificity"}, the
-    specificity and sensitivity of the two curves at the given
-    sensitivity or specificity. Not returned with
-    \code{method="venkatraman"}.}
+    Details), or the specificities (\code{method="sensitivity"}) or
+    sensitivities (\code{method="specificity"}) of the two curves at
+    the given value. Not returned with \code{method="venkatraman"}.}
   \item{data.name}{the names of the data that was used.}
   \item{roc1, roc2}{the two ROC curves that were compared (with paired
     curves, rebuilt on the observations complete in both, see Details).}
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
-    value of \code{boot.n}. For \code{method="delong"} with unpaired
-    curves: the degrees of freedom \code{df} of the t-test.
+    value of \code{boot.n}.
   }
 }
 
@@ -394,6 +376,10 @@ na.rm=TRUE, method=NULL, ...)
   James A. Hanley and Barbara J. McNeil (1982) ``The meaning and use of
   the area under a receiver operating characteristic (ROC)
   curve''. \emph{Radiology} \bold{143}, 29--36.
+
+  James A. Hanley and Barbara J. McNeil (1983) ``A method of comparing
+  the areas under receiver operating characteristic curves derived from
+  the same cases''. \emph{Radiology} \bold{148}, 839--843.
 
   Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
   Comparison of Receiver Operating Characteristic Curves''. \emph{The
@@ -454,9 +440,7 @@ roc.test(roc1, roc2, alternative="less")
 \dontrun{
 # Comparison can be done on smoothed ROCs
 # Smoothing is re-done at each iteration, and execution is slow
-roc.test(smooth(roc1), smooth(roc2))
-# or:
-roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns, smooth=TRUE, boot.n=100)
+roc.test(smooth(roc1), smooth(roc2), boot.n=100)
 }
 # or from an AUC (no smoothing)
 roc.test(auc(roc1), roc2)

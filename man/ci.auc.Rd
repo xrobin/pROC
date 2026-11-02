@@ -22,14 +22,15 @@
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...,
+method = NULL)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
-\S3method{ci.auc}{formula}(formula, data, subset, na.action, ...)
+\S3method{ci.auc}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.auc}{default}(response, predictor, ...)
 }
 		   
@@ -99,7 +100,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
   The default is to use the \dQuote{delong} method, except for comparison of
   partial AUC and smoothed curves, where \code{bootstrap} is used. Using
-  \dQuote{delong} for partial AUC and smoothed ROCs is not supported.
+  \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
+  partial AUC it is an error, and smoothed curves are always bootstrapped
+  (with a warning if \code{method="delong"}).
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in
@@ -149,6 +152,9 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 }
 
 \section{Warnings}{
+  If \code{method="delong"} and the ROC curve is smoothed, a warning is
+  issued and the CI is computed with bootstrap.
+
   If \code{boot.stratified=FALSE} and the sample has a large imbalance between
   cases and controls, it could happen that one or more of the replicates
   contains no case or control observation, or that there are not enough
@@ -161,12 +167,10 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, 
 
 \section{Errors}{
   If \code{method="delong"} and the AUC specification specifies a
-  partial AUC, the error \dQuote{DeLong method is not supported for
-  partial AUC. Use method="bootstrap" instead.} is issued.
+  partial AUC, an error is issued.
 
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute CI of ROC curves
-  smoothed with numeric density.controls and density.cases.} is issued.
+  If the ROC curve was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 }
 
 \value{
@@ -184,11 +188,6 @@ median of the bootstrapped AUCs with \code{method="bootstrap"}.
 
 The \code{aucs} item is not included in this list since version 1.2 for
 consistency reasons.
-
-With \code{response} and \code{predictor} (or a \code{formula}),
-\code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
-returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-predictor values).
 }
 \references{
   James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:

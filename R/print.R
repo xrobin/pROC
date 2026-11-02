@@ -198,8 +198,9 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 print.ci.thresholds <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(attr(x, "conf.level") * 100, "% CI", sep = "")
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
-  signif.sp <- signif(x$specificity, digits = digits)
-  signif.se <- signif(x$sensitivity, digits = digits)
+  # unname: the row names (thresholds) can be NA
+  signif.sp <- unname(signif(x$specificity, digits = digits))
+  signif.se <- unname(signif(x$sensitivity, digits = digits))
   print(data.frame(thresholds = attr(x, "thresholds"), sp.low = signif.sp[, 1], sp.median = signif.sp[, 2], sp.high = signif.sp[, 3], se.low = signif.se[, 1], se.median = signif.se[, 2], se.high = signif.se[, 3]), row.names = FALSE)
   invisible(x)
 }
@@ -230,9 +231,10 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
   colnames.grid <- expand.grid(c("low", "median", "high"), attr(x, "ret"))
   colnames.vec <- paste(colnames.grid$Var2, colnames.grid$Var1, sep = ".")
-  colnames(table) <- c(attr(x, "input"), colnames.vec)
-  if (anyDuplicated(attr(x, "x"))) {
-    # data.frame row names must be unique (x can be repeated)
+  # No input with x = "best" on a smoothed curve
+  colnames(table) <- c(if (is.null(attr(x, "input"))) "x" else attr(x, "input"), colnames.vec)
+  if (anyDuplicated(attr(x, "x")) || anyNA(attr(x, "x"))) {
+    # data.frame row names must be unique and not NA (x can be repeated or NA)
     rownames(table) <- NULL
   } else {
     rownames(table) <- attr(x, "x")

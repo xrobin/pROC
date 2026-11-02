@@ -19,12 +19,12 @@
 # ci.sp(...)
 \S3method{ci.sp}{roc}(roc, sensitivities = seq(0, 1, .1) * ifelse(roc$percent,
 100, 1), conf.level=0.95, boot.n=2000, boot.stratified=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, parallel=FALSE, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
 \S3method{ci.sp}{smooth.roc}(smooth.roc, sensitivities = seq(0, 1, .1) *
 ifelse(smooth.roc$percent, 100, 1), conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
-cl = NULL, parallel=FALSE, ...)
-\S3method{ci.sp}{formula}(formula, data, subset, na.action, ...)
+parallel=FALSE, cl = NULL, ...)
+\S3method{ci.sp}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.sp}{default}(response, predictor, ...)
 }
 		   
@@ -109,9 +109,8 @@ cl = NULL, parallel=FALSE, ...)
 }
 
 \section{Errors}{
-  If \code{density.cases} and \code{density.controls} were provided
-  for smoothing, the error \dQuote{Cannot compute CI of ROC curves
-  smoothed with numeric density.controls and density.cases.} is issued.
+  If the ROC curve was smoothed with numeric \code{density.controls}
+  and \code{density.cases}, an error is issued.
 }
 
 \value{
@@ -128,11 +127,6 @@ cl = NULL, parallel=FALSE, ...)
   \item{roc}{the object of class \dQuote{\link{roc}} that was used to
 	compute the CI.
   }
-
-  With \code{response} and \code{predictor} (or a \code{formula}),
-  \code{NA} (or \code{NaN}) is returned instead if \code{\link{roc}}
-  returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-  predictor values).
 }
 
 \references{

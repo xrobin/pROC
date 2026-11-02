@@ -21,7 +21,7 @@ ci.thresholds <- function(...) {
   UseMethod("ci.thresholds")
 }
 
-ci.thresholds.formula <- function(formula, data, subset, na.action, ...) {
+ci.thresholds.formula <- function(formula, data, ..., subset, na.action) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
@@ -33,7 +33,7 @@ ci.thresholds.formula <- function(formula, data, subset, na.action, ...) {
   response <- roc.data$response
   predictor <- roc.data$predictors[, 1]
   roc <- roc(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   ci.thresholds(roc, ...)
@@ -44,7 +44,7 @@ ci.thresholds.default <- function(response, predictor, ...) {
     stop("'ci.thresholds' not available for multiclass ROC curves.")
   }
   roc <- roc.default(response, predictor, ci = FALSE, ...)
-  if (!inherits(roc, c("roc", "smooth.roc"))) {
+  if (!roc_utils_is_curve(roc)) {
     return(roc) # NA or NaN from roc(): propagate it
   }
   ci.thresholds(roc, ...)
@@ -60,8 +60,8 @@ ci.thresholds.roc <- function(roc,
                               boot.stratified = TRUE,
                               thresholds = "local maximas",
                               progress = getOption("pROCProgress", interactive()),
-                              cl = NULL,
                               parallel = FALSE,
+                              cl = NULL,
                               ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
@@ -86,12 +86,10 @@ ci.thresholds.roc <- function(roc,
     }
     attr(thresholds.num, "coords") <- thresholds
   } else if (is.logical(thresholds)) {
-    if (anyNA(thresholds)) {
-      stop("Missing values are not allowed in 'thresholds'.")
-    }
     thresholds.num <- roc$thresholds[thresholds]
     attr(thresholds.num, "logical") <- thresholds
   } else if (is.numeric(thresholds) || is.ordered(thresholds) || is.character(thresholds)) {
+    roc_utils_check_legacy_ordered(roc)
     ordered_roc <- roc_utils_is_ordered_roc(roc)
     if (is.numeric(thresholds) && ordered_roc) {
       stop("Numeric 'thresholds' is not supported for ordered ROC curves. Pass level labels as character or ordered.")
@@ -101,9 +99,6 @@ ci.thresholds.roc <- function(roc,
         stop("'thresholds' of class character must be of length 1.")
       }
       stop("'thresholds' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
-    }
-    if (anyNA(thresholds)) {
-      stop("Missing values are not allowed in 'thresholds'.")
     }
     thresholds.num <- thresholds
     if (ordered_roc) {
@@ -118,19 +113,22 @@ ci.thresholds.roc <- function(roc,
 
   # One 2 x length(thresholds) matrix per replicate, stacked into a
   # 2 x length(thresholds) x boot.n array.
-  perfs <- bootstrap.replicates(boot.n, bootstrap.thresholds,
-    roc = roc, stratified = boot.stratified, thresholds = thresholds.num,
-    simplify = "columns", progress = progress, cl = cl
+  na <- matrix(NA_real_, 2, length(thresholds.num))
+  boot.n <- roc_utils_check_boot_n(boot.n)
+  perfs <- bootstrap.replicates(boot.n, bootstrap.replicate,
+    roc = roc, stratified = boot.stratified, curve = FALSE,
+    statistic = bootstrap.thresholds, thresholds = thresholds.num, direction = roc$direction, na = na,
+    FUN.VALUE = na, progress = progress, cl = cl
   )
   # Drop the replicates with NA (a class can vanish from a non-stratified
   # resample): one column per replicate, then back to the array
   perfs.dim <- dim(perfs)
-  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L)
+  perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L, ignore = rep(is.na(thresholds.num), each = perfs.dim[1]))
   perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
   probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
   # output is length(probs) x 2 x length(thresholds.num)
-  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs)
+  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs, na.rm = TRUE)
 
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])

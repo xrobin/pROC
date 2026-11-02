@@ -52,6 +52,10 @@ f.full <- function(A, B) {
   expr1 * (2 * pi * expr2)^(-1 / 2)
 }
 
+# The partial-area functions take the FPR bounds of the partial area in the
+# order (upper, lower): FPR1 is the upper bound and FPR2 the lower bound. With
+# this order, expr3 and -expr4 are the paper's expr 3 and expr 4 (Table I,
+# p. 1531), and f and g are the published derivatives of Equation 1.
 f.partial <- function(A, B, FPR1, FPR2) {
   cdagger1 <- cdagger(A, B, FPR1)
   cdagger2 <- cdagger(A, B, FPR2)
@@ -76,7 +80,7 @@ g.partial <- function(A, B, FPR1, FPR2) {
   expr2 <- expr2(B)
   expr3 <- expr3(cdagger1, cdagger2)
   expr4 <- expr4(cddagger1, cddagger2)
-  # WARNING: we have set (-expr4), in contradiction with Obuchowski paper
+  # -expr4 is the paper's expr 4 with FPR1 the upper bound (see f.partial)
   expr1 * (2 * pi * expr2)^(-1) * (-expr4) - A * B * expr1 * (2 * pi * expr2^3)^(-1 / 2) * expr3
 }
 
@@ -112,7 +116,7 @@ var_roc_obuchowski <- function(roc, kappa = length(roc$controls) / length(roc$ca
 # Obuchowski 1997, formula 4 p. 1530
 # A and B: params of the binormal ROC curve
 # kappa: proportion controls / cases
-# FPR1, FPR2: the bottom (1) or top (2) bounds of the pAUC interval
+# FPR1, FPR2: the upper (1) and lower (2) FPR bounds of the pAUC interval
 var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
   if (!missing(FPR1) && !is.null(FPR1) && !missing(FPR1) && !is.null(FPR2)) {
     f.partial(A, B, FPR1, FPR2)^2 * (1 + B^2 / kappa + A^2 / 2) + g.partial(A, B, FPR1, FPR2)^2 * B^2 * (1 + kappa) / (2 * kappa)
@@ -175,7 +179,7 @@ cov0.roc.obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / leng
 # kappa: proportion controls / cases
 # FPR(1|2)(1|2): the bounds of the pAUC interval:
 #    ***** ROC curve 1 or 2
-#         ***** bottom (1) or top (2) of the interval
+#         ***** upper (1) or lower (2) FPR bound of the interval
 cov_params_obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
   if (!missing(FPR11) && !is.null(FPR11) &&
     !missing(FPR12) && !is.null(FPR12) &&
@@ -203,7 +207,7 @@ cov_params_obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, F
 # kappa: proportion controls / cases
 # FPR(1|2)(1|2): the bounds of the pAUC interval:
 #    ***** ROC curve 1 or 2
-#         ***** bottom (1) or top (2) of the interval
+#         ***** upper (1) or lower (2) FPR bound of the interval
 vardiff.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
   var(A1, B1, kappa, FPR11, FPR12) + var(A2, B2, kappa, FPR21, FPR22) +
     2 * cov(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)
@@ -217,7 +221,7 @@ vardiff.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR1
 # kappa: proportion controls / cases
 # FPR(1|2)(1|2): the bounds of the pAUC interval:
 #    ***** ROC curve 1 or 2
-#         ***** bottom (1) or top (2) of the interval
+#         ***** upper (1) or lower (2) FPR bound of the interval
 vardiff0.params.obuchowski <- function(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22) {
   2 * var(A1, B1, kappa, FPR11, FPR12) +
     2 * cov(A1, B1, A2, B2, rn, ra, kappa, FPR11, FPR12, FPR21, FPR22)

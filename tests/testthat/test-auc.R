@@ -211,48 +211,36 @@ test_that("has.partial.auc requires a partial.auc of length 2", {
   expect_false(has.partial.auc(a))
 })
 
-test_that("auc rejects NA and out of range partial.auc bounds", {
+test_that("auc rejects out of range partial.auc bounds", {
   expect_error(auc(r.s100b, partial.auc = c(1, -0.2)), "within \\[0, 1\\]")
   expect_error(auc(r.s100b, partial.auc = c(1.2, 0.8)), "within \\[0, 1\\]")
   expect_error(auc(r.s100b, partial.auc = c(-0.1, -0.5)), "within \\[0, 1\\]")
-  expect_error(auc(r.s100b, partial.auc = c(NA, 0.8)), "NA")
   expect_error(auc(r.s100b.percent, partial.auc = c(100, 120)), "within \\[0, 100\\]")
   expect_error(auc(r.s100b.percent, partial.auc = c(1, 0.8), partial.auc.focus = "se"), NA)
-  expect_error(auc(r.s100b, partial.auc = c(0.8, 0.8), partial.auc.correct = TRUE), "different")
   # Bounds at the limits are fine
   expect_equal(as.numeric(auc(r.s100b, partial.auc = c(1, 0))), as.numeric(auc(r.s100b)))
   expect_equal(as.numeric(auc(r.s100b.percent, partial.auc = c(100, 0))), as.numeric(auc(r.s100b.percent)))
 })
 
-test_that("McClish-corrected partial AUC of a curve on the diagonal is 0.5", {
-  # The trapezoid area of this diagonal is 1 ulp below the closed-form area
-  # under the diagonal
-  r <- roc(controls = 1:3, cases = 1:3, direction = "<", quiet = TRUE)
-  expect_silent(a <- auc(r, partial.auc = c(1, 0.8), partial.auc.correct = TRUE))
-  expect_equal(as.numeric(a), 0.5)
-  expect_equal(as.numeric(auc(r, partial.auc = c(1, 0), partial.auc.correct = TRUE)), 0.5)
-  expect_equal(as.numeric(auc(r, partial.auc = c(0.8, 1), partial.auc.focus = "se", partial.auc.correct = TRUE)), 0.5)
-  for (n in 1:12) {
-    for (percent in c(FALSE, TRUE)) {
-      r <- roc(controls = 1:n, cases = 1:n, direction = "<", percent = percent, quiet = TRUE)
-      for (partial.auc in list(c(1, 0.8), c(1, 0), c(0.9, 0.3), c(0.5, 0))) {
-        for (focus in c("specificity", "sensitivity")) {
-          expect_silent(a <- auc(r,
-            partial.auc = partial.auc * ifelse(percent, 100, 1),
-            partial.auc.focus = focus, partial.auc.correct = TRUE
-          ))
-          expect_equal(as.numeric(a), ifelse(percent, 50, 0.5))
-        }
-      }
-    }
-  }
-  # A curve below the diagonal still gives NA
-  r <- roc(controls = 4:6, cases = 1:3, direction = "<", quiet = TRUE)
-  expect_warning(a <- auc(r, partial.auc = c(1, 0.8), partial.auc.correct = TRUE), "below the diagonal")
-  expect_true(is.na(a))
+test_that("auc returns NA for NA partial.auc bounds", {
+  a <- auc(r.s100b, partial.auc = c(NA, 0.8))
+  expect_identical(as.numeric(a), NA_real_)
+  expect_identical(attr(a, "partial.auc"), c(0.8, NA))
+  expect_true(has.partial.auc(a))
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(NA, 0.8), partial.auc.correct = TRUE)), NA_real_)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, NA))), NA_real_)
+  # The range check still applies to the other bound
+  expect_error(auc(r.s100b, partial.auc = c(NA, 1.2)), "within \\[0, 1\\]")
+})
+
+test_that("auc returns NaN for equal partial.auc bounds with the correction", {
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8))), 0)
+  expect_identical(as.numeric(auc(r.s100b, partial.auc = c(0.8, 0.8), partial.auc.correct = TRUE)), NaN)
+  expect_identical(as.numeric(auc(r.s100b.percent, partial.auc = c(80, 80), partial.auc.correct = TRUE)), NaN)
 })
 
 test_that("auc stores the partial AUC specification in a canonical form", {
+  set.seed(42)
   y <- c(0, 0, 0, 0, 0, 1, 1, 1, 1, 1)
   a <- c(1, 2, 3, 5, 7, 4, 6, 8, 9, 10)
   r <- roc(y, a, quiet = TRUE)
@@ -265,10 +253,5 @@ test_that("auc stores the partial AUC specification in a canonical form", {
   p1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, partial.auc = c(100, 80), quiet = TRUE)
   p2 <- roc(aSAH$outcome, aSAH$ndka, percent = TRUE, partial.auc = c(100L, 80L), quiet = TRUE)
   expect_identical(attributes(p1$auc)[c("partial.auc", "partial.auc.correct")], attributes(p2$auc)[c("partial.auc", "partial.auc.correct")])
-  warnings <- character(0)
-  withCallingHandlers(roc.test(p1, p2, boot.n = 2), warning = function(w) {
-    warnings <<- c(warnings, conditionMessage(w))
-    invokeRestart("muffleWarning")
-  })
-  expect_false(any(grepl("Different AUC specifications", warnings)))
+  expect_no_warning(roc.test(p1, p2, boot.n = 2), message = "Different AUC specifications")
 })

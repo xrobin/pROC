@@ -37,14 +37,15 @@ test_that("geom_roc_threshold screenshot looks normal", {
 test_that("geom_roc_threshold gives clear errors for thresholds a smoothed curve does not have", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   s <- smooth(r.s100b)
-  expect_error(geom_roc_threshold(s, thresholds = "local maximas"), "'local maximas' 'thresholds' unsupported on a smoothed ROC curve")
-  expect_error(geom_roc_threshold(s, thresholds = "local"), "'local maximas' 'thresholds' unsupported on a smoothed ROC curve")
-  expect_error(geom_roc_threshold(s, thresholds = 0.5), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
-  expect_error(geom_roc_threshold(s, thresholds = c(0.5, 1)), "Numeric 'thresholds' unsupported on a smoothed ROC curve")
+  msg <- "Only 'best' 'thresholds' can be marked on a smoothed ROC curve: it has no thresholds."
+  for (thresholds in list("all", "local maximas", "local", 0.5, c(0.5, 1))) {
+    expect_error(geom_roc_threshold(s, thresholds = thresholds), msg, fixed = TRUE)
+  }
   expect_s3_class(geom_roc_threshold(s, thresholds = "best"), "ggroc_layer")
+  expect_s3_class(geom_roc_threshold(s, thresholds = "b"), "ggroc_layer")
 })
 
-test_that("geom_roc_threshold percent labels keep 3 decimals for the threshold", {
+test_that("geom_roc_threshold threshold labels don't depend on percent", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   r.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE)
   p <- ggroc(r.percent) + geom_roc_threshold(r.percent, thresholds = "best")
@@ -73,4 +74,20 @@ test_that("geom_roc_threshold gives an empty layer when no threshold is in the p
   pdf(NULL)
   on.exit(dev.off())
   expect_error(print(p), NA)
+})
+
+test_that("geom_roc_threshold uses best.method and best.weights as plot.roc", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  point.data <- function(layer) {
+    p <- ggroc(r.wfns) + layer
+    p@layers[[match("GeomPoint", layer_geom_classes(p))]]$data
+  }
+  layer <- geom_roc_threshold(r.wfns, thresholds = "best", best.method = "closest.topleft")
+  # not passed to the geoms ("Ignoring unknown parameters")
+  expect_no_warning(d <- point.data(layer))
+  expect_identical(as.character(d$threshold), as.character(coords(r.wfns, "best", best.method = "closest.topleft")$threshold))
+  layer <- geom_roc_threshold(r.wfns, thresholds = "best", best.weights = c(5, 0.2))
+  expect_identical(as.character(point.data(layer)$threshold), as.character(coords(r.wfns, "best", best.weights = c(5, 0.2))$threshold))
+  # the default is still Youden's point
+  expect_identical(as.character(point.data(geom_roc_threshold(r.wfns))$threshold), as.character(coords(r.wfns, "best")$threshold))
 })

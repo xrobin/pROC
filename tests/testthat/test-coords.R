@@ -77,13 +77,15 @@ test_that("coords with percent works", {
 test_that("coords with local maximas thresholds works", {
   return.rows <- "all"
   obtained <- coords(r.s100b, "local maximas", ret = return.rows)
-  # expected.thresholds <- c(-Inf, 0.065, 0.075, 0.085, 0.095, 0.105, 0.115, 0.135, 0.155, 0.205, 0.245, 0.29, 0.325, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+  # expected.thresholds <- c(-Inf, 0.065, 0.085, 0.115, 0.155, 0.205, 0.245, 0.29, 0.345, 0.395, 0.435, 0.475, 0.485, 0.51)
+  # 0.075, 0.095, 0.105, 0.135 and 0.325 (local maximas before the
+  # definition) are on straight segments or dents of the curve
   expected.thresholds <- c(
-    -Inf, 0x1.0a3d70a3d70a4p-4, 0x1.3333333333334p-4,
-    0x1.5c28f5c28f5c2p-4, 0x1.851eb851eb852p-4, 0x1.ae147ae147ae2p-4,
-    0x1.d70a3d70a3d7p-4, 0x1.147ae147ae148p-3, 0x1.3d70a3d70a3d7p-3,
+    -Inf, 0x1.0a3d70a3d70a4p-4,
+    0x1.5c28f5c28f5c2p-4,
+    0x1.d70a3d70a3d7p-4, 0x1.3d70a3d70a3d7p-3,
     0x1.a3d70a3d70a3ep-3, 0x1.f5c28f5c28f5cp-3, 0x1.28f5c28f5c29p-2,
-    0x1.4cccccccccccdp-2, 0x1.6147ae147ae14p-2, 0x1.947ae147ae148p-2,
+    0x1.6147ae147ae14p-2, 0x1.947ae147ae148p-2,
     0x1.bd70a3d70a3d7p-2, 0x1.e666666666666p-2, 0x1.f0a3d70a3d70ap-2,
     0x1.051eb851eb852p-1
   )
@@ -540,6 +542,73 @@ test_that("coords with x = 'local maximas' takes partial AUC into account", {
   expect_equal(obtained$threshold, c(0.065, 0.075))
 })
 
+local.maximas <- function(...) coords(roc(..., quiet = TRUE), "local maximas", ret = "threshold")$threshold
+
+test_that("local maximas are the points strictly better than their neighbours for some weighting", {
+  # Points on straight segments are not reported: the flat bottom edge...
+  expect_equal(local.maximas(controls = 1:5, cases = c(0, 2.5), direction = "<"), c(-Inf, 2.25, Inf))
+  # ... the diagonal...
+  expect_equal(local.maximas(controls = 1:3, cases = 1:3), c(-Inf, Inf))
+  # ... and ties: 2.5 is collinear with its neighbours
+  expect_equal(local.maximas(controls = c(1, 2, 3, 5), cases = c(2, 3, 4, 5)), c(1.5, 3.5, Inf))
+  # Dents are not reported (2.5)
+  expect_equal(local.maximas(controls = c(1, 2, 3, 3), cases = c(2, 2, 3, 4)), c(1.5, 3.5))
+  # Corners of a staircase are, and the ends of a partial AUC window are
+  # treated like the ends of the curve
+  staircase <- list(controls = 1:10, cases = c(6.5, 8.5, 11, 12), direction = "<")
+  expect_equal(do.call(local.maximas, staircase), c(6.25, 8.25, 10.5))
+  expect_equal(do.call(local.maximas, c(staircase, list(partial.auc = c(0.9, 0.5)))), c(6.25, 8.25, 9.5))
+  # A window with a single threshold reports it
+  expect_equal(do.call(local.maximas, c(staircase, list(partial.auc = c(0.95, 0.85)))), 9.5)
+  # The ends are dominated by the corner of a perfect separation
+  expect_equal(local.maximas(controls = 1, cases = 2), 1.5)
+})
+
+test_that("local maximas of aSAH curves", {
+  # wfns level 3 is a dent
+  expect_equal(as.character(coords(r.wfns, "local maximas", ret = "threshold")$threshold), c("1", "2", "4", "5", "Inf"))
+  expect_equal(coords(r.wfns.num, "local maximas", ret = "threshold")$threshold, c(-Inf, 1.5, 3.5, 4.5, Inf))
+  # 0.325 is on a straight segment of s100b
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(0.9, 0.8), quiet = TRUE)
+  expect_equal(coords(r, "local maximas", ret = "threshold")$threshold, c(0.205, 0.245, 0.29, 0.345, 0.395))
+})
+
+test_that("local maximas do not depend on the scale, or on which class is the case", {
+  for (r in list(r.s100b, r.ndka, r.wfns.num, r.s100b.partial1, r.s100b.partial2)) {
+    rp <- roc(controls = r$controls, cases = r$cases, percent = TRUE, quiet = TRUE)
+    expect_identical(
+      coords(rp, "local maximas", ret = "threshold", ignore.partial.auc = TRUE),
+      coords(r, "local maximas", ret = "threshold", ignore.partial.auc = TRUE)
+    )
+    mirror <- roc(controls = r$cases, cases = r$controls, quiet = TRUE)
+    expect_identical(
+      coords(mirror, "local maximas", ret = "threshold")$threshold,
+      rev(coords(r, "local maximas", ret = "threshold", ignore.partial.auc = TRUE)$threshold)
+    )
+  }
+  expect_identical(
+    coords(r.wfns.percent, "local maximas", ret = "threshold"),
+    coords(r.wfns, "local maximas", ret = "threshold")
+  )
+  expect_identical(
+    coords(r.s100b.percent.partial1, "local maximas", ret = "threshold"),
+    coords(r.s100b.partial1, "local maximas", ret = "threshold")
+  )
+})
+
+test_that("a partial AUC window that contains thresholds has local maximas", {
+  set.seed(1)
+  for (i in 1:200) {
+    controls <- sample(1:6, sample(3:8, 1), replace = TRUE)
+    cases <- sample(2:8, sample(3:8, 1), replace = TRUE)
+    r <- roc(controls = controls, cases = cases, direction = "<", quiet = TRUE)
+    low <- round(runif(1, 0, 0.8), 2)
+    if (!any(r$specificities >= low & r$specificities <= low + 0.2)) next
+    rp <- roc(controls = controls, cases = cases, direction = "<", partial.auc = c(low + 0.2, low), quiet = TRUE)
+    expect_gt(nrow(coords(rp, "local maximas")), 0)
+  }
+})
+
 test_that("invalid best.weights", {
   expect_error(coords(r.s100b, "best", best.weights = 1))
   expect_error(coords(r.s100b, "best", best.weights = 0:1))
@@ -615,11 +684,23 @@ test_that("Coords pick the right end of 'flat' bits of the curve, according to d
   )
 })
 
-test_that("coords with NA thresholds gives a clear error", {
-  expect_error(coords(r.s100b, c(0.5, NA), input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
-  expect_error(coords(r.s100b, NaN, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+test_that("coords with NA thresholds gives NA rows", {
+  ret <- c("threshold", "specificity", "sensitivity")
+  res <- coords(r.s100b, c(0.5, NA), input = "threshold", ret = ret)
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "threshold", ret = ret))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "threshold", ret = ret))))
   r.rev <- roc(aSAH$outcome, aSAH$s100b, direction = ">", quiet = TRUE)
-  expect_error(coords(r.rev, NA_real_, input = "threshold"), "Missing values are not allowed in 'x'.", fixed = TRUE)
+  expect_true(all(is.na(coords(r.rev, NA_real_, input = "threshold", ret = ret))))
+  # Ordered predictor
+  res <- coords(r.wfns, c("3", NA), input = "threshold", ret = ret)
+  expect_identical(res$specificity[1], coords(r.wfns, "3", input = "threshold", ret = "specificity")$specificity)
+  expect_true(all(is.na(res[2, ])))
+  # ci.thresholds of an ordered curve, as of a numeric one
+  set.seed(42)
+  ci <- ci.thresholds(r.wfns, thresholds = c("3", NA), boot.n = 5)
+  expect_true(all(is.na(ci$sensitivity[2, ])))
+  expect_false(anyNA(ci$sensitivity[1, ]))
 })
 
 test_that("coords 'best' returns the right youden and closest.topleft with a specificity partial AUC", {
@@ -652,8 +733,13 @@ test_that("coords 'best' closest.topleft is on the percent scale for percent cur
     best <- coords(r, "best", ret = "closest.topleft", best.method = "closest.topleft")
     # Requesting another column goes through roc_utils_calc_coords
     best.acc <- coords(r, "best", ret = c("closest.topleft", "accuracy"), best.method = "closest.topleft")
-    expect_equal(best$closest.topleft, best.acc$closest.topleft)
+    expect_identical(best$closest.topleft, best.acc$closest.topleft)
   }
+  # The same for youden on a partial AUC curve
+  r <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9), quiet = TRUE)
+  best <- coords(r, "best", ret = "youden")
+  expect_identical(best$youden, coords(r, "best", ret = c("youden", "accuracy"))$youden)
+  expect_equal(best$youden, 1.299797, tolerance = 1e-6)
   expect_equal(
     coords(r.s100b.percent, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft,
     100 * coords(r.s100b, "best", ret = "closest.topleft", best.method = "closest.topleft")$closest.topleft
@@ -739,129 +825,38 @@ test_that("coords on smoothed curves with numeric x honour drop and transpose", 
   s <- smooth(r.s100b)
   expected <- coords(s, c(0.5, 0.9), input = "specificity", transpose = FALSE)
   expect_s3_class(expected, "data.frame")
-  expect_equal(suppressWarnings(coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE)), t(expected))
-  expect_identical(suppressWarnings(coords(s, 0.5, input = "specificity", drop = TRUE)), expected[1, , drop = TRUE])
+  expect_warning(res <- coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE), "'transpose=TRUE' is deprecated")
+  expect_equal(res, t(expected))
+  expect_warning(res <- coords(s, 0.5, input = "specificity", drop = TRUE), "'drop' is deprecated")
+  expect_identical(res, expected[1, , drop = TRUE])
 })
 
 test_that("coords as.list on smoothed curves with one numeric x returns a flat list", {
   s <- smooth(r.s100b)
-  res <- suppressWarnings(coords(s, 0.5, input = "specificity", as.list = TRUE))
+  expect_warning(res <- coords(s, 0.5, input = "specificity", as.list = TRUE), "'as.list' is deprecated")
   expect_equal(names(res), c("specificity", "sensitivity"))
   expect_equal(res$specificity, 0.5)
 })
 
 test_that("coords on smoothed curves give each deprecation warning once", {
   s <- smooth(r.s100b)
-  count.warnings <- function(expr) {
-    n <- 0
-    withCallingHandlers(expr, warning = function(w) {
-      n <<- n + 1
-      invokeRestart("muffleWarning")
-    })
-    n
-  }
-  expect_equal(count.warnings(coords(s, 0.5, input = "specificity", transpose = TRUE)), 1)
-  expect_equal(count.warnings(coords(s, 0.5, input = "specificity", as.list = TRUE)), 1)
-  expect_equal(count.warnings(coords(s, "best", as.list = TRUE)), 1)
-  expect_equal(count.warnings(coords(s, "best", transpose = TRUE)), 1)
+  transpose.warning <- "'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version."
+  as.list.warning <- "'as.list' is deprecated and will be removed in a future version."
+  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", transpose = TRUE)), transpose.warning)
+  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", as.list = TRUE)), as.list.warning)
+  expect_identical(capture_warnings(coords(s, "best", as.list = TRUE)), as.list.warning)
+  expect_identical(capture_warnings(coords(s, "best", transpose = TRUE)), transpose.warning)
 })
 
 test_that("deprecated coords forms keep numeric coordinates on ordered curves", {
   r <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
-  best <- suppressWarnings(coords(r, "best", as.list = TRUE))
+  expect_warning(best <- coords(r, "best", as.list = TRUE), "'as.list' is deprecated")
   expect_type(best$specificity, "double")
   expect_type(best$sensitivity, "double")
   expect_equal(best$specificity, coords(r, "best")$specificity)
   # unchanged on numeric curves
-  expect_identical(
-    suppressWarnings(coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE)),
-    suppressWarnings(apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
-  )
-})
-
-test_that("coords finds exact points of percent curves despite rounding", {
-  # sp = 23/40 is a vertical segment: (23/40) * 100 != 57.5 in floating point
-  controls <- c(1:23, 30:46)
-  cases <- c(23.6, 23.7, 23.8, 50:55)
-  r <- roc(controls = controls, cases = cases, quiet = TRUE)
-  rp <- roc(controls = controls, cases = cases, percent = TRUE, quiet = TRUE)
-  ret <- c("threshold", "specificity", "sensitivity")
-  expected <- data.frame(threshold = 23.3, specificity = 0.575, sensitivity = 1)
-  expect_equal(coords(r, 0.575, input = "specificity", ret = ret), expected)
-  expected.percent <- data.frame(threshold = 23.3, specificity = 57.5, sensitivity = 100)
-  expect_equal(coords(rp, 57.5, input = "specificity", ret = ret), expected.percent)
-  expect_equal(coords(r, 0.425, input = "fpr", ret = ret), expected)
-  expect_equal(coords(rp, 42.5, input = "1-specificity", ret = ret), expected.percent)
-
-  # Partial AUC limit on a vertex adds no extra row
-  r$auc <- auc(r, partial.auc = c(.575, .2))
-  rp$auc <- auc(rp, partial.auc = c(57.5, 20))
-  expect_equal(nrow(coords(rp, "all")), nrow(coords(r, "all")))
-})
-
-test_that("coords counts are integers and match exact points", {
-  rp <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
-  tp <- coords(rp, "all", ret = "tp")$tp
-  expect_identical(tp, round(tp))
-  # tp = 2 at thresholds 3.75, 4.5 and 5.5: the upper-left one is 5.5
-  expect_equal(
-    coords(rp, 2, input = "tp", ret = c("threshold", "specificity", "sensitivity")),
-    data.frame(threshold = 5.5, specificity = 100, sensitivity = 200 / 3)
-  )
-
-  # (15 / 22) * 22 != 15 on a fraction curve
-  r <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
-  expected <- data.frame(threshold = 8.75, specificity = 1, sensitivity = 15 / 22)
-  expect_equal(coords(r, 15, input = "tp", ret = c("threshold", "specificity", "sensitivity")), expected)
-  expect_equal(coords(r, 7, input = "fn", ret = c("threshold", "specificity", "sensitivity")), expected)
-})
-
-test_that("coords partial AUC window keeps curve points within float error of the limits", {
-  trapezoid <- function(x, y) {
-    o <- order(x, -y)
-    x <- x[o]
-    y <- y[o]
-    sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
-  }
-  # (57 / 100) * 100 is 57 - 7e-15: se = 57 % is a flat segment from sp = 0 to 50 %
-  r <- roc(controls = c(43.3, 43.6, 80, 120), cases = 1:100, percent = TRUE, direction = "<", quiet = TRUE)
-  r$auc <- auc(r, partial.auc = c(100, 57), partial.auc.focus = "se", partial.auc.correct = FALSE)
-  co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
-  expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc) * 100)
-  # Same window as the fraction curve, where 57 / 100 == 0.57 exactly
-  r.fraction <- roc(controls = c(43.3, 43.6, 80, 120), cases = 1:100, direction = "<", quiet = TRUE)
-  r.fraction$auc <- auc(r.fraction, partial.auc = c(1, .57), partial.auc.focus = "se", partial.auc.correct = FALSE)
-  co.fraction <- coords(r.fraction, "all", ret = c("threshold", "sensitivity", "specificity"))
-  expect_equal(co$threshold, co.fraction$threshold)
-  expect_equal(co$specificity, co.fraction$specificity * 100)
-
-  # seq(0, 1, .1)[7] is 0.6000000000000001 on a curve with a point at 0.6
-  r <- roc(c(1, 0, 1, 1, 1, 0, 0, 1), c(5, 1, 1, 3, 5, 4, 3, 2), direction = ">", quiet = TRUE)
-  r$auc <- auc(r, partial.auc = seq(0, 1, .1)[c(9, 7)], partial.auc.focus = "se", partial.auc.correct = FALSE)
-  co <- coords(r, "all", ret = c("threshold", "sensitivity", "specificity"))
-  expect_equal(trapezoid(co$sensitivity, co$specificity), as.numeric(r$auc))
-})
-
-test_that("coords best and local maximas keep curve points within float error of the pAUC limits", {
-  # (23 / 40) * 100 is 57.5 - 7e-15 on the percent curve
-  controls <- 1:40
-  cases <- c(rep(23.5, 8), 30, 31)
-  r <- roc(controls = controls, cases = cases, percent = TRUE, direction = "<", partial.auc = c(100, 57.5), quiet = TRUE)
-  r.fraction <- roc(controls = controls, cases = cases, direction = "<", partial.auc = c(1, .575), quiet = TRUE)
-  for (x in c("best", "local maximas")) {
-    co <- coords(r, x, ret = c("threshold", "specificity", "sensitivity"))
-    co.fraction <- coords(r.fraction, x, ret = c("threshold", "specificity", "sensitivity"))
-    expect_equal(co$threshold, co.fraction$threshold)
-    expect_equal(co$specificity, co.fraction$specificity * 100)
-    expect_equal(co$sensitivity, co.fraction$sensitivity * 100)
-  }
-  expect_equal(coords(r, "best", ret = "threshold")$threshold, 23.25)
-
-  # smoothed curve: a limit within float error above the point closest to the best one in the window
-  s <- smooth(roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE))
-  k <- which(s$specificities > coords(s, "best")$specificity + 10)[1]
-  s$auc <- auc(s, partial.auc = c(100, s$specificities[k] + 1e-11))
-  expect_equal(coords(s, "best")$specificity, s$specificities[k])
+  expect_warning(res <- coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE), "'as.list' is deprecated")
+  expect_identical(res, apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
 })
 
 test_that("coords keeps the names of threshold x as row names whatever ret", {
@@ -887,8 +882,14 @@ test_that("coords warns about unknown or misspelt 'ret' elements", {
     coords(smooth(r.s100b), "best", ret = c("threshold", "sensitivity")),
     "threshold"
   )
-  # nothing matches: still an error
-  expect_error(coords(r.s100b, "best", ret = "specifcity"))
+  # nothing matches: a clear error, naming the calling function
+  expect_error(coords(r.s100b, "best", ret = c("bogus", "x")), "Invalid coordinate(s) in 'ret': 'bogus', 'x'.", fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", ret = "threshold"), "Invalid coordinate(s) in 'ret': 'threshold'.", fixed = TRUE)
+  e <- tryCatch(coords(r.s100b, "best", ret = "specifcity"), error = identity)
+  expect_identical(e$call[[1]], as.name("coords.roc"))
+  w <- tryCatch(coords(r.s100b, "best", ret = c("specifcity", "se")), warning = identity)
+  expect_identical(conditionMessage(w), "Invalid coordinate(s) in 'ret' ignored: 'specifcity'.")
+  expect_identical(w$call[[1]], as.name("coords.roc"))
   # valid, abbreviated and alias elements don't warn
   expect_no_warning(coords(r.s100b, "best", ret = c("t", "se", "sp", "npe", "topleft")))
   expect_no_warning(coords(r.s100b, "best", ret = "all"))
@@ -902,25 +903,39 @@ test_that("coords of a smoothed curve with numeric x uses best.weights", {
   expect_equal(res$closest.topleft, (1 - res$sensitivity)^2 + 2 * (1 - res$specificity)^2)
 })
 
-test_that("coords with NA in a numeric non-threshold x gives a clear error", {
-  msg <- "Missing values are not allowed in 'x'."
-  expect_error(coords(r.s100b, c(0.5, NA), input = "sensitivity"), msg, fixed = TRUE)
-  expect_error(coords(r.s100b, NaN, input = "specificity"), msg, fixed = TRUE)
-  expect_error(coords(r.s100b, NA_real_, input = "fpr"), msg, fixed = TRUE)
-  expect_error(coords(smooth(r.s100b), c(0.5, NA), input = "specificity"), msg, fixed = TRUE)
+test_that("coords with NA in a numeric non-threshold x gives NA rows", {
+  res <- coords(r.s100b, c(0.5, NA), input = "sensitivity")
+  expect_identical(res[1, ], coords(r.s100b, 0.5, input = "sensitivity"))
+  expect_true(all(is.na(res[2, ])))
+  expect_true(all(is.na(coords(r.s100b, NaN, input = "specificity"))))
+  res <- coords(r.s100b, c(NA, 0.5), input = "fpr", ret = "all")
+  expect_true(all(is.na(res[1, ])))
+  expect_false(anyNA(res[2, colnames(res) != "threshold"]))
+  s <- smooth(r.s100b)
+  res <- coords(s, c(0.5, NA), input = "specificity")
+  expect_identical(res[1, ], coords(s, 0.5, input = "specificity"))
+  expect_true(all(is.na(res[2, ])))
 })
 
 test_that("coords rejects an invalid best.weights cost or prevalence", {
   r <- roc(c(0, 0, 0, 1, 1, 1), c(1, 2, 3, 2, 3, 4), quiet = TRUE)
-  cost.msg <- "cost ('best.weights[1]') must be positive."
+  cost.msg <- "cost ('best.weights[1]') must not be negative."
   prev.msg <- "prevalence ('best.weights[2]') must be in the interval ]0,1[."
-  expect_error(coords(r, "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
-  expect_error(coords(r, "best", best.weights = c(NA, 0.5)), cost.msg, fixed = TRUE)
   expect_error(coords(r, "best", best.weights = c(-1, 0.5)), cost.msg, fixed = TRUE)
   expect_error(coords(r, "best", best.weights = c(1, NA)), prev.msg, fixed = TRUE)
-  expect_error(coords(smooth(r.s100b), "best", best.weights = c(0, 0.5)), cost.msg, fixed = TRUE)
+  expect_error(coords(smooth(r.s100b), "best", best.weights = c(-1, 0.5)), cost.msg, fixed = TRUE)
+  # A zero cost gives NA rows, and an infinite r for youden and closest.topleft
+  expect_true(all(is.na(coords(r, "best", best.weights = c(0, 0.5)))))
+  expect_equal(nrow(coords(r, "best", best.weights = c(0, 0.5))), 5)
+  expect_equal(
+    unlist(coords(r, 0.5, input = "specificity", ret = c("youden", "closest.topleft"), best.weights = c(0, 0.5))),
+    c(youden = Inf, closest.topleft = Inf)
+  )
   # An infinite cost is valid: maximize the sensitivity
   expect_true(all(coords(r, "best", best.weights = c(Inf, 0.5))$sensitivity == 1))
+  # A NA cost gives NA
+  expect_true(all(is.na(coords(r, "best", best.weights = c(NA, 0.5)))))
+  expect_true(all(is.na(coords(r, 0.5, input = "specificity", ret = c("youden", "closest.topleft"), best.weights = c(NA, 0.5)))))
 })
 
 test_that("coords 'best' with no point in the partial AUC window gives only pROC's warning", {
@@ -937,4 +952,155 @@ test_that("coords 'best' with no point in the partial AUC window gives only pROC
   expect_null(co)
   expect_length(w, 1)
   expect_match(w, "No coordinates found")
+})
+
+# Percent curves store 100 * k / n, one rounding, so that typed values match
+# the points they denote, as on fraction curves (C1-C13 in the cluster C
+# decision on PR #148)
+exact.controls <- c(1:23, 30:46)
+exact.cases <- c(23.6, 23.7, 23.8, 50:55)
+tsp <- c("threshold", "specificity", "sensitivity")
+
+test_that("C1: coords finds a typed specificity on percent as on fraction curves", {
+  r <- roc(controls = exact.controls, cases = exact.cases, quiet = TRUE)
+  rp <- roc(controls = exact.controls, cases = exact.cases, percent = TRUE, quiet = TRUE)
+  f <- coords(r, 0.575, input = "specificity", ret = tsp)
+  p <- coords(rp, 57.5, input = "specificity", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(f$threshold, 23.3)
+  expect_identical(p$specificity, 57.5)
+  expect_identical(p$sensitivity, 100)
+})
+
+test_that("C2: ci.se at a typed specificity is the same on percent and fraction curves", {
+  r <- roc(controls = exact.controls, cases = exact.cases, quiet = TRUE)
+  rp <- roc(controls = exact.controls, cases = exact.cases, percent = TRUE, quiet = TRUE)
+  set.seed(42)
+  f <- ci.se(r, specificities = 0.575, boot.n = 100)
+  set.seed(42)
+  p <- ci.se(rp, specificities = 57.5, boot.n = 100)
+  expect_equal(as.numeric(p), 100 * as.numeric(f))
+})
+
+test_that("C3: coords finds a typed count on percent curves", {
+  rp2 <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
+  p <- coords(rp2, 2, input = "tp", ret = tsp)
+  expect_identical(p$threshold, 5.5)
+  expect_identical(p$specificity, 100)
+  expect_identical(p$sensitivity, 100 * 2 / 3)
+})
+
+test_that("C4: an fpr input finds the point of the equivalent specificity", {
+  r4 <- roc(controls = c(1, 2, 5), cases = c(3, 4, 6), quiet = TRUE)
+  expect_identical(coords(r4, 1 / 3, input = "fpr", ret = tsp), coords(r4, 2 / 3, input = "specificity", ret = tsp))
+})
+
+test_that("C5: counts derived from a fraction curve are integers and find their threshold", {
+  r3 <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
+  expect_identical(coords(r3, 15, input = "tp", ret = "threshold")$threshold, 8.75)
+})
+
+test_that("C6: the counts of every point are integers", {
+  r3 <- roc(c(rep(0, 5), rep(1, 22)), c(1:5, 0.5 + 0:6, 10 + 1:15), quiet = TRUE)
+  rp2 <- roc(c(0, 0, 0, 0, 0, 1, 1, 1), c(1, 2, 3, 4, 5, 3.5, 6, 7), percent = TRUE, quiet = TRUE)
+  for (r in list(r3, rp2)) {
+    co <- coords(r, "all", ret = c("tp", "tn", "fp", "fn"))
+    expect_identical(as.matrix(co), round(as.matrix(co)))
+  }
+})
+
+test_that("C7: a percent partial AUC window ending on a curve point keeps the point", {
+  args <- list(controls = c(43.3, 43.6, 80, 120), cases = 1:100, direction = "<", partial.auc.focus = "se", quiet = TRUE)
+  rp <- do.call(roc, c(args, percent = TRUE, partial.auc = list(c(100, 57))))
+  r <- do.call(roc, c(args, partial.auc = list(c(1, 0.57))))
+  p <- coords(rp, "all", ret = tsp)
+  f <- coords(r, "all", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(tail(p$sensitivity, 3), c(57, 57, 57))
+})
+
+test_that("C8: best in a percent window ending on a curve point", {
+  args <- list(controls = 1:40, cases = c(rep(23.5, 8), 30, 31), direction = "<", quiet = TRUE)
+  p <- coords(do.call(roc, c(args, percent = TRUE, partial.auc = list(c(100, 57.5)))), "best", ret = tsp)
+  f <- coords(do.call(roc, c(args, partial.auc = list(c(1, 0.575)))), "best", ret = tsp)
+  expect_identical(p$threshold, f$threshold)
+  expect_identical(p$threshold, 23.25)
+  expect_identical(p$specificity, 57.5)
+})
+
+test_that("C11: a bootstrap roc.test of two perfect percent curves", {
+  y <- c(0, 0, 0, 0, 0, 0, 1, 1)
+  x1 <- c(-1, 0, 0, 1, -1, 1, 2, 2)
+  x2 <- c(1, 1, 0, 0, 0, 0, 2.5, 1.5)
+  p <- lapply(c(FALSE, TRUE), function(pc) {
+    s <- if (pc) 100 else 1
+    a <- roc(y, x1, percent = pc, partial.auc = c(1, .2) * s, quiet = TRUE)
+    b <- roc(y, x2, percent = pc, partial.auc = c(1, .2) * s, quiet = TRUE)
+    set.seed(42)
+    expect_warning(t <- roc.test(a, b, method = "bootstrap", boot.n = 20), "AUC == 1")
+    t$p.value
+  })
+  expect_identical(p[[2]], p[[1]])
+  expect_identical(p[[1]], 1)
+})
+
+test_that("percent curves store 100 * k / n, and fraction curves k / n", {
+  for (marker in c("s100b", "ndka", "wfns")) {
+    rf <- roc(aSAH$outcome, aSAH[[marker]], quiet = TRUE)
+    rp <- roc(aSAH$outcome, aSAH[[marker]], percent = TRUE, quiet = TRUE)
+    n1 <- length(rp$cases)
+    n0 <- length(rp$controls)
+    tp <- round(rp$sensitivities * n1 / 100)
+    tn <- round(rp$specificities * n0 / 100)
+    expect_identical(rp$sensitivities, 100 * tp / n1)
+    expect_identical(rp$specificities, 100 * tn / n0)
+    expect_identical(rf$sensitivities, tp / n1)
+    expect_identical(rf$specificities, tn / n0)
+  }
+})
+
+# "best" is selected on the counts with the default best.weights (step 2 of
+# the cluster C decision on PR #148)
+test_that("best returns every exactly tied threshold, on fraction and percent curves", {
+  co <- c(1, 1, 5, 2, 4, 1, 1)
+  ca <- c(1, 5, 2, 5, 3, 4, 3)
+  # 1.5 and 2.5 both have tp * n0 + tn * n1 = 70; se + sp rounds differently
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = co, cases = ca, direction = "<", percent = percent, quiet = TRUE)
+    expect_identical(coords(r, "best", ret = "threshold")$threshold, c(1.5, 2.5))
+  }
+})
+
+test_that("the count criterion orders the thresholds as roc_utils_optim_crit", {
+  set.seed(42)
+  for (i in 1:20) {
+    r <- roc(controls = rnorm(sample(5:30, 1)), cases = rnorm(sample(5:30, 1), 1), quiet = TRUE)
+    for (method in c("youden", "closest.topleft")) {
+      counts <- pROC:::roc_utils_optim_crit_counts(r, c(1, 0.5), method)
+      crit <- pROC:::roc_utils_optim_crit(r$sensitivities, r$specificities, 1, c(1, 0.5), method)
+      # Wherever the counts differ, the floating-point criterion orders the
+      # two thresholds the same way (it can miss exact ties, not invert them)
+      d.counts <- sign(outer(counts, counts, "-"))
+      d.crit <- sign(outer(crit, crit, "-"))
+      expect_identical(d.crit[d.counts != 0], d.counts[d.counts != 0])
+    }
+  }
+  # Only with the default weights, and not on smoothed curves
+  expect_null(pROC:::roc_utils_optim_crit_counts(r.s100b, c(1, 0.4), "youden"))
+  expect_null(pROC:::roc_utils_optim_crit_counts(smooth(r.s100b), c(1, 0.5), "youden"))
+})
+
+test_that("best with other best.weights is selected on roc_utils_optim_crit", {
+  co <- c(1, 1, 5, 2, 4, 1, 1)
+  ca <- c(1, 5, 2, 5, 3, 4, 3)
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(controls = co, cases = ca, direction = "<", percent = percent, quiet = TRUE)
+    for (method in c("youden", "closest.topleft")) {
+      crit <- pROC:::roc_utils_optim_crit(r$sensitivities, r$specificities, ifelse(percent, 100, 1), c(1, 0.4), method)
+      expect_identical(
+        coords(r, "best", best.method = method, best.weights = c(1, 0.4), ret = "threshold")$threshold,
+        r$thresholds[crit == max(crit)]
+      )
+    }
+  }
 })

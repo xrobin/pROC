@@ -62,6 +62,7 @@ test_that("roc.utils.to/unpercent works with ci .thresholds, .sp, .se", {
 })
 
 test_that("a percent curve with a ci.coords can be used in ci.auc, var, cov and power.roc.test", {
+  set.seed(42)
   r <- roc(aSAH$outcome, aSAH$s100b,
     percent = TRUE, ci = TRUE, of = "coords",
     x = 90, input = "specificity", ret = "sensitivity", boot.n = 10, quiet = TRUE

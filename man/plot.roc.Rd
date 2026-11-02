@@ -95,7 +95,7 @@ ci.col=ifelse(ci.type=="bars", par("fg"), "gainsboro"),
 panel.first=NULL,
 panel.last=NULL,
 ...)
-\S3method{plot.roc}{formula}(x, data, subset, na.action, ...)
+\S3method{plot.roc}{formula}(x, data, ..., subset, na.action)
 \S3method{plot.roc}{default}(x, predictor, ...)
 \S3method{plot.roc}{smooth.roc}(x, ...)
 
@@ -157,10 +157,11 @@ panel.last=NULL,
   }
   \item{print.thres.pattern}{the text pattern for the thresholds, as a
     \link{sprintf} format. Three values are passed to sprintf:
-    threshold, specificity, sensitivity. If \code{NULL}, a reasonable
-    default is used: \code{"\%.3f (\%.3f, \%.3f)"} (or
-    \code{"\%.3f (\%.1f\%\%, \%.1f\%\%)"} with \code{percent}), with
-    \code{\%s} for the threshold of ordered predictors.
+    threshold, specificity, sensitivity. The threshold is a number, or
+    the level as a character string for ordered predictors. If
+    \code{NULL}, the default \code{"\%s (\%.3f, \%.3f)"} (or
+    \code{"\%s (\%.1f\%\%, \%.1f\%\%)"} with \code{percent}) is used, with
+    the threshold formatted by \code{\link{format}}.
   }
   \item{print.thres.pattern.cex}{the character expansion factor (cex) for the
     threshold text pattern. See \link{par} for more details.
@@ -222,10 +223,13 @@ panel.last=NULL,
     \code{\link{polygon}} and \code{\link{par}} for more details.
   }
   \item{ci}{boolean. Should we plot the confidence intervals? Defaults to
-    \code{TRUE} if \code{x} has a \code{ci} field; \code{ci=TRUE} on a curve
-    without one is an error. A \code{\link{ci.coords}} CI is drawn only if
-    its \code{input} and \code{ret} give both the sensitivity and the
-    specificity; otherwise it is skipped with a warning.}
+    \code{TRUE} if \code{x} has a \code{ci} field; drawing the confidence
+    interval (\code{ci=TRUE} with a \code{ci.type} other than \dQuote{no})
+    of a curve without one is an error. A \code{\link{ci.coords}} CI is drawn with
+    \code{\link{plot.ci.coords}} only for the sensitivity at given
+    specificities (\code{input="specificity"}, \code{ret="sensitivity"}),
+    the only coordinates that map onto the ROC axes; other coordinates are
+    skipped with a warning.}
   \item{ci.type, ci.col}{\code{type} and \code{col} arguments for
 	\code{\link{plot.ci}}. The special value \dQuote{no} disables the plotting of confidence intervals.
   }
@@ -250,8 +254,9 @@ panel.last=NULL,
     \code{plot.roc.default} or \code{plot.roc.formula}. Note that the
     \code{plot} argument for \code{\link{roc}} is not allowed, and that
     the \code{x} argument of \code{\link{ci.coords}} cannot be passed
-    this way, as it would be matched to \code{x} (use
-    \code{roc(\dots, ci=TRUE, of="coords", x=\dots, plot=TRUE)} instead).
+    this way, as it would be matched to \code{x}: build the curve with
+    \code{\link{roc}}, plot it, and draw the CI of
+    \code{\link{ci.coords}(rocobj, x=\dots)} on it with \code{plot()}.
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
@@ -260,12 +265,16 @@ panel.last=NULL,
 }
 
 \details{
-  This function is typically called from \code{\link{roc}} when plot=TRUE (not by
-  default). \code{plot.roc.formula} and \code{plot.roc.default} are convenience methods
+  This function is called on a ROC curve built with \code{\link{roc}}
+  (\code{plot.roc.roc}) or smoothed with \code{\link[=smooth.roc]{smooth}}
+  (\code{plot.roc.smooth.roc}). \code{roc(\dots, plot=TRUE)} is a shortcut
+  that calls it after building the curve, and \code{plot.roc.formula} and
+  \code{plot.roc.default} are convenience methods
   that build the ROC curve (with the \code{\link{roc}} function) before
   calling \code{plot.roc.roc}. You can pass them arguments for both
-  \code{\link{roc}} and \code{plot.roc.roc}. Simply use \code{plot.roc}
-  that will dispatch to the correct method.
+  \code{\link{roc}} and \code{plot.roc.roc}, with the limits described in
+  the \dQuote{Shortcuts} section of \code{\link{roc}}. Simply use
+  \code{plot.roc} that will dispatch to the correct method.
 
   The plotting is done in the following order:
   \enumerate{
@@ -332,11 +341,6 @@ panel.last=NULL,
 This function returns the ROC curve invisibly: a list of class \dQuote{roc},
 or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
 \code{\link[=smooth.roc]{smooth}} for more details.
-
-With \code{predictor} (or a \code{formula}), \code{NA} (or \code{NaN})
-is returned instead, and nothing is plotted, if \code{\link{roc}}
-returns it (\code{NA} values with \code{na.rm=FALSE}, or infinite
-predictor values).
 }
 
 \references{

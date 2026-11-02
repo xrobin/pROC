@@ -16,7 +16,8 @@ power.roc.test(...)
 # One or Two ROC curves test with roc objects:
 \S3method{power.roc.test}{roc}(roc1, roc2, sig.level = 0.05, 
 power = NULL, kappa = NULL, alternative = c("two.sided", "one.sided"),
-reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"), ...)
+reuse.auc=TRUE, method = c("delong", "bootstrap", "obuchowski"),
+paired = NULL, ...)
 # One ROC curve with a given AUC:
 \S3method{power.roc.test}{numeric}(auc = NULL, ncontrols = NULL, 
 ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, 
@@ -32,7 +33,7 @@ alternative = c("two.sided", "one.sided"), ...)
 	\code{\link{roc}} function.
   }
   \item{auc}{
-    expected AUC.
+    expected AUC: a number, or the \code{auc} object of a full AUC.
   }
   \item{parslist}{
     a \code{\link{list}} of parameters for the two ROC curves test with
@@ -80,6 +81,10 @@ alternative = c("two.sided", "one.sided"), ...)
     \code{\link{var}} and \code{\link{cov}} documentations for more
     details. 
   }
+  \item{paired}{\code{NULL} (default) to detect pairing with
+    \code{\link{are.paired}}, \code{TRUE} to require it, \code{FALSE} to
+    treat the curves as unpaired, as in \code{\link{roc.test}}.
+  }
   \item{\dots}{further arguments passed to or from other methods,
     especially \code{\link{auc}} (with \code{reuse.auc=FALSE} or no AUC in
     the ROC curve), \code{\link{cov}} and \code{\link{var}} (especially
@@ -104,9 +109,7 @@ alternative = c("two.sided", "one.sided"), ...)
 
   \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
   function, but the empirical ROC will not be used, only the number of
-  patients and the AUC. Only the full AUC is supported: a ROC curve with a
-  partial AUC gives the error \dQuote{Power calculation for one ROC curve
-  is only available for the full AUC.}
+  patients and the AUC. Only the full AUC is supported.
 }
 
 \section{Two paired ROC curves power calculation}{
@@ -116,18 +119,21 @@ alternative = c("two.sided", "one.sided"), ...)
   supplied) or the power of a test of a difference between to AUCs
   according to the formula by Obuchowski and McClish, 1997
   (formulas 2 and 3, p. 1530--1531). The null hypothesis is that the AUC
-  of \code{roc1} is the same than the AUC of \code{roc2}, with
-  \code{roc1} taken as the reference ROC curve.
+  of \code{roc1} is the same than the AUC of \code{roc2}.
 
-  If the two curves do not have the same missing (\code{NA}) predictor
-  values, the observations missing in either curve are removed from both,
-  and the curves are rebuilt on the observations they have in common
-  (see \code{\link{are.paired}}). The AUCs, variances, covariance and
-  numbers of cases and controls are then those of the rebuilt curves.
+  With \code{method="delong"} or \code{"bootstrap"}, the variance of the
+  AUC difference estimated from the curves is used for both the
+  significance and the power terms, as in Jung (2024), because
+  \code{\link{roc.test}} divides by the variance estimated from the data.
+  The result does not depend on which curve is \code{roc1}.
+  With \code{method="obuchowski"} and binormal parameter lists, the
+  variance under the null hypothesis uses the binormal parameters of
+  \code{roc1} for both curves (\code{roc1} is the reference), as in
+  Obuchowski and McClish (1997), Example 2.
 
-  Curves built with \code{controls} and \code{cases} are not
-  considered paired, unless both were built on the same data (see
-  \code{\link{are.paired}}), and cannot be used here.
+  Paired curves with different missing values are re-paired as in
+  \code{\link{are.paired}}; the AUCs, variances, covariance and numbers
+  of cases and controls are those of the re-paired curves.
 
   For the sample size, \code{ncases} is computed directly from formula 2
   and ncontrols is deduced with \code{kappa} (defaults to the
@@ -177,8 +183,7 @@ alternative = c("two.sided", "one.sided"), ...)
   arguments such as \code{partial.auc} are silently ignored.
 
   Corrected partial AUCs (\code{partial.auc.correct=TRUE}) are not
-  supported and give the error \dQuote{Cannot compute power with
-  corrected partial AUCs}.
+  supported.
 }
 
 \value{
@@ -196,6 +201,10 @@ alternative = c("two.sided", "one.sided"), ...)
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Sin-Ho Jung (2024). ``Sample size calculation for comparing two ROC
+  curves''. \emph{Pharmaceutical Statistics}, \bold{23}, 557--569. DOI:
+  \doi{10.1002/pst.2371}.
 
   Nancy A. Obuchowski, Donna K. McClish (1997). ``Sample size
   determination for diagnostic accuracy studies involving binormal ROC
@@ -297,10 +306,8 @@ power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
 power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
 
 ## With only binormal parameters given
-# From example 2 of Obuchowski and McClish, 1997. pROC 1.19.1 and earlier
-# gave 107 cases; pROC now computes the variance under the null hypothesis
-# with the parameters of the first curve for both (as in Obuchowski's
-# DESIGNROC program), which gives about 120 cases.
+# Example 2 of Obuchowski and McClish (1997): with kappa = 1, the paper
+# requires 240 patients in total (120 cases and 120 controls).
 ob.params <- list(A1=2.6, B1=1, A2=1.9, B2=1, rn=0.6, ra=0.6, FPR11=0,
 FPR12=0.2, FPR21=0, FPR22=0.2, delta=0.037) 
 

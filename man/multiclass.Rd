@@ -12,7 +12,7 @@
 }
 \usage{
 multiclass.roc(...)
-\S3method{multiclass.roc}{formula}(formula, data, ...)
+\S3method{multiclass.roc}{formula}(formula, data, ..., subset, na.action)
 \S3method{multiclass.roc}{default}(response, predictor,
 levels=base::levels(as.factor(response)), 
 percent=FALSE, direction = c("auto", "<", ">"), ...)
@@ -31,6 +31,9 @@ percent=FALSE, direction = c("auto", "<", ">"), ...)
   \item{formula}{a formula of the type \code{response~predictor}.}
   \item{data}{a matrix or data.frame containing the variables in the
     formula. See \code{\link{model.frame}} for more details.}
+  \item{subset, na.action}{arguments for \code{\link{model.frame}},
+    used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
+  }
   \item{levels}{the value of the response for controls and cases
     respectively. In contrast with \code{levels} argument to
     \code{\link{roc}}, all the levels are used and
@@ -71,12 +74,9 @@ Only the multivariate case, with one column of predictions per class,
 computes the measure \eqn{M} defined by Hand and Till. In the univariate
 case, a two-class ROC curve is built on the single predictor for each
 pair of levels, and the multi-class AUC is the mean of their AUCs, in
-the form of Hand and Till's equation 7 (Hand and Till's \eqn{M} itself
-would always be 0.5 with a single predictor). With the default
-\code{direction="auto"}, the direction is chosen separately for each
-pair, which makes this mean optimistic: it is above 0.5 on average for
-a predictor unrelated to the response (about 0.6 with 3 classes of 10
-observations).
+the form of Hand and Till's equation 7. With the default
+\code{direction="auto"}, the direction of each of these curves is
+chosen separately for each pair of levels (see \code{\link{roc}}).
 
 This function has been much less tested than the rest of the package and
 is more subject to bugs. Please report them if you find one.
@@ -112,9 +112,7 @@ is more subject to bugs. Please report them if you find one.
 
 \section{Warnings}{
   If one of the levels specified in \code{levels} has no observation in
-  \code{response}, or only observations with a \code{NA} predictor
-  (removed by \code{\link{roc}} with \code{na.rm=TRUE}, the default), a
-  warning is issued and the level is ignored.
+  \code{response}, a warning is issued and the level is ignored.
 }
 
 \references{
