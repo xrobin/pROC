@@ -406,8 +406,8 @@ test_that("F9: ci.coords of a smoothed curve keeps the replicates aligned when s
 })
 
 test_that("F9: bootstraps of a smoothed curve whose resamples share one specificity run", {
-  # The binormal fit of such a resample is the vertical line: lm() returned it
-  # with a slope of 0 or +/-1e-16, and some made coords() abort
+  # Such a resample is degenerate data: its replicate is NA. lm() returned the
+  # vertical line with a slope of 0 or +/-1e-16, and some made coords() abort
   s9 <- smooth(roc(rep(0:1, each = 6), c(1, 1, 1, 2, 2, 3, 1, 2, 2, 3, 3, 3), quiet = TRUE))
   for (seed in 1:5) {
     set.seed(seed)

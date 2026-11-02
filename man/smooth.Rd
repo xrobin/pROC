@@ -223,9 +223,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \dQuote{Length of 'density.controls' and 'density.cases' differ.}
   will be displayed if the returned value differ in length.
 
-  Binormal smoothing cannot smooth ROC curve defined by only one
-  point. Any such attempt will fail with the error \dQuote{ROC curve not
-    smoothable (not enough points).}.
+  Binormal smoothing cannot smooth a ROC curve defined by only one
+  point, nor degenerate data (Metz and Pan, 1999): a curve whose points
+  with sensitivity and specificity strictly between 0 and 1 all have the
+  same sensitivity, or all have the same specificity. Any such attempt
+  fails with an error.
 
   If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
   estimate the parameters of the distribution because the controls or
@@ -262,6 +264,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 \references{
   James E. Hanley (1988) ``The robustness of the ``binormal'' assumptions
   used in fitting ROC curves''. \emph{Medical Decision Making} \bold{8}, 197--203.
+
+  Charles E. Metz, Xiaochuan Pan (1999) ``"Proper" binormal ROC curves:
+  theory and maximum-likelihood estimation''. \emph{Journal of
+  Mathematical Psychology} \bold{43}, 1--33.
+  DOI: \doi{10.1006/jmps.1998.1218}.
 
   Lutz Duembgen, Kaspar Rufibach (2011) ``logcondens: Computations Related
   to Univariate Log-Concave Density Estimation''. \emph{Journal of Statistical

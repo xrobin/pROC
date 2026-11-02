@@ -197,17 +197,15 @@ smooth_roc_binormal <- function(roc, n) {
   if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
     stop("ROC curve not smoothable (not enough points).")
   }
-  model <- lm(sp ~ se, df)
-  if (any(is.na(model$coefficients[2]))) {
-    stop("ROC curve not smoothable (not enough points).")
+  if (length(unique(df$se)) == 1 || length(unique(df$sp)) == 1) {
+    # Degenerate data (Metz and Pan 1999, p. 20): the points share one
+    # sensitivity or one specificity, so the fitted line would be horizontal
+    # or vertical. The rates are exact, so unique() is an exact test.
+    stop("ROC curve not smoothable (degenerate data).")
   }
+  model <- lm(sp ~ se, df)
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
   sp <- predict(model, data.frame(se))
-  if (length(unique(df$sp)) == 1) {
-    # The points share one specificity: the exact slope is 0, a vertical
-    # line, but lm() returns it with a rounding error of either sign
-    sp <- c(Inf, rep(df$sp[1], n - 2), -Inf)
-  }
 
   return(list(
     sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),
