@@ -55,41 +55,41 @@ a \code{\link{data.frame}} with the thresholds in rows and measurement in column
 
 \section{Changes in 1.15}{
 \enumerate{
-	\item{Addition of the \code{transpose} argument.}
-	\item{Display a warning if \code{transpose} is missing. Pass \code{transpose} explicitly to silence the warning.}
-	\item{Deprecation of \code{as.list}.}
+	\item Addition of the \code{transpose} argument.
+	\item Display a warning if \code{transpose} is missing. Pass \code{transpose} explicitly to silence the warning.
+	\item Deprecation of \code{as.list}.
 }
 }
 
 \section{Changes in 1.16}{
 \itemize{
-	\item{Change of the default \code{transpose} to \code{FALSE}.}
+	\item Change of the default \code{transpose} to \code{FALSE}.
 }
 THIS CHANGE IS BACKWARDS INCOMPATIBLE AND IS EXPECTED TO BREAK LEGACY CODE.
 }
 
 \section{Changes in 1.17}{
 \itemize{
-	\item{Dropped the warning if \code{transpose} is missing.}
+	\item Dropped the warning if \code{transpose} is missing.
 }
 }
 
 \section{Changes in 1.19}{
 \enumerate{
-	\item{Setting \code{transpose=TRUE} is deprecated and triggers a warning.}
-	\item{The  \code{as.list}, \code{as.matrix} and \code{drop} are deprecated.
-	Setting them to \code{TRUE} triggers a warning.}
-	\item{\code{transpose=FALSE} continues to work normally.}
+	\item Setting \code{transpose=TRUE} is deprecated and triggers a warning.
+	\item The  \code{as.list}, \code{as.matrix} and \code{drop} are deprecated.
+	Setting them to \code{TRUE} triggers a warning.
+	\item \code{transpose=FALSE} continues to work normally.
 }
 }
 
 \section{Changes in future versions}{
 \enumerate{
-	\item{Setting \code{transpose} to \code{TRUE} will stop working and result
-	in an error.}
-	\item{The \code{drop}, \code{as.list} and \code{as.matrix} arguments will 
-	be removed.}
-	\item{\code{transpose=FALSE} will keep working indefinitely.}
+	\item Setting \code{transpose} to \code{TRUE} will stop working and result
+	in an error.
+	\item The \code{drop}, \code{as.list} and \code{as.matrix} arguments will 
+	be removed.
+	\item \code{transpose=FALSE} will keep working indefinitely.
 }
 }
 
