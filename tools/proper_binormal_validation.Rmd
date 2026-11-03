@@ -1,0 +1,229 @@
+---
+output:
+    github_document:
+        toc: true
+        toc_depth: 2
+params:
+    B: 2000
+    cores: 4
+---
+
+<!-- proper_binormal_validation.md is generated from proper_binormal_validation.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Validation of the proper binormal fit
+
+This report checks `smooth(method = "binormal", fit = "proper")` (issue
+#152) against the published results of the "proper" binormal model (PBM). It
+is maintainer-only: knit it from the package root with the version of pROC
+to check installed, and mvtnorm:
+
+```{r, eval = FALSE}
+rmarkdown::render("tools/proper_binormal_validation.Rmd")
+# or with fewer datasets, on one core (Windows):
+rmarkdown::render("tools/proper_binormal_validation.Rmd", params = list(B = 200, cores = 1))
+```
+
+With `B = 2000` datasets per simulated population it takes about an hour on 4
+cores.
+
+Sources:
+
+- **M&P**: Metz CE, Pan X (1999) "Proper" binormal ROC curves: theory and
+  maximum-likelihood estimation. *J Math Psychol* 43:1–33.
+- **P&M**: Pesce LL, Metz CE (2007) Reliable and computationally efficient
+  maximum-likelihood estimation of "proper" binormal ROC curves. *Acad
+  Radiol* 14:814–829.
+- **Owen**: Owen DB (1956) Tables for computing bivariate normal
+  probabilities. *Ann Math Stat* 27:1075–1090.
+
+```{r setup}
+library(pROC)
+library(parallel)
+B <- params$B
+cores <- params$cores
+RNGkind("L'Ecuyer-CMRG")
+set.seed(20261103)
+c(pROC = as.character(packageVersion("pROC")), mvtnorm = as.character(packageVersion("mvtnorm")), R = R.version.string)
+```
+
+## AUC (M&P Eq. 36)
+
+The AUC of the PBM is computed with M&P p. 12, Eq. 36. P&M Table 1 (p. 826)
+lists the curve parameters of 9 population curves of known AUC, to 6
+significant digits:
+
+```{r eq36}
+table1 <- data.frame(
+  auc = rep(c(0.6, 0.85, 0.95), each = 3),
+  shape = rep(c("high", "medium", "symmetric"), 3),
+  da = c(0.1, 0.358, 0.358287, 1.24365, 1.46571, 1.46574, 0.0999998, 2.324, 2.32618),
+  c = c(-0.154357, -0.046907, 0, -0.428571, -0.14, 0, -0.853738, -0.292369, 0)
+)
+table1$eq36 <- mapply(pROC:::proper_binormal_auc, table1$da, table1$c)
+knitr::kable(table1, digits = 8)
+```
+
+The largest difference to the published AUCs is
+`r signif(max(abs(table1$eq36 - table1$auc)), 2)`, within the rounding of the
+parameters.
+
+At $d_a = 0$, $F(0, 0; \rho) = 1/4 + \arcsin(\rho) / (2\pi)$ (Owen p. 1078),
+so the AUC is $1 + \arcsin(\rho) / \pi$ with $\rho = -(1 - c^2) / (1 + c^2)$:
+
+```{r closed-form}
+cs <- c(-0.99, -0.5, -1e-3, -1e-6, 1e-6, 1e-3, 0.5, 0.99)
+closed <- 1 + asin(-(1 - cs^2) / (1 + cs^2)) / pi
+max(abs(vapply(cs, pROC:::proper_binormal_auc, numeric(1), da = 0) - closed))
+```
+
+## Continuous data (P&M Tables 2–4)
+
+P&M p. 822 generate continuous data from the PBM: $x$ from the conventional
+binormal model with parameters $a$ and $b$ (negatives $N(0, 1)$, positives
+$N(a / b, 1 / b)$), and $y = -[(bx - a)^2 - x^2] / 2$, the decision variable
+of the PBM (M&P Eq. 11). $a$ and $b$ follow from $d_a$ and $c$ (M&P p. 23). At
+$c = 0$ ($b = 1$), $y$ is linear in $x$, which is used directly.
+
+For each of the 9 population curves of Table 1, `r B` datasets of 50 negative
+and 50 positive cases are fitted with `fit = "proper"`, and, for comparison,
+with the least-squares binormal fit (`fit = "lm"`, the default) and the
+empirical AUC.
+
+```{r continuous, cache = TRUE}
+sim.pbm <- function(n, da, c) {
+  b <- (1 + c) / (1 - c)
+  a <- da * sqrt(1 + c^2) / (1 - c)
+  y <- if (c == 0) identity else function(x) -((b * x - a)^2 - x^2) / 2
+  list(controls = y(rnorm(n)), cases = y(rnorm(n, a / b, 1 / b)))
+}
+fit.auc <- function(d) {
+  r <- roc(controls = d$controls, cases = d$cases, direction = "<", quiet = TRUE)
+  c(
+    proper = tryCatch(as.numeric(auc(smooth(r, fit = "proper"))), error = function(e) NA_real_),
+    lm = tryCatch(as.numeric(auc(smooth(r))), error = function(e) NA_real_),
+    empirical = as.numeric(auc(r))
+  )
+}
+# P&M Tables 2-4 (pp. 826-827), 50 positive and 50 negative cases: mean AUC
+# and empirical SD of the estimates
+published <- data.frame(
+  mean = c(0.617, 0.610, 0.608, 0.860, 0.852, 0.852, 0.957, 0.951, 0.951),
+  sd = c(0.049, 0.050, 0.051, 0.034, 0.038, 0.038, 0.018, 0.021, 0.019)
+)
+continuous <- lapply(seq_len(nrow(table1)), function(i) {
+  do.call(rbind, mclapply(seq_len(B), function(j) {
+    fit.auc(sim.pbm(50, table1$da[i], table1$c[i]))
+  }, mc.cores = cores))
+})
+summary.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
+  p <- continuous[[i]][, "proper"]
+  n <- sum(!is.na(p))
+  data.frame(
+    auc = table1$auc[i], shape = table1$shape[i],
+    mean = mean(p, na.rm = TRUE), se = sd(p, na.rm = TRUE) / sqrt(n),
+    published = published$mean[i],
+    sd = sd(p, na.rm = TRUE), published.sd = published$sd[i],
+    failures = sum(is.na(p))
+  )
+}))
+summary.continuous$z <- (summary.continuous$mean - summary.continuous$published) / summary.continuous$se
+knitr::kable(summary.continuous, digits = c(2, 0, 4, 4, 3, 4, 3, 0, 1))
+```
+
+### Bias, and comparison with the least-squares fit
+
+```{r bias}
+bias <- do.call(rbind, lapply(seq_along(continuous), function(i) {
+  res <- continuous[[i]]
+  true <- table1$auc[i]
+  rmse <- function(x) sqrt(mean((x - true)^2, na.rm = TRUE))
+  data.frame(
+    auc = true, shape = table1$shape[i],
+    bias.proper = mean(res[, "proper"], na.rm = TRUE) - true,
+    bias.published = published$mean[i] - true,
+    bias.lm = mean(res[, "lm"], na.rm = TRUE) - true,
+    bias.empirical = mean(res[, "empirical"]) - true,
+    rmse.proper = rmse(res[, "proper"]), rmse.lm = rmse(res[, "lm"]), rmse.empirical = rmse(res[, "empirical"]),
+    failures.lm = sum(is.na(res[, "lm"]))
+  )
+}))
+knitr::kable(bias, digits = c(2, 0, 4, 3, 4, 4, 4, 4, 4, 0))
+```
+
+## Five-category data (M&P Tables 1–3)
+
+M&P p. 20 sample 1000 datasets of 30 negative and 40 positive cases from the
+conventional binormal model with $a = 1.5$ and $b = 0.8$, in 5 categories
+with the population operating points (FPF, TPF) = (0.00025, 0.10),
+(0.000328, 0.25), (0.03040, 0.50) and (0.28114, 0.85). The FPF 0.000328 is
+not on the curve: a TPF of 0.25 needs an FPF of 0.00328. The cut-points are
+taken from the TPFs.
+
+```{r five-category, cache = TRUE}
+a <- 1.5
+b <- 0.8
+cuts <- sort((a - qnorm(c(0.10, 0.25, 0.50, 0.85))) / b)
+fpf.at <- c(0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 0.9)
+true.tpf <- pnorm(a + b * qnorm(fpf.at))
+true.area <- pnorm(a / sqrt(1 + b^2))
+categorical <- do.call(rbind, mclapply(seq_len(B), function(j) {
+  r <- roc(
+    controls = findInterval(rnorm(30), cuts), cases = findInterval(rnorm(40, a / b, 1 / b), cuts),
+    direction = "<", quiet = TRUE
+  )
+  lm.area <- tryCatch(as.numeric(auc(smooth(r))), error = function(e) NA_real_)
+  s <- tryCatch(smooth(r, fit = "proper"), error = function(e) NULL)
+  if (is.null(s)) {
+    return(c(rep(NA_real_, 8), lm.area))
+  }
+  c(approx(1 - s$specificities, s$sensitivities, xout = fpf.at, ties = max)$y, as.numeric(auc(s)), lm.area)
+}, mc.cores = cores))
+fitted <- !is.na(categorical[, 8])
+knitr::kable(data.frame(
+  FPF = fpf.at, true.TPF = true.tpf, mean.TPF = colMeans(categorical[fitted, 1:7]),
+  published.mean = c(0.615, 0.705, 0.802, 0.857, 0.921, 0.960, 0.988),
+  RMSE = sqrt(colMeans(sweep(categorical[fitted, 1:7], 2, true.tpf)^2)),
+  published.RMSE = c(0.1557, 0.1150, 0.0795, 0.0639, 0.0459, 0.0297, 0.0111)
+), digits = c(2, 3, 3, 3, 4, 4))
+```
+
+The area under the proper fits averages
+`r round(mean(categorical[fitted, 8]), 4)` (RMSE
+`r round(sqrt(mean((categorical[fitted, 8] - true.area)^2)), 4)`), for a true
+area of `r round(true.area, 4)` (M&P Table 3, p. 23: 0.879, RMSE 0.0437);
+`r sum(!fitted)` of `r B` datasets could not be fitted. The least-squares fit
+refuses `r sum(is.na(categorical[, 9]))` of them (degenerate data, or fewer than
+two points), with an area of `r round(mean(categorical[, 9], na.rm = TRUE), 4)`
+(RMSE `r round(sqrt(mean((categorical[, 9] - true.area)^2, na.rm = TRUE)), 4)`)
+on the others.
+
+## Failures: perfect performance
+
+Data implying perfect performance (all operating points with FPF = 0 or
+TPF = 1) cannot be fitted by any model (M&P p. 27) and are refused with an
+error. Without fitting, the probability that all the controls are below all
+the cases:
+
+```{r separation, cache = TRUE}
+N <- 2e5
+high <- table1[table1$auc == 0.95 & table1$shape == "high", ]
+b.high <- (1 + high$c) / (1 - high$c)
+a.high <- high$da * sqrt(1 + high$c^2) / (1 - high$c)
+y.high <- function(x) -((b.high * x - a.high)^2 - x^2) / 2
+p.high <- mean(replicate(N, max(y.high(rnorm(50))) < min(y.high(rnorm(50, a.high / b.high, 1 / b.high)))))
+p.categorical <- mean(replicate(N, max(findInterval(rnorm(30), cuts)) < min(findInterval(rnorm(40, a / b, 1 / b), cuts))))
+c(continuous.0.95.high = p.high, five.category = p.categorical) * B
+```
+
+These are the expected numbers of perfectly separated datasets per `r B`.
+
+## Discussion
+
+DISCUSSION
