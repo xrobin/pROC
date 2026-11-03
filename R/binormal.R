@@ -385,7 +385,12 @@ proper_binormal_isopleth_starts <- function(k, l) {
   # empirical AUC from the counts: P(case > control) + P(tie) / 2
   cases.above <- rev(cumsum(rev(l))) - l
   auc <- sum(k * (cases.above + l / 2)) / (sum(k) * sum(l))
-  if (auc <= 0.5) { # the isopleth is the chance line alone
+  # At AUC <= 0.5 the isopleth is the chance line alone, a stationary point
+  # of the search: the grid is taken on the isopleth of 1 - AUC instead
+  # (no source covers these data). At AUC = 0.5 that is still the chance
+  # line.
+  auc <- max(auc, 1 - auc)
+  if (auc == 0.5) {
     return(list(c(da = 0, c = 0)))
   }
   # the isopleth reaches da = 0 at +-c.max (the AUC grows with |c| at da = 0)

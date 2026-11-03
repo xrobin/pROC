@@ -131,6 +131,18 @@ test_that("data without a least-squares start are not fitted with the chance lin
   expect_true(s$auc > 0.97)
 })
 
+test_that("data with an empirical AUC below 0.5 are not fitted with the chance line", {
+  # The isopleth of AUC <= 0.5 is the chance line, a stationary point: AUC
+  # 0.5 exactly (logLik -59.5738)
+  k <- c(0, 1, 0, 2, 0, 1, 0, 3, 1, 3, 0)
+  l <- c(4, 0, 2, 1, 1, 0, 2, 0, 1, 0, 4)
+  r <- roc(controls = rep(seq_along(k), k), cases = rep(seq_along(l), l), direction = "<", quiet = TRUE)
+  expect_true(auc(r) < 0.5)
+  s <- smooth(r, fit = "proper")
+  expect_equal(s$proper$logLik, -59.2819, tolerance = 1e-6)
+  expect_true(s$auc > 0.55)
+})
+
 test_that("a fit started at d_a = 0 can leave it", {
   # d_a = |x|: the central difference in x is 0 at x = 0
   s <- smooth(r.wfns, fit = "proper")
