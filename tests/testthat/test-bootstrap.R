@@ -43,6 +43,8 @@ for (case.name in names(bootstrap.cases)) {
       # a bug. expect_equal, never expect_identical: smoothed results carry an
       # lm fit whose terms hold an environment pointer.
       skip_slow()
+      # density() computes its grid differently since R 4.4.0 (PR#18337)
+      skip_if(nm == "roctest.smooth" && getRversion() < "4.4.0")
       expect_equal(values, expected$values, tolerance = 1e-8)
     })
   })
