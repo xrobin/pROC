@@ -105,14 +105,15 @@ reuse.auc=TRUE, reuse.ci=FALSE, fit=c("lm", "proper"), ...)
   categories: each run of controls or of cases in the sorted predictor
   values is one category, and tied control and case values form one
   category (Pesce and Metz, 2007). The fit starts from the least-squares
-  line and from other curves with the same AUC, and maximizes the
+  line and from curves with the empirical AUC, and maximizes the
   likelihood over \eqn{d_a}{d_a}, \eqn{c}{c} and the category boundaries
   together, as described by Pesce and Metz (2007), with
   \code{\link{optim}}'s BFGS method.
   Its full AUC is computed with Metz and Pan's Eq. 36. It
   can smooth curves that the least-squares fit cannot, such as degenerate
-  data, but it is much slower (in the order of a second per curve,
-  which matters with bootstrap confidence intervals).
+  data, but it is much slower: from a fraction of a second to tens of
+  seconds per curve, growing with the number of categories, which matters
+  with bootstrap confidence intervals.
 
   With \code{method="density"}, the \code{\link{density}}
   function is employed to generate a smooth kernel
@@ -237,7 +238,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, fit=c("lm", "proper"), ...)
   \item{proper}{with \code{method="binormal"} and \code{fit="proper"} only:
     a list with the estimates \code{da} and \code{c}, the
     \code{cutpoints} (category boundaries on Metz and Pan's decision
-    variable \eqn{v}), the maximized log-likelihood \code{logLik}, and the
+    variable \eqn{v}), the maximized log-likelihood \code{logLik} (Metz
+    and Pan's Eq. 2, without the terms that do not depend on the
+    parameters), and the
     \code{categories} (a data frame with the number of \code{controls}
     and \code{cases} in each category, from the least to the most
     \dQuote{positive}).

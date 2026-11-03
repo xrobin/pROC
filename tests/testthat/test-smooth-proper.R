@@ -121,6 +121,37 @@ test_that("a start far from the data finds its initial cut-points", {
   expect_true(all(diff(proper_slopes(s)) <= 0))
 })
 
+test_that("data without a least-squares start are not fitted with the chance line", {
+  # No operating point inside the square, yet no perfect performance: the
+  # start was (0, 0), a stationary point (AUC 0.5, logLik -17.88)
+  r <- roc(controls = 1:10, cases = c(0, 11:20), quiet = TRUE)
+  s <- smooth(r, fit = "proper")
+  expect_null(pROC:::proper_binormal_start(s$proper$categories$controls, s$proper$categories$cases))
+  expect_equal(s$proper$logLik, -7.525608, tolerance = 1e-6)
+  expect_true(s$auc > 0.97)
+})
+
+test_that("a fit started at d_a = 0 can leave it", {
+  # d_a = |x|: the central difference in x is 0 at x = 0
+  s <- smooth(r.wfns, fit = "proper")
+  k <- s$proper$categories$controls
+  l <- s$proper$categories$cases
+  from0 <- pROC:::proper_binormal_fit_from(c(da = 0, c = s$proper$c), k, l)
+  expect_equal(from0$logLik, s$proper$logLik, tolerance = 1e-8)
+  expect_true(from0$da > 1)
+})
+
+test_that("the skewed starts find a maximum the least-squares start misses", {
+  # A sample of 25 + 25 cases of a Pesce & Metz population: the
+  # least-squares c is about 0, and the starts at c = 0 and +-c all reached
+  # logLik -148.4139; the isopleth grid (Metz & Pan p. 20) finds -148.4079
+  k <- c(0, 5, 0, 1, 0, 7, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 0, 2, 0, 1, 0, 2, 0, 1, 0)
+  l <- c(2, 0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 3, 0, 1, 0, 1, 0, 1, 0, 3, 0, 2, 0, 3)
+  s <- smooth(roc(controls = rep(seq_along(k), k), cases = rep(seq_along(l), l), quiet = TRUE), fit = "proper")
+  expect_equal(s$proper$logLik, -148.40788, tolerance = 1e-7)
+  expect_equal(as.numeric(s$auc), 0.6254, tolerance = 1e-3)
+})
+
 test_that("direction and percent", {
   s <- smooth(r.s100b, fit = "proper")
   r.reversed <- roc(aSAH$outcome, -aSAH$s100b, quiet = TRUE)

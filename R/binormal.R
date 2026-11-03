@@ -270,7 +270,7 @@ proper_binormal_start <- function(k, l) {
   fpf <- fpf[interior]
   tpf <- tpf[interior]
   if (length(fpf) == 0) {
-    return(c(da = 0, c = 0))
+    return(NULL)
   }
   df <- data.frame(sp = qnorm(fpf, lower.tail = FALSE), se = qnorm(tpf))
   # The sign of c: from the least-squares fit; for degenerate data, from its
@@ -301,7 +301,8 @@ proper_binormal_start <- function(k, l) {
   # qnorm(FPF / 2) (or of the same in 1 - TPF and 1 - FPF) has the slope
   # (1 + c) / (1 - c). The fit with c of the expected sign and the smallest
   # residuals is kept (a point on the negative diagonal has no slope: NaN).
-  best <- c(da = 0, c = 0)
+  # NULL if there is none.
+  best <- NULL
   rss <- Inf
   for (sign in signs) {
     x <- qnorm(if (sign < 0) fpf / 2 else (1 - fpf) / 2)
@@ -354,17 +355,17 @@ proper_binormal_isopleth <- function(auc, c) {
 # their trust-region Newton method); a step that leaves d_a >= 0, |c| < 1 or
 # the range of Eq. 35, or makes the cut-points cross, is rejected (P&M
 # pp. 819-820): the objective is Inf there, and BFGS backtracks. da and c are
-# searched as |x| and tanh(y). Starts (P&M p. 819): the initial estimate, and
-# the curves with the same AUC with c = 0 and the opposite c. If they reach
-# different maxima, 5 more starts are spread on the isopleth of the best one,
-# between its smallest and largest c.
+# searched as |x| and tanh(y). Starts: the least-squares estimate
+# (proper_binormal_start, NULL if there is none; P&M p. 818), and a
+# symmetrical curve (c = 0) and two curves skewed in opposite directions,
+# with the same AUC (P&M p. 819). These are on the isopleth of the empirical
+# (trapezoidal) AUC, with the skewed ones chosen as M&P do (pp. 19-20):
+# among 20 points equally spaced (in c) on the isopleth, the one of each
+# sign with the largest log-likelihood maximized over the cut-points. If the
+# starts reach different maxima, 5 more are spread on the isopleth of the
+# best one, between its smallest and largest c.
 proper_binormal_fit <- function(k, l, start) {
-  auc <- proper_binormal_auc(start[["da"]], start[["c"]])
-  starts <- list(
-    start,
-    c(da = proper_binormal_isopleth(auc, 0), c = 0),
-    c(da = proper_binormal_isopleth(auc, -start[["c"]]), c = -start[["c"]])
-  )
+  starts <- c(if (!is.null(start)) list(start), proper_binormal_isopleth_starts(k, l))
   fits <- lapply(unique(starts), proper_binormal_fit_from, k = k, l = l)
   loglik <- vapply(fits, `[[`, numeric(1), "logLik")
   reached <- is.finite(loglik)
@@ -378,6 +379,44 @@ proper_binormal_fit <- function(k, l, start) {
     loglik <- vapply(fits, `[[`, numeric(1), "logLik")
   }
   fits[[which.max(loglik)]]
+}
+
+proper_binormal_isopleth_starts <- function(k, l) {
+  # empirical AUC from the counts: P(case > control) + P(tie) / 2
+  cases.above <- rev(cumsum(rev(l))) - l
+  auc <- sum(k * (cases.above + l / 2)) / (sum(k) * sum(l))
+  if (auc <= 0.5) { # the isopleth is the chance line alone
+    return(list(c(da = 0, c = 0)))
+  }
+  # the isopleth reaches da = 0 at +-c.max (the AUC grows with |c| at da = 0)
+  c.max <- uniroot(function(c) proper_binormal_auc(0, c) - auc, c(0, 1), tol = 1e-10)$root
+  grid <- c.max * seq(-1, 1, length.out = 22)[2:21]
+  loglik <- vapply(grid, function(c) {
+    proper_binormal_profile(proper_binormal_isopleth(auc, c), c, k, l)
+  }, numeric(1))
+  skewed <- lapply(c(-1, 1), function(sign) {
+    c <- grid[sign * grid > 0][which.max(loglik[sign * grid > 0])]
+    c(da = proper_binormal_isopleth(auc, c), c = c)
+  })
+  c(list(c(da = proper_binormal_isopleth(auc, 0), c = 0)), skewed)
+}
+
+# Log-likelihood maximized over the cut-points, at fixed (da, c) (M&P p. 20)
+proper_binormal_profile <- function(da, c, k, l) {
+  I <- length(k)
+  range <- proper_binormal_range(da, c)
+  minus.loglik <- function(v) {
+    if (v[1] <= range[1] || v[I - 1] >= range[2] || any(diff(v) <= 0)) {
+      return(Inf)
+    }
+    -proper_binormal_loglik(v, da, c, k, l)
+  }
+  gradient <- function(v) -proper_binormal_loglik(v, da, c, k, l, gradient = TRUE)
+  v <- proper_binormal_start_v(da, c, k, l)
+  if (!is.finite(minus.loglik(v))) {
+    return(-Inf)
+  }
+  -optim(v, minus.loglik, gradient, method = "BFGS", control = list(maxit = 1000, reltol = 1e-10))$value
 }
 
 proper_binormal_fit_from <- function(start, k, l) {
@@ -404,7 +443,9 @@ proper_binormal_fit_from <- function(start, k, l) {
       down <- par
       down[i] <- down[i] - h
       f.up <- minus.loglik(up)
-      f.down <- minus.loglik(down)
+      # at x = 0, da = |x| is symmetric: the central difference is 0 and the
+      # search could never leave da = 0
+      f.down <- if (i == 1 && par[1] == 0) Inf else minus.loglik(down)
       if (is.finite(f.up) && is.finite(f.down)) {
         (f.up - f.down) / (2 * h)
       } else if (is.finite(f.up)) {
