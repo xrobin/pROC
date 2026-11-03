@@ -8,11 +8,11 @@ test_that("geom_text_auc screenshot looks normal", {
   expect_ggroc_doppelganger("geom_text_auc.screenshot", test_screenshot)
 })
 
-test_that("geom_text_auc includes ci.auc when present", {
+test_that("geom_text_auc does not use the ci.auc stored in the curve", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
   p <- ggroc(roc_ci) + geom_text_auc(roc_ci)
-  expect_true("GeomText" %in% layer_geom_classes(p))
+  expect_identical(ggplot2::layer_data(p, 2)$label, ggroc_auc_label(roc_ci$auc))
 })
 
 test_that("geom_text_auc gives a clear error on a curve without AUC", {

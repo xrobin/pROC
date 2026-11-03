@@ -31,7 +31,9 @@ ci(...)
 	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{multiclass.roc, multiclass.auc}{not implemented.}
-  \item{response, predictor}{arguments for the \code{\link{roc}} function.}
+  \item{response, predictor}{arguments for the \code{\link{roc}} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
   }

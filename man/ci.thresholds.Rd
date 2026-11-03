@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{ci.thresholds}
 \alias{ci.thresholds}
+\alias{ci.thresholds.auc}
 \alias{ci.thresholds.default}
 \alias{ci.thresholds.formula}
 \alias{ci.thresholds.roc}
@@ -17,6 +18,7 @@
 
 \usage{
 # ci.thresholds(...)
+\S3method{ci.thresholds}{auc}(auc, ...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
 progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
@@ -27,11 +29,16 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
 		   
 \arguments{
   \item{roc}{a \dQuote{roc} object from the \code{\link{roc}} function.}
+  \item{auc}{an \dQuote{auc} object from the \code{\link{auc}}
+    function, whose curve is used with its (partial) AUC specification.
+  }
   \item{smooth.roc}{not available for \link[=smooth.roc]{smoothed} ROC
     curves, available only to catch the error and provide a clear error
     message.
   }
-  \item{response, predictor}{arguments for the \code{\link{roc}} function.}
+  \item{response, predictor}{arguments for the \code{\link{roc}} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{formula, data}{a formula (and possibly a data object) of type
 	response~predictor for the \code{\link{roc}} function.
   }
@@ -76,6 +83,7 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{ci.thresholds.roc}
     when calling \code{ci.thresholds.default} or \code{ci.thresholds.formula}.
+    For \code{ci.thresholds.auc}, the arguments of \code{ci.thresholds.roc}.
     Arguments \code{best.method} and \code{best.weights} to \code{\link{coords}}.
   }
 }

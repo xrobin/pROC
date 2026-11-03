@@ -4,13 +4,17 @@
     - 'geom_polygon_auc' has no 'legacy.axes' argument
     - The formula methods of 'plot.roc' and 'lines.roc' take 'subset' and 'na.action' after '...'
     - The unpaired DeLong test of 'roc.test' no longer  returns a 'parameter'
+    - 'power.roc.test' takes an 'auc' object as its curve: pass 'as.numeric(auc)' for an expected AUC
   * Bumped dependencies to R >= 4.0.0, and ggplot2 >= 4.0.0
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations
   * Documented the justification of the stratified bootstrap (issue #131)
   * Ordered predictors are no longer converted to numeric (issue #63, https://xavier.robin.info/en/blog/2026/10/06/breaking-changes-for-ordered-predictors-in-upcoming-proc-1.20.0). Thresholds are the levels plus an Inf sentinel; pass those labels (not numbers) to coords(), ci.thresholds(), ci.coords() and plot.roc(print.thres).
-  * Added base graphics add-on functions 'polygon_auc', 'polygon_max_auc', 'polygon_ci' and 'text' methods for 'auc', 'ci.auc', 'roc' and 'smooth.roc', and 'panel.first'/'panel.last' arguments to 'plot.roc' (issue #70)
   * Added ggplot2 layers for 'ggroc' plots: 'geom_polygon_auc', 'geom_polygon_max_auc', 'geom_roc_identity', 'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and 'geom_errorbar_ci' (issue #129)
+  * All-in-one calls are superseded by modular calls, described in the new '?all_in_one_calls' help page (issues #70 and #149):
+    - Added 'polygon_auc', 'polygon_max_auc' and 'polygon_ci' functions, 'text' and 'points' methods, and 'panel.first'/'panel.last' arguments to 'plot.roc'
+    - 'ci.coords' and 'ci.thresholds' accept 'auc' objects
+    - Superseded, still working without a warning: 'plot=TRUE', 'smooth=TRUE' and 'ci=TRUE' in 'roc', the partial AUC arguments outside 'auc', 'reuse.auc' and 'reuse.ci', the default and formula methods of 'auc', 'ci*', 'roc.test', 'plot.roc' and 'lines.roc', and the display arguments of 'plot.roc'
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
   * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another coordinate system (for example 'coord_cartesian()') to replace it.
   * Added a ggplot2 screenshot gallery vignette

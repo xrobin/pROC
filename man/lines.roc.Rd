@@ -29,7 +29,9 @@
     lines.roc.smooth.roc), a formula (for lines.roc.formula) or a response
     vector (for lines.roc.default).
   }
-  \item{predictor, data}{arguments for the \link{roc} function.}
+  \item{predictor, data}{arguments for the \link{roc} function.
+    Superseded: build the curve with \code{\link{roc}} first (see
+    \link{all_in_one_calls}).}
   \item{subset,na.action}{arguments for \code{\link{model.frame}}}
   \item{lwd}{line width (see \code{\link{par}}).}
   \item{\dots}{graphical parameters for \code{\link{lines}}, and
