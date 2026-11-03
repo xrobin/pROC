@@ -61,13 +61,15 @@ smooth_roc_proper <- function(roc, n) {
   if (length(k) < 2) {
     stop("ROC curve not smoothable (not enough points).")
   }
-  # Data implying perfect performance (M&P p. 27): every operating point has
-  # FPF = 0 or TPF = 1 (no control above it, or no case below it), so the
-  # likelihood is maximal only in the limit AUC = 1, where no curve
-  # parameters can be estimated
+  # Perfect performance. M&P p. 27: no curve parameters can be estimated from
+  # perfectly separated data. More generally (pROC's criterion, which also
+  # covers ties straddling a separation), when every operating point has
+  # FPF = 0 or TPF = 1 (no control above it, or no case below it), the
+  # likelihood is maximal only in the limit AUC = 1, with no unique
+  # parameters
   I <- length(k)
   if (all(rev(cumsum(rev(k)))[-1] == 0 | cumsum(l)[-I] == 0)) {
-    stop("ROC curve not smoothable (perfect separation).")
+    stop("ROC curve not smoothable (perfect performance).")
   }
   fit <- proper_binormal_fit(k, l, proper_binormal_start(k, l))
   if (fit$convergence != 0) {
@@ -386,13 +388,10 @@ proper_binormal_isopleth_starts <- function(k, l) {
   cases.above <- rev(cumsum(rev(l))) - l
   auc <- sum(k * (cases.above + l / 2)) / (sum(k) * sum(l))
   # At AUC <= 0.5 the isopleth is the chance line alone, a stationary point
-  # of the search: the grid is taken on the isopleth of 1 - AUC instead
-  # (no source covers these data). At AUC = 0.5 that is still the chance
-  # line.
-  auc <- max(auc, 1 - auc)
-  if (auc == 0.5) {
-    return(list(c(da = 0, c = 0)))
-  }
+  # of the search: the grid is taken on the isopleth of 1 - AUC instead, and
+  # at least on that of the smallest AUC above 0.5 the counts allow (no
+  # source covers these data)
+  auc <- max(auc, 1 - auc, 0.5 + 1 / (2 * sum(k) * sum(l)))
   # the isopleth reaches da = 0 at +-c.max (the AUC grows with |c| at da = 0)
   c.max <- uniroot(function(c) proper_binormal_auc(0, c) - auc, c(0, 1), tol = 1e-10)$root
   grid <- c.max * seq(-1, 1, length.out = 22)[2:21]

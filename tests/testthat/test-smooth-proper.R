@@ -143,6 +143,15 @@ test_that("data with an empirical AUC below 0.5 are not fitted with the chance l
   expect_true(s$auc > 0.55)
 })
 
+test_that("data with an empirical AUC of exactly 0.5 are not fitted with the chance line", {
+  # Cases on both sides of the controls: AUC 0.5 exactly (logLik -20.7944)
+  r <- roc(controls = rep(2, 10), cases = rep(c(1, 3), each = 5), direction = "<", quiet = TRUE)
+  expect_equal(as.numeric(auc(r)), 0.5)
+  s <- smooth(r, fit = "proper")
+  expect_equal(s$proper$logLik, -18.88542, tolerance = 1e-6)
+  expect_true(s$auc > 0.7)
+})
+
 test_that("a fit started at d_a = 0 can leave it", {
   # d_a = |x|: the central difference in x is 0 at x = 0
   s <- smooth(r.wfns, fit = "proper")
@@ -205,7 +214,7 @@ test_that("print shows the proper fit", {
 test_that("data without curve parameters to estimate are not smoothable", {
   # Metz & Pan p. 27: perfect separation
   expect_error(smooth(roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE), fit = "proper"),
-    "ROC curve not smoothable (perfect separation).",
+    "ROC curve not smoothable (perfect performance).",
     fixed = TRUE
   )
   # Points only on the top and left borders, (7/30, 1) and (0, 27/40):
@@ -214,7 +223,7 @@ test_that("data without curve parameters to estimate are not smoothable", {
   # limit AUC = 1); before, a row of NAs from the operating points
   # failed with "missing value where TRUE/FALSE needed"
   r <- roc(controls = rep(0:1, c(23, 7)), cases = rep(1:4, c(13, 12, 10, 5)), quiet = TRUE)
-  expect_error(smooth(r, fit = "proper"), "ROC curve not smoothable (perfect separation).", fixed = TRUE)
+  expect_error(smooth(r, fit = "proper"), "ROC curve not smoothable (perfect performance).", fixed = TRUE)
   expect_error(smooth(r), "ROC curve not smoothable (not enough points).", fixed = TRUE)
   # all values tied: a single category
   expect_error(smooth(roc(controls = c(1, 1, 1), cases = c(1, 1), quiet = TRUE), fit = "proper"),

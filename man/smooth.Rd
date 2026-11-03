@@ -263,9 +263,10 @@ reuse.auc=TRUE, reuse.ci=FALSE, fit=c("lm", "proper"), ...)
   with sensitivity and specificity strictly between 0 and 1 all have the
   same sensitivity, or all have the same specificity. Any such attempt
   fails with an error. With \code{fit="proper"}, degenerate data can be
-  smoothed, but data implying perfect performance cannot (Metz and
-  Pan, 1999, p. 27): a curve whose points all have a sensitivity of 1 or
-  a specificity of 1, such as perfectly separated controls and cases.
+  smoothed, but perfectly separated controls and cases cannot (Metz and
+  Pan, 1999, p. 27), nor, more generally, a curve whose points all have
+  a sensitivity of 1 or a specificity of 1, whose likelihood is maximal
+  only in the limit of an AUC of 1.
   Neither can a fit that does not converge.
 
   If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
