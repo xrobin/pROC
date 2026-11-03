@@ -159,9 +159,9 @@ knitr::kable(bias, digits = c(2, 0, 4, 3, 4, 4, 4, 4, 4, 0))
 
 ## Five-category data (M&P Tables 1–3)
 
-M&P p. 20 sample 1000 datasets of 30 negative and 40 positive cases from the
+M&P sample 1000 datasets of 30 negative and 40 positive cases (p. 21) from the
 conventional binormal model with $a = 1.5$ and $b = 0.8$, in 5 categories
-with the population operating points (FPF, TPF) = (0.00025, 0.10),
+with the population operating points (p. 20) (FPF, TPF) = (0.00025, 0.10),
 (0.000328, 0.25), (0.03040, 0.50) and (0.28114, 0.85). The FPF 0.000328 is
 not on the curve: a TPF of 0.25 needs an FPF of 0.00328. The cut-points are
 taken from the TPFs.
@@ -206,9 +206,11 @@ on the others.
 
 ## Failures: perfect performance
 
-Data implying perfect performance (all operating points with FPF = 0 or
-TPF = 1) cannot be fitted by any model (M&P p. 27) and are refused with an
-error. Without fitting, the probability that all the controls are below all
+No curve parameters can be estimated from perfectly separated data (M&P
+p. 27). pROC refuses them with an error, and more generally all the data
+whose operating points all have FPF = 0 or TPF = 1 (for instance ties
+straddling a separation), whose likelihood is maximal only in the limit of
+an AUC of 1. Without fitting, the probability that all the controls are below all
 the cases:
 
 ```{r separation, cache = TRUE}
