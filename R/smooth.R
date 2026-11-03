@@ -36,16 +36,17 @@ smooth.smooth.roc <- function(smooth.roc, ...) {
 smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logcondens", "logcondens.smooth"), n = 512, bw = "nrd0",
                        density = NULL, density.controls = density, density.cases = density,
                        start = NULL, start.controls = start, start.cases = start,
-                       reuse.auc = TRUE, reuse.ci = FALSE,
+                       reuse.auc = TRUE, reuse.ci = FALSE, fit = c("lm", "proper"),
                        ...) {
   method <- match.arg(method)
+  fit <- match.arg(fit)
 
   if (roc_utils_is_ordered_roc(roc) && method != "binormal") {
     stop("ROC curves of ordered predictors can be smoothed only with binormal smoothing.")
   }
 
   if (method == "binormal") {
-    sesp <- smooth_roc_binormal(roc, n)
+    sesp <- smooth_roc_binormal(roc, n, fit)
   } else if (method == "fitdistr") {
     sesp <- smooth_roc_fitdistr(roc, n, density.controls, density.cases, start.controls, start.cases, ...)
   } else if (method == "density") {
@@ -79,6 +80,9 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   sesp$smoothing.args$density.controls <- density.controls
   sesp$smoothing.args$density.cases <- density.cases
   sesp$smoothing.args$bw <- bw
+  if (method == "binormal" && fit == "proper") { # "lm" is the default when replayed
+    sesp$smoothing.args$fit <- fit
+  }
   # complete fit.controls/cases if a function was passed as densfun
   if (method == "fitdistr") {
     if (is.null(sesp$fit.controls$densfun)) {
@@ -185,32 +189,6 @@ smooth_roc_density <- function(roc, n, density.controls, density.cases, bw,
   return(list(
     sensitivities = perfs[2, ] * ifelse(percent, 100, 1),
     specificities = perfs[1, ] * ifelse(percent, 100, 1)
-  ))
-}
-
-smooth_roc_binormal <- function(roc, n) {
-  df <- data.frame(sp = qnorm(roc$specificities * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$sensitivities * ifelse(roc$percent, 1 / 100, 1)))
-  df <- df[is.finite(df$sp) & is.finite(df$se), ]
-  # Empty levels of ordered predictors give the same ROC point several times,
-  # next to each other in curve order: count each point once in the fit
-  df <- df[c(TRUE, diff(df$sp) != 0 | diff(df$se) != 0), ]
-  if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
-    stop("ROC curve not smoothable (not enough points).")
-  }
-  if (length(unique(df$se)) == 1 || length(unique(df$sp)) == 1) {
-    # Degenerate data (Metz and Pan 1999, p. 20): the points share one
-    # sensitivity or one specificity, so the fitted line would be horizontal
-    # or vertical. The rates are exact, so unique() is an exact test.
-    stop("ROC curve not smoothable (degenerate data).")
-  }
-  model <- lm(sp ~ se, df)
-  se <- qnorm(seq(0, 1, 1 / (n - 1)))
-  sp <- predict(model, data.frame(se))
-
-  return(list(
-    sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),
-    specificities = pnorm(sp) * ifelse(roc$percent, 100, 1),
-    model = model
   ))
 }
 

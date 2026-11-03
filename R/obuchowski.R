@@ -85,7 +85,9 @@ g.partial <- function(A, B, FPR1, FPR2) {
 }
 
 # Binormal A and B parameters of Obuchowski & McClish (1997), with
-# qnorm(TPR) = A + B * qnorm(FPR), from the "binormal" smoothing model.
+# qnorm(TPR) = A + B * qnorm(FPR), from the "binormal" smoothing model
+# (fit = "lm": the parameters of the conventional binormal model, which
+# the proper one does not have).
 # That model is lm(qnorm(sp) ~ qnorm(se)): qnorm(sp) = a + b * qnorm(se).
 # As qnorm(FPR) = -qnorm(sp), qnorm(sp) = A / B - qnorm(se) / B,
 # so a = A / B and b = -1 / B, i.e. A = -a / b and B = -1 / b.
@@ -97,7 +99,7 @@ binormal_params_obuchowski <- function(binormal) {
 # Variance of a ROC curve given a 'roc' object
 # kappa: ratio of controls to cases (defaults to the observed one)
 var_roc_obuchowski <- function(roc, kappa = length(roc$controls) / length(roc$cases)) {
-  binormal <- smooth(roc, method = "binormal")$model
+  binormal <- smooth(roc, method = "binormal", fit = "lm")$model
   params <- binormal_params_obuchowski(binormal)
   A <- params[["A"]]
   B <- params[["B"]]
@@ -128,11 +130,11 @@ var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
 # kappa: ratio of controls to cases (defaults to the observed one)
 cov_roc_obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
-  binormal1 <- smooth(roc1, method = "binormal")$model
+  binormal1 <- smooth(roc1, method = "binormal", fit = "lm")$model
   params1 <- binormal_params_obuchowski(binormal1)
   A1 <- params1[["A"]]
   B1 <- params1[["B"]]
-  binormal2 <- smooth(roc2, method = "binormal")$model
+  binormal2 <- smooth(roc2, method = "binormal", fit = "lm")$model
   params2 <- binormal_params_obuchowski(binormal2)
   A2 <- params2[["A"]]
   B2 <- params2[["B"]]
@@ -155,7 +157,7 @@ cov_roc_obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / lengt
 # (Obuchowski's DESIGNROC program, "A and B under the null hypothesis")
 # kappa: ratio of controls to cases (defaults to the observed one)
 cov0.roc.obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
-  binormal <- smooth(roc1, method = "binormal")$model
+  binormal <- smooth(roc1, method = "binormal", fit = "lm")$model
   params <- binormal_params_obuchowski(binormal)
   A <- params[["A"]]
   B <- params[["B"]]

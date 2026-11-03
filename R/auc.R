@@ -134,8 +134,12 @@ auc.roc <- function(roc,
   # Full area if partial.auc is FALSE
   if (identical(partial.auc, FALSE)) {
     if (methods::is(roc, "smooth.roc") && !is.null(roc$smoothing.args) && roc$smoothing.args$method == "binormal") {
-      coefs <- coefficients(roc$model)
-      auc <- unname(pnorm(coefs[1] / sqrt(1 + coefs[2]^2)) * ifelse(percent, 100^2, 1))
+      if (identical(roc$smoothing.args$fit, "proper")) {
+        auc <- proper_binormal_auc(roc$proper$da, roc$proper$c) * ifelse(percent, 100^2, 1)
+      } else {
+        coefs <- coefficients(roc$model)
+        auc <- unname(pnorm(coefs[1] / sqrt(1 + coefs[2]^2)) * ifelse(percent, 100^2, 1))
+      }
     } else {
       diffs.x <- sp[-1] - sp[-length(sp)]
       means.vert <- (se[-1] + se[-length(se)]) / 2

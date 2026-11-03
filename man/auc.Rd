@@ -116,6 +116,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
 
   \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2)).}
 
+  With \code{fit="proper"}, the AUC of the \dQuote{proper} binormal
+  model is computed with Eq. 36 of Metz and Pan (1999) (see the references
+  in \code{\link{smooth}}).
+
   If the ROC curve is smoothed with any other \code{method} or if a partial AUC
   is requested, the empirical AUC described in the previous section is applied.
 }

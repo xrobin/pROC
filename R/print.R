@@ -39,6 +39,8 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     print(x$fit.controls$estimate)
     cat("fitting ", x$fit.cases$densfun, " distribution for cases:\n", sep = "")
     print(x$fit.cases$estimate)
+  } else if (x$smoothing.args$method == "binormal" && identical(x$smoothing.args$fit, "proper")) {
+    cat("proper binormal (d_a: ", format(x$proper$da, digits = digits), "; c: ", format(x$proper$c, digits = digits), ")\n", sep = "")
   } else {
     cat(x$smoothing.args$method, "\n")
   }
