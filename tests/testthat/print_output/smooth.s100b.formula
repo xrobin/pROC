@@ -3,5 +3,5 @@ Call:
 smooth.roc(roc = roc(outcome ~ s100b, aSAH))
 
 Data: s100b in 72 controls (outcome Good) < 41 cases (outcome Poor).
-Smoothing: binormal 
+Smoothing: binormal (a: 0.8336; b: 0.8239)
 Area under the curve: 0.74
