@@ -11,6 +11,7 @@ jobs:
     # Branches of this repo are already checked on push; only run PRs from forks
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ${{ matrix.config.os }}
+    continue-on-error: ${{ matrix.config.allow-failure == true }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
@@ -18,7 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
+          # macOS runners are often unavailable and the job is cancelled; don't fail the run for it
+          - {os: macos-latest,   r: 'release', allow-failure: true}
           - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
