@@ -29,81 +29,78 @@ Getting started
 
 If you don't want to read the manual first, try the following:
 
-### Loading 
-
+### Loading
 ```R
 library(pROC)
 data(aSAH)
 ```
-### Basic ROC / AUC analysis 
+### Build a ROC curve
 ```R
-roc(aSAH$outcome, aSAH$s100b)
-roc(outcome ~ s100b, aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc1
+# Or with a formula
+roc2 <- roc(outcome ~ wfns, data = aSAH)
 ```
-### Smoothing
+### Area under the curve
 ```R
-smooth(roc(outcome ~ s100b, aSAH))
-```
-### more options, partial AUC, CI, and plotting
-```R
-roc1 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
-auc1 <- auc(roc1, partial.auc=c(100, 90), partial.auc.correct=TRUE,
-            partial.auc.focus="sens")
-ci1  <- ci(auc1, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
-plot(roc1, grid=TRUE,
-     panel.first = {polygon_max_auc(auc1); polygon_auc(auc1)})
-points(roc1, "best")
-text(ci1)
-
-    # Add to an existing plot. Beware of 'percent' specification!
-    roc2 <- roc(aSAH$outcome, aSAH$wfns, percent=roc1$percent)
-    plot(roc2, add=TRUE)
+pauc1 <- auc(roc1, partial.auc = c(1, .9))
+pauc1
 ```
 ### Coordinates of the curve
 ```R
-coords(roc1, "best", ret=c("threshold", "specificity", "1-npv"))
-coords(roc2, "local maximas", ret=c("threshold", "sens", "spec", "ppv", "npv"))
+coords(roc1, "best")
+coords(pauc1, "best")
+coords(roc1, "local maximas", ret = c("threshold", "sens", "spec", "ppv", "npv"))
 ```
-### Confidence intervals
+### Smoothing
+```R
+smooth(roc1)
+```
+### Confidence intervals and variance
 ```R
 # Of the AUC
-ci(roc2)
+ci1 <- ci(roc1)
+ci1
+var(roc1)
 
-# Of the curve
-sens.ci <- ci.se(roc1, specificities=seq(0, 100, 5))
-plot(roc1, panel.first = polygon_ci(sens.ci, col="lightblue"))
-plot(sens.ci, type="bars")
-plot(roc2, add=TRUE)
-
-# CI of thresholds
-plot(ci.thresholds(roc2))
+# Of the sensitivity at given specificities
+ci_se <- ci.se(roc1, specificities = seq(0, 1, .05))
 ```
 ### Comparisons
 ```R
-    # Test on the whole AUC
-    roc.test(roc1, roc2)
-
-    # Test on a portion of the whole AUC
-    pauc1 <- auc(roc1, partial.auc=c(100, 90), partial.auc.focus="se",
-                 partial.auc.correct=TRUE)
-    pauc2 <- auc(roc2, partial.auc=c(100, 90), partial.auc.focus="se",
-                 partial.auc.correct=TRUE)
-    roc.test(pauc1, pauc2)
-
-    # With modified bootstrap parameters
-    roc.test(pauc1, pauc2, boot.n=1000, boot.stratified=FALSE)
+cov(roc1, roc2)
+roc.test(roc1, roc2)
 ```
-### Sample size
+### Base graphics plots
 ```R
-    # Two ROC curves
-    power.roc.test(roc1, roc2)
-    power.roc.test(roc1, roc2, power=0.9)
+plot(roc1, panel.first = {
+       polygon_max_auc(pauc1)
+       polygon_auc(pauc1)
+     },
+     panel.last = {
+       points(pauc1)
+       text(ci1)
+     })
 
-    # One ROC curve
-    power.roc.test(auc=0.8, ncases=41, ncontrols=72)
-    power.roc.test(auc=0.8, power=0.9)
-    power.roc.test(auc=0.8, ncases=41, ncontrols=72, sig.level=0.01)
-    power.roc.test(ncases=41, ncontrols=72, power=0.9)
+# Confidence interval of the curve
+plot(roc1, panel.first = polygon_ci(ci_se, col = "lightblue"))
+```
+### ggplot2
+```R
+library(ggplot2)
+ggroc(roc1) +
+  geom_polygon_max_auc(pauc1) +
+  geom_polygon_auc(pauc1) +
+  geom_roc_threshold(pauc1, thresholds = "best") +
+  geom_text_auc(roc1, ci = ci1)
+```
+### Power and sample size
+```R
+power.roc.test(roc1)
+# Two curves
+power.roc.test(roc1, roc2)
+# Without a curve
+power.roc.test(auc = 0.8, ncases = 41, ncontrols = 72)
 ```
 
 
