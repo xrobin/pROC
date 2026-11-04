@@ -17,10 +17,10 @@ For more information, see:
 4. [My blog](https://xavier.robin.info/tag/pROC/)
 5. [The FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
 
-Stable
--------
+Installing
+----------
 
-The latest stable version is best installed from the CRAN:
+The latest stable version can be installed from the CRAN:
 
     install.packages("pROC")
 
@@ -103,20 +103,17 @@ power.roc.test(roc1, roc2)
 power.roc.test(auc = 0.8, ncases = 41, ncontrols = 72)
 ```
 
-
 Getting Help
 ------------
 
 * Type `?pROC` on the R command line
-* Make sure you've [read the FAQ](https://github.com/xrobin/pROC/wiki/FAQ---Frequently-asked-questions)
-* View the FAQ vignette: `vignette("FAQ", package = "pROC")` or `browseVignettes("pROC")`
+* Make sure you've [read the FAQ](https://cran.r-project.org/web/packages/pROC/vignettes/FAQ.html)
 * Search for [questions tagged with pROC-R-package on Stack Overflow](https://stackoverflow.com/questions/tagged/proc-r-package?tab=Votes)
 
 If you still can't find an answer, you can:
 
 * [Ask a question on Stack Overflow with the pROC-r-package tag](https://stackoverflow.com/questions/ask?tags=pROC-r-package)
 * [Bug reports should be submitted to the GitHub issue tracker](https://github.com/xrobin/pROC/issues)
-
 
 
 Development
