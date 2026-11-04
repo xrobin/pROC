@@ -362,42 +362,35 @@ plot(smooth(roc1), add = TRUE, col = "blue")
 legend("bottomright", legend = c("Empirical", "Smoothed"),
        col = c(par("fg"), "blue"), lwd = 2)
 
-# With more options
-plot(roc1, print.auc = TRUE, auc.polygon = TRUE, grid = c(0.1, 0.2),
-     grid.col = c("green", "red"), max.auc.polygon = TRUE,
-     auc.polygon.col = "lightblue", print.thres = TRUE)
-
-# A different partial AUC needs to ignore the existing value
-# with reuse.auc = FALSE:
-plot(roc1, print.auc = TRUE, auc.polygon = TRUE, max.auc.polygon = TRUE,
-     partial.auc = c(1, 0.8), partial.auc.focus = "se", reuse.auc = FALSE,
-     print.thres = TRUE, print.thres.adj = c(1, -1))
+# With a grid
+plot(roc1, grid = c(0.1, 0.2), grid.col = c("green", "red"))
 
 # Add a second curve to the same plot
 plot(roc2, add = TRUE)
 
 # Best thresholds, with different methods and weights
-plot(roc3, print.thres = "best", print.thres.best.method = "youden")
-plot(roc3, print.thres = "best", print.thres.best.method = "closest.topleft",
-     add = TRUE)
-plot(roc3, print.thres = "best", print.thres.best.method = "youden",
-     print.thres.best.weights = c(50, 0.2), print.thres.adj = c(1.1, 1.25),
-     add = TRUE)
+plot(roc3)
+points(roc3, "best", best.method = "youden")
+points(roc3, "best", best.method = "closest.topleft")
+points(roc3, "best", best.method = "youden", best.weights = c(50, 0.2),
+       adj = c(1.1, 1.25))
 
-# The same appearance, built from separate roc(), auc() and ci() calls
-# with panel.first and panel.last:
+# A partial AUC with its CI: pass the auc and ci objects to the add-on
+# functions (in panel.first to draw them under the curve). The best
+# threshold is searched within the partial AUC
 auc1 <- auc(roc1, partial.auc = c(1, 0.9), partial.auc.correct = TRUE,
             partial.auc.focus = "sens")
 \dontrun{
 ci1 <- ci(auc1)}\dontshow{
 ci1 <- ci(auc1, boot.n = 10)}
-plot(roc1, grid = TRUE, print.thres = TRUE,
+plot(roc1, grid = TRUE,
      panel.first = {
        polygon_max_auc(auc1)
        polygon_auc(auc1)
      },
      # drawn on top of everything, same as calling text(ci1) afterwards
      panel.last = text(ci1))
+points(auc1, "best")
 }
 
 \keyword{univar}

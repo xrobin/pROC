@@ -277,12 +277,12 @@ cov(roc1, roc2, method = "bootstrap", boot.n = 10)}
 cov(smooth(roc1), smooth(roc2))}\dontshow{
 cov(smooth(roc1), smooth(roc2), boot.n = 10)}
 
-# So is the partial AUC
+# So is the partial AUC, given as auc objects
+pauc1 <- auc(roc1, partial.auc = c(1, 0.8), partial.auc.focus = "se")
+pauc2 <- auc(roc2, partial.auc = c(1, 0.8), partial.auc.focus = "se")
 \dontrun{
-cov(roc1, roc2, reuse.auc = FALSE,
-    partial.auc = c(1, 0.8), partial.auc.focus = "se")}\dontshow{
-cov(roc1, roc2, reuse.auc = FALSE,
-    partial.auc = c(1, 0.8), partial.auc.focus = "se", boot.n = 10)}
+cov(pauc1, pauc2)}\dontshow{
+cov(pauc1, pauc2, boot.n = 10)}
 }
 
 \keyword{multivariate}

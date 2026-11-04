@@ -193,7 +193,8 @@ ggroc(rocobj) +
 ## 5. Confidence interval of a threshold
 
 ```{r screenshot-5-classic}
-plot(rocobj, main = "Confidence interval of a threshold", print.thres = "best")
+plot(rocobj, main = "Confidence interval of a threshold")
+points(rocobj, "best")
 plot(ci_th)
 ```
 

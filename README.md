@@ -50,8 +50,9 @@ roc1 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 auc1 <- auc(roc1, partial.auc=c(100, 90), partial.auc.correct=TRUE,
             partial.auc.focus="sens")
 ci1  <- ci(auc1, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
-plot(roc1, grid=TRUE, print.thres=TRUE,
+plot(roc1, grid=TRUE,
      panel.first = {polygon_max_auc(auc1); polygon_auc(auc1)})
+points(roc1, "best")
 text(ci1)
 
     # Add to an existing plot. Beware of 'percent' specification!
@@ -70,10 +71,8 @@ ci(roc2)
 
 # Of the curve
 sens.ci <- ci.se(roc1, specificities=seq(0, 100, 5))
-plot(sens.ci, type="shape", col="lightblue")
+plot(roc1, panel.first = polygon_ci(sens.ci, col="lightblue"))
 plot(sens.ci, type="bars")
-
-# need to re-add roc2 over the shape
 plot(roc2, add=TRUE)
 
 # CI of thresholds
@@ -82,21 +81,23 @@ plot(ci.thresholds(roc2))
 ### Comparisons
 ```R
     # Test on the whole AUC
-    roc.test(roc1, roc2, reuse.auc=FALSE)
+    roc.test(roc1, roc2)
 
     # Test on a portion of the whole AUC
-    roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
-             partial.auc.focus="se", partial.auc.correct=TRUE)
+    pauc1 <- auc(roc1, partial.auc=c(100, 90), partial.auc.focus="se",
+                 partial.auc.correct=TRUE)
+    pauc2 <- auc(roc2, partial.auc=c(100, 90), partial.auc.focus="se",
+                 partial.auc.correct=TRUE)
+    roc.test(pauc1, pauc2)
 
     # With modified bootstrap parameters
-    roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(100, 90),
-             partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)
+    roc.test(pauc1, pauc2, boot.n=1000, boot.stratified=FALSE)
 ```
 ### Sample size
 ```R
     # Two ROC curves
-    power.roc.test(roc1, roc2, reuse.auc=FALSE)
-    power.roc.test(roc1, roc2, power=0.9, reuse.auc=FALSE)
+    power.roc.test(roc1, roc2)
+    power.roc.test(roc1, roc2, power=0.9)
 
     # One ROC curve
     power.roc.test(auc=0.8, ncases=41, ncontrols=72)

@@ -180,10 +180,11 @@ predictor <- as.matrix(data.frame(
              ))
 multiclass.roc(responses, predictor)
 
-# One can change direction, partial.auc, percent, etc:
+# One can change direction, percent, etc:
 multiclass.roc(responses, predictor, direction = ">")
-multiclass.roc(responses, predictor, percent = TRUE, 
-	partial.auc = c(100, 90), partial.auc.focus = "se")
+mroc <- multiclass.roc(responses, predictor, percent = TRUE)
+# and compute a partial AUC with auc():
+auc(mroc, partial.auc = c(100, 90), partial.auc.focus = "se")
 
 
 # Limit set of levels

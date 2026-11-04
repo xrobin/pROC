@@ -114,12 +114,11 @@ ci_sp <- ci.sp(roc1, boot.n = 10)}
 plot(roc1) # restart a new plot
 plot(ci_sp)
 
-# As a shape. We need more points
+# As a shape, with polygon_ci. We need more points
 \dontrun{
 ci_sp <- ci.sp(roc1, sensitivities = seq(0, 1, .01))}\dontshow{
 ci_sp <- ci.sp(roc1, sensitivities = seq(0, 1, .01), boot.n = 10)}
-plot(roc1)
-plot(ci_sp, type = "shape", col = "blue")
+plot(roc1, panel.first = polygon_ci(ci_sp, col = "lightblue"))
 
 # CI of a precision-recall curve
 co <- coords(roc1, x = "all", input = "recall", ret = c("recall", "precision"))

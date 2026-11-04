@@ -91,9 +91,8 @@ nas <- is.na(aSAH.copy$outcome) | is.na(aSAH.copy$ndka)
 roc3 <- roc(aSAH.copy$outcome[!nas], aSAH.copy$ndka[!nas])
 are.paired(roc1, roc3) # FALSE
 
-# Getting the two paired ROC curves with additional smoothing and ci options
-roc2$ci <- ci(roc2)
-paired <- are.paired(smooth(roc1), roc2, return.paired.rocs = TRUE, reuse.ci = TRUE)
+# Getting the two paired ROC curves, also for a smoothed curve
+paired <- are.paired(smooth(roc1), roc2, return.paired.rocs = TRUE)
 paired.roc1 <- attr(paired, "roc1")
 paired.roc2 <- attr(paired, "roc2")
 }

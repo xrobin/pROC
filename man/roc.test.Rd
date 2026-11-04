@@ -406,10 +406,6 @@ roc2 <- roc(aSAH$outcome, aSAH$wfns)
 # DeLong's test, the default
 roc.test(roc1, roc2)
 
-# Alternative syntaxes
-roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns)
-roc.test(aSAH$outcome, data.frame(aSAH$s100b, aSAH$wfns))
-
 # One-sided: AUC of roc1 is lower than AUC of roc2
 roc.test(roc1, roc2, alternative = "less")
 
@@ -429,12 +425,12 @@ roc.test(roc1, roc2, method = "bootstrap", boot.n = 10)}
 roc.test(smooth(roc1), smooth(roc2))}\dontshow{
 roc.test(smooth(roc1), smooth(roc2), boot.n = 10)}
 
-# So is the partial AUC
+# So is the partial AUC, given as auc objects
+pauc1 <- auc(roc1, partial.auc = c(1, 0.8), partial.auc.focus = "se")
+pauc2 <- auc(roc2, partial.auc = c(1, 0.8), partial.auc.focus = "se")
 \dontrun{
-roc.test(roc1, roc2, reuse.auc = FALSE,
-         partial.auc = c(1, 0.8), partial.auc.focus = "se")}\dontshow{
-roc.test(roc1, roc2, reuse.auc = FALSE,
-         partial.auc = c(1, 0.8), partial.auc.focus = "se", boot.n = 10)}
+roc.test(pauc1, pauc2)}\dontshow{
+roc.test(pauc1, pauc2, boot.n = 10)}
 
 # Comparison of the whole ROC curves, or at a given specificity
 \dontrun{

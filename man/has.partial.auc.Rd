@@ -42,9 +42,8 @@ has.partial.auc(auc(roc1))
 has.partial.auc(smooth(roc1))
 
 # Partial AUC
-roc2 <- roc(aSAH$outcome, aSAH$s100b, partial.auc = c(1, 0.9))
-has.partial.auc(roc2)
-has.partial.auc(smooth(roc2))
+has.partial.auc(auc(roc1, partial.auc = c(1, 0.9)))
+has.partial.auc(auc(smooth(roc1), partial.auc = c(1, 0.9)))
 
 # No AUC
 roc3 <- roc(aSAH$outcome, aSAH$s100b, auc = FALSE)

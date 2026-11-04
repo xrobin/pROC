@@ -250,12 +250,13 @@ power.roc.test(roc1, roc2, power = 0.9, sig.level = NULL)
 # With Obuchowski variance
 power.roc.test(roc1, roc2, method = "obuchowski")
 
-# Partial AUC, with bootstrap variance by default
+# Partial AUC, given as auc objects, with bootstrap variance by default
+pauc1 <- auc(roc1, partial.auc = c(1, 0.9))
+pauc2 <- auc(roc2, partial.auc = c(1, 0.9))
 \dontrun{
-power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9))}\dontshow{
-power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9), boot.n = 10)}
-power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9),
-               method = "obuchowski")
+power.roc.test(pauc1, pauc2)}\dontshow{
+power.roc.test(pauc1, pauc2, boot.n = 10)}
+power.roc.test(pauc1, pauc2, method = "obuchowski")
 
 
 #### With only binormal parameters ####

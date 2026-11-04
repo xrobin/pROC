@@ -208,22 +208,12 @@ ci.auc(roc1)
 ci(roc1)
 ci(auc(roc1))
 
-# Partial AUC: the CI is bootstrapped. Pass an auc object with the
-# partial AUC, as roc1$auc is the full AUC and reuse.auc = TRUE by default
+# Partial AUC: pass an auc object. The CI is bootstrapped
 auc1 <- auc(roc1, partial.auc = c(1, .8), partial.auc.focus = "se",
             partial.auc.correct = TRUE)
 \dontrun{
 ci.auc(auc1)}\dontshow{
 ci.auc(auc1, boot.n = 10)}
-
-# Or ignore the existing AUC with reuse.auc = FALSE
-\dontrun{
-ci.auc(roc1, reuse.auc = FALSE, partial.auc = c(1, .8),
-       partial.auc.focus = "se", partial.auc.correct = TRUE,
-       conf.level = 0.9, boot.stratified = FALSE)}\dontshow{
-ci.auc(roc1, reuse.auc = FALSE, partial.auc = c(1, .8),
-       partial.auc.focus = "se", partial.auc.correct = TRUE,
-       conf.level = 0.9, boot.stratified = FALSE, boot.n = 10)}
 
 # Smoothed curves are bootstrapped as well
 \dontrun{
