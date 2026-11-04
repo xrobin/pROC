@@ -246,7 +246,127 @@ test_that("a single interior point gives a proper curve through it", {
 test_that("bootstrap CI of a proper fit", {
   skip_slow()
   s <- smooth(r.s100b, fit = "proper")
-  ci <- ci.auc(s, boot.n = 10)
+  ci <- ci.auc(s, method = "bootstrap", boot.n = 10)
   expect_is(ci, "ci.auc")
+  expect_identical(attr(ci, "method"), "bootstrap")
   expect_true(ci[1] <= ci[2] && ci[2] <= ci[3])
+})
+
+test_that("the gradient of Eq. 36 is that of the AUC", {
+  h <- 1e-6
+  for (p in list(c(1.24365, -0.428571), c(0.1, -0.154357), c(2.324, 0.292369), c(0.5, 0.9), c(1.46574, 0), c(0, -0.38))) {
+    numerical <- c(
+      (pROC:::proper_binormal_auc(p[1] + h, p[2]) - pROC:::proper_binormal_auc(max(0, p[1] - h), p[2])) / (p[1] + h - max(0, p[1] - h)),
+      (pROC:::proper_binormal_auc(p[1], p[2] + h) - pROC:::proper_binormal_auc(p[1], p[2] - h)) / (2 * h)
+    )
+    expect_equal(pROC:::proper_binormal_auc_gradient(p[1], p[2]), numerical, tolerance = 1e-6)
+  }
+  # the AUC is not differentiable in c at da = c = 0 (1 + arcsin(rho) / pi)
+  expect_identical(pROC:::proper_binormal_auc_gradient(0, 0)[2], NaN)
+})
+
+test_that("the information matrix is that of the multinomial likelihood", {
+  # N0 sum dp dp' / p + N1 sum dq dq' / q, with the derivatives of the
+  # probabilities of the categories by finite differences
+  for (s in list(smooth(r.s100b, fit = "proper"), smooth(r.mtcars, fit = "proper"), smooth(r.wfns, fit = "proper"))) {
+    k <- s$proper$categories$controls
+    l <- s$proper$categories$cases
+    theta <- c(s$proper$da, s$proper$c, s$proper$cutpoints)
+    probs <- function(theta, slope, sign) {
+      range <- pROC:::proper_binormal_range(theta[1], theta[2])
+      v <- c(range[1], theta[-(1:2)], range[2])
+      pROC:::proper_binormal_probs(pROC:::proper_binormal_args(v, theta[1], theta[2], slope(theta[2]), sign))
+    }
+    information <- 0
+    for (group in list(list(n = sum(k), slope = function(c) 1 - c, sign = -1), list(n = sum(l), slope = function(c) 1 + c, sign = 1))) {
+      p <- probs(theta, group$slope, group$sign)
+      J <- vapply(seq_along(theta), function(i) {
+        h <- replace(numeric(length(theta)), i, 1e-6)
+        (probs(theta + h, group$slope, group$sign) - probs(theta - h, group$slope, group$sign)) / 2e-6
+      }, numeric(length(p)))
+      information <- information + group$n * crossprod(J[p > 0, ] / sqrt(p[p > 0]))
+    }
+    expect_equal(pROC:::proper_binormal_information(s$proper$cutpoints, s$proper$da, s$proper$c, k, l), information, tolerance = 1e-6)
+  }
+})
+
+test_that("var and ci.auc of a proper fit use the fit by default", {
+  s <- smooth(r.s100b, fit = "proper")
+  expect_equal(var(s), 0.0016672558, tolerance = 1e-5)
+  expect_identical(var(s, method = "binormal"), var(s))
+  expect_identical(var(auc(s)), var(s))
+  ci <- ci.auc(s)
+  expect_identical(attr(ci, "method"), "binormal")
+  expect_equal(as.numeric(ci), qnorm(c(0.025, 0.5, 0.975), as.numeric(s$auc), sqrt(var(s))))
+  expect_identical(ci(s), ci)
+  expect_identical(ci.auc(s, method = "binormal"), ci)
+  expect_equal(as.numeric(ci.auc(s, conf.level = 0.9)), qnorm(c(0.05, 0.5, 0.95), as.numeric(s$auc), sqrt(var(s))))
+  expect_output(print(ci), "95% CI: 0.6534-0.8134 (binormal)", fixed = TRUE)
+  # an ordered predictor
+  expect_equal(var(smooth(r.wfns, fit = "proper")), 0.0014777159, tolerance = 1e-5)
+  # percent
+  sp <- smooth(r.s100b.percent, fit = "proper")
+  expect_equal(var(sp), var(s) * 100^2)
+  expect_equal(as.numeric(ci(sp)), as.numeric(ci) * 100)
+  expect_output(print(ci(sp)), "95% CI: 65.34%-81.34% (binormal)", fixed = TRUE)
+  # the all-in-one call
+  expect_identical(attr(roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, smooth = TRUE, fit = "proper", ci = TRUE)$ci, "method"), "binormal")
+})
+
+test_that("the binormal method needs the full AUC of a proper fit", {
+  msg.fit <- "Binormal method is supported only for ROC curves smoothed with method=\"binormal\" and fit=\"proper\". Use method=\"bootstrap\" instead."
+  msg.partial <- "Binormal method is not supported for partial AUC. Use method=\"bootstrap\" instead."
+  # the least-squares fit, which is not a maximum likelihood fit
+  expect_error(var(smooth(r.s100b), method = "binormal"), msg.fit, fixed = TRUE)
+  expect_error(ci.auc(smooth(r.s100b), method = "binormal"), msg.fit, fixed = TRUE)
+  expect_identical(attr(ci.auc(smooth(r.s100b), boot.n = 2), "method"), "bootstrap")
+  # an empirical curve
+  expect_error(var(r.s100b, method = "binormal"), msg.fit, fixed = TRUE)
+  # a partial AUC
+  s <- smooth(r.wfns.partial, fit = "proper")
+  expect_error(var(s, method = "binormal"), msg.partial, fixed = TRUE)
+  expect_error(ci.auc(s, method = "binormal"), msg.partial, fixed = TRUE)
+  expect_identical(attr(ci.auc(s, boot.n = 2), "method"), "bootstrap")
+})
+
+test_that("roc.test of unpaired proper fits", {
+  # Dorfman & Alf (1969) Eq. 10, Pesce & Metz (2007) p. 822
+  women <- aSAH$gender == "Female"
+  s1 <- smooth(roc(aSAH$outcome[women], aSAH$s100b[women], quiet = TRUE), fit = "proper")
+  s2 <- smooth(roc(aSAH$outcome[!women], aSAH$s100b[!women], quiet = TRUE), fit = "proper")
+  t <- roc.test(s1, s2)
+  expect_identical(t$method, "Binormal test for two ROC curves")
+  z <- (as.numeric(s1$auc) - as.numeric(s2$auc)) / sqrt(var(s1) + var(s2))
+  expect_equal(t$statistic, c(Z = z))
+  expect_equal(t$p.value, 2 * pnorm(-abs(z)))
+  expect_equal(roc.test(s1, s2, alternative = "less")$p.value, pnorm(z))
+  expect_equal(roc.test(s1, s2, alternative = "greater")$p.value, pnorm(-z))
+  expect_identical(roc.test(s1, s2, method = "binormal")$statistic, t$statistic)
+  expect_equal(unname(t$estimate), c(as.numeric(s1$auc), as.numeric(s2$auc)))
+  expect_identical(t$roc1$proper, s1$proper)
+  expect_identical(t$roc2$proper, s2$proper)
+  # percent
+  s1p <- smooth(roc(aSAH$outcome[women], aSAH$s100b[women], percent = TRUE, quiet = TRUE), fit = "proper")
+  s2p <- smooth(roc(aSAH$outcome[!women], aSAH$s100b[!women], percent = TRUE, quiet = TRUE), fit = "proper")
+  expect_equal(roc.test(s1p, s2p)$statistic, t$statistic)
+})
+
+test_that("the binormal method refuses paired curves", {
+  s1 <- smooth(r.s100b, fit = "proper")
+  s2 <- smooth(r.ndka, fit = "proper")
+  msg <- "Binormal method is not supported for paired ROC curves. Use method=\"bootstrap\" instead."
+  expect_error(roc.test(s1, s2, method = "binormal"), msg, fixed = TRUE)
+  # the user can test them as unpaired
+  expect_identical(roc.test(s1, s2, paired = FALSE)$method, "Binormal test for two ROC curves")
+  expect_warning(
+    expect_error(roc.test(smooth(r.s100b), s2, method = "binormal", paired = FALSE),
+      "Binormal method is supported only for ROC curves smoothed with method=\"binormal\" and fit=\"proper\". Use method=\"bootstrap\" instead.",
+      fixed = TRUE
+    ),
+    "Different smoothing parameters in the ROC curves.",
+    fixed = TRUE
+  )
+  # paired proper fits are bootstrapped by default
+  skip_slow()
+  expect_identical(roc.test(s1, s2, boot.n = 2)$method, "Bootstrap test for two correlated ROC curves")
 })

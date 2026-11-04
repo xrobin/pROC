@@ -94,7 +94,8 @@ $c = 0$ ($b = 1$), $y$ is linear in $x$, which is used directly.
 For each of the 9 population curves of Table 1, `r B` datasets of 50 negative
 and 50 positive cases are fitted with `fit = "proper"`, and, for comparison,
 with the least-squares binormal fit (`fit = "lm"`, the default) and the
-empirical AUC.
+empirical AUC. The standard error of each proper fit comes from
+`var(method = "binormal")` (the default for these curves).
 
 ```{r continuous, cache = TRUE}
 sim.pbm <- function(n, da, c) {
@@ -105,17 +106,20 @@ sim.pbm <- function(n, da, c) {
 }
 fit.auc <- function(d) {
   r <- roc(controls = d$controls, cases = d$cases, direction = "<", quiet = TRUE)
+  s <- tryCatch(smooth(r, fit = "proper"), error = function(e) NULL)
   c(
-    proper = tryCatch(as.numeric(auc(smooth(r, fit = "proper"))), error = function(e) NA_real_),
+    proper = if (is.null(s)) NA_real_ else as.numeric(auc(s)),
+    proper.se = if (is.null(s)) NA_real_ else sqrt(var(s)),
     lm = tryCatch(as.numeric(auc(smooth(r))), error = function(e) NA_real_),
     empirical = as.numeric(auc(r))
   )
 }
-# P&M Tables 2-4 (pp. 826-827), 50 positive and 50 negative cases: mean AUC
-# and empirical SD of the estimates
+# P&M Tables 2-4 (pp. 826-827), 50 positive and 50 negative cases: mean AUC,
+# empirical SD of the estimates, and average of the estimated standard errors
 published <- data.frame(
   mean = c(0.617, 0.610, 0.608, 0.860, 0.852, 0.852, 0.957, 0.951, 0.951),
-  sd = c(0.049, 0.050, 0.051, 0.034, 0.038, 0.038, 0.018, 0.021, 0.019)
+  sd = c(0.049, 0.050, 0.051, 0.034, 0.038, 0.038, 0.018, 0.021, 0.019),
+  se.hat = c(0.050, 0.051, 0.052, 0.033, 0.037, 0.037, 0.018, 0.021, 0.020)
 )
 continuous <- lapply(seq_len(nrow(table1)), function(i) {
   do.call(rbind, mclapply(seq_len(B), function(j) {
@@ -130,11 +134,42 @@ summary.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
     mean = mean(p, na.rm = TRUE), se = sd(p, na.rm = TRUE) / sqrt(n),
     published = published$mean[i],
     sd = sd(p, na.rm = TRUE), published.sd = published$sd[i],
+    se.hat = mean(continuous[[i]][, "proper.se"], na.rm = TRUE), published.se.hat = published$se.hat[i],
     failures = sum(is.na(p))
   )
 }))
 summary.continuous$z <- (summary.continuous$mean - summary.continuous$published) / summary.continuous$se
-knitr::kable(summary.continuous, digits = c(2, 0, 4, 4, 3, 4, 3, 0, 1))
+knitr::kable(summary.continuous, digits = c(2, 0, 4, 4, 3, 4, 3, 4, 3, 0, 1))
+```
+
+`se.hat` is the average of the estimated standard errors (P&M's
+$\widehat{SE}$), to compare with the empirical SD of the estimates (`sd`)
+and with P&M's values, given to 2 significant digits.
+
+### Test of two unpaired curves
+
+P&M (p. 822) test the difference between pairs of independent AUC
+estimates from a common population curve with
+$z = (AUC_1 - AUC_2) / \sqrt{SE_1^2 + SE_2^2}$, `roc.test(method = "binormal")`.
+They report (p. 828) only the trend of the Type I error rates: conservative
+for the symmetric curve of AUC 0.95 with fewer than 100 positive and 100
+negative cases, and from conservative for symmetric curves to
+anticonservative for skewed curves. The datasets above, taken in pairs,
+give the rejection rates at $\alpha = 0.05$:
+
+```{r unpaired-test}
+type1 <- do.call(rbind, lapply(seq_along(continuous), function(i) {
+  res <- continuous[[i]]
+  pairs <- matrix(seq_len(2 * (nrow(res) %/% 2)), nrow = 2)
+  z <- (res[pairs[1, ], "proper"] - res[pairs[2, ], "proper"]) /
+    sqrt(res[pairs[1, ], "proper.se"]^2 + res[pairs[2, ], "proper.se"]^2)
+  data.frame(
+    auc = table1$auc[i], shape = table1$shape[i], pairs = sum(!is.na(z)),
+    rejected = mean(abs(z) > qnorm(0.975), na.rm = TRUE)
+  )
+}))
+type1$se <- sqrt(0.05 * 0.95 / type1$pairs)
+knitr::kable(type1, digits = c(2, 0, 0, 4, 4))
 ```
 
 ### Bias, and comparison with the least-squares fit

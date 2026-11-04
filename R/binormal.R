@@ -500,3 +500,100 @@ proper_binormal_interval <- function(da, c) {
   far <- (40 + da * sqrt(1 + c^2)) / (1 - abs(c))
   c(max(range[1], -far), min(range[2], far))
 }
+
+# Variance of the AUC (M&P Eq. 36) of a proper binormal fit ('proper', as
+# stored by smooth_roc_proper), by the delta method (P&M pp. 820-821) from
+# the inverse of the expected information matrix of (da, c, v) (D&A Eq. 7;
+# P&M p. 819). Rao (1973) gives the information matrix of grouped data,
+# f * sum_i (1 / pi_i) (d pi_i / d theta_u) (d pi_i / d theta_t), with f the
+# total frequency (p. 370, at the end of Example 3), and the information
+# matrix of independent sets of data as their sum (p. 372): here the sum of
+# that of the controls (probabilities from FPF) and of the cases (from TPF).
+# (D&A list the expected second derivatives on p. 490, but the cross-term
+# of two adjacent cut-points is not 0: they bound a common category.)
+proper_binormal_var_auc <- function(proper) {
+  information <- proper_binormal_information(
+    proper$cutpoints, proper$da, proper$c,
+    proper$categories$controls, proper$categories$cases
+  )
+  vcov <- proper_binormal_vcov(information)[1:2, 1:2]
+  g <- proper_binormal_auc_gradient(proper$da, proper$c)
+  drop(g %*% vcov %*% g)
+}
+
+proper_binormal_information <- function(v, da, c, k, l) {
+  I <- length(k)
+  range <- proper_binormal_range(da, c)
+  vv <- c(range[1], v, range[2])
+  group <- function(n, slope, sign) {
+    args <- proper_binormal_args(vv, da, c, slope, sign)
+    p <- proper_binormal_probs(args)
+    inner <- lapply(args, `[`, 2:I)
+    # The rates at the bounds of the range (Eq. 35) are 0 or 1 whatever da
+    # and c: only the inner cut-points depend on them
+    dtheta <- rbind(0, proper_binormal_rate_dtheta(inner, v, da, c, sign), 0)
+    dv <- proper_binormal_rate_dv(inner, c, slope)
+    # Derivatives of the probabilities of the categories (rows) with
+    # respect to da, c and v (columns). Category j lies between vv[j] and
+    # vv[j + 1]: v[j] is the upper bound of category j and the lower of j + 1
+    J <- matrix(0, I, I + 1)
+    J[, 1:2] <- dtheta[-(I + 1), , drop = FALSE] - dtheta[-1, , drop = FALSE]
+    J[cbind(1:(I - 1), 3:(I + 1))] <- -dv
+    J[cbind(2:I, 3:(I + 1))] <- dv
+    # A category of probability 0 (in floating point) has no information
+    positive <- p > 0
+    n * crossprod(J[positive, , drop = FALSE] / sqrt(p[positive]))
+  }
+  group(sum(k), 1 - c, -1) + group(sum(l), 1 + c, 1)
+}
+
+# Derivatives of FPF (sign = -1) or TPF (sign = 1) with respect to da and c
+# at the cut-points v (one row each), from the arguments A and B of
+# Eqs. 33-34 (proper_binormal_args): with r = sqrt(1 + c^2),
+# A = -(1 - sign * c) v + sign * da * r / 2 and B = -(1 - sign * c) v + da * r / (2 c)
+proper_binormal_rate_dtheta <- function(args, v, da, c, sign) {
+  r <- sqrt(1 + c^2)
+  d <- dnorm(args$A) * cbind(sign * r / 2, -sign * v + sign * da * c / (2 * r))
+  if (c != 0) {
+    d <- d + dnorm(args$B) * cbind(r / (2 * c), -sign * v - da / (2 * c^2 * r))
+  }
+  d
+}
+
+# Inverse of the information matrix. P&M p. 821: as d_a tends to 0 the
+# matrix becomes nearly singular, so the eigenvector of the smallest
+# eigenvalue is left out of the inverse if that eigenvalue is less than
+# 1e-6 times the next larger one (the Moore-Penrose pseudo-inverse).
+proper_binormal_vcov <- function(information) {
+  e <- eigen(information, symmetric = TRUE)
+  n <- length(e$values)
+  keep <- seq_len(n)
+  if (e$values[n] < 1e-6 * e$values[n - 1]) {
+    keep <- keep[-n]
+  }
+  vectors <- e$vectors[, keep, drop = FALSE]
+  vectors %*% (t(vectors) / e$values[keep])
+}
+
+# Gradient of the AUC (Eq. 36) with respect to da and c. With h = -da / sqrt(2)
+# and F(h, 0; rho) the bivariate normal distribution function (B(h, k; rho)
+# of Owen, 1956, Eq. 3.1): dF/dh = phi(h) Phi(-rho h / sqrt(1 - rho^2))
+# (differentiating Eq. 3.1 in h, the density factors as
+# phi(x) phi((y - rho x) / sqrt(1 - rho^2)) / sqrt(1 - rho^2)), and dF/drho
+# is the integrand of Owen's Eq. 3.6 at z = rho, the bivariate normal
+# density. The AUC depends on c through rho = -(1 - c^2) / (1 + c^2), with
+# sqrt(1 - rho^2) = 2 |c| / (1 + c^2) and drho/dc = 4 c / (1 + c^2)^2. At
+# c = 0, F = 0 and the AUC is Phi(da / sqrt(2)), an even function of c: its
+# derivative in c is 0, except at da = 0 where it does not exist
+# (AUC = 1 + arcsin(rho) / pi, Owen p. 1078).
+proper_binormal_auc_gradient <- function(da, c) {
+  h <- -da / sqrt(2)
+  if (c == 0) {
+    return(c(dnorm(h) / sqrt(2), if (da > 0) 0 else NaN))
+  }
+  rho <- -(1 - c^2) / (1 + c^2)
+  s <- 2 * abs(c) / (1 + c^2)
+  dF.dh <- dnorm(h) * pnorm(-rho * h / s)
+  dF.drho <- exp(-h^2 / (2 * s^2)) / (2 * pi * s)
+  c((dnorm(h) - 2 * dF.dh) / sqrt(2), 2 * dF.drho * 4 * c / (1 + c^2)^2)
+}

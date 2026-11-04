@@ -81,10 +81,7 @@ ci_auc_delong <- function(roc, conf.level) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = V$theta, sd = sqrt(S))
-  # In some rare cases we have ci[3] > 1 or ci[1] < 0
-  ci[ci > 1] <- 1
-  ci[ci < 0] <- 0
+  ci <- ci_auc_normal(V$theta, S, conf.level)
 
   # According to Pepe (p. 107), we should probably be doing something like
   # log(roc$auc / (1 - roc$auc)) + pnorm( 1-conf.level/2) * (S / (roc$auc * (1 - roc$auc)))
@@ -96,6 +93,16 @@ ci_auc_delong <- function(roc, conf.level) {
   # Stay with normal conf interval for now.
 
   return(ci)
+}
+
+# Normal confidence interval (with the median) of an AUC 'theta' of
+# variance 'var'
+ci_auc_normal <- function(theta, var, conf.level) {
+  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = theta, sd = sqrt(var))
+  # In some rare cases we have ci[3] > 1 or ci[1] < 0
+  ci[ci > 1] <- 1
+  ci[ci < 0] <- 0
+  ci
 }
 
 # function to calculate the CI

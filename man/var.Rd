@@ -15,7 +15,8 @@
 var(...)
 \S3method{var}{default}(...)
 \S3method{var}{auc}(auc, ...)
-\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski"),
+\S3method{var}{roc}(roc, method=c("delong", "bootstrap", "obuchowski",
+"binormal"),
 boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE, 
 progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
 \S3method{var}{smooth.roc}(smooth.roc, ...)
@@ -28,9 +29,9 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
 	the \code{\link{auc}} function.
   }
   \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
-    sufficient. If omitted, the appropriate method is selected as
-    explained in details.
+    \dQuote{bootstrap}, \dQuote{obuchowski} or \dQuote{binormal}. An
+    unambiguous abbreviation is sufficient. If omitted, the appropriate
+    method is selected as explained in details.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -75,14 +76,18 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
 \details{
   The \code{var} function computes the variance of the AUC of a ROC
   curve. It is typically called with the \link{roc} object of
-  interest. Three methods are available: \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
-  details} section below).
+  interest. Four methods are available: \dQuote{delong},
+  \dQuote{bootstrap}, \dQuote{obuchowski} and \dQuote{binormal} (see
+  \dQuote{Computational details} section below).
 
   The default is to use \dQuote{delong} method except for with
-  partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
+  partial AUC and smoothed curves where \dQuote{bootstrap} is employed,
+  and for the full AUC of curves smoothed with \code{method="binormal"}
+  and \code{fit="proper"} (see \code{\link[=smooth.roc]{smooth}}), where
+  \dQuote{binormal} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported.
+  supported, and \dQuote{binormal} is only available for the full AUC of
+  those \dQuote{proper} binormal curves.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -125,6 +130,17 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   \eqn{A} and \eqn{B} are taken from pROC's binormal smoothing of the curve
   (see \code{\link[=smooth.roc]{smooth}}), not from maximum-likelihood
   estimates as in the paper.
+
+  With \code{method="binormal"}, the variance comes from the
+  maximum-likelihood fit of the \dQuote{proper} binormal model, as
+  described by Pesce and Metz (2007, pp. 819--821): the
+  variance-covariance matrix of the fit parameters is the inverse of the
+  expected information matrix (Dorfman and Alf, 1969, Eq. 7; Rao, 1973,
+  pp. 370--372), or its pseudo-inverse when it is nearly singular, and the
+  delta method gives the variance of the AUC. In simulations of 25 to 500
+  controls and cases, Pesce and Metz (2007, Tables 2--4) found these
+  variances close to the empirical ones, but unstable for AUCs very
+  close to 0.5 (p. 828).
 }
 
 \section{Binormality assumption}{
@@ -136,6 +152,9 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
     norm.x <- qnorm(rank(x)/(length(x)+1))
     var(roc(response, norm.x, ...), ...)
   }
+
+  The \dQuote{binormal} method assumes the \dQuote{proper} binormal
+  model (see \code{\link[=smooth.roc]{smooth}}).
 
   \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }
@@ -167,7 +186,9 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   If \code{method="delong"} and the AUC specification specifies a
   partial AUC, or the ROC curve is smoothed, an error is issued. The same
   applies to \code{method="obuchowski"} with a smoothed curve or with
-  \code{partial.auc.focus="sensitivity"}.
+  \code{partial.auc.focus="sensitivity"}, and to \code{method="binormal"}
+  with a partial AUC or a curve not smoothed with
+  \code{method="binormal"} and \code{fit="proper"}.
 }
 
 \references{
@@ -175,6 +196,11 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Donald D. Dorfman and Edward Alf, Jr. (1969) ``Maximum-likelihood
+  estimation of parameters of signal-detection theory and determination
+  of confidence intervals---Rating-method data''. \emph{Journal of
+  Mathematical Psychology} \bold{6}, 487--496.
 
   James A. Hanley and Karim O. Hajian-Tilaki (1997) ``Sampling
   variability of nonparametric estimates of the areas under receiver
@@ -186,6 +212,14 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   determination for diagnostic accuracy studies involving binormal ROC
   curve indices''. \emph{Statistics in Medicine}, \bold{16}(13),
   1529--1542. DOI: \doi{10.1002/(SICI)1097-0258(19970715)16:13<1529::AID-SIM565>3.0.CO;2-H}.
+
+  Lorenzo L. Pesce, Charles E. Metz (2007) ``Reliable and computationally
+  efficient maximum-likelihood estimation of "proper" binormal ROC
+  curves''. \emph{Academic Radiology} \bold{14}, 814--829.
+  DOI: \doi{10.1016/j.acra.2007.03.012}.
+
+  C. Radhakrishna Rao (1973) \emph{Linear Statistical Inference and Its
+  Applications}. 2nd edition. John Wiley & Sons.
   
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
@@ -218,6 +252,11 @@ var(roc1,method="bootstrap", boot.n=1000)
 
 # To use obuchowski:
 var(roc1, method="obuchowski")
+
+# Variance of a proper binormal fit (requires the mvtnorm package)
+if (requireNamespace("mvtnorm")) {
+  var(smooth(roc1, fit="proper"))
+}
 
 \dontrun{
 # Variance of smoothed ROCs:

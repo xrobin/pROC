@@ -40,7 +40,7 @@ var.smooth.roc <- function(smooth.roc, ...) {
 }
 
 var.roc <- function(roc,
-                    method = c("delong", "bootstrap", "obuchowski"),
+                    method = c("delong", "bootstrap", "obuchowski", "binormal"),
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc = TRUE,
@@ -72,8 +72,8 @@ var.roc <- function(roc,
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if (inherits(roc, "smooth.roc")) {
-      # smoothing: bootstrap
-      method <- "bootstrap"
+      # smoothing: from the proper binormal fit, or bootstrap
+      method <- if (roc_utils_is_proper_fit(roc$smoothing.args)) "binormal" else "bootstrap"
     } else {
       method <- "delong"
     }
@@ -93,6 +93,8 @@ var.roc <- function(roc,
       if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
         stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
+    } else if (method == "binormal") {
+      roc_utils_stop_if_not_proper_fit(roc$smoothing.args, has.partial.auc(roc))
     }
   }
 
@@ -103,6 +105,8 @@ var.roc <- function(roc,
     var <- var(V$Y) / n + var(V$X) / m
   } else if (method == "obuchowski") {
     var <- var_roc_obuchowski(roc) / length(roc$cases)
+  } else if (method == "binormal") {
+    var <- proper_binormal_var_auc(roc$proper)
   } else {
     var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }

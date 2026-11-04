@@ -119,7 +119,7 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 roc.test.roc <- function(roc1, roc2,
-                         method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity"),
+                         method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity", "binormal"),
                          sensitivity = NULL, specificity = NULL,
                          alternative = c("two.sided", "less", "greater"),
                          paired = NULL,
@@ -204,8 +204,10 @@ roc.test.roc <- function(roc1, roc2,
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if (smooth1 || smooth2) {
-      # smoothing in one or both: bootstrap
-      method <- "bootstrap"
+      # smoothing in one or both: from the proper binormal fits of unpaired
+      # curves, or bootstrap
+      proper <- roc_utils_is_proper_fit(smoothing.args$roc1) && roc_utils_is_proper_fit(smoothing.args$roc2)
+      method <- if (proper && !paired) "binormal" else "bootstrap"
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
@@ -239,17 +241,35 @@ roc.test.roc <- function(roc1, roc2,
       if (alternative != "two.sided") {
         stop("Only two-sided tests are available for Venkatraman.")
       }
+    } else if (method == "binormal") {
+      roc_utils_stop_if_not_proper_fit(smoothing.args$roc1, has.partial.auc(roc1))
+      roc_utils_stop_if_not_proper_fit(smoothing.args$roc2, has.partial.auc(roc2))
+      if (paired) {
+        stop("Binormal method is not supported for paired ROC curves. Use method=\"bootstrap\" instead.")
+      }
     }
+  }
+
+  # Smooth again the curves (the paired ones without the observations missing
+  # in either)
+  if (smooth1) {
+    smooth.roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
+    # do.call() put the whole curve in the call: print the call of the input curve
+    smooth.roc1$call <- smooth.call1
+  }
+  if (smooth2) {
+    smooth.roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
+    smooth.roc2$call <- smooth.call2
   }
 
   # Prepare the return value htest
   if (smooth1) {
-    estimate <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)$auc
+    estimate <- smooth.roc1$auc
   } else {
     estimate <- roc1$auc
   }
   if (smooth2) {
-    estimate <- c(estimate, roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)$auc)
+    estimate <- c(estimate, smooth.roc2$auc)
   } else {
     estimate <- c(estimate, roc2$auc)
   }
@@ -333,6 +353,21 @@ roc.test.roc <- function(roc1, roc2,
       }
       htest$p.value <- pval
     }
+  } else if (method == "binormal") {
+    # Dorfman and Alf (1969), Eq. 10; Pesce and Metz (2007), p. 822
+    aucs <- as.numeric(estimate) / ifelse(c(roc1$percent, roc2$percent), 100, 1)
+    stat <- (aucs[1] - aucs[2]) / sqrt(proper_binormal_var_auc(smooth.roc1$proper) + proper_binormal_var_auc(smooth.roc2$proper))
+    htest$statistic <- c("Z" = stat)
+    htest$method <- "Binormal test for two ROC curves"
+
+    if (alternative == "two.sided") {
+      pval <- 2 * pnorm(-abs(stat))
+    } else if (alternative == "greater") {
+      pval <- pnorm(-stat)
+    } else {
+      pval <- pnorm(stat)
+    }
+    htest$p.value <- pval
   } else if (method == "venkatraman") {
     boot.n <- roc_utils_check_boot_n(boot.n)
     if (paired) {
@@ -424,14 +459,10 @@ roc.test.roc <- function(roc1, roc2,
   htest$p.value <- unname(htest$p.value)
   # Restore smoothing if necessary
   if (smooth1) {
-    htest$roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
-    # do.call() put the whole curve in the call: print the call of the input curve
-    htest$roc1$call <- smooth.call1
+    htest$roc1 <- smooth.roc1
   }
   if (smooth2) {
-    htest$roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
-    # do.call() put the whole curve in the call: print the call of the input curve
-    htest$roc2$call <- smooth.call2
+    htest$roc2 <- smooth.roc2
   }
   return(htest)
 }

@@ -1078,6 +1078,22 @@ roc_utils_stop_if_numeric_density <- function(smooth.roc, what) {
   }
 }
 
+# Whether a curve smoothed with 'smoothing.args' is a maximum-likelihood fit
+# of the proper binormal model, whose AUC has a variance from the fit
+# (method = "binormal" of var, ci.auc and roc.test)
+roc_utils_is_proper_fit <- function(smoothing.args) {
+  identical(smoothing.args$method, "binormal") && identical(smoothing.args$fit, "proper")
+}
+
+roc_utils_stop_if_not_proper_fit <- function(smoothing.args, partial.auc) {
+  if (!roc_utils_is_proper_fit(smoothing.args)) {
+    stop("Binormal method is supported only for ROC curves smoothed with method=\"binormal\" and fit=\"proper\". Use method=\"bootstrap\" instead.")
+  }
+  if (partial.auc) {
+    stop("Binormal method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+  }
+}
+
 # Set the call of a curve built by a wrapper (and the variable names, for the
 # formula methods), also on the curve a smoothed curve keeps in attr(x, "roc"),
 # from which print() takes the data names.

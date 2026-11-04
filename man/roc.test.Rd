@@ -25,7 +25,7 @@
 \usage{
 # roc.test(...)
 \S3method{roc.test}{roc}(roc1, roc2, method=c("delong", "bootstrap",
-"venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
+"venkatraman", "sensitivity", "specificity", "binormal"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="random", progress = getOption("pROCProgress", interactive()),
@@ -68,9 +68,10 @@ na.rm=TRUE, method=NULL, ...)
     curve, and a paired test then uses the observations complete in both.
   }
   \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity} or
-    \dQuote{specificity}. It can be abbreviated, as long as it is not
-    ambiguous (\dQuote{s} is not sufficient). If omitted, the
+    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity},
+    \dQuote{specificity} or \dQuote{binormal}. It can be abbreviated, as
+    long as it is not ambiguous (\dQuote{b} and \dQuote{s} are not
+    sufficient). If omitted, the
 	appropriate method is selected as explained in details.
   }
   \item{sensitivity, specificity}{if \code{method="sensitivity"} or
@@ -147,15 +148,21 @@ na.rm=TRUE, method=NULL, ...)
   method and creates two \link{roc} objects before calling
   \code{roc.test.roc}.
 
-  Three methods are available: \dQuote{delong}, \dQuote{bootstrap} and \dQuote{venkatraman} (see
-  \dQuote{Computational details} section below). \dQuote{delong} and
-  \dQuote{bootstrap} are tests over the AUC whereas \dQuote{venkatraman}
+  Four methods are available: \dQuote{delong}, \dQuote{bootstrap},
+  \dQuote{binormal} and \dQuote{venkatraman} (see
+  \dQuote{Computational details} section below). \dQuote{delong},
+  \dQuote{bootstrap} and \dQuote{binormal} are tests over the AUC whereas \dQuote{venkatraman}
   compares the the ROC curves themselves.
 
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
   curves and curves with different \code{direction}, where \code{bootstrap}
-  is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported in pROC and result in an error.
+  is used, and for the comparison of the full AUC of two unpaired curves
+  smoothed with \code{method="binormal"} and \code{fit="proper"} (see
+  \code{\link[=smooth.roc]{smooth}}), where \dQuote{binormal} is used.
+  Using \dQuote{delong} for partial AUC and smoothed ROCs is not
+  supported in pROC and result in an error. \dQuote{binormal} is only
+  available for the full AUC of two unpaired \dQuote{proper} binormal
+  curves.
   It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
   \code{direction} (a warning is issued but the spurious comparison is
   enforced). \dQuote{venkatraman}'s test cannot be employed to compare smoothed
@@ -232,6 +239,19 @@ na.rm=TRUE, method=NULL, ...)
   }
   is compared to the normal distribution (Hanley and McNeil, 1983).
 
+  With \code{method="binormal"}, the statistic
+  \deqn{
+    Z=\frac{AUC1 - AUC2}{\sqrt{V1 + V2}}
+  }{
+    Z=(AUC1 - AUC2) / sqrt(V1 + V2)
+  }
+  with the variances V1 and V2 of the maximum-likelihood fits (see
+  \code{\link{var}}) is compared to the normal distribution (Dorfman and
+  Alf, 1969, Eq. 10; Pesce and Metz, 2007, p. 822). In simulations, Pesce
+  and Metz (2007, p. 828) found this test conservative for symmetric
+  curves with an AUC of 0.95 and fewer than 100 controls and cases, and
+  anticonservative for skewed curves.
+
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
   (2000) (for unpaired ROC curves) with \code{boot.n} permutation of
@@ -303,6 +323,10 @@ na.rm=TRUE, method=NULL, ...)
   If \code{method="venkatraman"} and one of the ROC curves is smoothed,
   an error is issued.
 
+  If \code{method="binormal"} and the curves are paired, have a partial
+  AUC or are not both smoothed with \code{method="binormal"} and
+  \code{fit="proper"}, an error is issued.
+
   If \code{method="venkatraman"}, and \code{alternative} is
   \dQuote{less} or \dQuote{greater}, an error is issued.
 
@@ -318,7 +342,7 @@ na.rm=TRUE, method=NULL, ...)
   A list of class "htest" with following content:
   \item{p.value}{the p-value of the test.}
   \item{statistic}{the value of the Z (\code{method="delong"}, paired
-    curves), D (\code{method="delong"} with unpaired curves,
+    curves, and \code{method="binormal"}), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
@@ -357,6 +381,11 @@ na.rm=TRUE, method=NULL, ...)
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Donald D. Dorfman and Edward Alf, Jr. (1969) ``Maximum-likelihood
+  estimation of parameters of signal-detection theory and determination
+  of confidence intervals---Rating-method data''. \emph{Journal of
+  Mathematical Psychology} \bold{6}, 487--496.
   
   James A. Hanley and Barbara J. McNeil (1982) ``The meaning and use of
   the area under a receiver operating characteristic (ROC)
@@ -365,6 +394,11 @@ na.rm=TRUE, method=NULL, ...)
   James A. Hanley and Barbara J. McNeil (1983) ``A method of comparing
   the areas under receiver operating characteristic curves derived from
   the same cases''. \emph{Radiology} \bold{148}, 839--843.
+
+  Lorenzo L. Pesce, Charles E. Metz (2007) ``Reliable and computationally
+  efficient maximum-likelihood estimation of "proper" binormal ROC
+  curves''. \emph{Academic Radiology} \bold{14}, 814--829.
+  DOI: \doi{10.1016/j.acra.2007.03.012}.
 
   Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
   Comparison of Receiver Operating Characteristic Curves''. \emph{The
