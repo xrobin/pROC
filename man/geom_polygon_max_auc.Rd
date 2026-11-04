@@ -41,10 +41,10 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-auc_sp <- auc(rocobj, partial.auc = c(0.9, 1))
-if (require(ggplot2)) {
-  ggroc(rocobj) +
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+auc_sp <- auc(roc1, partial.auc = c(0.9, 1))
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) +
     geom_polygon_max_auc(auc_sp) +
     geom_polygon_auc(auc_sp)
 }

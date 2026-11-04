@@ -38,12 +38,12 @@
   \code{\link{ci.se}}, \code{\link{ci.sp}}, \code{\link{plot.ci}}
 }
 \examples{
-\dontrun{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
-ci_se <- ci.se(rocobj, specificities = seq(0, 100, 5), boot.n = 100)
-if (require(ggplot2)) {
-  ggroc(rocobj) + geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0.5)
-}
+roc1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+\dontrun{
+ci_se <- ci.se(roc1, specificities = seq(0, 100, 5))}\dontshow{
+ci_se <- ci.se(roc1, specificities = seq(0, 100, 5), boot.n = 10)}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) + geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0.5)
 }
 }

@@ -96,13 +96,10 @@ The return value of the specific \code{ci} functions
 }
 
 \examples{
-
-# Create a ROC curve:
 data(aSAH)
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-
-## AUC ## 
+## AUC ##
 ci(roc1)
 # this is equivalent to:
 ci(roc1, of = "auc")
@@ -110,24 +107,16 @@ ci(roc1, of = "auc")
 ci.auc(roc1)
 
 
-## Coordinates ##
+## Other CIs, all bootstrapped ##
 \dontrun{
-# Thresholds
-ci(roc1, of = "thresholds")
-ci(roc1, of = "thresholds", thresholds = "all")
-ci(roc1, of = "thresholds", thresholds = 0.51)
-# equivalent to:
-ci.thresholds(roc1, thresholds = 0.51)
-
-# SE/SP
-ci(roc1, of = "sp", sensitivities = c(.95, .9, .85))
-ci.sp(roc1)
-ci(roc1, of = "se")
-ci.se(roc1)
-
-# Arbitrary coordinates
-ci(roc1, of = "coords", "best")
-ci.coords(roc1, 0.51, "threshold")}
+ci(roc1, of = "thresholds")  # or ci.thresholds(roc1)
+ci(roc1, of = "se")          # or ci.se(roc1)
+ci(roc1, of = "sp")          # or ci.sp(roc1)
+ci(roc1, of = "coords", x = "best")}\dontshow{
+ci(roc1, of = "thresholds", boot.n = 10)
+ci(roc1, of = "se", boot.n = 10)
+ci(roc1, of = "sp", boot.n = 10)
+ci(roc1, of = "coords", x = "best", boot.n = 10)}
 
 
 ## Bootstrap options ##
@@ -144,7 +133,6 @@ stopCluster(cl)
 
 # Or give a number of workers and let pROC create the cluster for the call
 ci(roc1, method = "bootstrap", cl = 2)}
-
 }
 
 \keyword{univar}

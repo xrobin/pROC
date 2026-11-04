@@ -61,53 +61,54 @@
 \pkg{\link[ggplot2:ggplot2-package]{ggplot2}}
 }
 \examples{
-# Create a basic roc object
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-rocobj2 <- roc(aSAH$outcome, aSAH$wfns)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-if (require(ggplot2)) {
-g <- ggroc(rocobj)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+library(ggplot2)
+
+# A single curve
+g <- ggroc(roc1)
 g
-# with additional aesthetics:
-ggroc(rocobj, alpha = 0.5, colour = "red", linetype = 2, linewidth = 2)
 
-# You can then your own theme, etc.
-g + theme_minimal() + ggtitle("My ROC curve") + 
-    geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed")
+# With fixed aesthetics
+ggroc(roc1, alpha = 0.5, colour = "red", linetype = 2, linewidth = 2)
 
-# And change axis labels to FPR/FPR
-gl <- ggroc(rocobj, legacy.axes = TRUE)
-gl
-gl + xlab("FPR") + ylab("TPR") + 
-    geom_segment(aes(x = 0, xend = 1, y = 0, yend = 1), color="darkgrey", linetype="dashed")
+# With 1 - specificity on the x axis
+ggroc(roc1, legacy.axes = TRUE)
 
-# Multiple curves:
-g2 <- ggroc(list(s100b=rocobj, wfns=rocobj2, ndka=roc(aSAH$outcome, aSAH$ndka)))
-g2
+# The result is a regular ggplot, with your own theme, title, etc.
+g + theme_minimal() + ggtitle("My ROC curve")
 
-# Mixed empirical and smoothed curves:
-ggroc(list(empirical = rocobj, binormal = smooth(rocobj)))
+# All the layers that add to a ggroc plot: the AUC, the identity line,
+# a threshold, and confidence intervals (see their help pages)
+auc1 <- auc(roc1)
+ci_auc <- ci(roc1)
+ci_se <- ci.se(roc1, specificities = seq(0, 1, 0.05), boot.n = 100)
+ci_th <- ci.thresholds(roc1, thresholds = "best", boot.n = 100)
+ggroc(roc1) +
+  geom_polygon_max_auc(auc1) +
+  geom_polygon_auc(auc1) +
+  geom_roc_identity(roc1) +
+  geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0.3) +
+  geom_errorbar_ci(ci_th) +
+  geom_roc_threshold(roc1, thresholds = "best") +
+  geom_text_auc(auc1, ci = ci_auc)
 
-# This is equivalent to using roc.formula:
-roc.list <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
-g.list <- ggroc(roc.list)
+# Multiple curves, from a list or from a formula
+rocs <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
+g.list <- ggroc(rocs)
 g.list
+ggroc(list(empirical = roc1, binormal = smooth(roc1)))
 
-# You can change the aesthetics as you normally would with ggplot2:
-g.list + scale_colour_brewer(palette="RdGy")
-g.list + scale_colour_manual(values = c("red", "blue", "black"))
+# Map other aesthetics to the curves
+ggroc(rocs, aes = "linetype", colour = "red")
+ggroc(rocs, aes = c("linetype", "colour"))
 
-# with additional aesthetics:
-g3 <- ggroc(roc.list, linetype=2)
-g3
-g4 <- ggroc(roc.list, aes="linetype", color="red")
-g4
-# changing multiple aesthetics:
-g5 <- ggroc(roc.list, aes=c("linetype", "color"))
-g5
+# Change the scales as with any ggplot
+g.list + scale_colour_brewer(palette = "RdGy")
 
-# OR faceting
-g.list + facet_grid(.~name) + theme(legend.position="none")
+# Facets
+g.list + facet_grid(. ~ name) + theme(legend.position = "none")
 }
 }

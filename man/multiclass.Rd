@@ -139,10 +139,10 @@ multiclass.roc(aSAH$gos6, aSAH$s100b)
 # Produces an innocuous warning because one level has no observation
 
 # Select only 3 of the aSAH$gos6 levels:
-multiclass.roc(aSAH$gos6, aSAH$s100b, levels=c(3, 4, 5))
+multiclass.roc(aSAH$gos6, aSAH$s100b, levels = c(3, 4, 5))
 
 # Give the result in percent
-multiclass.roc(aSAH$gos6, aSAH$s100b, percent=TRUE)
+multiclass.roc(aSAH$gos6, aSAH$s100b, percent = TRUE)
 
 ####
 # Examples for multivariate decision values (e.g. class probabilities)
@@ -159,7 +159,7 @@ iris.test <- iris[iris.sample[76:150],]
 mn.net <- nnet::multinom(Species ~ ., iris.train)
 
 # Use predict with type="prob" to get class probabilities
-iris.predictions <- predict(mn.net, newdata=iris.test, type="prob")
+iris.predictions <- predict(mn.net, newdata = iris.test, type = "prob")
 head(iris.predictions)
 
 # This can be used directly in multiclass.roc:
@@ -167,7 +167,7 @@ multiclass.roc(iris.test$Species, iris.predictions)
 }
 
 
-# Let's see an other example with an artificial dataset
+# Let's see another example with an artificial dataset
 n <- c(100, 80, 150)
 responses <- factor(c(rep("X1", n[1]), rep("X2", n[2]), rep("X3", n[3])))
 # construct prediction matrix: one column per class
@@ -180,7 +180,7 @@ predictor <- as.matrix(data.frame(
              ))
 multiclass.roc(responses, predictor)
 
-# One can change direction , partial.auc, percent, etc:
+# One can change direction, partial.auc, percent, etc:
 multiclass.roc(responses, predictor, direction = ">")
 multiclass.roc(responses, predictor, percent = TRUE, 
 	partial.auc = c(100, 90), partial.auc.focus = "se")

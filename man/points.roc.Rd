@@ -76,17 +76,17 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-plot(rocobj)
-points(rocobj, "best")
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+plot(roc1)
+points(roc1, "best")
 
 # The best threshold within a partial AUC
-pauc <- auc(rocobj, partial.auc = c(1, 0.9))
+pauc <- auc(roc1, partial.auc = c(1, 0.9))
 points(pauc, "best", col = "red")
 
 # Several thresholds
-plot(rocobj)
-points(rocobj, c(0.2, 0.5), pattern = "\%.1f (\%.2f, \%.2f)")
+plot(roc1)
+points(roc1, c(0.2, 0.5), pattern = "\%.1f (\%.2f, \%.2f)")
 }
 \keyword{aplot}
 \keyword{hplot}

@@ -155,33 +155,28 @@ parallel=FALSE, cl = NULL, ...)
 }
 
 \examples{
-# Create a ROC curve:
 data(aSAH)
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-
-## Basic example ##
+# Specificity at the default sensitivities
 \dontrun{
-ci.sp(roc1)}\dontshow{ci.sp(roc1, boot.n = 10)}
+ci1 <- ci.sp(roc1)}\dontshow{
+ci1 <- ci.sp(roc1, boot.n = 10)}
+ci1
 
-
-## More options ##
-# Customized bootstrap and sensitivities:
-\dontrun{
-ci.sp(roc1, c(.95, .9, .85), boot.n=10000, conf.level=0.9, boot.stratified=FALSE)}\dontshow{
-ci.sp(roc1, c(.95, .9, .85), boot.n=10, conf.level=0.9, boot.stratified=FALSE)}
-
-
-## Plotting the CI ##
-ci1 <- ci.sp(roc1, boot.n = 10)
+# Plot the CI on the curve
 plot(roc1)
 plot(ci1)
 
-
-## On smoothed ROC curves with bootstrap ##
+# Specific sensitivities, and another confidence level
 \dontrun{
-ci.sp(smooth(roc1, method="density"))}\dontshow{
-ci.sp(smooth(roc1, method="density"), boot.n = 10)}
+ci.sp(roc1, c(.95, .9, .85), conf.level = 0.9)}\dontshow{
+ci.sp(roc1, c(.95, .9, .85), conf.level = 0.9, boot.n = 10)}
+
+# Smoothed curves are bootstrapped as well
+\dontrun{
+ci.sp(smooth(roc1, method = "density"))}\dontshow{
+ci.sp(smooth(roc1, method = "density"), boot.n = 10)}
 }
 
 \keyword{univar}

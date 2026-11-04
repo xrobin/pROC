@@ -400,72 +400,48 @@ na.rm=TRUE, method=NULL, ...)
 
 \examples{
 data(aSAH)
-
-# Basic example with 2 roc objects
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
-roc.test(roc1, roc2)
 
-\dontrun{
-# The latter used Delong's test. To use bootstrap test:
-roc.test(roc1, roc2, method="bootstrap")
-# Increase boot.n for a more precise p-value:
-roc.test(roc1, roc2, method="bootstrap", boot.n=10000)
-}
+# DeLong's test, the default
+roc.test(roc1, roc2)
 
 # Alternative syntaxes
 roc.test(aSAH$outcome, aSAH$s100b, aSAH$wfns)
 roc.test(aSAH$outcome, data.frame(aSAH$s100b, aSAH$wfns))
 
-# If we had a good a priori reason to think that wfns gives a
-# better classification than s100b (in other words, AUC of roc1
-# should be lower than AUC of roc2):
-roc.test(roc1, roc2, alternative="less")
+# One-sided: AUC of roc1 is lower than AUC of roc2
+roc.test(roc1, roc2, alternative = "less")
 
-\dontrun{
-# Comparison can be done on smoothed ROCs
-# Smoothing is re-done at each iteration, and execution is slow
-roc.test(smooth(roc1), smooth(roc2), boot.n=100)
-}
-# or from an AUC (no smoothing)
+# From an AUC, without smoothing
 roc.test(auc(roc1), roc2)
 
+# Force an unpaired test
+roc.test(roc1, roc2, paired = FALSE)
+
+# Bootstrap
 \dontrun{
-# Comparison of partial AUC:
-roc3 <- roc(aSAH$outcome, aSAH$s100b, partial.auc=c(1, 0.8), partial.auc.focus="se")
-roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.8), partial.auc.focus="se")
-roc.test(roc3, roc4)
-# This is strictly equivalent to:
-roc.test(roc3, roc4, method="bootstrap")
+roc.test(roc1, roc2, method = "bootstrap")}\dontshow{
+roc.test(roc1, roc2, method = "bootstrap", boot.n = 10)}
 
-# Alternatively, we could re-use roc1 and roc2 to get the same result:
-roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.8), partial.auc.focus="se")
-
-# Comparison on specificity and sensitivity
-roc.test(roc1, roc2, method="specificity", specificity=0.9)
-roc.test(roc1, roc2, method="sensitivity", sensitivity=0.9)
-}
-
-# Spurious use of DeLong's test with different direction:
-roc5 <- roc(aSAH$outcome, aSAH$s100b, direction="<")
-roc6 <- roc(aSAH$outcome, aSAH$s100b, direction=">")
-roc.test(roc5, roc6, method="delong")
-
+# Smoothed curves are bootstrapped, and smoothing is redone at each replicate
 \dontrun{
-# Comparisons of the ROC curves
-roc.test(roc1, roc2, method="venkatraman")
-}
+roc.test(smooth(roc1), smooth(roc2))}\dontshow{
+roc.test(smooth(roc1), smooth(roc2), boot.n = 10)}
 
-# Unpaired tests
-roc7 <- roc(aSAH$outcome, aSAH$s100b)
-# artificially create an roc8 unpaired with roc7
-roc8 <- roc(aSAH$outcome[1:100], aSAH$s100b[1:100])
+# So is the partial AUC
 \dontrun{
-roc.test(roc7, roc8, paired=FALSE, method="delong")
-roc.test(roc7, roc8, paired=FALSE, method="bootstrap")
-roc.test(roc7, roc8, paired=FALSE, method="venkatraman")
-roc.test(roc7, roc8, paired=FALSE, method="specificity", specificity=0.9)
-}
+roc.test(roc1, roc2, reuse.auc = FALSE,
+         partial.auc = c(1, 0.8), partial.auc.focus = "se")}\dontshow{
+roc.test(roc1, roc2, reuse.auc = FALSE,
+         partial.auc = c(1, 0.8), partial.auc.focus = "se", boot.n = 10)}
+
+# Comparison of the whole ROC curves, or at a given specificity
+\dontrun{
+roc.test(roc1, roc2, method = "venkatraman")
+roc.test(roc1, roc2, method = "specificity", specificity = 0.9)}\dontshow{
+roc.test(roc1, roc2, method = "venkatraman", boot.n = 10)
+roc.test(roc1, roc2, method = "specificity", specificity = 0.9, boot.n = 10)}
 }
 
 \keyword{multivariate}

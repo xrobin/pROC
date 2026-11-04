@@ -216,93 +216,54 @@ alternative = c("two.sided", "one.sided"), ...)
 \examples{
 data(aSAH)
 
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc2 <- roc(aSAH$outcome, aSAH$wfns)
+
 #### One ROC curve ####
 
-# Build a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-
-# Determine power of one ROC curve:
-power.roc.test(rocobj)
+# Power
+power.roc.test(roc1)
 # Same as:
-power.roc.test(ncases=41, ncontrols=72, auc=0.73, sig.level=0.05)
-# sig.level=0.05 is implicit and can be omitted:
-power.roc.test(ncases=41, ncontrols=72, auc=0.73)
+power.roc.test(ncases = 41, ncontrols = 72, auc = 0.73)
 
-# Determine ncases & ncontrols:
-power.roc.test(auc=as.numeric(rocobj$auc), sig.level=0.05, power=0.95, kappa=1.7)
-power.roc.test(auc=0.73, sig.level=0.05, power=0.95, kappa=1.7)
+# Sample size
+power.roc.test(roc1, power = 0.95)
 
-# Determine sig.level:
-power.roc.test(ncases=41, ncontrols=72, auc=0.73, power=0.95, sig.level=NULL)
+# Significance level
+power.roc.test(roc1, power = 0.95, sig.level = NULL)
 
-# Derermine detectable AUC:
-power.roc.test(ncases=41, ncontrols=72, sig.level=0.05, power=0.95)
+# Detectable AUC, without a ROC curve
+power.roc.test(ncases = 41, ncontrols = 72, sig.level = 0.05, power = 0.95)
 
 
 #### Two ROC curves ####
 
-###  Full AUC
-roc1 <- roc(aSAH$outcome, aSAH$ndka)
-roc2 <- roc(aSAH$outcome, aSAH$wfns)
-
-## Sample size
-# With DeLong variance (default)
-power.roc.test(roc1, roc2, power=0.9)
-# With Obuchowski variance
-power.roc.test(roc1, roc2, power=0.9, method="obuchowski")
-
-## Power test
-# With DeLong variance (default)
+# Power, with DeLong variance (default)
 power.roc.test(roc1, roc2)
+
+# Sample size
+power.roc.test(roc1, roc2, power = 0.9)
+
+# Significance level
+power.roc.test(roc1, roc2, power = 0.9, sig.level = NULL)
+
 # With Obuchowski variance
-power.roc.test(roc1, roc2, method="obuchowski")
+power.roc.test(roc1, roc2, method = "obuchowski")
 
-## Significance level
-# With DeLong variance (default)
-power.roc.test(roc1, roc2, power=0.9, sig.level=NULL)
-# With Obuchowski variance
-power.roc.test(roc1, roc2, power=0.9, sig.level=NULL, method="obuchowski")
-
-### Partial AUC
-roc3 <- roc(aSAH$outcome, aSAH$ndka, partial.auc=c(1, 0.9))
-roc4 <- roc(aSAH$outcome, aSAH$wfns, partial.auc=c(1, 0.9))
-
-## Sample size
-# With bootstrap variance (default)
+# Partial AUC, with bootstrap variance by default
 \dontrun{
-power.roc.test(roc3, roc4, power=0.9)
-}
-# With Obuchowski variance
-power.roc.test(roc3, roc4, power=0.9, method="obuchowski")
+power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9))}\dontshow{
+power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9), boot.n = 10)}
+power.roc.test(roc1, roc2, reuse.auc = FALSE, partial.auc = c(1, 0.9),
+               method = "obuchowski")
 
-## Power test
-# With bootstrap variance (default)
-\dontrun{
-power.roc.test(roc3, roc4)
-# This is exactly equivalent:
-power.roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9))
-}
-# With Obuchowski variance
-power.roc.test(roc3, roc4, method="obuchowski")
 
-## Significance level
-# With bootstrap variance (default)
-\dontrun{
-power.roc.test(roc3, roc4, power=0.9, sig.level=NULL)
-}
-# With Obuchowski variance
-power.roc.test(roc3, roc4, power=0.9, sig.level=NULL, method="obuchowski")
-
-## With only binormal parameters given
+#### With only binormal parameters ####
 # Example 2 of Obuchowski and McClish (1997): with kappa = 1, the paper
 # requires 240 patients in total (120 cases and 120 controls).
-ob.params <- list(A1=2.6, B1=1, A2=1.9, B2=1, rn=0.6, ra=0.6, FPR11=0,
-FPR12=0.2, FPR21=0, FPR22=0.2, delta=0.037) 
-
-power.roc.test(ob.params, power=0.8, sig.level=0.05)
-power.roc.test(ob.params, power=0.8, sig.level=NULL, ncases=120)
-power.roc.test(ob.params, power=NULL, sig.level=0.05, ncases=120)
-
+ob.params <- list(A1 = 2.6, B1 = 1, A2 = 1.9, B2 = 1, rn = 0.6, ra = 0.6,
+                  FPR11 = 0, FPR12 = 0.2, FPR21 = 0, FPR22 = 0.2, delta = 0.037)
+power.roc.test(ob.params, power = 0.8, sig.level = 0.05)
 }
 
 \keyword{univar}

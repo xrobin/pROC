@@ -22,10 +22,10 @@
   the curve and \code{\link[=plot.roc]{plot}} to plot it:
 
   \preformatted{
-  rocobj <- roc(aSAH$outcome, aSAH$s100b)
-  auc(rocobj, partial.auc = c(1, 0.8))
-  ci(rocobj)
-  plot(smooth(rocobj))
+  roc1 <- roc(aSAH$outcome, aSAH$s100b)
+  auc(roc1, partial.auc = c(1, 0.8))
+  ci(roc1)
+  plot(smooth(roc1))
   }
 
   Each argument then goes to the function it belongs to, and each
@@ -192,13 +192,13 @@ aSAH \%>\%
         \preformatted{
 library(parallel)
 cl <- makeCluster(2)            # or type = "FORK", "MPI", "MIRAI"...
-ci(rocobj, method = "bootstrap", cl = cl)
+ci(roc1, method = "bootstrap", cl = cl)
 stopCluster(cl)
 
-ci(rocobj, method = "bootstrap", cl = 2)    # pROC creates and stops it
+ci(roc1, method = "bootstrap", cl = 2)    # pROC creates and stops it
 
 setDefaultCluster(makeCluster(2))
-ci(rocobj, method = "bootstrap", cl = TRUE) # use the registered cluster
+ci(roc1, method = "bootstrap", cl = TRUE) # use the registered cluster
         }
 
 	    Each replicate draws from its own L'Ecuyer-CMRG random number stream,
@@ -272,118 +272,52 @@ and \code{vignette("ggroc", package = "pROC")} for ggplot2 plots.
 \examples{
 data(aSAH)
 
-## Build a ROC object and compute the AUC ##
+# Build a ROC curve
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
-print(roc1)
-
-# With a formula
-roc(outcome ~ s100b, aSAH)
-# With pipes, dplyr-style:
-\dontrun{
-library(dplyr)
-aSAH \%>\% roc(outcome, s100b)}
-
-# Create a few more curves for the next examples
+roc1
 roc2 <- roc(aSAH$outcome, aSAH$wfns)
-roc3 <- roc(aSAH$outcome, aSAH$ndka)
 
+# Area under the curve
+pauc1 <- auc(roc1, partial.auc = c(1, .9))
+pauc1
 
-## AUC ##
-auc(roc1, partial.auc = c(1, .9))
+# Extract coordinates
+coords(roc1, "best")
+coords(pauc1, "best")
 
-
-## Smooth ROC curve ##
+# Smooth
 smooth(roc1)
 
-
-## Summary statistics
+# Confidence interval and variance of the AUC
+ci1 <- ci(roc1)
+ci1
 var(roc1)
-cov(roc1, roc3)
 
+# Compare two curves
+cov(roc1, roc2)
+roc.test(roc1, roc2)
 
-## Plot the curve ##
-plot(roc1)
-
-#  More plotting options, partial AUC, CI, built from separate calls:
-roc4 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
-auc4 <- auc(roc4, partial.auc=c(100, 90), partial.auc.correct=TRUE,
-            partial.auc.focus="sens")
-ci4  <- ci(auc4, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
-plot(roc4, grid=TRUE, print.thres=TRUE,
-     panel.first = {
-       polygon_max_auc(auc4)
-       polygon_auc(auc4)
+# Base graphics plot
+plot(roc1, panel.first = {
+       polygon_max_auc(pauc1)
+       polygon_auc(pauc1)
      },
-     panel.last = text(ci4))
+     panel.last = {
+      points(pauc1)
+      text(ci1)
+    })
 
-# Add to an existing plot. Beware of 'percent' specification!
-roc5 <- roc(aSAH$outcome, aSAH$wfns, percent=roc4$percent)
-plot(roc5, add=TRUE)
-
-
-## With ggplot2 ##
-if (require(ggplot2)) {
-# Create multiple curves to plot
-rocs <- roc(outcome ~ wfns + s100b + ndka, data = aSAH)
-ggroc(rocs)
+# ggplot2
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) +
+    geom_polygon_max_auc(pauc1) +
+    geom_polygon_auc(pauc1) +
+    geom_roc_threshold(pauc1, thresholds = "best") +
+    geom_text_auc(pauc1, ci = ci1)
 }
 
-
-## Coordinates of the curve ##
-coords(roc1, "best", ret=c("threshold", "specificity", "1-npv"))
-coords(roc2, "local maximas", ret=c("threshold", "sens", "spec", "ppv", "npv"))
-
-
-## Confidence intervals ##
-
-# CI of the AUC
-ci(roc2)
-
-\dontrun{
-# CI of the curve
-plot(roc1)
-sens.ci <- ci.se(roc1, specificities=seq(0, 1, .05))
-plot(sens.ci, type="shape", col="lightblue")
-plot(sens.ci, type="bars")
-
-# need to re-add roc1 over the shape
-plot(roc1, add=TRUE)
-
-# CI of thresholds
-plot(ci.thresholds(roc1))}
-
-## Comparisons ##
-
-# Test on the whole AUC
-roc.test(roc1, roc2, reuse.auc=FALSE)
-
-\dontrun{
-# Test on a portion of the whole AUC
-roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9),
-         partial.auc.focus="se", partial.auc.correct=TRUE)
-
-# With modified bootstrap parameters
-roc.test(roc1, roc2, reuse.auc=FALSE, partial.auc=c(1, 0.9),
-         partial.auc.correct=TRUE, boot.n=1000, boot.stratified=FALSE)}
-
-
-## Power & sample size ##
-
-# Power
-# 1 curve
+# Power and sample size
 power.roc.test(roc1)
-# 2 curves
-power.roc.test(roc3, roc2)
-
-# Sample size 
-# 1 curve
-power.roc.test(roc3, power = 0.9)
-# 2 curves
-power.roc.test(roc1, roc2, power = 0.9)
-
-# Also without ROC objects.
-# For instance what AUC would be significantly different from 0.5?
-power.roc.test(ncases=41, ncontrols=72, sig.level=0.05, power=0.95)
 }
 
 \keyword{package}

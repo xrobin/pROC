@@ -78,7 +78,7 @@ col=ifelse(type=="bars", par("fg"), "gainsboro"), ...)
   intervals. In such a case, the shape is not well defined and the ROC
   curve could pass outside the shape. To get a better shape, increase
   the number of intervals, for example with:
-  \preformatted{plot(ci.sp(rocobj, sensitivities=seq(0, 1, .01)), type="shape")}
+  \preformatted{plot(ci.sp(roc1, sensitivities=seq(0, 1, .01)), type="shape")}
 }
 
 \value{
@@ -98,40 +98,38 @@ This function returns the confidence interval object invisibly.
 }
 \examples{
 data(aSAH)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+
+# CI of thresholds
 \dontrun{
-# Start a ROC plot
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-plot(rocobj)
-# Thresholds
-ci.thresolds.obj <- ci.thresholds(rocobj)
-plot(ci.thresolds.obj)
-# Specificities
-plot(rocobj) # restart a new plot
-ci.sp.obj <- ci.sp(rocobj, boot.n=500)
-plot(ci.sp.obj)
-# Sensitivities
-plot(rocobj) # restart a new plot
-ci.se.obj <- ci(rocobj, of="se", boot.n=500)
-plot(ci.se.obj)
+ci_th <- ci.thresholds(roc1)}\dontshow{
+ci_th <- ci.thresholds(roc1, boot.n = 10)}
+plot(roc1)
+plot(ci_th)
 
-# Plotting a shape. We need more
-ci.sp.obj <- ci.sp(rocobj, sensitivities=seq(0, 1, .01), boot.n=100)
-plot(rocobj) # restart a new plot
-plot(ci.sp.obj, type="shape", col="blue")
+# CI of specificities, as bars
+\dontrun{
+ci_sp <- ci.sp(roc1)}\dontshow{
+ci_sp <- ci.sp(roc1, boot.n = 10)}
+plot(roc1) # restart a new plot
+plot(ci_sp)
 
-# Thresholds
-ci.thresh.obj <- ci(rocobj, of="thresholds")
-plot(rocobj) # restart a new plot
-plot(ci.thresh.obj)
+# As a shape. We need more points
+\dontrun{
+ci_sp <- ci.sp(roc1, sensitivities = seq(0, 1, .01))}\dontshow{
+ci_sp <- ci.sp(roc1, sensitivities = seq(0, 1, .01), boot.n = 10)}
+plot(roc1)
+plot(ci_sp, type = "shape", col = "blue")
 
-# CI of a PR curve
-co <- coords(rocobj, x = "all", input="recall", ret=c("recall", "precision"))
-ci <- ci.coords(rocobj, x = seq(0, 1, .1), input="recall", ret="precision")
-plot(co, type="l", ylim = c(0, 1))
-plot(ci, type="shape")
-plot(ci, type="bars")
+# CI of a precision-recall curve
+co <- coords(roc1, x = "all", input = "recall", ret = c("recall", "precision"))
+\dontrun{
+ci_pr <- ci.coords(roc1, x = seq(0, 1, .05), input = "recall", ret = "precision")}\dontshow{
+ci_pr <- ci.coords(roc1, x = seq(0, 1, .05), input = "recall", ret = "precision",
+                   boot.n = 10)}
+plot(co, type = "l", ylim = c(0, 1))
+plot(ci_pr, type = "shape")
 lines(co)
-}
 }
 
 \keyword{univar}

@@ -300,76 +300,38 @@ transpose = FALSE, as.matrix=FALSE, ...)
 \code{\link{roc}}, \code{\link{ci.coords}}
 }
 \examples{
-
-# Create a ROC curve:
 data(aSAH)
-roc.s100b <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+roc1 <- roc(aSAH$outcome, aSAH$ndka)
 
-# Get the coordinates of S100B threshold 0.55
-coords(roc.s100b, 0.55)
+# Coordinates at a threshold
+coords(roc1, 10)
 
-# Ordered predictors keep their levels as thresholds:
-roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
-coords(roc.wfns, "3")
-# Numeric x is rejected on an ordered ROC:
-# coords(roc.wfns, 3)  # error
-coords(roc.wfns, "Inf")
+# At a given sensitivity. 'input' can be abbreviated: "se"
+coords(roc1, 0.5, input = "sensitivity")
 
-# Get the coordinates at 50\% sensitivity
-coords(roc=roc.s100b, x=50, input="sensitivity")
-# Can be abbreviated:
-coords(roc.s100b, 50, "se")
+# All the thresholds
+head(coords(roc1, "all"))
 
-# Works with smoothed ROC curves
-coords(smooth(roc.s100b), 90, "specificity")
+# Best threshold, Youden by default, or closest to the top-left corner
+coords(roc1, "best")
+coords(roc1, "best", best.method = "closest.topleft")
+# With weights
+coords(roc1, "best", best.weights = c(2, 0.2))
 
-# Get the sensitivities for all thresholds
-cc <- coords(roc.s100b, "all", ret="sensitivity")
-print(cc$sensitivity)
+# Return other values
+coords(roc1, "best", ret = c("threshold", "accuracy", "ppv", "npv"))
+coords(roc1, "best", ret = "all")
 
-# Get the best threshold
-coords(roc.s100b, "best", ret="threshold")
+# Smoothed curves don't have thresholds, so the input must be specified
+coords(smooth(roc1), 0.9, "specificity")
 
-# Get the best threshold according to different methods
-roc.ndka <- roc(aSAH$outcome, aSAH$ndka, percent=TRUE)
-coords(roc.ndka, "best", ret="threshold", 
-       best.method="youden") # default
-coords(roc.ndka, "best", ret="threshold", 
-       best.method="closest.topleft")
+# Ordered predictors keep their levels as thresholds, given as characters
+roc2 <- roc(aSAH$outcome, aSAH$wfns)
+coords(roc2, "3")
 
-# and with different weights
-coords(roc.ndka, "best", ret="threshold", 
-       best.method="youden", best.weights=c(50, 0.2))
-coords(roc.ndka, "best", ret="threshold", 
-       best.method="closest.topleft", best.weights=c(5, 0.2))
-       
-# This is available with the plot.roc function too:
-plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
-                                 print.thres.best.weights=c(50, 0.2)) 
-
-# Return more values:
-coords(roc.s100b, "best", ret=c("threshold", "specificity", "sensitivity", "accuracy",
-                           "precision", "recall"))
-
-# Return all values
-coords(roc.s100b, "best", ret = "all")
-                           
-# You can use coords to plot for instance a sensitivity + specificity vs. cut-off diagram
-plot(specificity + sensitivity ~ threshold, 
-     coords(roc.ndka, "all"), 
-     type = "l", log="x", 
-     subset = is.finite(threshold))
-
-# Plot the Precision-Recall curve
-plot(precision ~ recall, 
-     coords(roc.ndka, "all", ret = c("recall", "precision")),
-     type="l", ylim = c(0, 100))
-
-# Alternatively plot the curve with TPR and FPR instead of SE/SP 
-# (identical curve, only the axis change)
-plot(tpr ~ fpr, 
-     coords(roc.ndka, "all", ret = c("tpr", "fpr")),
-     type="l")
+# Precision-recall curve
+plot(precision ~ recall, coords(roc1, "all", ret = c("recall", "precision")),
+     type = "l", ylim = c(0, 1))
 }
 
 \keyword{univar}

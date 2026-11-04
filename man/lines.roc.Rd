@@ -52,26 +52,21 @@ or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
 \code{\link{roc}}, \code{\link{plot.roc}}
 }
 \examples{
-
-# Create a few ROC curves:
 data(aSAH)
-roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
-roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc2 <- roc(aSAH$outcome, aSAH$wfns)
 
 # We need a plot to be ready
-plot(roc.s100b, type = "n") # but don't actually plot the curve
+plot(roc1, type = "n") # but don't actually plot the curve
 
 # Add the line
-lines(roc.s100b, type="b", pch=21, col="blue", bg="grey")
+lines(roc1, type = "b", pch = 21, col = "blue", bg = "grey")
 
-# Add the line of an other ROC curve
-lines(roc.wfns, type="o", pch=19, col="red")
-
+# Add the line of another ROC curve
+lines(roc2, type = "o", pch = 19, col = "red")
 
 # Without using 'lines':
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-plot(rocobj, type="b", pch=21, col="blue", bg="grey")
-
+plot(roc1, type = "b", pch = 21, col = "blue", bg = "grey")
 }
 
 \keyword{univar}

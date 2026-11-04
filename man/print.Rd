@@ -62,19 +62,19 @@ call=TRUE, ...)
 data(aSAH)
 
 # Print a roc object:
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-print(rocobj)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+print(roc1)
 
 # Print a smoothed roc object
-print(smooth(rocobj))
+print(smooth(roc1))
 
 # implicit printing
  roc(aSAH$outcome, aSAH$s100b)
 
 # Print an auc and a ci object, from the ROC object or calling
 # the dedicated function:
-print(rocobj$auc)
-print(ci(rocobj))
+print(roc1$auc)
+print(ci(roc1))
 }
 
 \keyword{univar}

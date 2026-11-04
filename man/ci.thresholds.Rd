@@ -161,35 +161,22 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
 
 \examples{
 data(aSAH)
-
-# Create a ROC curve:
-data(aSAH)
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-
-## Basic example ##
-# Compute CI of all local maxima thresholds
-\dontrun{
-ci.thresholds(roc1)}\dontshow{ci.thresholds(roc1, boot.n = 10)}
-
-
-## More options ##
-# Customized bootstrap and thresholds:
-\dontrun{
-ci.thresholds(roc1,
-			  thresholds=c(0.5, 1, 2),
-              boot.n=10000, conf.level=0.9, boot.stratified=FALSE)}\dontshow{
-ci.thresholds(roc1,
-			  thresholds=c(0.5, 1, 2),
-              boot.n=10, conf.level=0.9, boot.stratified=FALSE)}
-
-
-## Plotting the CI ##
+# All local maxima thresholds
 \dontrun{
 ci1 <- ci.thresholds(roc1)}\dontshow{
 ci1 <- ci.thresholds(roc1, boot.n = 10)}
+ci1
+
+# Plot the CI on the curve
 plot(roc1)
 plot(ci1)
+
+# Specific thresholds, and another confidence level
+\dontrun{
+ci.thresholds(roc1, thresholds = c(0.5, 1, 2), conf.level = 0.9)}\dontshow{
+ci.thresholds(roc1, thresholds = c(0.5, 1, 2), conf.level = 0.9, boot.n = 10)}
 }
 
 \keyword{univar}

@@ -64,11 +64,13 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ci_se <- ci.se(rocobj, specificities = seq(0, 1, .05), boot.n = 100)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+\dontrun{
+ci_se <- ci.se(roc1, specificities = seq(0, 1, .05))}\dontshow{
+ci_se <- ci.se(roc1, specificities = seq(0, 1, .05), boot.n = 10)}
 
 # Custom curve styling is preserved: polygon_ci() never redraws the curve
-plot(rocobj, col = "red", lwd = 3,
+plot(roc1, col = "red", lwd = 3,
      panel.first = polygon_ci(ci_se, col = "lightblue"))
 }
 \keyword{aplot}

@@ -43,22 +43,20 @@
 \code{\link{ggroc}}, \code{\link{plot.roc}}
 }
 \examples{
-
-# Create a ROC curve:
 data(aSAH)
-roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
-roc.s100b.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc2 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 
-if (require(ggplot2)) {
-ggroc(roc.s100b) + geom_polygon_auc(roc.s100b$auc)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+ggroc(roc1) + geom_polygon_auc(roc1$auc)
 
-ggroc(roc.s100b.percent, legacy.axes=TRUE) + geom_polygon_auc(roc.s100b.percent)
+ggroc(roc2, legacy.axes = TRUE) + geom_polygon_auc(roc2)
 
 # Partial AUCs
-auc.s100b.partial.sp <- auc(roc.s100b, partial.auc = c(0.9, 1))
-auc.s100b.partial.se <- auc(roc.s100b, partial.auc = c(0.8, 0.9), partial.auc.focus="se")
+auc_sp <- auc(roc1, partial.auc = c(0.9, 1))
+auc_se <- auc(roc1, partial.auc = c(0.8, 0.9), partial.auc.focus = "se")
 
-ggroc(roc.s100b) + geom_polygon_auc(auc.s100b.partial.sp)
-ggroc(roc.s100b) + geom_polygon_auc(auc.s100b.partial.se)
+ggroc(roc1) + geom_polygon_auc(auc_sp)
+ggroc(roc1) + geom_polygon_auc(auc_se)
 }
 }

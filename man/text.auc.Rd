@@ -77,14 +77,14 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ciobj <- ci(rocobj, boot.n = 100)
-plot(rocobj)
-text(rocobj, ci = ciobj)     # "AUC: 0.XXX (0.XXX-0.XXX)"
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+ci1 <- ci(roc1)
+plot(roc1)
+text(roc1, ci = ci1)     # "AUC: 0.XXX (0.XXX-0.XXX)"
 
-aucobj <- auc(rocobj)
-plot(rocobj)
-text(aucobj, xy = c(.4, .4), pattern = "Area under the curve: \%.2f")
+auc1 <- auc(roc1)
+plot(roc1)
+text(auc1, xy = c(.4, .4), pattern = "Area under the curve: \%.2f")
 }
 \keyword{aplot}
 \keyword{hplot}

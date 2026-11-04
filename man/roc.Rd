@@ -106,7 +106,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
 	\code{roc} object (\dQuote{roc}). As it has the same name, the \code{ret}
 	argument of \code{\link{ci.coords}} cannot be passed through
 	\code{roc.data.frame} and \code{roc_}: call
-	\code{\link{ci.coords}(rocobj, ret=\dots)} on the curve returned by
+	\code{\link{ci.coords}(roc1, ret=\dots)} on the curve returned by
 	\code{roc} instead.}
   \item{quiet}{set to \code{TRUE} to turn off \code{\link{message}}s
 	 when \code{direction} and \code{levels} are auto-detected.
@@ -131,8 +131,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     \link{all_in_one_calls}).
   }
   \item{smooth.method, smooth.n, ci.method}{with the shortcuts only.
-	Superseded by \code{\link[=smooth.roc]{smooth}(rocobj, method=\dots, n=\dots)} and
-	\code{\link{ci.auc}(rocobj, method=\dots)} on the curve returned by
+	Superseded by \code{\link[=smooth.roc]{smooth}(roc1, method=\dots, n=\dots)} and
+	\code{\link{ci.auc}(roc1, method=\dots)} on the curve returned by
 	\code{roc} (see \link{all_in_one_calls}). In \code{roc.formula} and \code{roc.default}, the
 	\code{method} and \code{n} arguments to
 	\code{\link[=smooth.roc]{smooth}} (if \code{smooth=TRUE}) and the
@@ -142,7 +142,7 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
   \item{density}{\code{density} argument passed to
     \code{\link[=smooth.roc]{smooth}}. Superseded by
-    \code{smooth(rocobj, density=\dots)} (see \link{all_in_one_calls}).}
+    \code{smooth(roc1, density=\dots)} (see \link{all_in_one_calls}).}
   \item{\dots}{further arguments passed to or from other methods, and
     especially:
     \itemize{
@@ -254,8 +254,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   function it belongs to:
 
   \preformatted{
-    rocobj <- roc(aSAH$outcome, aSAH$s100b)
-    smoothed <- smooth(rocobj, method = "density", adjust = 2)
+    roc1 <- roc(aSAH$outcome, aSAH$s100b)
+    smoothed <- smooth(roc1, method = "density", adjust = 2)
     pauc <- auc(smoothed, partial.auc = c(1, 0.8))
     ci(pauc, boot.n = 100)
     plot(smoothed, main = "S100b")
@@ -398,22 +398,14 @@ aSAH  \%>\%
 \examples{
 data(aSAH)
 
-# Basic example
-roc(aSAH$outcome, aSAH$s100b,
-    levels=c("Good", "Poor"))
-# As levels aSAH$outcome == c("Good", "Poor"),
-# this is equivalent to:
+# With a response and a predictor
 roc(aSAH$outcome, aSAH$s100b)
-# In some cases, ignoring levels could lead to unexpected results
-# Equivalent syntaxes:
-roc(outcome ~ s100b, aSAH)
-roc(aSAH$outcome ~ aSAH$s100b)
-with(aSAH, roc(outcome, s100b))
-with(aSAH, roc(outcome ~ s100b))
 
-# With a formula:
-roc(outcome ~ s100b, data=aSAH)
+# With a formula
+roc(outcome ~ s100b, data = aSAH)
 
+# With a data.frame and unquoted column names, as in a dplyr pipeline
+roc(aSAH, outcome, s100b)
 \dontrun{
 library(dplyr)
 aSAH \%>\%
@@ -421,43 +413,35 @@ aSAH \%>\%
     roc(outcome, s100b)
 }
 
-# Using subset (only with formula)
-roc(outcome ~ s100b, data=aSAH, subset=(gender == "Male"))
-roc(outcome ~ s100b, data=aSAH, subset=(gender == "Female"))
+# With a subset (formula only)
+roc(outcome ~ s100b, data = aSAH, subset = (gender == "Female"))
 
-# With numeric controls/cases
-roc(controls=aSAH$s100b[aSAH$outcome=="Good"], cases=aSAH$s100b[aSAH$outcome=="Poor"])
-# With ordered controls/cases
-roc(controls=aSAH$wfns[aSAH$outcome=="Good"], cases=aSAH$wfns[aSAH$outcome=="Poor"])
+# With controls and cases
+roc(controls = aSAH$s100b[aSAH$outcome == "Good"],
+    cases = aSAH$s100b[aSAH$outcome == "Poor"])
 
-# Inverted the levels: "Poor" are now controls and "Good" cases:
-roc(aSAH$outcome, aSAH$s100b,
-    levels=c("Poor", "Good"))
 
-# The result was exactly the same because of direction="auto".
-# The following will give an AUC < 0.5:
-roc(aSAH$outcome, aSAH$s100b,
-    levels=c("Poor", "Good"), direction="<")
+## Levels and direction ##
 
-# If we are sure about levels and direction auto-detection,
-# we can turn off the messages:
+# By default, levels are the two values of the response, in order,
+# and the direction is detected from the medians:
+roc(aSAH$outcome, aSAH$s100b)
+# which is equivalent to specifying both:
+roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<")
+
+# Inverting the levels gives the same curve, because of direction = "auto"
+roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"))
+# Forcing the direction gives an AUC < 0.5
+roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"), direction = "<")
+
+# Turn off the messages if sure about levels and direction
 roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 
-# If we prefer counting in percent:
-roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
 
-# Plot and CI (see plot.roc and ci for more options):
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
-ci(rocobj)
-plot(rocobj)
+## Other options ##
 
-# Smoothed ROC curve
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-smooth(rocobj)
-# roc(aSAH$outcome, aSAH$s100b, smooth=TRUE) is a shortcut that gives the
-# same smoothed curve and AUC, but the returned objects differ in their
-# call and in the data stored (the shortcut also contains the predictor,
-# response and levels)
+# Sensitivity and specificity in percent
+roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 }
 
 \keyword{univar}

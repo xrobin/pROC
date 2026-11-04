@@ -45,24 +45,23 @@
 \examples{
 data(aSAH)
 
-# Create a roc object:
-aucobj1 <- auc(roc(aSAH$outcome, aSAH$s100b))
-aucobj2 <- auc(roc(aSAH$outcome, aSAH$wfns))
+# Create two auc objects:
+auc1 <- auc(roc(aSAH$outcome, aSAH$s100b))
+auc2 <- auc(roc(aSAH$outcome, aSAH$wfns))
 
 # Math
-sqrt(aucobj1)
-round(aucobj2, digits=1)
+sqrt(auc1)
+round(auc2, digits = 1)
 
 # Ops
-aucobj1 * 2
-2 * aucobj2
-aucobj1 + aucobj2
+auc1 * 2
+2 * auc2
+auc1 + auc2
 
 # With CI
-ciaucobj <- ci(aucobj1)
-ciaucobj * 2
-sqrt(ciaucobj)
-
+ci1 <- ci(auc1)
+ci1 * 2
+sqrt(ci1)
 }
 
 \keyword{methods}

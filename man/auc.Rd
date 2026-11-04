@@ -173,17 +173,14 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   \code{\link{polygon_auc}}, \code{\link[=text.auc]{text}}
 }
 \examples{
-
-# Create a ROC curve:
 data(aSAH)
-roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
 # Get the full AUC
-auc(roc.s100b)
+auc(roc1)
 
 # Get the partial AUC:
-auc(roc.s100b, partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=TRUE)
-
+auc(roc1, partial.auc = c(1, .8), partial.auc.focus = "se", partial.auc.correct = TRUE)
 }
 
 \keyword{univar}

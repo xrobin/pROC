@@ -64,8 +64,8 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-if (require(ggplot2)) {
-  ggroc(rocobj) + geom_roc_threshold(rocobj, thresholds = "best")
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) + geom_roc_threshold(roc1, thresholds = "best")
 }
 }

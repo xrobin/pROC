@@ -38,8 +38,8 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-if (require(ggplot2)) {
-  ggroc(rocobj) + geom_roc_identity(rocobj)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) + geom_roc_identity(roc1)
 }
 }

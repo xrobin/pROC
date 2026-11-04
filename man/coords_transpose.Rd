@@ -14,8 +14,8 @@ a matrix with thresholds in columns, and the coordinate variables in rows.
 
 \preformatted{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-coords(rocobj, c(0.05, 0.2, 0.5))
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+coords(roc1, c(0.05, 0.2, 0.5))
 #                   0.05       0.2       0.5
 # threshold   0.05000000 0.2000000 0.5000000
 # specificity 0.06944444 0.8055556 0.9722222
@@ -31,7 +31,7 @@ In addition, the dropping of dimensions by default makes it difficult to guess
 what type of data \code{coords} is going to return.
 
 \preformatted{
-coords(rocobj, "best")
+coords(roc1, "best")
 #   threshold specificity sensitivity 
 #   0.2050000   0.8055556   0.6341463 
 # A numeric vector
@@ -45,7 +45,7 @@ In pROC version 1.16, this was changed and \code{coords} now returns
 a \code{\link{data.frame}} with the thresholds in rows and measurement in columns by default.
 
 \preformatted{
- coords(rocobj, c(0.05, 0.2, 0.5), transpose = FALSE)
+ coords(roc1, c(0.05, 0.2, 0.5), transpose = FALSE)
 #      threshold specificity sensitivity
 # 0.05      0.05  0.06944444   0.9756098
 # 0.2       0.20  0.80555556   0.6341463

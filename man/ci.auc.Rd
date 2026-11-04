@@ -198,47 +198,37 @@ consistency reasons.
 }
 
 \examples{
-# Create a ROC curve:
 data(aSAH)
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-
-## Basic example ##
+# The CI of the full AUC uses DeLong's method, no bootstrap involved
 ci.auc(roc1)
 
 # You can also write:
 ci(roc1)
 ci(auc(roc1))
 
-
-## More options ##
-# Partial AUC and customized bootstrap:
+# Partial AUC: the CI is bootstrapped. Pass an auc object with the
+# partial AUC, as roc1$auc is the full AUC and reuse.auc = TRUE by default
+auc1 <- auc(roc1, partial.auc = c(1, .8), partial.auc.focus = "se",
+            partial.auc.correct = TRUE)
 \dontrun{
-ci.auc(roc1,
-       conf.level=0.9, reuse.auc=FALSE,
-	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
-       boot.n=10000, boot.stratified=FALSE)}\dontshow{
-ci.auc(roc1,
-       conf.level=0.9, reuse.auc=FALSE,
-	   partial.auc=c(1, .8),  partial.auc.focus="se", partial.auc.correct=TRUE,
-       boot.n=10, boot.stratified=FALSE)}
+ci.auc(auc1)}\dontshow{
+ci.auc(auc1, boot.n = 10)}
 
-# Note that the following will NOT give a CI of the partial AUC:
+# Or ignore the existing AUC with reuse.auc = FALSE
 \dontrun{
-ci.auc(roc1,
-       partial.auc=c(1, .8), partial.auc.focus="se", partial.auc.correct=FALSE)}
-# This is because roc1$auc is not a partial AUC and reuse.auc = TRUE by default.
-# You can overcome this problem by passing an AUC instead:
-auc1 <- auc(roc1, partial.auc=c(1, .8), partial.auc.focus="se", 
-            partial.auc.correct=FALSE)
-\dontrun{
-ci.auc(auc1)}\dontshow{ci.auc(auc1, boot.n = 10)}
+ci.auc(roc1, reuse.auc = FALSE, partial.auc = c(1, .8),
+       partial.auc.focus = "se", partial.auc.correct = TRUE,
+       conf.level = 0.9, boot.stratified = FALSE)}\dontshow{
+ci.auc(roc1, reuse.auc = FALSE, partial.auc = c(1, .8),
+       partial.auc.focus = "se", partial.auc.correct = TRUE,
+       conf.level = 0.9, boot.stratified = FALSE, boot.n = 10)}
 
-
-## On smoothed ROC curves with bootstrap ##
+# Smoothed curves are bootstrapped as well
 \dontrun{
-ci.auc(smooth(roc1, method="density"))}\dontshow{
-ci.auc(smooth(roc1, method="density"), boot.n = 10)}
+ci.auc(smooth(roc1, method = "density"))}\dontshow{
+ci.auc(smooth(roc1, method = "density"), boot.n = 10)}
 }
 
 \keyword{univar}

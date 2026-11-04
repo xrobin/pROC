@@ -68,18 +68,18 @@ Each function does one thing:
 The call above becomes:
 
 \preformatted{
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
-smoothed <- smooth(rocobj, method = "density", kernel = "epanechnikov")
+roc1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+smoothed <- smooth(roc1, method = "density", kernel = "epanechnikov")
 pauc <- auc(smoothed, partial.auc = c(100, 90),
             partial.auc.focus = "sensitivity", partial.auc.correct = TRUE)
-ciobj <- ci(pauc, boot.n = 100, conf.level = 0.9, boot.stratified = FALSE)
+ci1 <- ci(pauc, boot.n = 100, conf.level = 0.9, boot.stratified = FALSE)
 plot(smoothed, grid = TRUE, col = "darkblue", main = "S100B",
      panel.first = {
        polygon_max_auc(pauc)
        polygon_auc(pauc)
      })
 points(pauc, "best")
-text(ciobj, col = "darkblue")
+text(ci1, col = "darkblue")
 }
 
 and the partial AUC CI of the second example is:
@@ -92,18 +92,18 @@ ci.auc(auc(r1, partial.auc = c(1, 0.8)))
 \section{Replacements}{
 \describe{
   \item{\code{roc(smooth = TRUE)}, with \code{smooth.method},
-    \code{smooth.n} and \code{density}}{\code{smooth(rocobj, method =,
+    \code{smooth.n} and \code{density}}{\code{smooth(roc1, method =,
     n =, density =)}.}
-  \item{\code{roc(ci = TRUE)}, with \code{ci.method}}{\code{ci(rocobj,
-    method =)}, or \code{ci.auc(aucobj)}, \code{ci.coords(aucobj)} or
-    \code{ci.thresholds(aucobj)} for a partial AUC.}
-  \item{\code{roc(plot = TRUE)}}{\code{plot(rocobj)}.}
+  \item{\code{roc(ci = TRUE)}, with \code{ci.method}}{\code{ci(roc1,
+    method =)}, or \code{ci.auc(auc1)}, \code{ci.coords(auc1)} or
+    \code{ci.thresholds(auc1)} for a partial AUC.}
+  \item{\code{roc(plot = TRUE)}}{\code{plot(roc1)}.}
   \item{The partial AUC arguments (\code{partial.auc},
     \code{partial.auc.focus} and \code{partial.auc.correct}) of
     \code{roc}, \code{multiclass.roc}, \code{ci}, \code{ci.auc},
     \code{var}, \code{cov}, \code{roc.test}, \code{power.roc.test} and
-    \code{plot.roc}}{\code{aucobj <- auc(rocobj, partial.auc =)}, then
-    pass \code{aucobj} to these functions, or for \code{plot.roc} to the
+    \code{plot.roc}}{\code{auc1 <- auc(roc1, partial.auc =)}, then
+    pass \code{auc1} to these functions, or for \code{plot.roc} to the
     add-on functions below.}
   \item{\code{reuse.auc}}{pass an \code{auc} object, to the add-on
     functions for \code{plot.roc}.}
@@ -113,19 +113,19 @@ ci.auc(auc(r1, partial.auc = c(1, 0.8)))
   \item{The default and formula methods of \code{auc}, \code{ci},
     \code{ci.*}, \code{roc.test}, \code{plot.roc} and
     \code{lines.roc}}{build the curve with \code{\link{roc}} first.}
-  \item{\code{print.auc} of \code{plot.roc}}{\code{text(aucobj)} or
-    \code{text(ciobj)}.}
+  \item{\code{print.auc} of \code{plot.roc}}{\code{text(auc1)} or
+    \code{text(ci1)}.}
   \item{\code{auc.polygon} and \code{max.auc.polygon} of
-    \code{plot.roc}}{\code{polygon_auc(aucobj)} and
-    \code{polygon_max_auc(aucobj)}, in \code{panel.first} to draw them
+    \code{plot.roc}}{\code{polygon_auc(auc1)} and
+    \code{polygon_max_auc(auc1)}, in \code{panel.first} to draw them
     under the curve.}
-  \item{\code{print.thres} of \code{plot.roc}}{\code{points(rocobj,
-    thresholds)}, or \code{points(aucobj, thresholds)} to search the
+  \item{\code{print.thres} of \code{plot.roc}}{\code{points(roc1,
+    thresholds)}, or \code{points(auc1, thresholds)} to search the
     thresholds within a partial AUC.}
   \item{\code{ci}, \code{ci.type} and \code{ci.col} of
     \code{plot.roc}, and \code{plot(ci, type = "shape")} of a
-    \code{ci.se} or \code{ci.sp}}{\code{plot(ciobj)},
-    \code{polygon_ci(ciobj)} and \code{text(ciobj)}.}
+    \code{ci.se} or \code{ci.sp}}{\code{plot(ci1)},
+    \code{polygon_ci(ci1)} and \code{text(ci1)}.}
 }
 The styling arguments of the display arguments (such as
 \code{print.auc.cex} or \code{auc.polygon.col}) are the arguments of the

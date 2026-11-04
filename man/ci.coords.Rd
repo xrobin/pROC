@@ -205,40 +205,28 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
 }
 
 \examples{
-# Create a ROC curve:
 data(aSAH)
 roc1 <- roc(aSAH$outcome, aSAH$s100b)
 
-
-## Basic example ##
+# Specificity, PPV and true positives at the best threshold
 \dontrun{
-ci.coords(roc1, x="best", input = "threshold", 
-          ret=c("specificity", "ppv", "tp"))
+ci.coords(roc1, x = "best", input = "threshold",
+          ret = c("specificity", "ppv", "tp"))}\dontshow{
+ci.coords(roc1, x = "best", input = "threshold",
+          ret = c("specificity", "ppv", "tp"), boot.n = 10)}
 
-
-## More options ##
-ci.coords(roc1, x=0.9, input = "sensitivity", ret="specificity")
-ci.coords(roc1, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))
-ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity")
-ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"))
-
-# Return everything we can:
-rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
-          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(roc1, x="best", input = "threshold", ret=rets)}\dontshow{
-ci.coords(roc1, x=0.9, input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(roc1, x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret="specificity", boot.n=10)
-ci.coords(roc1, x=c(0.1, 0.5, 0.9), input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n=10)
-rets <- c("threshold", "specificity", "sensitivity", "accuracy", "tn", "tp", "fn", "fp", "npv", 
-          "ppv", "1-specificity", "1-sensitivity", "1-accuracy", "1-npv", "1-ppv")
-ci.coords(roc1, x="best", input = "threshold", ret=rets, boot.n=10)}
-
-
-## On smoothed ROC curves with bootstrap ##
+# At given sensitivities
 \dontrun{
-ci.coords(smooth(roc1), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"))}\dontshow{
-ci.coords(smooth(roc1), x=0.9, input = "sensitivity", ret=c("specificity", "ppv", "tp"), boot.n = 10)}
+ci.coords(roc1, x = c(0.1, 0.5, 0.9), input = "sensitivity",
+          ret = c("specificity", "ppv"))}\dontshow{
+ci.coords(roc1, x = c(0.1, 0.5, 0.9), input = "sensitivity",
+          ret = c("specificity", "ppv"), boot.n = 10)}
+
+# Smoothed curves are bootstrapped as well
+\dontrun{
+ci.coords(smooth(roc1), x = 0.9, input = "sensitivity", ret = "specificity")}\dontshow{
+ci.coords(smooth(roc1), x = 0.9, input = "sensitivity", ret = "specificity",
+          boot.n = 10)}
 }
 
 \keyword{univar}

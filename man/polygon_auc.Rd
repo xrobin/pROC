@@ -82,20 +82,20 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-aucobj <- auc(rocobj)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+auc1 <- auc(roc1)
 
 # Preferred: panel.first draws the polygon underneath the curve
-plot(rocobj, panel.first = {
-  polygon_max_auc(aucobj)
-  polygon_auc(aucobj)
+plot(roc1, panel.first = {
+  polygon_max_auc(auc1)
+  polygon_auc(auc1)
 })
 
 # Two partial AUC regions on the same curve
-auc_sp <- auc(rocobj, partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
-auc_se <- auc(rocobj, partial.auc = c(1, 0.9), partial.auc.correct = TRUE,
+auc_sp <- auc(roc1, partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
+auc_se <- auc(roc1, partial.auc = c(1, 0.9), partial.auc.correct = TRUE,
               partial.auc.focus = "se")
-plot(rocobj, panel.first = {
+plot(roc1, panel.first = {
   polygon_max_auc(auc_se, col = "#00860022")
   polygon_max_auc(auc_sp, col = "#1c61b622")
   polygon_auc(auc_se, col = "#008600")

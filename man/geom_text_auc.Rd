@@ -41,9 +41,9 @@
 }
 \examples{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b)
-ciobj <- ci(rocobj)
-if (require(ggplot2)) {
-  ggroc(rocobj) + geom_text_auc(rocobj, ci = ciobj)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+ci1 <- ci(roc1)
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) + geom_text_auc(roc1, ci = ci1)
 }
 }

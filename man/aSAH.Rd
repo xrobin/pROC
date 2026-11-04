@@ -42,7 +42,6 @@
 }
 
 \examples{
-# load the dataset
 data(aSAH)
 
 # Gender and outcome
@@ -55,8 +54,7 @@ with(aSAH, by(age, outcome,
                          mean(x), sd(x), median(x), min(x), max(x))))
 
 # WFNS score
-with(aSAH, table(wfns=ifelse(wfns<=2, "1-2", "3-4-5"), outcome))
-
+with(aSAH, table(wfns = ifelse(wfns <= 2, "1-2", "3-4-5"), outcome))
 }
 
 \keyword{datasets}

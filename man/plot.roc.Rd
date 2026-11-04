@@ -261,7 +261,7 @@ panel.last=NULL,
     as in \code{\link{plot.default}}. Evaluated on every call, including
     \code{add=TRUE}. Rarely needed: simply calling code after
     \code{plot.roc} already achieves the same effect, for example
-    \code{\link[=text.auc]{text}(ci4)}.
+    \code{\link[=text.auc]{text}(ci1)}.
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{plot.roc.roc} when calling
@@ -270,7 +270,7 @@ panel.last=NULL,
     the \code{x} argument of \code{\link{ci.coords}} cannot be passed
     this way, as it would be matched to \code{x}: build the curve with
     \code{\link{roc}}, plot it, and draw the CI of
-    \code{\link{ci.coords}(rocobj, x=\dots)} on it with \code{plot()}.
+    \code{\link{ci.coords}(roc1, x=\dots)} on it with \code{plot()}.
     Arguments for \code{\link{auc}} and graphical functions
     \code{\link{plot}}, \code{\link{abline}}, \code{\link{polygon}},
     \code{\link{points}}, \code{\link{text}} and \code{\link{plot.ci}}
@@ -349,60 +349,55 @@ or \dQuote{smooth.roc} for a smoothed curve. See \code{\link{roc}} and
 \code{\link{polygon_auc}}, \code{\link{polygon_ci}}, \code{\link[=text.auc]{text}}
 }
 \examples{
-
-# Create a few ROC curves:
 data(aSAH)
-roc.s100b <- roc(aSAH$outcome, aSAH$s100b)
-roc.wfns <- roc(aSAH$outcome, aSAH$wfns)
-roc.ndka <- roc(aSAH$outcome, aSAH$ndka)
+roc1 <- roc(aSAH$outcome, aSAH$s100b)
+roc2 <- roc(aSAH$outcome, aSAH$wfns)
+roc3 <- roc(aSAH$outcome, aSAH$ndka)
 
-# Simple example:
-plot(roc.s100b)
+# Simple plot
+plot(roc1)
 
-# Add a smoothed ROC:
-plot(smooth(roc.s100b), add=TRUE, col="blue")
-legend("bottomright", legend=c("Empirical", "Smoothed"),
-       col=c(par("fg"), "blue"), lwd=2)
+# Add a smoothed curve
+plot(smooth(roc1), add = TRUE, col = "blue")
+legend("bottomright", legend = c("Empirical", "Smoothed"),
+       col = c(par("fg"), "blue"), lwd = 2)
 
-# With more options:
-plot(roc.s100b, print.auc=TRUE, auc.polygon=TRUE, grid=c(0.1, 0.2),
-     grid.col=c("green", "red"), max.auc.polygon=TRUE,
-     auc.polygon.col="lightblue", print.thres=TRUE)
+# With more options
+plot(roc1, print.auc = TRUE, auc.polygon = TRUE, grid = c(0.1, 0.2),
+     grid.col = c("green", "red"), max.auc.polygon = TRUE,
+     auc.polygon.col = "lightblue", print.thres = TRUE)
 
-# To plot a different partial AUC, we need to ignore the existing value
-# with reuse.auc=FALSE:
-plot(roc.s100b, print.auc=TRUE, auc.polygon=TRUE, partial.auc=c(1, 0.8),
-     partial.auc.focus="se", grid=c(0.1, 0.2), grid.col=c("green", "red"),
-     max.auc.polygon=TRUE, auc.polygon.col="lightblue", 
-     print.thres=TRUE, print.thres.adj = c(1, -1),
-     reuse.auc=FALSE)
+# A different partial AUC needs to ignore the existing value
+# with reuse.auc = FALSE:
+plot(roc1, print.auc = TRUE, auc.polygon = TRUE, max.auc.polygon = TRUE,
+     partial.auc = c(1, 0.8), partial.auc.focus = "se", reuse.auc = FALSE,
+     print.thres = TRUE, print.thres.adj = c(1, -1))
 
-# Add a second ROC curve to the previous plot:
-plot(roc.wfns, add=TRUE)
+# Add a second curve to the same plot
+plot(roc2, add = TRUE)
 
-# Plot some thresholds, add them to the same plot
-plot(roc.ndka, print.thres="best", print.thres.best.method="youden")
-plot(roc.ndka, print.thres="best", print.thres.best.method="closest.topleft",
-                                   add = TRUE)
-plot(roc.ndka, print.thres="best", print.thres.best.method="youden",
-                                   print.thres.best.weights=c(50, 0.2),
-                                   print.thres.adj = c(1.1, 1.25),
-                                   add = TRUE)
+# Best thresholds, with different methods and weights
+plot(roc3, print.thres = "best", print.thres.best.method = "youden")
+plot(roc3, print.thres = "best", print.thres.best.method = "closest.topleft",
+     add = TRUE)
+plot(roc3, print.thres = "best", print.thres.best.method = "youden",
+     print.thres.best.weights = c(50, 0.2), print.thres.adj = c(1.1, 1.25),
+     add = TRUE)
 
-# The same auc.polygon/max.auc.polygon/print.auc appearance, built from
-# separate roc(), auc() and ci() calls instead of one-shot plot.roc arguments:
-roc4 <- roc(aSAH$outcome, aSAH$s100b, percent=TRUE)
-auc4 <- auc(roc4, partial.auc=c(100, 90), partial.auc.correct=TRUE, partial.auc.focus="sens")
-ci4  <- ci(auc4, boot.n=100, conf.level=0.9, boot.stratified=FALSE)
-plot(roc4, grid=TRUE, print.thres=TRUE,
+# The same appearance, built from separate roc(), auc() and ci() calls
+# with panel.first and panel.last:
+auc1 <- auc(roc1, partial.auc = c(1, 0.9), partial.auc.correct = TRUE,
+            partial.auc.focus = "sens")
+\dontrun{
+ci1 <- ci(auc1)}\dontshow{
+ci1 <- ci(auc1, boot.n = 10)}
+plot(roc1, grid = TRUE, print.thres = TRUE,
      panel.first = {
-       polygon_max_auc(auc4)
-       polygon_auc(auc4)
+       polygon_max_auc(auc1)
+       polygon_auc(auc1)
      },
-     # panel.last works the same way, for code to draw on top of
-     # everything plot.roc draws: this is equivalent to calling
-     # text(ci4) after plot() returns:
-     panel.last = text(ci4))
+     # drawn on top of everything, same as calling text(ci1) afterwards
+     panel.last = text(ci1))
 }
 
 \keyword{univar}

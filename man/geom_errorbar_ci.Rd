@@ -42,16 +42,17 @@
   \code{\link{ci.sp}}, \code{\link{ci.thresholds}}, \code{\link{plot.ci}}
 }
 \examples{
-\dontrun{
 data(aSAH)
-rocobj <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
-ci_sp <- ci.sp(rocobj, sensitivities = seq(0, 100, 5), boot.n = 100)
-ci_th <- ci.thresholds(rocobj, thresholds = "best", boot.n = 100)
-if (require(ggplot2)) {
-  ggroc(rocobj) + geom_errorbar_ci(ci_sp)
-  ggroc(rocobj) +
+roc1 <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+\dontrun{
+ci_sp <- ci.sp(roc1, sensitivities = seq(0, 100, 5))
+ci_th <- ci.thresholds(roc1, thresholds = "best")}\dontshow{
+ci_sp <- ci.sp(roc1, sensitivities = seq(0, 100, 5), boot.n = 10)
+ci_th <- ci.thresholds(roc1, thresholds = "best", boot.n = 10)}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggroc(roc1) + geom_errorbar_ci(ci_sp)
+  ggroc(roc1) +
     geom_errorbar_ci(ci_th) +
-    geom_roc_threshold(rocobj, thresholds = "best")
-}
+    geom_roc_threshold(roc1, thresholds = "best")
 }
 }
