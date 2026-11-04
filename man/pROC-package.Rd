@@ -318,6 +318,7 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 # Power and sample size
 power.roc.test(roc1)
+power.roc.test(roc1, roc2)
 }
 
 \keyword{package}
