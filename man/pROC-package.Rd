@@ -313,7 +313,7 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
     geom_polygon_max_auc(pauc1) +
     geom_polygon_auc(pauc1) +
     geom_roc_threshold(pauc1, thresholds = "best") +
-    geom_text_auc(pauc1, ci = ci1)
+    geom_text_auc(roc1, ci = ci1)
 }
 
 # Power and sample size
