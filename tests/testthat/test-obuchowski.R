@@ -24,7 +24,7 @@ obuchowski.se100 <- function(A, B) {
 
 test_that("binormal A and B are recovered from exactly binormal data", {
   for (AB in list(c(1.19, 1), c(0.89, 1 / 3))) {
-    params <- pROC:::binormal_params_obuchowski(smooth(binormal.roc(AB[1], AB[2]), method = "binormal")$model)
+    params <- pROC:::binormal_params_obuchowski(binormal.roc(AB[1], AB[2]))
     expect_equal(unname(params), AB, tolerance = 0.01, scale = 1)
   }
 })

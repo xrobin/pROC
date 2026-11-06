@@ -9,9 +9,9 @@ test_that("cov with delong works", {
 
 
 test_that("cov with obuchowski works", {
-  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -2.293385e-05)
-  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.001121222)
-  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.0008540910)
+  expect_equal(cov(r.wfns, r.ndka, method = "obuchowski"), -1.52520068033217e-05)
+  expect_equal(cov(r.ndka, r.s100b, method = "obuchowski"), 0.00126325334493611)
+  expect_equal(cov(r.s100b, r.wfns, method = "obuchowski"), 0.000866467512460801)
 })
 
 
@@ -37,9 +37,9 @@ test_that("cov with delong, percent and mixed roc/auc works", {
 
 
 test_that("cov with obuchowski, percent and mixed roc/auc works", {
-  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.2293385)
-  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 11.21222148)
-  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.540910259)
+  expect_equal(cov(auc(r.wfns.percent), r.ndka.percent, method = "obuchowski"), -0.15252006803332)
+  expect_equal(cov(r.ndka.percent, auc(r.s100b.percent), method = "obuchowski"), 12.63253344935944)
+  expect_equal(cov(auc(r.s100b.percent), auc(r.wfns.percent), method = "obuchowski"), 8.66467512460742)
 })
 
 
@@ -106,7 +106,7 @@ test_that("bootstrap cov works with smooth and !reuse.auc", {
 
   set.seed(42) # For reproducible CI
   expected_cov <- cov(roc1, roc2, boot.n = 100)
-  expect_equal(expected_cov, -3.002432e-06)
+  expect_equal(expected_cov, 1.02822563331151e-05)
 
   # Now with reuse.auc
   set.seed(42) # For reproducible CI

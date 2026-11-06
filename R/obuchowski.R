@@ -85,20 +85,17 @@ g.partial <- function(A, B, FPR1, FPR2) {
 }
 
 # Binormal A and B parameters of Obuchowski & McClish (1997), with
-# qnorm(TPR) = A + B * qnorm(FPR), from the "binormal" smoothing model.
-# That model is lm(qnorm(sp) ~ qnorm(se)): qnorm(sp) = a + b * qnorm(se).
-# As qnorm(FPR) = -qnorm(sp), qnorm(sp) = A / B - qnorm(se) / B,
-# so a = A / B and b = -1 / B, i.e. A = -a / b and B = -1 / b.
-binormal_params_obuchowski <- function(binormal) {
-  co <- unname(coefficients(binormal))
-  c(A = -co[1] / co[2], B = -1 / co[2])
+# qnorm(TPR) = A + B * qnorm(FPR): their maximum-likelihood estimates (O&M
+# p. 1531), those of method = "binormal" smoothing.
+binormal_params_obuchowski <- function(roc) {
+  params <- smooth_roc_binormal_params(smooth(roc, method = "binormal"))
+  c(A = params[["a"]], B = params[["b"]])
 }
 
 # Variance of a ROC curve given a 'roc' object
 # kappa: ratio of controls to cases (defaults to the observed one)
 var_roc_obuchowski <- function(roc, kappa = length(roc$controls) / length(roc$cases)) {
-  binormal <- smooth(roc, method = "binormal")$model
-  params <- binormal_params_obuchowski(binormal)
+  params <- binormal_params_obuchowski(roc)
   A <- params[["A"]]
   B <- params[["B"]]
 
@@ -128,12 +125,10 @@ var_params_obuchowski <- function(A, B, kappa, FPR1, FPR2) {
 # Covariance of 2 given 'roc' objects (under the alternative hypothesis)
 # kappa: ratio of controls to cases (defaults to the observed one)
 cov_roc_obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
-  binormal1 <- smooth(roc1, method = "binormal")$model
-  params1 <- binormal_params_obuchowski(binormal1)
+  params1 <- binormal_params_obuchowski(roc1)
   A1 <- params1[["A"]]
   B1 <- params1[["B"]]
-  binormal2 <- smooth(roc2, method = "binormal")$model
-  params2 <- binormal_params_obuchowski(binormal2)
+  params2 <- binormal_params_obuchowski(roc2)
   A2 <- params2[["A"]]
   B2 <- params2[["B"]]
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))
@@ -155,8 +150,7 @@ cov_roc_obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / lengt
 # (Obuchowski's DESIGNROC program, "A and B under the null hypothesis")
 # kappa: ratio of controls to cases (defaults to the observed one)
 cov0.roc.obuchowski <- function(roc1, roc2, kappa = length(roc1$controls) / length(roc1$cases)) {
-  binormal <- smooth(roc1, method = "binormal")$model
-  params <- binormal_params_obuchowski(binormal)
+  params <- binormal_params_obuchowski(roc1)
   A <- params[["A"]]
   B <- params[["B"]]
   ra <- cor(as.numeric(roc1$cases), as.numeric(roc2$cases))

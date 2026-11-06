@@ -95,7 +95,7 @@ test_that("power.roc.test can take 2 ROC curves with Obuchowski variance", {
   expect_equal(res$ncontrols, 72)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
-  expect_equal(res$power, 0.7869306, tolerance = 0.000001)
+  expect_equal(res$power, 0.787519503991429, tolerance = 0.000001)
   expect_equal(res$sig.level, 0.05)
   expect_equal(res$alternative, "two.sided")
 })
@@ -113,8 +113,8 @@ test_that("power.roc.test ncases/ncontrols can take 2 ROC curves with DeLong var
 
 test_that("power.roc.test ncases/ncontrols can take 2 ROC curves with Obuchowski variance", {
   res <- power.roc.test(r.ndka, r.wfns, power = 0.9, method = "obuchowski")
-  expect_equal(res$ncases, 55.80446, tolerance = 0.000001)
-  expect_equal(res$ncontrols, 97.99807, tolerance = 0.000001)
+  expect_equal(res$ncases, 55.682824387396, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 97.7844720949393, tolerance = 0.000001)
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
@@ -140,7 +140,7 @@ test_that("power.roc.test sig.level can take 2 ROC curves with Obuchowski varian
   expect_equal(as.numeric(res$auc1), as.numeric(r.ndka$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.wfns$auc))
   expect_equal(res$power, 0.9)
-  expect_equal(res$sig.level, 0.1308799, tolerance = 0.000001)
+  expect_equal(res$sig.level, 0.12996821035527, tolerance = 0.000001)
   expect_equal(res$alternative, "two.sided")
 })
 
@@ -180,8 +180,8 @@ test_that("power.roc.test works with partial AUC", {
   r.ndka.partial <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(1, 0.9))
   res <- power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, method = "obuchowski")
 
-  expect_equal(res$ncases, 227.7338, tolerance = 0.000001)
-  expect_equal(res$ncontrols, 399.9227, tolerance = 0.000001)
+  expect_equal(res$ncases, 222.155025809156, tolerance = 0.000001)
+  expect_equal(res$ncontrols, 390.125898981933, tolerance = 0.000001)
   expect_equal(as.numeric(res$auc1), as.numeric(r.wfns.partial$auc))
   expect_equal(as.numeric(res$auc2), as.numeric(r.ndka.partial$auc))
   expect_equal(res$power, 0.9)

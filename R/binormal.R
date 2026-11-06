@@ -17,27 +17,272 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Maximum-likelihood fit of the conventional binormal model, Dorfman DD,
+# Alf E (1969) J Math Psychol 6:487-496 (D&A), to the categories of the
+# curve (as for the proper fit), started from the least-squares line on
+# normal-deviate axes (Metz & Pan 1999, p. 19).
 smooth_roc_binormal <- function(roc, n) {
   df <- data.frame(sp = qnorm(roc$specificities * ifelse(roc$percent, 1 / 100, 1)), se = qnorm(roc$sensitivities * ifelse(roc$percent, 1 / 100, 1)))
   df <- df[is.finite(df$sp) & is.finite(df$se), ]
   # Empty levels of ordered predictors give the same ROC point several times,
   # next to each other in curve order: count each point once in the fit
   df <- df[c(TRUE, diff(df$sp) != 0 | diff(df$se) != 0), ]
+  # Curves with less than two points and degenerate data are refused as by
+  # the least-squares smoothing of pROC 1.19. Degenerate data are fitted
+  # exactly at infinite parameters by horizontal and vertical segments (Pan &
+  # Metz 1997, Acad Radiol 4:380-389, p. 381).
   if (dim(df)[1] <= 1) { # ROC curve or with only 1 point
     stop("ROC curve not smoothable (not enough points).")
   }
   if (smooth_roc_binormal_degenerate(df)) {
     stop("ROC curve not smoothable (degenerate data).")
   }
-  model <- lm(sp ~ se, df)
+  categories <- proper_binormal_categories(roc)
+  fit <- binormal_fit(categories$controls, categories$cases, binormal_ls(df))
+  if (!fit$converged) {
+    stop("ROC curve not smoothable (the binormal fit did not converge).")
+  }
+  # qnorm(TPF) = a + b * qnorm(FPF), with qnorm(FPF) = -qnorm(sp)
   se <- qnorm(seq(0, 1, 1 / (n - 1)))
-  sp <- predict(model, data.frame(se))
+  sp <- (fit$a - se) / fit$b
 
   return(list(
     sensitivities = pnorm(se) * ifelse(roc$percent, 100, 1),
     specificities = pnorm(sp) * ifelse(roc$percent, 100, 1),
-    model = model
+    binormal = list(
+      a = fit$a, b = fit$b, cutpoints = fit$cutpoints, logLik = fit$logLik,
+      categories = data.frame(controls = categories$controls, cases = categories$cases)
+    )
   ))
+}
+
+# The least-squares line through the points on normal-deviate axes,
+# qnorm(sp) = c0 + c1 * qnorm(se): as qnorm(FPF) = -qnorm(sp), its a and b
+# in qnorm(TPF) = a + b * qnorm(FPF) are a = -c0 / c1 and b = -1 / c1.
+# The points of a ROC curve go down, so b > 0 unless they are degenerate.
+binormal_ls <- function(df) {
+  binormal_ls_params(lm(sp ~ se, df))
+}
+binormal_ls_params <- function(model) {
+  co <- unname(coefficients(model))
+  c(a = -co[1] / co[2], b = -1 / co[2])
+}
+
+# a and b of a curve smoothed with method = "binormal". Curves saved by
+# pROC 1.19 and earlier hold the least-squares model instead of the fit.
+# The $model branch exists only for them: drop it, with the test "binormal
+# curves smoothed by pROC 1.19 keep their least-squares fit" in
+# test-smooth.R, once they no longer need to be read.
+smooth_roc_binormal_params <- function(smooth.roc) {
+  if (is.null(smooth.roc$binormal)) {
+    return(binormal_ls_params(smooth.roc$model))
+  }
+  c(a = smooth.roc$binormal$a, b = smooth.roc$binormal$b)
+}
+
+# Probabilities of the categories between the cut-points z (D&A Eqs. 1-2):
+# F(Z_j) - F(Z_j-1) for the controls, F(b Z_j - a) - F(b Z_j-1 - a) for
+# the cases, with Z_0 = -Inf and Z_I = Inf
+binormal_probs <- function(a, b, z) {
+  list(
+    controls = proper_binormal_pdiff(-c(-Inf, z, Inf)),
+    cases = proper_binormal_pdiff(-c(-Inf, b * z - a, Inf))
+  )
+}
+
+# Maximum of the log-likelihood (D&A Eq. 3: sum of r_ij log P_ij) over a,
+# b and the cut-points, from start = c(a, b), by the method of scoring
+# that D&A use (p. 490, Eq. 7), finished with Newton steps
+# (binormal_scoring)
+binormal_fit <- function(k, l, start) {
+  I <- length(k)
+  a <- start[["a"]]
+  b <- start[["b"]]
+  # Initial cut-points: where the expected cumulative proportion of all the
+  # observations under the start curve reaches the observed one. (D&A
+  # p. 490 take the controls' cumulative proportions, which the runs of
+  # cases would leave tied.)
+  pooled <- cumsum(k + l)[-I] / sum(k, l)
+  z <- vapply(pooled, function(p) {
+    uniroot(function(z) (sum(k) * pnorm(z) + sum(l) * pnorm(b * z - a)) / sum(k, l) - p,
+      c(-10, 10),
+      extendInt = "upX", tol = 1e-12
+    )$root
+  }, numeric(1))
+  binormal_scoring(c(a, b, z), k, l)
+}
+
+# Log-likelihood (D&A Eq. 3) at theta = c(a, b, cut-points); -Inf outside
+# the parameter space (b <= 0 or cut-points not increasing)
+binormal_loglik <- function(theta, k, l) {
+  z <- theta[-(1:2)]
+  if (theta[2] <= 0 || any(diff(z) <= 0)) {
+    return(-Inf)
+  }
+  p <- binormal_probs(theta[1], theta[2], z)
+  sum(k[k > 0] * log(p$controls[k > 0])) + sum(l[l > 0] * log(p$cases[l > 0]))
+}
+
+# Score (D&A Eqs. 4-6) and information at theta = c(a, b, cut-points).
+# With observed = FALSE, the information is D&A's A, minus the expected
+# second derivatives (p. 490): for each multinomial, the sum over the
+# categories of n p' p'^T / p, with p' the derivatives of a category's
+# probability. With observed = TRUE, it is minus the second derivatives of
+# the log-likelihood: the sum of r (p' p'^T / p^2 - p'' / p). Category j
+# depends on the cut-points j - 1 (lo) and j (hi) only, so both are
+# tridiagonal in the cut-points, bordered by the rows of a and b: they are
+# returned as the diagonal and off-diagonal in the cut-points (t.diag,
+# t.off), the cut-points x (a, b) border, and the (a, b) block.
+binormal_derivatives <- function(theta, k, l, observed = FALSE) {
+  I <- length(k)
+  a <- theta[1]
+  b <- theta[2]
+  z <- theta[-(1:2)]
+  p <- binormal_probs(a, b, z)
+  # values at the cut-points below (lo) and above (hi) each category; 0
+  # beyond the ends
+  phi <- c(0, dnorm(z), 0)
+  f <- c(0, dnorm(b * z - a), 0)
+  f1 <- -c(0, b * z - a, 0) * f # derivative of dnorm at b z - a
+  zz <- c(0, z, 0)
+  lo <- 1:I
+  hi <- 2:(I + 1)
+  zero <- numeric(I)
+  # first (d) and second (dd) derivatives of each category's probability:
+  # controls F(Z_j) - F(Z_j-1) (D&A Eq. 1), cases F(b Z_j - a) - F(b Z_j-1 - a)
+  # (D&A Eq. 2)
+  groups <- list(
+    list(
+      r = k, p = p$controls, n = sum(k),
+      d = list(a = zero, b = zero, lo = -phi[lo], hi = phi[hi]),
+      dd = list(aa = zero, ab = zero, alo = zero, ahi = zero, bb = zero, blo = zero, bhi = zero, lolo = zz[lo] * phi[lo], hihi = -zz[hi] * phi[hi])
+    ),
+    list(
+      r = l, p = p$cases, n = sum(l),
+      d = list(a = f[lo] - f[hi], b = f[hi] * zz[hi] - f[lo] * zz[lo], lo = -b * f[lo], hi = b * f[hi]),
+      dd = list(
+        aa = f1[hi] - f1[lo], ab = f1[lo] * zz[lo] - f1[hi] * zz[hi], alo = b * f1[lo], ahi = -b * f1[hi],
+        bb = f1[hi] * zz[hi]^2 - f1[lo] * zz[lo]^2, blo = -(b * f1[lo] * zz[lo] + f[lo]), bhi = b * f1[hi] * zz[hi] + f[hi],
+        lolo = -b^2 * f1[lo], hihi = b^2 * f1[hi]
+      )
+    )
+  )
+  score <- numeric(I + 1)
+  t.diag <- numeric(I - 1)
+  t.off <- numeric(I - 2)
+  border <- matrix(0, I - 1, 2)
+  ab <- matrix(0, 2, 2)
+  for (g in groups) {
+    s <- ifelse(g$r > 0, g$r / g$p, 0)
+    score <- score + c(sum(s * g$d$a), sum(s * g$d$b), (s * g$d$hi)[-I] + (s * g$d$lo)[-1])
+    # information of each category between two parameters x and y
+    if (observed) {
+      w <- ifelse(g$r > 0, g$r / g$p^2, 0)
+      info <- function(x, y, xy) w * g$d[[x]] * g$d[[y]] - s * if (is.null(xy)) 0 else g$dd[[xy]]
+    } else {
+      w <- ifelse(g$p > 0, g$n / g$p, 0)
+      info <- function(x, y, xy) w * g$d[[x]] * g$d[[y]]
+    }
+    t.diag <- t.diag + info("hi", "hi", "hihi")[-I] + info("lo", "lo", "lolo")[-1]
+    t.off <- t.off + info("lo", "hi", NULL)[-c(1, I)]
+    border <- border + cbind(
+      info("a", "hi", "ahi")[-I] + info("a", "lo", "alo")[-1],
+      info("b", "hi", "bhi")[-I] + info("b", "lo", "blo")[-1]
+    )
+    ab.ab <- sum(info("a", "b", "ab"))
+    ab <- ab + matrix(c(sum(info("a", "a", "aa")), ab.ab, ab.ab, sum(info("b", "b", "bb"))), 2)
+  }
+  list(score = score, t.diag = t.diag, t.off = t.off, border = border, ab = ab)
+}
+
+# Solve the tridiagonal system T x = y (T symmetric, as diagonal and
+# off-diagonal) for each column of y, by Gaussian elimination without
+# pivoting: T is positive definite
+binormal_tridiagonal_solve <- function(t.diag, t.off, y) {
+  y <- as.matrix(y)
+  n <- length(t.diag)
+  d <- t.diag
+  for (i in seq_len(n - 1)) {
+    m <- t.off[i] / d[i]
+    d[i + 1] <- d[i + 1] - m * t.off[i]
+    y[i + 1, ] <- y[i + 1, ] - m * y[i, ]
+  }
+  y[n, ] <- y[n, ] / d[n]
+  for (i in rev(seq_len(n - 1))) {
+    y[i, ] <- (y[i, ] - t.off[i] * y[i + 1, ]) / d[i]
+  }
+  y
+}
+
+# The step information^-1 score at theta, solved through the tridiagonal
+# block of the information (Schur complement), in O(I); NULL if it fails
+binormal_step <- function(theta, k, l, observed) {
+  d <- binormal_derivatives(theta, k, l, observed)
+  solved <- binormal_tridiagonal_solve(d$t.diag, d$t.off, cbind(d$score[-(1:2)], d$border))
+  schur <- d$ab - crossprod(d$border, solved[, -1])
+  step.ab <- tryCatch(solve(schur, d$score[1:2] - crossprod(d$border, solved[, 1])), error = function(e) NULL)
+  if (is.null(step.ab)) {
+    return(NULL)
+  }
+  step <- c(step.ab, solved[, 1] - solved[, -1] %*% step.ab)
+  if (!all(is.finite(step))) {
+    return(NULL)
+  }
+  list(step = step, gain = sum(d$score * step))
+}
+
+# Maximize from theta = c(a, b, cut-points). The method of scoring (D&A
+# p. 490, Eq. 7), theta + A^-1 score halved until the log-likelihood does
+# not decrease, approaches the maximum. It can stall close to it, where
+# the expected information differs from the curvature of the
+# log-likelihood: Newton steps with the observed information finish, until
+# the step is below 1e-10 of the parameters, which then also bounds the
+# error of the estimates.
+binormal_scoring <- function(theta, k, l) {
+  ll <- binormal_loglik(theta, k, l)
+  # slack for the Newton steps, which may lower the log-likelihood by its
+  # rounding error near the maximum
+  tolerance <- 1e-10 * max(1, abs(ll))
+  for (iteration in 1:200) {
+    st <- binormal_step(theta, k, l, observed = FALSE)
+    if (is.null(st) || st$gain <= 1e-6 * max(1, abs(ll))) {
+      break # close to the maximum
+    }
+    for (halving in 0:30) {
+      candidate <- theta + st$step / 2^halving
+      ll.candidate <- binormal_loglik(candidate, k, l)
+      if (ll.candidate >= ll) {
+        break
+      }
+    }
+    if (ll.candidate < ll) {
+      break
+    }
+    theta <- candidate
+    ll <- ll.candidate
+  }
+  for (iteration in 1:50) {
+    st <- binormal_step(theta, k, l, observed = TRUE)
+    if (is.null(st)) {
+      break
+    }
+    for (halving in 0:30) {
+      candidate <- theta + st$step / 2^halving
+      ll.candidate <- binormal_loglik(candidate, k, l)
+      if (ll.candidate >= ll - tolerance) {
+        break
+      }
+    }
+    if (!(ll.candidate >= ll - tolerance)) {
+      break # not near a maximum
+    }
+    theta <- candidate
+    ll <- ll.candidate
+    if (all(abs(st$step) <= 1e-10 * pmax(1, abs(theta)))) {
+      return(list(a = theta[1], b = theta[2], cutpoints = theta[-(1:2)], logLik = ll, converged = TRUE))
+    }
+  }
+  list(a = theta[1], b = theta[2], cutpoints = theta[-(1:2)], logLik = ll, converged = FALSE)
 }
 
 # Degenerate data (Metz and Pan 1999, p. 20): the points share one
@@ -291,9 +536,9 @@ proper_binormal_start <- function(k, l) {
   } else if (length(unique(df$se)) == 1 && length(unique(df$sp)) > 1) {
     signs <- -1
   } else if (dim(df)[1] > 1) {
-    params <- binormal_params_obuchowski(lm(sp ~ se, df))
-    a <- params[["A"]]
-    b <- params[["B"]]
+    params <- binormal_ls(df)
+    a <- params[["a"]]
+    b <- params[["b"]]
     if (b > 0) {
       # M&P p. 9, Eq. 26, and p. 11, Eq. 32
       start <- c(da = sqrt(2) * a / sqrt(1 + b^2), c = (b - 1) / (b + 1))
