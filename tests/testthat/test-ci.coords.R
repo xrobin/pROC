@@ -181,7 +181,7 @@ test_that("ci.coords works on a smoothed curve with x = 'best'", {
   set.seed(1)
   ci <- ci.coords(s, 0.9, input = "specificity", boot.n = 20)
   # The values of ci.coords(s, 0.9) when 'input' defaulted to "specificity"
-  expect_equal(unname(ci$sensitivity[1, ]), c(0.253534954671016, 0.436233506088253, 0.585336116009741))
+  expect_equal(unname(ci$sensitivity[1, ]), c(0.312726974291616, 0.495668105375199, 0.61112419422341))
   expect_equal(unname(ci$specificity[1, ]), c(0.9, 0.9, 0.9))
   # "best" has no input: print heads the column "x"
   expect_null(attr(best, "input"))

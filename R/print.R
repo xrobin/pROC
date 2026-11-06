@@ -41,8 +41,8 @@ print.smooth.roc <- function(x, digits = max(3, getOption("digits") - 3), call =
     print(x$fit.cases$estimate)
   } else if (x$smoothing.args$method == "binormal") {
     # a and b of TPF = pnorm(a + b * qnorm(FPF))
-    params <- binormal_params_obuchowski(x$model)
-    cat("binormal (a: ", format(params[["A"]], digits = digits), "; b: ", format(params[["B"]], digits = digits), ")\n", sep = "")
+    params <- smooth_roc_binormal_params(x)
+    cat("binormal (a: ", format(params[["a"]], digits = digits), "; b: ", format(params[["b"]], digits = digits), ")\n", sep = "")
   } else if (x$smoothing.args$method == "proper") {
     cat("proper (d_a: ", format(x$proper$da, digits = digits), "; c: ", format(x$proper$c, digits = digits), ")\n", sep = "")
   } else {

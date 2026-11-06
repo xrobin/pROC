@@ -265,9 +265,62 @@ test_that("binormal smoothing of degenerate data is not smoothable", {
   expect_error(smooth(roc(mtcars$am, predict(m, type = "response"), quiet = TRUE)), msg, fixed = TRUE)
   # All have sensitivity 0.75
   expect_error(smooth(roc(controls = c(1, 2, 3, 4), cases = c(0, 10, 11, 12), quiet = TRUE)), msg, fixed = TRUE)
-  # Curves with more than one specificity and sensitivity are unchanged
-  expect_equal(as.numeric(smooth(r.s100b)$auc), 0.7400128620773111, tolerance = 1e-15)
-  expect_equal(as.numeric(smooth(r.wfns)$auc), 0.84536597931822532, tolerance = 1e-15)
+  # Curves with more than one specificity and sensitivity are smoothed
+  expect_equal(as.numeric(smooth(r.s100b)$auc), 0.73326529350349867, tolerance = 1e-10)
+  expect_equal(as.numeric(smooth(r.wfns)$auc), 0.84524540402164394, tolerance = 1e-10)
+})
+
+test_that("binormal smoothing is the maximum-likelihood fit of the binormal model", {
+  # Dorfman & Alf (1969): a and b of qnorm(TPF) = a + b * qnorm(FPF), on the
+  # categories of the curve
+  s <- smooth(r.s100b)
+  expect_equal(s$binormal[c("a", "b", "logLik")], list(a = 0.73906609299356718, b = 0.63920584509939726, logLik = -338.209434577705), tolerance = 1e-10)
+  expect_identical(nrow(s$binormal$categories), length(s$binormal$cutpoints) + 1L)
+  # no other start reaches a higher likelihood
+  k <- s$binormal$categories$controls
+  l <- s$binormal$categories$cases
+  for (start in list(c(a = 0, b = 1), c(a = 2, b = 0.5), c(a = 1, b = 2))) {
+    expect_lte(pROC:::binormal_fit(k, l, start)$logLik, s$binormal$logLik + 1e-8)
+  }
+  expect_equal(as.numeric(auc(s)), pnorm(s$binormal$a / sqrt(1 + s$binormal$b^2)))
+  # the curve is qnorm(TPF) = a + b * qnorm(FPF)
+  inside <- s$sensitivities > 0 & s$sensitivities < 1 & s$specificities > 0 & s$specificities < 1
+  expect_equal(qnorm(s$sensitivities[inside]), s$binormal$a + s$binormal$b * qnorm(1 - s$specificities[inside]))
+  # the same fit in percent and with the reversed direction
+  expect_equal(smooth(r.s100b.percent)$binormal, s$binormal)
+  expect_equal(smooth(roc(aSAH$outcome, -aSAH$s100b, quiet = TRUE, direction = ">"))$binormal, s$binormal)
+  expect_output(print(s), "Smoothing: binormal \\(a: 0.7391; b: 0.6392\\)")
+})
+
+test_that("the binormal fit reaches the maximum with large b and sparse categories", {
+  # Datasets where the fit stopped short of the maximum likelihood, given
+  # by their category counts; the maxima are those of ordinal::clm
+  fits <- list(
+    # an empty category of probability 0 made the expected information NaN
+    list(k = c(10, 0, 1, 0, 12), l = c(0, 1, 0, 99, 0), a = -6.680023, b = 63.566489, logLik = -28.922276),
+    # unhalved Newton steps lowered the log-likelihood with |logLik| ~ 1000
+    list(k = c(11, 0, 1, 0, 1, 0, 1, 0, 5), l = c(0, 152, 0, 428, 0, 419, 0, 1, 0), a = 7.137103, b = 17.89492, logLik = -1061.204691),
+    list(k = c(17, 0, 1, 0, 1), l = c(0, 570, 0, 430, 0), a = 31.887283, b = 22.331741, logLik = -700.22617)
+  )
+  for (fit in fits) {
+    # distinct values inside each category: the same categories (truth
+    # runs), and a curve with points inside the runs, as continuous data
+    values <- function(counts) unlist(lapply(seq_along(counts), function(j) j + seq_len(counts[j]) / (counts[j] + 1)))
+    r <- roc(controls = values(fit$k), cases = values(fit$l), direction = "<", quiet = TRUE)
+    expect_no_warning(s <- smooth(r))
+    expect_equal(s$binormal[c("a", "b", "logLik")], fit[c("a", "b", "logLik")], tolerance = 1e-6)
+  }
+})
+
+test_that("binormal curves smoothed by pROC 1.19 keep their least-squares fit", {
+  # they hold the least-squares model instead of the maximum-likelihood fit
+  s <- smooth(r.s100b)
+  s$binormal <- NULL
+  df <- data.frame(sp = qnorm(r.s100b$specificities), se = qnorm(r.s100b$sensitivities))
+  df <- df[is.finite(df$sp) & is.finite(df$se), ]
+  s$model <- lm(sp ~ se, df)
+  expect_equal(as.numeric(auc(s)), 0.7400128620773111, tolerance = 1e-12)
+  expect_output(print(s), "Smoothing: binormal \\(a: 0.8336; b: 0.8239\\)")
 })
 
 test_that("binormal smoothing of ordered predictors does not depend on unused levels", {
@@ -277,8 +330,8 @@ test_that("binormal smoothing of ordered predictors does not depend on unused le
   o <- roc(resp, factor(pred, levels = lv, ordered = TRUE), quiet = TRUE)
   oe <- roc(resp, factor(pred, levels = c("a", "b", "bc", "c", "d", "e"), ordered = TRUE), quiet = TRUE)
   rn <- roc(resp, as.integer(factor(pred, levels = lv)), quiet = TRUE)
-  expect_equal(coef(smooth(oe)$model), coef(smooth(o)$model))
-  expect_equal(coef(smooth(o)$model), coef(smooth(rn)$model))
+  expect_equal(smooth(oe)$binormal, smooth(o)$binormal)
+  expect_equal(smooth(o)$binormal, smooth(rn)$binormal)
 })
 
 test_that("fitdistr smoothing with a density function accepts other ... arguments", {

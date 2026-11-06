@@ -220,5 +220,5 @@ test_that("bootstrap values on a cluster are pinned", {
   # Smoothed curves are smoothed again on the workers
   set.seed(42)
   t <- roc.test(smooth(r.s100b), smooth(r.ndka), boot.n = 10, cl = 2)
-  expect_equal(unname(t$statistic), 1.7661426453, tolerance = 1e-8)
+  expect_equal(unname(t$statistic), 1.632028505, tolerance = 1e-8)
 })

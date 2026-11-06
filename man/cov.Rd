@@ -140,9 +140,9 @@ cov(...)
   With \code{method="obuchowski"}, the processing is done as described
   in Obuchowski and McClish (1997), Table 1 and Equation 5, p. 1531. The
   formulas of Table 1 are used as published. The binormal parameters
-  \eqn{A} and \eqn{B} are taken from pROC's binormal smoothing of the curve
-  (see \code{\link[=smooth.roc]{smooth}}), not from maximum-likelihood
-  estimates as in the paper.
+  \eqn{A} and \eqn{B} are their maximum-likelihood estimates (pp. 1530--1531),
+  those of pROC's binormal smoothing of the curve (see
+  \code{\link[=smooth.roc]{smooth}}).
 }
 
 \section{Binormality assumption}{

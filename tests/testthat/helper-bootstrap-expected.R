@@ -41,12 +41,12 @@ expected.bootstrap <- list(
   ci.auc.smooth = list(
     class = c("ci.auc", "ci", "numeric"),
     shape = 3L,
-    values = c(0.498591737, 0.5718866049, 0.620589259)
+    values = c(0.470770286, 0.5657626952, 0.6316812772)
   ),
   ci.auc.smooth.ns = list(
     class = c("ci.auc", "ci", "numeric"),
     shape = 3L,
-    values = c(0.5652029905, 0.6193619154, 0.702802406)
+    values = c(0.5584444115, 0.6202187041, 0.7024039955)
   ),
   ci.se.strat = list(
     class = c("ci.se", "ci", "matrix", "array"),
@@ -69,8 +69,8 @@ expected.bootstrap <- list(
   ci.se.smooth = list(
     class = c("ci.se", "ci", "matrix", "array"),
     shape = c(3L, 3L),
-    values = c(0.8674542487, 0.4979758475, 0.111601599, 0.9131471956, 0.5980501811, 
-      0.1831976809, 0.9508987998, 0.6503340438, 0.2929850261)
+    values = c(0.8110385088, 0.4632791185, 0.1240167616, 0.9018555475, 0.591701436, 
+      0.2045495823, 0.9480013162, 0.659094686, 0.3143578597)
   ),
   ci.sp.strat = list(
     class = c("ci.sp", "ci", "matrix", "array"),
@@ -87,8 +87,8 @@ expected.bootstrap <- list(
   ci.sp.smooth = list(
     class = c("ci.sp", "ci", "matrix", "array"),
     shape = c(3L, 3L),
-    values = c(0.9103430434, 0.4980970282, 0.0694679871, 0.9547478441, 0.6046926889, 
-      0.1169337763, 0.989264538, 0.700454114, 0.1798659731)
+    values = c(0.9192126597, 0.4519263534, 0.035892841, 0.9642096624, 0.5976343715, 
+      0.1025031403, 0.9919809758, 0.7221371309, 0.1727090339)
   ),
   ci.thr.strat = list(
     class = c("ci.thresholds", "ci", "list"),
@@ -139,7 +139,7 @@ expected.bootstrap <- list(
   var.boot.smooth = list(
     class = "numeric",
     shape = 1L,
-    values = 0.0017626407
+    values = 0.0029289856
   ),
   cov.boot = list(
     class = "numeric",
@@ -169,17 +169,17 @@ expected.bootstrap <- list(
   roctest.smooth = list(
     class = "htest",
     shape = 12L,
-    values = c(1.8679870391, 0.0617638775)
+    values = c(1.5216623817, 0.1280936981)
   ),
   roctest.smooth.ns = list(
     class = "htest",
     shape = 12L,
-    values = c(2.1316189759, 0.0330381825)
+    values = c(1.9553753747, 0.0505387805)
   ),
   cov.smooth = list(
     class = "numeric",
     shape = 1L,
-    values = -0.0005951156
+    values = -0.0013815438
   ),
   roctest.unpaired = list(
     class = "htest",
@@ -209,8 +209,8 @@ expected.bootstrap <- list(
   ci.coords.smooth = list(
     class = c("ci.coords", "ci", "list"),
     shape = 2L,
-    values = c(0.4979758475, 0.111601599, 0.5980501811, 0.1831976809, 0.6503340438, 
-      0.2929850261, 0.5, 0.9, 0.5, 0.9, 0.5, 0.9)
+    values = c(0.4632791185, 0.1240167616, 0.591701436, 0.2045495823, 0.659094686, 0.3143578597, 
+      0.5, 0.9, 0.5, 0.9, 0.5, 0.9)
   ),
   ci.coords.random = list(
     class = c("ci.coords", "ci", "list"),

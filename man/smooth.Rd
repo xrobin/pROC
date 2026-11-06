@@ -85,22 +85,28 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 }
 
 \details{
-  If \code{method="binormal"}, a linear model is fitted to the quantiles of
-  the sensitivities and specificities. Smoothed sensitivities and
-  specificities are then generated from this model on \code{n} points.
-  This simple approach was found to work well for most ROC curves, but
-  it may produce hooked smooths in some situations (see in Hanley (1988)). 
+  If \code{method="binormal"}, the binormal model
+  \eqn{\Phi^{-1}(TPF) = a + b \Phi^{-1}(FPF)}{qnorm(TPF) = a + b * qnorm(FPF)}
+  is fitted by maximum likelihood (Dorfman and Alf, 1969). The data are
+  first grouped into categories: each run of controls or of cases in the
+  sorted predictor values is one category, and tied control and case
+  values form one category (Pesce and Metz, 2007). The fit starts from
+  the least-squares line through the points of the curve on normal
+  deviate axes, and maximizes the likelihood over \eqn{a}, \eqn{b} and
+  the category boundaries by the method of scoring (Dorfman and Alf,
+  1969), finished with Newton steps.
+  Smoothed sensitivities and specificities are then generated from this
+  model on \code{n} points. The curve may be hooked when \eqn{b} is far
+  from 1 (see in Hanley (1988)). 
 
   With \code{method="proper"}, the \dQuote{proper} binormal model of Metz
   and Pan (1999) is fitted by maximum likelihood. Its decision
   variable is the likelihood ratio of a pair of normal distributions, so
   that the curve is always convex: it has no hook and its AUC is at least
   0.5. The curve is parametrized by \eqn{d_a}{d_a} and \eqn{c}{c}
-  (Metz and Pan's Eqs. 33 and 34). The data are first grouped into
-  categories: each run of controls or of cases in the sorted predictor
-  values is one category, and tied control and case values form one
-  category (Pesce and Metz, 2007). The fit starts from the least-squares
-  line of \code{method="binormal"} and from curves with the empirical AUC,
+  (Metz and Pan's Eqs. 33 and 34). It is fitted to the same categories as
+  binormal smoothing. The fit starts from the same least-squares line
+  and from curves with the empirical AUC,
   and maximizes the
   likelihood over \eqn{d_a}{d_a}, \eqn{c}{c} and the category boundaries
   together, as described by Pesce and Metz (2007), with
@@ -228,8 +234,12 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{logcondens}{with \code{method="logcondens"} and \code{method="logcondens.smooth"} only: 
     the result of \pkg{logcondens}'s \link[logcondens]{logConROC} function.
   }
-  \item{model}{with \code{method="binormal"} only: 
-    the linear model from \code{\link{lm}} used to smooth the ROC curve.
+  \item{binormal}{with \code{method="binormal"} only:
+    a list with the estimates \code{a} and \code{b}, the
+    \code{cutpoints} (category boundaries on the scale of the controls'
+    normal distribution), the maximized log-likelihood \code{logLik}
+    (Dorfman and Alf's Eq. 3), and the \code{categories} (as for
+    \code{proper}).
   }
   \item{proper}{with \code{method="proper"} only:
     a list with the estimates \code{da} and \code{c}, the
@@ -271,7 +281,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   with sensitivity and specificity strictly between 0 and 1 all have the
   same sensitivity, or all have the same specificity. Any such attempt
   fails with an error. With \code{method="proper"}, degenerate data can
-  be smoothed, but a fit that does not converge fails with an error.
+  be smoothed. A fit of either method that does not converge fails with
+  an error.
 
   If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
   estimate the parameters of the distribution because the controls or
@@ -307,6 +318,12 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 }
 
 \references{
+  Donald D. Dorfman, Edward Alf, Jr. (1969) ``Maximum-likelihood
+  estimation of parameters of signal-detection theory and determination
+  of confidence intervals---rating-method data''. \emph{Journal of
+  Mathematical Psychology} \bold{6}, 487--496.
+  DOI: \doi{10.1016/0022-2496(69)90019-4}.
+
   James E. Hanley (1988) ``The robustness of the ``binormal'' assumptions
   used in fitting ROC curves''. \emph{Medical Decision Making} \bold{8}, 197--203.
 
