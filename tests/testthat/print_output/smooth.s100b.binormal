@@ -3,5 +3,5 @@ Call:
 smooth.roc(roc = roc(aSAH$outcome, aSAH$ndka), method = "binormal")
 
 Data: aSAH$ndka in 72 controls (aSAH$outcome Good) < 41 cases (aSAH$outcome Poor).
-Smoothing: binormal 
+Smoothing: binormal (a: 0.3439; b: 0.9061)
 Area under the curve: 0.6006
