@@ -33,12 +33,6 @@ test_that("print.multiclass.roc works", {
   expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka)), "print_output/multiclass"), "2")
   expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, levels = c(3, 4, 5))), "print_output/multiclass_levels")
   expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, percent = TRUE)), "print_output/multiclass_percent"), "2")
-})
-
-test_that("print.multiclass.roc works", {
-  expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka)), "print_output/multiclass"), "2")
-  expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, levels = c(3, 4, 5))), "print_output/multiclass_levels")
-  expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, percent = TRUE)), "print_output/multiclass_percent"), "2")
   expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, partial.auc = c(1, .9))), "print_output/multiclass_partial"), "2")
   expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$ndka, partial.auc = c(1, .9), partial.auc.focus = "se")), "print_output/multiclass_partial_se"), "2")
   expect_warning(expect_known_output(print(multiclass.roc(aSAH$gos6, aSAH$wfns, partial.auc = c(1, .9), partial.auc.correct = TRUE)), "print_output/multiclass_partial_correct"), "2")
