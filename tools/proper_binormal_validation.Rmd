@@ -50,6 +50,18 @@ B <- params$B
 cores <- params$cores
 RNGkind("L'Ecuyer-CMRG")
 set.seed(20261103)
+# AUC of the least-squares binormal line, as smooth(method = "binormal") of
+# pROC 1.19 computed it; NA where it refused the curve
+ls.auc <- function(r) {
+  df <- data.frame(sp = qnorm(r$specificities), se = qnorm(r$sensitivities))
+  df <- df[is.finite(df$sp) & is.finite(df$se), ]
+  df <- df[c(TRUE, diff(df$sp) != 0 | diff(df$se) != 0), ]
+  if (nrow(df) <= 1 || pROC:::smooth_roc_binormal_degenerate(df)) {
+    return(NA_real_)
+  }
+  co <- coefficients(lm(sp ~ se, df))
+  unname(pnorm(co[1] / sqrt(1 + co[2]^2)))
+}
 c(pROC = as.character(packageVersion("pROC")), mvtnorm = as.character(packageVersion("mvtnorm")), R = R.version.string)
 ```
 
@@ -93,7 +105,7 @@ $c = 0$ ($b = 1$), $y$ is linear in $x$, which is used directly.
 
 For each of the 9 population curves of Table 1, `r B` datasets of 50 negative
 and 50 positive cases are fitted with `method = "proper"`, and, for comparison,
-with the least-squares binormal fit (`method = "binormal"`, the default) and the
+with the least-squares binormal fit (`method = "binormal"` of pROC 1.19, `ls.auc()` above) and the
 empirical AUC. Data with perfect performance (see below) give the limit
 AUC = 1, which is kept in the means as an estimate, as PROPROC returns it;
 `perfect` counts them.
@@ -112,7 +124,7 @@ fit.auc <- function(d) {
     proper = if (is.null(s)) NA_real_ else as.numeric(auc(s)),
     # perfect performance: the limit AUC = 1, without a log-likelihood
     perfect = !is.null(s) && is.na(s$proper$logLik),
-    lm = tryCatch(as.numeric(auc(smooth(r))), error = function(e) NA_real_),
+    lm = ls.auc(r),
     empirical = as.numeric(auc(r))
   )
 }
@@ -183,7 +195,7 @@ categorical <- do.call(rbind, mclapply(seq_len(B), function(j) {
     controls = findInterval(rnorm(30), cuts), cases = findInterval(rnorm(40, a / b, 1 / b), cuts),
     direction = "<", quiet = TRUE
   )
-  lm.area <- tryCatch(as.numeric(auc(smooth(r))), error = function(e) NA_real_)
+  lm.area <- ls.auc(r)
   s <- tryCatch(smooth(r, method = "proper"), error = function(e) NULL)
   if (is.null(s)) {
     return(c(rep(NA_real_, 8), lm.area, FALSE))
