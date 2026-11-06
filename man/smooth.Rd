@@ -17,7 +17,7 @@ smooth(...)
 \S3method{smooth}{default}(...)
 \S3method{smooth}{roc}(roc,
 method=c("binormal", "density", "fitdistr", "logcondens",
-"logcondens.smooth"), n=512, bw = "nrd0", density=NULL,
+"logcondens.smooth", "proper"), n=512, bw = "nrd0", density=NULL,
 density.controls=density, density.cases=density,
 start=NULL, start.controls=start, start.cases=start, 
 reuse.auc=TRUE, reuse.ci=FALSE, ...)
@@ -30,7 +30,7 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 	\code{\link[=smooth.roc]{smooth}} function.
   }
   \item{method}{\dQuote{binormal}, \dQuote{density}, \dQuote{fitdistr},
-    \dQuote{logcondens}, \dQuote{"logcondens.smooth"}.
+    \dQuote{logcondens}, \dQuote{"logcondens.smooth"}, \dQuote{proper}.
   }
   \item{n}{
     the number of equally spaced points where the smoothed curve will be
@@ -90,6 +90,26 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   specificities are then generated from this model on \code{n} points.
   This simple approach was found to work well for most ROC curves, but
   it may produce hooked smooths in some situations (see in Hanley (1988)). 
+
+  With \code{method="proper"}, the \dQuote{proper} binormal model of Metz
+  and Pan (1999) is fitted by maximum likelihood. Its decision
+  variable is the likelihood ratio of a pair of normal distributions, so
+  that the curve is always convex: it has no hook and its AUC is at least
+  0.5. The curve is parametrized by \eqn{d_a}{d_a} and \eqn{c}{c}
+  (Metz and Pan's Eqs. 33 and 34). The data are first grouped into
+  categories: each run of controls or of cases in the sorted predictor
+  values is one category, and tied control and case values form one
+  category (Pesce and Metz, 2007). The fit starts from the least-squares
+  line of \code{method="binormal"} and from curves with the empirical AUC,
+  and maximizes the
+  likelihood over \eqn{d_a}{d_a}, \eqn{c}{c} and the category boundaries
+  together, as described by Pesce and Metz (2007), with
+  \code{\link{optim}}'s BFGS method.
+  Its full AUC is computed with Metz and Pan's Eq. 36. It
+  can smooth curves that binormal smoothing cannot, such as degenerate
+  data, but it is much slower: from a fraction of a second to tens of
+  seconds per curve, growing with the number of categories, which matters
+  with bootstrap confidence intervals.
 
   With \code{method="density"}, the \code{\link{density}}
   function is employed to generate a smooth kernel
@@ -211,11 +231,33 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   \item{model}{with \code{method="binormal"} only: 
     the linear model from \code{\link{lm}} used to smooth the ROC curve.
   }
+  \item{proper}{with \code{method="proper"} only:
+    a list with the estimates \code{da} and \code{c}, the
+    \code{cutpoints} (category boundaries on Metz and Pan's decision
+    variable \eqn{v}), the maximized log-likelihood \code{logLik} (Metz
+    and Pan's Eq. 2, without the terms that do not depend on the
+    parameters), and the
+    \code{categories} (a data frame with the number of \code{controls}
+    and \code{cases} in each category, from the least to the most
+    \dQuote{positive}). With perfect performance (see
+    \sQuote{Warnings}), \code{da} is 0, \code{c} is 1, and the
+    \code{cutpoints} and \code{logLik} are \code{NA}.
+  }
   \subsection{Attributes}{
     Additionally, the original \code{\link{roc}} object is stored as a
     \dQuote{roc} attribute.
   }
 } 
+
+\section{Warnings}{
+  With \code{method="proper"}, no curve
+  parameters can be estimated from perfectly separated controls and
+  cases (Metz and Pan, 1999, p. 27), nor, more generally, from a curve
+  whose points all have a sensitivity of 1 or a specificity of 1: the
+  likelihood is maximal only in the limit of an AUC of 1. As PROPROC,
+  the curve is then this limit, \eqn{d_a = 0} and \eqn{c = 1}, with an
+  AUC of 1, and a warning is issued.
+}
 
 \section{Errors}{
   The message \dQuote{The 'density' function must return a numeric
@@ -228,7 +270,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   point, nor degenerate data (Metz and Pan, 1999): a curve whose points
   with sensitivity and specificity strictly between 0 and 1 all have the
   same sensitivity, or all have the same specificity. Any such attempt
-  fails with an error.
+  fails with an error. With \code{method="proper"}, degenerate data can
+  be smoothed, but a fit that does not converge fails with an error.
 
   If \code{method="fitdistr"} and \code{\link[MASS]{fitdistr}} fails to
   estimate the parameters of the distribution because the controls or
@@ -252,13 +295,14 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
     
   \code{fitdistr} and \code{density} smoothing methods require a
   \link{numeric} \code{predictor}. If the ROC curve to smooth was
-  generated with an ordered factor only binormal smoothing can be
-  applied and the message \dQuote{ROC curves of ordered predictors can
-  be smoothed only with binormal smoothing.} is displayed otherwise.
+  generated with an ordered factor only binormal and proper smoothing
+  can be applied and the message \dQuote{ROC curves of ordered
+  predictors can be smoothed only with binormal or proper smoothing.} is
+  displayed otherwise.
 
-  \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
-  require additional packages (\pkg{MASS} and \pkg{logcondens},
-  respectively). In an interactive session, you will be offered to install
+  \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods,
+  and \code{method="proper"}, require additional packages (\pkg{MASS},
+  \pkg{logcondens} and \pkg{mvtnorm}, respectively). In an interactive session, you will be offered to install
   a missing package; otherwise an error is issued.
 }
 
@@ -270,6 +314,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   theory and maximum-likelihood estimation''. \emph{Journal of
   Mathematical Psychology} \bold{43}, 1--33.
   DOI: \doi{10.1006/jmps.1998.1218}.
+
+  Lorenzo L. Pesce, Charles E. Metz (2007) ``Reliable and computationally
+  efficient maximum-likelihood estimation of "proper" binormal ROC
+  curves''. \emph{Academic Radiology} \bold{14}, 814--829.
+  DOI: \doi{10.1016/j.acra.2007.03.012}.
 
   Lutz Duembgen, Kaspar Rufibach (2011) ``logcondens: Computations Related
   to Univariate Log-Concave Density Estimation''. \emph{Journal of Statistical
