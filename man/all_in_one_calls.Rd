@@ -28,7 +28,7 @@ roc(aSAH$outcome, aSAH$s100b, percent = TRUE,
     print.auc = TRUE, print.thres = "best", col = "darkblue", main = "S100B")
 }
 
-Likewise, \code{\link{auc}}, \code{\link{ci}}, \code{\link{roc.test}},
+In addition, \code{\link{auc}}, \code{\link{ci}}, \code{\link{roc.test}},
 \code{\link{plot.roc}} and other functions can build the curve from raw
 data, and settings such as the partial AUC or the CI are stored in the
 curve and reused later by other functions.
@@ -46,6 +46,11 @@ ci.auc(r1, partial.auc = c(1, 0.8))
 This is the CI of the full AUC (0.731), not of the partial AUC: \code{r1}
 already contains the full AUC, which \code{ci.auc} reuses
 (\code{reuse.auc = TRUE} by default), and \code{partial.auc} is ignored.
+
+Besides being confusing, these calls make the code difficult to maintain:
+each function must accept and pass on the arguments of the others, so a
+change to one function can break calls to another. A quarter of all the
+bugs fixed in pROC 1.20 came from them.
 }
 
 \section{The modular calls}{
