@@ -9,6 +9,9 @@ skip_if_not_installed("mvtnorm")
 mtcars.glm <- glm(am ~ wt + hp, data = mtcars, family = "binomial")
 r.mtcars <- roc(mtcars$am, predict(mtcars.glm, type = "response"), quiet = TRUE)
 
+# The fit takes about 0.3 s: fit it once for the whole file
+proper.s100b <- smooth(r.s100b, method = "proper")
+
 # Slopes of the curve, from FPF = 0 to 1: non-increasing on a proper curve
 proper_slopes <- function(s) {
   fpf <- rev(1 - s$specificities)
@@ -44,7 +47,7 @@ test_that("Eq. 36 has the closed forms at c = 0, at da = 0 and under reflection"
 })
 
 test_that("Eq. 36 is the area under the curve of Eqs. 33-34", {
-  for (s in list(smooth(r.s100b, method = "proper"), smooth(r.mtcars, method = "proper"), smooth(r.wfns, method = "proper"))) {
+  for (s in list(proper.s100b, smooth(r.mtcars, method = "proper"), smooth(r.wfns, method = "proper"))) {
     x <- s$specificities
     y <- s$sensitivities
     expect_equal(as.numeric(s$auc), sum(diff(x) * (y[-1] + y[-length(y)]) / 2), tolerance = 1e-4)
@@ -67,7 +70,7 @@ test_that("the proper fit smooths the degenerate data of issue #152", {
 })
 
 test_that("proper fits of the aSAH curves", {
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   expect_equal(as.numeric(s$auc), 0.73339, tolerance = 1e-5)
   expect_equal(s$proper$logLik, -338.29553, tolerance = 1e-7)
   expect_length(s$sensitivities, 514)
@@ -83,7 +86,7 @@ test_that("proper fits of the aSAH curves", {
 test_that("the proper fit is symmetric under reflection of the data", {
   # Reversing the classes and the predictor reflects the curve across the
   # negative diagonal: c changes sign, the AUC is the same (Pesce & Metz p. 819)
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   reflected <- smooth(roc(controls = -aSAH$s100b[aSAH$outcome == "Poor"], cases = -aSAH$s100b[aSAH$outcome == "Good"], direction = "<", quiet = TRUE), method = "proper")
   expect_identical(reflected$proper$categories$controls, rev(s$proper$categories$cases))
   expect_identical(reflected$proper$categories$cases, rev(s$proper$categories$controls))
@@ -95,7 +98,7 @@ test_that("the proper fit is symmetric under reflection of the data", {
 test_that("the initial cut-points and the likelihood are continuous as c tends to 0", {
   # The bound of Eq. 35 tends to infinity: the cut-points must not be
   # searched from it
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   k <- s$proper$categories$controls
   l <- s$proper$categories$cases
   v0 <- pROC:::proper_binormal_start_v(1, 0, k, l)
@@ -174,7 +177,7 @@ test_that("the skewed starts find a maximum the least-squares start misses", {
 })
 
 test_that("direction and percent", {
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   r.reversed <- roc(aSAH$outcome, -aSAH$s100b, quiet = TRUE)
   expect_identical(r.reversed$direction, ">")
   expect_equal(smooth(r.reversed, method = "proper")$proper[c("da", "c", "logLik", "categories")], s$proper[c("da", "c", "logLik", "categories")])
@@ -188,7 +191,7 @@ test_that("direction and percent", {
 test_that("roc(smooth = TRUE) passes the method, and it is stored for replays", {
   s <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, smooth = TRUE, smooth.method = "proper")
   expect_identical(s$smoothing.args$method, "proper")
-  expect_equal(s$proper, smooth(r.s100b, method = "proper")$proper)
+  expect_equal(s$proper, proper.s100b$proper)
   expect_identical(pROC:::roc_utils_resmooth(r.s100b, s$smoothing.args)$proper, s$proper)
 })
 
@@ -202,7 +205,7 @@ test_that("ordered predictors can also be smoothed with the proper method", {
 
 test_that("Obuchowski methods refuse proper curves", {
   # their A and B parameters are those of the conventional binormal model
-  s1 <- smooth(r.s100b, method = "proper")
+  s1 <- proper.s100b
   s2 <- smooth(r.ndka, method = "proper")
   msg <- "Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead."
   expect_error(var(s1, method = "obuchowski"), msg, fixed = TRUE)
@@ -211,7 +214,7 @@ test_that("Obuchowski methods refuse proper curves", {
 })
 
 test_that("print shows the proper fit", {
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   # d_a is near 0, where the curve hardly depends on it (Pesce & Metz p. 820)
   expect_output(print(s), "Smoothing: proper \\(d_a: 0\\.0[0-9]+; c: -0\\.38[0-9]*\\)")
 })
@@ -256,7 +259,7 @@ test_that("a single interior point gives a proper curve through it", {
 
 test_that("bootstrap CI of a proper fit", {
   skip_slow()
-  s <- smooth(r.s100b, method = "proper")
+  s <- proper.s100b
   ci <- ci.auc(s, boot.n = 10)
   expect_is(ci, "ci.auc")
   expect_true(ci[1] <= ci[2] && ci[2] <= ci[3])
