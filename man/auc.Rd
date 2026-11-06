@@ -110,16 +110,18 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   to correct such an AUC will return \code{NA} with a warning.
 }
 \section{Smoothed ROC curves}{
-  There is no difference in the computation of the area under a smoothed
-  ROC curve, except for curves smoothed with \code{method="binormal"} or
-  \code{method="proper"}, and only if a full AUC is requested. With
-  \code{method="binormal"}, the classical binormal AUC formula is applied:
+  For full AUCs of curves smoothed with \code{method="binormal"}, the
+  classical binormal AUC formula is applied:
 
   \deqn{auc=\phi\frac{a}{\sqrt{1 + b^2}}.}{pnorm(a/sqrt(1+b^2)).}
 
   With \code{method="proper"}, the AUC of the \dQuote{proper} binormal
   model is computed with Eq. 36 of Metz and Pan (1999) (see the references
   in \code{\link{smooth}}).
+
+  With \code{method="logcondens"} or \code{method="logcondens.smooth"},
+  the AUC is the integral of the log-concave ROC curve computed by
+  \link[logcondens]{logConROC} (Rufibach, 2012).
 
   If the ROC curve is smoothed with any other \code{method} or if a partial AUC
   is requested, the empirical AUC described in the previous section is applied.
@@ -166,6 +168,10 @@ allow.invalid.partial.auc.correct = FALSE, ...)
   Donna Katzman McClish (1989) ``Analyzing a Portion of the ROC
   Curve''. \emph{Medical Decision Making} \bold{9}(3), 190--195. DOI:
   \doi{10.1177/0272989X8900900307}.
+
+  Kaspar Rufibach (2012) ``A Smooth ROC Curve Estimator Based on
+  Log-Concave Density Estimates''. \emph{The International Journal of
+  Biostatistics} \bold{8}(1), 7. DOI: \doi{10.1515/1557-4679.1378}.
   
   Xavier Robin, Natacha Turck, Alexandre Hainard, \emph{et al.}
   (2011) ``pROC: an open-source package for R and S+ to analyze and

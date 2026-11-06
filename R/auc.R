@@ -138,6 +138,14 @@ auc.roc <- function(roc,
       auc <- unname(pnorm(params[["a"]] / sqrt(1 + params[["b"]]^2)) * ifelse(percent, 100^2, 1))
     } else if (methods::is(roc, "smooth.roc") && !is.null(roc$smoothing.args) && roc$smoothing.args$method == "proper") {
       auc <- proper_binormal_auc(roc$proper$da, roc$proper$c) * ifelse(percent, 100^2, 1)
+    } else if (methods::is(roc, "smooth.roc") && !is.null(roc$logcondens)) {
+      # logConROC integrates its curve for direction "<" (Rufibach 2012, section 10);
+      # the ">" curve is its point reflection, with area 1 - auc
+      auc <- if (roc$smoothing.args$method == "logcondens") roc$logcondens$auc else roc$logcondens$aucSmooth
+      if (roc$direction == ">") {
+        auc <- 1 - auc
+      }
+      auc <- auc * ifelse(percent, 100^2, 1)
     } else {
       diffs.x <- sp[-1] - sp[-length(sp)]
       means.vert <- (se[-1] + se[-length(se)]) / 2
