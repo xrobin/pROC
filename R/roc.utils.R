@@ -221,7 +221,7 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, 
 }
 
 roc_utils_fun_sesp <- function(...) {
-  warning("pROC::roc$fun.sesp is deprecated")
+  roc_utils_deprecated("'roc$fun.sesp' is deprecated since pROC 1.19 and will be removed in a future version.")
   roc_utils_perfs_all(...)
 }
 
@@ -978,12 +978,38 @@ roc_utils_stop_if_no_auc <- function(x, arg = "x") {
   }
 }
 
+# Signals a deprecation warning with the class "deprecatedWarning" that
+# .Deprecated() uses, so that it can be caught or muffled by class. 'call' is
+# the user-facing call it is attributed to: by default the caller of this
+# function; a helper passes on its own caller with sys.call(-1).
+roc_utils_deprecated <- function(msg, call = sys.call(-1)) {
+  warning(warningCondition(msg, class = "deprecatedWarning", call = call))
+}
+
 # 'parallel' was deprecated in 1.19 when the bootstrap became sequential. The
 # argument is still accepted so that old scripts keep running, but it has no
 # effect: warn rather than silently ignoring a request to go parallel.
 roc_utils_warn_deprecated_parallel <- function(parallel) {
   if (!identical(parallel, FALSE)) {
-    warning("Parallel processing is deprecated in pROC 1.19. Ignoring 'parallel' argument")
+    roc_utils_deprecated("'parallel' is deprecated since pROC 1.19 and ignored; use 'cl' for a parallel bootstrap.", sys.call(-1))
+  }
+}
+
+# The arguments of coords deprecated in 1.19. 'drop' is TRUE by default, so the
+# caller passes whether it was given explicitly.
+roc_utils_warn_deprecated_coords <- function(drop, as.matrix, transpose, as.list) {
+  call <- sys.call(-1)
+  if (drop) {
+    roc_utils_deprecated("'drop' is deprecated since pROC 1.19 and will be removed in a future version.", call)
+  }
+  if (as.matrix) {
+    roc_utils_deprecated("'as.matrix' is deprecated since pROC 1.19 and will be removed in a future version.", call)
+  }
+  if (transpose) {
+    roc_utils_deprecated("'transpose = TRUE' is deprecated since pROC 1.19; only 'transpose = FALSE' will be allowed in a future version.", call)
+  }
+  if (as.list) {
+    roc_utils_deprecated("'as.list' is deprecated since pROC 1.19 and will be removed in a future version.", call)
   }
 }
 

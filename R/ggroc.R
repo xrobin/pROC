@@ -55,7 +55,7 @@ get.aes.for.ggplot <- function(roc, legacy.axes, extra_aes = c(), group = FALSE)
 # deprecation warning isn't attributed to pROC.
 size.to.linewidth <- function(args) {
   if ("size" %in% names(args)) {
-    warning("'size' is deprecated, use 'linewidth' instead.", call. = FALSE)
+    roc_utils_deprecated("'size' is deprecated since pROC 1.20; use 'linewidth' instead.", call = NULL)
     names(args)[names(args) == "size"] <- "linewidth"
   }
   return(args)
@@ -98,7 +98,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
   }
   aes <- sub("color", "colour", aes)
   if ("size" %in% aes) {
-    warning("'size' is deprecated, use 'linewidth' instead.", call. = FALSE)
+    roc_utils_deprecated("'size' is deprecated since pROC 1.20; use 'linewidth' instead.", call = NULL)
     aes <- sub("size", "linewidth", aes)
   }
   aes <- match.arg(aes, several.ok = TRUE)

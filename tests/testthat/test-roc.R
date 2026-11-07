@@ -334,8 +334,8 @@ test_that("roc reject and warns for invalid levels", {
 
 test_that("roc reject and warns for invalid predictors", {
   expect_error(roc(aSAH$outcome, as.character(aSAH$wfns)), "Predictor")
-  expect_warning(roc(aSAH$outcome, as.matrix(aSAH$ndka)), "Deprecated")
-  expect_warning(roc(as.matrix(aSAH$outcome), aSAH$ndka), "Deprecated")
+  expect_warning(roc(aSAH$outcome, as.matrix(aSAH$ndka)), class = "deprecatedWarning")
+  expect_warning(roc(as.matrix(aSAH$outcome), aSAH$ndka), class = "deprecatedWarning")
 
   expect_error(roc(aSAH$outcome[1:100], aSAH$ndka), "length")
   expect_error(roc(aSAH$outcome[1:100], aSAH$ndka[1:50]), "length")

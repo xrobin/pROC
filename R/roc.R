@@ -191,10 +191,10 @@ roc.default <- function(response, predictor,
       stop("Predictor must be numeric or ordered.")
     }
     if (is.matrix(predictor)) {
-      warning("Deprecated use a matrix as predictor. Unexpected results may be produced, please pass a numeric vector.")
+      roc_utils_deprecated("A matrix as 'predictor' is deprecated since pROC 1.8. Unexpected results may be produced, please pass a numeric vector.")
     }
     if (is.matrix(response)) {
-      warning("Deprecated use a matrix as response. Unexpected results may be produced, please pass a vector or factor.")
+      roc_utils_deprecated("A matrix as 'response' is deprecated since pROC 1.8. Unexpected results may be produced, please pass a vector or factor.")
     }
     # also make sure response and predictor are vectors of the same length
     if (length(predictor) != length(response)) {
@@ -352,7 +352,7 @@ roc.default <- function(response, predictor,
 
   # Only support algorithm
   if (algorithm != 2) {
-    warning(sprintf("Ignoring algorithm=%s argument: since pROC 1.19, only algorithm 2 is available.", algorithm))
+    roc_utils_deprecated(sprintf("'algorithm' is deprecated since pROC 1.19: only algorithm 2 is available. Ignoring 'algorithm = %s'.", algorithm))
   }
 
   roc <- roc_cc_nochecks(controls, cases,

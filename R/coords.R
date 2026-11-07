@@ -76,22 +76,7 @@ coords.smooth.roc <- function(smooth.roc,
     stop("Numeric 'x' has length 0")
   }
 
-  # Warn about deprecated stuff
-  if (!missing(drop) && drop) {
-    warning("'drop' is deprecated and will be removed in a future version.")
-  }
-
-  if (!missing(as.matrix) && as.matrix) {
-    warning("'as.matrix' is deprecated and will be removed in a future version.")
-  }
-
-  if (transpose) {
-    warning("'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version.")
-  }
-
-  if (!missing(as.list) && as.list) {
-    warning("'as.list' is deprecated and will be removed in a future version.")
-  }
+  roc_utils_warn_deprecated_coords(!missing(drop) && drop, as.matrix, transpose, as.list)
 
   # match return
   ret <- roc_utils_match_coords_ret_args(ret, threshold = FALSE)
@@ -230,22 +215,7 @@ coords.roc <- function(roc,
     stop("Numeric 'x' has length 0")
   }
 
-  # Warn about deprecated stuff
-  if (!missing(drop) && drop) {
-    warning("'drop' is deprecated and will be removed in a future version.")
-  }
-
-  if (!missing(as.matrix) && as.matrix) {
-    warning("'as.matrix' is deprecated and will be removed in a future version.")
-  }
-
-  if (transpose) {
-    warning("'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version.")
-  }
-
-  if (!missing(as.list) && as.list) {
-    warning("'as.list' is deprecated and will be removed in a future version.")
-  }
+  roc_utils_warn_deprecated_coords(!missing(drop) && drop, as.matrix, transpose, as.list)
 
   # match input
   input <- roc_utils_match_coords_input_args(input)
