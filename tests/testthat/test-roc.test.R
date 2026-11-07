@@ -65,18 +65,14 @@ test_that("roc.test checks conf.level when the method is selected automatically"
   expect_error(roc.test(r.wfns, r.s100b, conf.level = "0.9"), "conf.level must be numeric")
   expect_error(roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b, conf.level = 2), "conf.level must be between 0 and 1")
   expect_error(roc.test(r.wfns, r.s100b, method = "delong", conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = 2), "conf.level must be between 0 and 1")
   # A logical is a number, as in t.test()
   expect_identical(as.numeric(roc.test(r.wfns, r.s100b, conf.level = TRUE)$conf.int), as.numeric(roc.test(r.wfns, r.s100b, conf.level = 1)$conf.int))
 })
 
 test_that("roc.test does not check conf.level for the tests that do not use it", {
   set.seed(42)
-  ref <- roc.test(r.wfns, r.s100b, paired = FALSE)
   for (conf.level in list(2, NA, "0.9")) {
-    ht <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = conf.level)
-    expect_identical(ht$p.value, ref$p.value)
-    ht <- roc.test(r.wfns, r.s100b, method = "delong", paired = FALSE, conf.level = conf.level)
-    expect_identical(ht$p.value, ref$p.value)
     expect_is(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = conf.level), "htest")
     expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = conf.level), "htest")
   }
@@ -106,17 +102,24 @@ test_that("unpaired roc.test works", {
 test_that("unpaired roc.test statistic and p are as expected", {
   expect_equal(t1up$statistic, c(D = 1.43490640926908))
   expect_equal(t1up$p.value, 0.151313769072913)
+  expect_equal(t1up$conf.int[[1]], -0.03377796696802099)
+  expect_equal(t1up$conf.int[[2]], 0.21839856317398315)
+  expect_identical(attr(t1up$conf.int, "conf.level"), 0.95)
   expect_null(t1up$parameter)
   expect_match(t1up$method, "DeLong")
   expect_identical(t1up$alternative, "two.sided")
 
   expect_equal(t2up$statistic, c(D = 3.10125096778969))
   expect_equal(t2up$p.value, 0.00192704888543429)
+  expect_equal(t2up$conf.int[[1]], 0.07791509695192408)
+  expect_equal(t2up$conf.int[[2]], 0.34552663746542012)
   expect_match(t2up$method, "DeLong")
   expect_identical(t2up$alternative, "two.sided")
 
   expect_equal(t3up$statistic, c(D = -1.55995743389685))
   expect_equal(t3up$p.value, 0.118769940514783)
+  expect_equal(t3up$conf.int[[1]], -0.26944056975509384)
+  expect_equal(t3up$conf.int[[2]], 0.03061943154371177)
   expect_match(t3up$method, "DeLong")
   expect_identical(t3up$alternative, "two.sided")
 })
@@ -530,6 +533,27 @@ test_that("unpaired DeLong roc.test compares D to the normal distribution", {
   d <- (as.numeric(auc(r.wfns)) - as.numeric(auc(r.s100b))) / sqrt(var(r.wfns) + var(r.s100b))
   expect_equal(unname(t$statistic), d)
   expect_equal(t$p.value, 2 * pnorm(-abs(d)))
+})
+
+test_that("unpaired DeLong conf.int inverts the test", {
+  # DeLong et al. (1988), p. 841: L theta' with L = (1, -1) and S block diagonal
+  diff <- as.numeric(auc(r.wfns)) - as.numeric(auc(r.s100b))
+  se <- sqrt(var(r.wfns) + var(r.s100b))
+  t <- roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = 0.9)
+  expect_equal(as.numeric(t$conf.int), diff + c(-1, 1) * qnorm(0.95) * se)
+  expect_identical(attr(t$conf.int, "conf.level"), 0.9)
+  # One-sided alternatives give a one-sided interval, as in t.test
+  t <- roc.test(r.wfns, r.s100b, paired = FALSE, alternative = "greater")
+  expect_equal(as.numeric(t$conf.int), c(diff - qnorm(0.95) * se, Inf))
+  t <- roc.test(r.wfns, r.s100b, paired = FALSE, alternative = "less")
+  expect_equal(as.numeric(t$conf.int), c(-Inf, diff + qnorm(0.95) * se))
+  # Percent curves: the interval is on the percent scale
+  t <- roc.test(r.wfns.percent, r.s100b.percent, paired = FALSE)
+  expect_equal(as.numeric(t$conf.int), as.numeric(t1up$conf.int) * 100)
+  # A single control: the variance is undefined
+  r1 <- roc(c(0, 1, 1, 1), 1:4, quiet = TRUE)
+  t <- roc.test(r1, r.s100b)
+  expect_identical(as.numeric(t$conf.int), c(NA_real_, NA_real_))
 })
 
 test_that("unpaired DeLong roc.test with equal AUCs and zero variance gives D = 0, p = 1", {

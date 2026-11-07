@@ -287,52 +287,31 @@ roc.test.roc <- function(roc1, roc2,
   class(htest) <- "htest"
 
   if (method == "delong") {
+    roc_test_check_conf_level(conf.level)
     if (paired) {
-      # Check if conf.level is specified correctly. It is only used here, for the
-      # CI of the paired test, whether the method was given or selected automatically.
-      # A logical counts as a number, as in t.test()
-      if (!is.numeric(conf.level) && !is.logical(conf.level)) {
-        stop("conf.level must be numeric between 0 and 1.")
-      } else if (!roc_utils_is_single_number(conf.level)) {
-        stop("conf.level must be a single number between 0 and 1.")
-      } else if (0 > conf.level || 1 < conf.level) {
-        stop("conf.level must be between 0 and 1.")
-      }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
-      stat <- delong.paired.test(delong.calcs)
-      stat.ci <- ci_delong_paired(delong.calcs, conf.level, alternative)
-      names(stat) <- "Z"
-      htest$statistic <- stat
+      stat <- c("Z" = delong.test(delong.calcs))
       htest$method <- "DeLong's test for two correlated ROC curves"
-      htest$conf.int <- c(stat.ci$lower, stat.ci$upper)
-      if (roc1$percent) {
-        # the placements are on the 0-1 scale, the estimates on 0-100
-        htest$conf.int <- htest$conf.int * 100
-      }
-      attr(htest$conf.int, "conf.level") <- stat.ci$level
-
-      if (alternative == "two.sided") {
-        pval <- 2 * pnorm(-abs(stat))
-      } else if (alternative == "greater") {
-        pval <- pnorm(-stat)
-      } else {
-        pval <- pnorm(stat)
-      }
-      htest$p.value <- pval
     } else {
-      stat <- delong.unpaired.test(roc1, roc2)
-      htest$statistic <- c("D" = stat)
+      delong.calcs <- delong.unpaired.calculations(roc1, roc2)
+      stat <- c("D" = delong.test(delong.calcs))
       htest$method <- "DeLong's test for two ROC curves"
-
-      if (alternative == "two.sided") {
-        pval <- 2 * pnorm(-abs(stat))
-      } else if (alternative == "greater") {
-        pval <- pnorm(-stat)
-      } else {
-        pval <- pnorm(stat)
-      }
-      htest$p.value <- pval
     }
+    htest$statistic <- stat
+    htest$conf.int <- roc_test_ci_normal(delong.calcs$d, delong.calcs$sig, conf.level, alternative)
+    if (roc1$percent) {
+      # the placements are on the 0-1 scale, the estimates on 0-100
+      htest$conf.int <- htest$conf.int * 100
+    }
+
+    if (alternative == "two.sided") {
+      pval <- 2 * pnorm(-abs(stat))
+    } else if (alternative == "greater") {
+      pval <- pnorm(-stat)
+    } else {
+      pval <- pnorm(stat)
+    }
+    htest$p.value <- pval
   } else if (method == "venkatraman") {
     boot.n <- roc_utils_check_boot_n(boot.n)
     if (paired) {
@@ -434,4 +413,28 @@ roc.test.roc <- function(roc1, roc2,
     htest$roc2$call <- smooth.call2
   }
   return(htest)
+}
+
+# Checks conf.level for the tests that return a CI
+roc_test_check_conf_level <- function(conf.level) {
+  # A logical counts as a number, as in t.test()
+  if (!is.numeric(conf.level) && !is.logical(conf.level)) {
+    stop("conf.level must be numeric between 0 and 1.")
+  } else if (!roc_utils_is_single_number(conf.level)) {
+    stop("conf.level must be a single number between 0 and 1.")
+  } else if (0 > conf.level || 1 < conf.level) {
+    stop("conf.level must be between 0 and 1.")
+  }
+}
+
+# Normal CI of the difference d with standard error sig, the inverse of the
+# Z test. One-sided alternatives give a one-sided interval, as in t.test.
+roc_test_ci_normal <- function(d, sig, conf.level, alternative) {
+  crit_z <- qnorm(if (alternative == "two.sided") 1 - (1 - conf.level) / 2 else conf.level)
+  conf.int <- c(
+    if (alternative == "less") -Inf else d - crit_z * sig,
+    if (alternative == "greater") Inf else d + crit_z * sig
+  )
+  attr(conf.int, "conf.level") <- conf.level
+  conf.int
 }
