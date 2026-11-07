@@ -332,12 +332,13 @@ roc.test.roc <- function(roc1, roc2,
     names(htest$null.value) <- "difference in at least one ROC operating point"
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
+    roc_test_check_conf_level(conf.level)
     boot.n <- roc_utils_check_boot_n(boot.n)
     if (method == "specificity") {
       if (!is.numeric(specificity) || length(specificity) != 1) {
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -349,13 +350,13 @@ roc.test.roc <- function(roc1, roc2,
         "difference in sensitivity at %s specificity",
         specificity
       )
-      htest$estimate <- attr(stat, "estimate")
+      htest$estimate <- boot$estimate
       names(htest$estimate) <- sprintf("sensitivity of roc%d at %s specificity", 1:2, specificity)
     } else if (method == "sensitivity") {
       if (!is.numeric(sensitivity) || length(sensitivity) != 1) {
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -368,10 +369,10 @@ roc.test.roc <- function(roc1, roc2,
         "difference in specificity at %s sensitivity",
         sensitivity
       )
-      htest$estimate <- attr(stat, "estimate")
+      htest$estimate <- boot$estimate
       names(htest$estimate) <- sprintf("specificity of roc%d at %s sensitivity", 1:2, sensitivity)
     } else {
-      stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -380,9 +381,9 @@ roc.test.roc <- function(roc1, roc2,
         htest$method <- "Bootstrap test for two ROC curves"
       }
     }
-    stat <- as.vector(stat) # remove auc attributes
-    names(stat) <- "D"
+    stat <- c("D" = boot$statistic)
     htest$statistic <- stat
+    htest$conf.int <- roc_test_ci_normal(boot$d, boot$sig, conf.level, alternative)
     parameter <- c(boot.n, boot.stratified)
     names(parameter) <- c("boot.n", "boot.stratified")
     htest$parameter <- parameter

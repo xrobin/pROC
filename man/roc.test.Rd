@@ -216,6 +216,9 @@ na.rm=TRUE, method=NULL, ...)
     (original) ROC curves.
     \item \var{D} is then compared to the normal distribution,
     according to the value of \code{alternative}.
+    \item The confidence interval is \eqn{AUC1-AUC2 \pm z s}{AUC1-AUC2 +/- z s},
+    with \var{z} the quantile of the normal distribution, so that it
+    agrees with the p-value.
   }
 
   See also the Bootstrap section in
@@ -322,7 +325,8 @@ na.rm=TRUE, method=NULL, ...)
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
-  \item{conf.int}{the confidence interval of the test (currently only returned for DeLong's test). Has an attribute \code{conf.level} specifying the level of the test.}
+  \item{conf.int}{the confidence interval of the difference tested
+    (not returned with \code{method="venkatraman"}). Has an attribute \code{conf.level} specifying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{a character string describing the test, such as
     \dQuote{DeLong's test for two correlated ROC curves} (if

@@ -66,6 +66,8 @@ test_that("roc.test checks conf.level when the method is selected automatically"
   expect_error(roc.test(aSAH$outcome, aSAH$wfns, aSAH$s100b, conf.level = 2), "conf.level must be between 0 and 1")
   expect_error(roc.test(r.wfns, r.s100b, method = "delong", conf.level = 2), "conf.level must be between 0 and 1")
   expect_error(roc.test(r.wfns, r.s100b, paired = FALSE, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = 2), "conf.level must be between 0 and 1")
+  expect_error(roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0.9, boot.n = 10, conf.level = "0.9"), "conf.level must be numeric")
   # A logical is a number, as in t.test()
   expect_identical(as.numeric(roc.test(r.wfns, r.s100b, conf.level = TRUE)$conf.int), as.numeric(roc.test(r.wfns, r.s100b, conf.level = 1)$conf.int))
 })
@@ -73,7 +75,6 @@ test_that("roc.test checks conf.level when the method is selected automatically"
 test_that("roc.test does not check conf.level for the tests that do not use it", {
   set.seed(42)
   for (conf.level in list(2, NA, "0.9")) {
-    expect_is(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 10, conf.level = conf.level), "htest")
     expect_is(roc.test(r.s100b, r.ndka, method = "venkatraman", boot.n = 10, conf.level = conf.level), "htest")
   }
 })
@@ -533,6 +534,44 @@ test_that("unpaired DeLong roc.test compares D to the normal distribution", {
   d <- (as.numeric(auc(r.wfns)) - as.numeric(auc(r.s100b))) / sqrt(var(r.wfns) + var(r.s100b))
   expect_equal(unname(t$statistic), d)
   expect_equal(t$p.value, 2 * pnorm(-abs(d)))
+})
+
+test_that("bootstrap conf.int is as expected", {
+  set.seed(42)
+  t <- roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = 100)
+  expect_equal(as.numeric(t$conf.int), c(-0.05590307622403937, 0.29472421443542141))
+  expect_identical(attr(t$conf.int, "conf.level"), 0.95)
+  # Percent curves: the interval is on the percent scale
+  set.seed(42)
+  tp <- roc.test(r.s100b.percent, r.ndka.percent, method = "bootstrap", boot.n = 100)
+  expect_equal(as.numeric(tp$conf.int), as.numeric(t$conf.int) * 100)
+  set.seed(42)
+  t <- roc.test(r.s100b, r.ndka, method = "specificity", specificity = 0.9, boot.n = 100)
+  expect_equal(as.numeric(t$conf.int), c(-0.05826906, 0.44851297), tolerance = 1e-6)
+})
+
+test_that("bootstrap conf.int inverts the test", {
+  # Holds for every resample: the interval is d +/- z * se, and D = d / se
+  for (args in list(
+    list(method = "bootstrap"),
+    list(method = "bootstrap", paired = FALSE),
+    list(method = "specificity", specificity = 0.9),
+    list(method = "sensitivity", sensitivity = 0.9, paired = FALSE)
+  )) {
+    for (alternative in c("two.sided", "less", "greater")) {
+      t <- do.call(roc.test, c(list(r.s100b, r.ndka, boot.n = 20, conf.level = 0.9, alternative = alternative), args))
+      d <- t$estimate[[1]] - t$estimate[[2]]
+      se <- d / t$statistic[[1]]
+      z <- qnorm(if (alternative == "two.sided") 0.95 else 0.9)
+      expected <- c(
+        if (alternative == "less") -Inf else d - z * se,
+        if (alternative == "greater") Inf else d + z * se
+      )
+      expect_equal(as.numeric(t$conf.int), expected)
+      expect_identical(attr(t$conf.int, "conf.level"), 0.9)
+      expect_identical(t$p.value < 0.1, 0 < t$conf.int[[1]] || t$conf.int[[2]] < 0)
+    }
+  }
 })
 
 test_that("unpaired DeLong conf.int inverts the test", {
