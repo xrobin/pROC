@@ -55,7 +55,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
   } else if (method == "logcondens") {
     sesp <- smooth_roc_logcondens(roc, n)
   } else if (method == "logcondens.smooth") {
-    sesp <- smooth_roc_logcondens_smooth(roc, n)
+    sesp <- smooth_roc_logcondens(roc, n, smooth = TRUE)
   } else {
     stop(sprintf(
       "Impossible smooth method value '%s'. Please report this bug to <%s>.",
@@ -320,16 +320,27 @@ smooth_roc_fitdistr <- function(roc, n, densfun.controls, densfun.cases, start.c
   ))
 }
 
-smooth_roc_logcondens <- function(roc, n) {
+smooth_roc_logcondens <- function(roc, n, smooth = FALSE) {
   load.suggested.package("logcondens")
   # logConROC fails inside logcondens on a class with a single distinct value
   if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
     stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
   }
 
-  sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
-  se <- logcondens$fROC
+  fpr <- seq(0, 1, length.out = n)
+  logcondens <- logcondens::logConROC(roc$cases, roc$controls, fpr)
+  se <- if (smooth) logcondens$fROC.smooth else logcondens$fROC
+  # The log-concave density of the controls is 0 outside their range, so the
+  # curve jumps at FPR 0 and 1, where logConROC sets it to 0 and 1. Add the
+  # limits 1 - G(max(controls)) and 1 - G(min(controls)) to keep these
+  # vertical segments in the curve.
+  cdf.cases <- logcondens::evaluateLogConDens(rev(range(roc$controls)), logcondens$res1,
+    which = if (smooth) 5 else 3
+  )[, if (smooth) "smooth.CDF" else "CDF"]
+  # The smoothed CDF can exceed 1 by a rounding error: keep it a probability
+  cdf.cases <- pmin(pmax(cdf.cases, 0), 1)
+  fpr <- c(0, fpr, 1)
+  se <- c(se[1], 1 - cdf.cases[1], se[-c(1, n)], 1 - cdf.cases[2], se[n])
   # logConROC assumes cases > controls: for direction ">", take the point
   # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
   if (roc$direction == ">") {
@@ -338,30 +349,7 @@ smooth_roc_logcondens <- function(roc, n) {
 
   return(list(
     sensitivities = se * ifelse(roc$percent, 100, 1),
-    specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
-    logcondens = logcondens
-  ))
-}
-
-smooth_roc_logcondens_smooth <- function(roc, n) {
-  load.suggested.package("logcondens")
-  # logConROC fails inside logcondens on a class with a single distinct value
-  if (length(unique(roc$controls)) < 2 || length(unique(roc$cases)) < 2) {
-    stop("ROC curve not smoothable (logcondens needs at least two distinct values in each class).")
-  }
-
-  sp <- seq(0, 1, 1 / (n - 1))
-  logcondens <- logcondens::logConROC(roc$cases, roc$controls, sp)
-  se <- logcondens$fROC.smooth
-  # logConROC assumes cases > controls: for direction ">", take the point
-  # reflection of its curve: se at grid point t is 1 - fROC at 1 - t
-  if (roc$direction == ">") {
-    se <- 1 - rev(se)
-  }
-
-  return(list(
-    sensitivities = se * ifelse(roc$percent, 100, 1),
-    specificities = (1 - sp) * ifelse(roc$percent, 100, 1),
+    specificities = (1 - fpr) * ifelse(roc$percent, 100, 1),
     logcondens = logcondens
   ))
 }
