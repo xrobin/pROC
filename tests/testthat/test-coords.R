@@ -287,19 +287,19 @@ test_that("coords works with smooth.roc and x = 'best' and transpose=TRUE", {
     obtained <- coords(smooth.s100b, "best", ret = "all", drop = FALSE, transpose = TRUE)
     expect_equal(obtained, expect)
 
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE), "as.list")
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE), class = "deprecatedWarning")
     expect_equal(obtained, as.list(expect[, 1]))
     expect_equal(names(obtained), rownames(expect))
 
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE, drop = FALSE), "as.list")
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = "all", as.list = TRUE, drop = FALSE), class = "deprecatedWarning")
     expect_equal(obtained[[1]], as.list(expect[, 1])) # names
     expect_equal(names(obtained[[1]]), rownames(expect))
 
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE), "as.list")
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE), class = "deprecatedWarning")
     expect_equal(obtained, as.list(expect[reduced.cols, 1]))
     expect_equal(names(obtained), reduced.cols)
 
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE, drop = FALSE), "as.list")
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.list = TRUE, drop = FALSE), class = "deprecatedWarning")
     expect_equal(obtained[[1]], as.list(expect[reduced.cols, 1])) # names
     expect_equal(names(obtained[[1]]), reduced.cols)
   })
@@ -343,15 +343,15 @@ test_that("coords works with smooth.roc", {
     expect_equivalent(obtained, as.data.frame(t(expect[reduced.cols, ])))
 
     # drop = TRUE
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE))
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, drop = TRUE), class = "deprecatedWarning")
     expect_equal(obtained, as.list(expect[reduced.cols, ]))
 
     # With as.matrix
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE))
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE), class = "deprecatedWarning")
     expect_equal(obtained, t(expect[reduced.cols, , drop = FALSE]))
 
     # With matrix and drop = TRUE
-    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE, drop = TRUE))
+    expect_warning(obtained <- coords(smooth.s100b, "best", ret = reduced.cols, as.matrix = TRUE, drop = TRUE), class = "deprecatedWarning")
     expect_equal(obtained, expect[reduced.cols, ])
 
     # Default drop with numeric
@@ -836,37 +836,43 @@ test_that("coords on smoothed curves with numeric x honour drop and transpose", 
   s <- smooth(r.s100b)
   expected <- coords(s, c(0.5, 0.9), input = "specificity", transpose = FALSE)
   expect_s3_class(expected, "data.frame")
-  expect_warning(res <- coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE), "'transpose=TRUE' is deprecated")
+  expect_warning(res <- coords(s, c(0.5, 0.9), input = "specificity", transpose = TRUE), class = "deprecatedWarning")
   expect_equal(res, t(expected))
-  expect_warning(res <- coords(s, 0.5, input = "specificity", drop = TRUE), "'drop' is deprecated")
+  expect_warning(res <- coords(s, 0.5, input = "specificity", drop = TRUE), class = "deprecatedWarning")
   expect_identical(res, expected[1, , drop = TRUE])
 })
 
 test_that("coords as.list on smoothed curves with one numeric x returns a flat list", {
   s <- smooth(r.s100b)
-  expect_warning(res <- coords(s, 0.5, input = "specificity", as.list = TRUE), "'as.list' is deprecated")
+  expect_warning(res <- coords(s, 0.5, input = "specificity", as.list = TRUE), class = "deprecatedWarning")
   expect_equal(names(res), c("specificity", "sensitivity"))
   expect_equal(res$specificity, 0.5)
 })
 
 test_that("coords on smoothed curves give each deprecation warning once", {
   s <- smooth(r.s100b)
-  transpose.warning <- "'transpose=TRUE' is deprecated. Only 'transpose=FALSE' will be allowed in a future version."
-  as.list.warning <- "'as.list' is deprecated and will be removed in a future version."
-  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", transpose = TRUE)), transpose.warning)
-  expect_identical(capture_warnings(coords(s, 0.5, input = "specificity", as.list = TRUE)), as.list.warning)
-  expect_identical(capture_warnings(coords(s, "best", as.list = TRUE)), as.list.warning)
-  expect_identical(capture_warnings(coords(s, "best", transpose = TRUE)), transpose.warning)
+  once <- function(expr) {
+    n <- 0
+    withCallingHandlers(expr, deprecatedWarning = function(w) {
+      n <<- n + 1
+      invokeRestart("muffleWarning")
+    })
+    expect_identical(n, 1)
+  }
+  once(coords(s, 0.5, input = "specificity", transpose = TRUE))
+  once(coords(s, 0.5, input = "specificity", as.list = TRUE))
+  once(coords(s, "best", as.list = TRUE))
+  once(coords(s, "best", transpose = TRUE))
 })
 
 test_that("deprecated coords forms keep numeric coordinates on ordered curves", {
   r <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
-  expect_warning(best <- coords(r, "best", as.list = TRUE), "'as.list' is deprecated")
+  expect_warning(best <- coords(r, "best", as.list = TRUE), class = "deprecatedWarning")
   expect_type(best$specificity, "double")
   expect_type(best$sensitivity, "double")
   expect_equal(best$specificity, coords(r, "best")$specificity)
   # unchanged on numeric curves
-  expect_warning(res <- coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE), "'as.list' is deprecated")
+  expect_warning(res <- coords(r.s100b, c(0.1, 0.5), input = "threshold", as.list = TRUE), class = "deprecatedWarning")
   expect_identical(res, apply(t(coords(r.s100b, c(0.1, 0.5), input = "threshold")), 2, as.list))
 })
 
