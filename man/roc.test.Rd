@@ -12,7 +12,7 @@
 }
 \description{
   This function compares two correlated (or paired) or uncorrelated (unpaired)
-  ROC curves. Delong and bootstrap methods test for a difference in the
+  ROC curves. Delong, bootstrap and ML methods test for a difference in the
   (partial) AUC of the ROC curves. The Venkatraman method tests if the two
   curves are perfectly superposed. The sensitivity and specificity methods
   test if the sensitivity (respectively specificity) of the ROC curves are
@@ -25,7 +25,7 @@
 \usage{
 # roc.test(...)
 \S3method{roc.test}{roc}(roc1, roc2, method=c("delong", "bootstrap",
-"venkatraman", "sensitivity", "specificity"), sensitivity = NULL,
+"venkatraman", "sensitivity", "specificity", "ml"), sensitivity = NULL,
 specificity = NULL, alternative = c("two.sided", "less", "greater"),
 paired=NULL, reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE,
 ties.method="random", progress = getOption("pROCProgress", interactive()),
@@ -68,8 +68,8 @@ na.rm=TRUE, method=NULL, ...)
     curve, and a paired test then uses the observations complete in both.
   }
   \item{method}{the method to use, either \dQuote{delong},
-    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity} or
-    \dQuote{specificity}. It can be abbreviated, as long as it is not
+    \dQuote{bootstrap}, \dQuote{venkatraman}, \dQuote{sensitivity},
+    \dQuote{specificity} or \dQuote{ml}. It can be abbreviated, as long as it is not
     ambiguous (\dQuote{s} is not sufficient). If omitted, the
 	appropriate method is selected as explained in details.
   }
@@ -147,15 +147,19 @@ na.rm=TRUE, method=NULL, ...)
   method and creates two \link{roc} objects before calling
   \code{roc.test.roc}.
 
-  Three methods are available: \dQuote{delong}, \dQuote{bootstrap} and \dQuote{venkatraman} (see
-  \dQuote{Computational details} section below). \dQuote{delong} and
-  \dQuote{bootstrap} are tests over the AUC whereas \dQuote{venkatraman}
+  Four methods are available: \dQuote{delong}, \dQuote{bootstrap}, \dQuote{ml} and \dQuote{venkatraman} (see
+  \dQuote{Computational details} section below). \dQuote{delong},
+  \dQuote{bootstrap} and \dQuote{ml} are tests over the AUC whereas \dQuote{venkatraman}
   compares the the ROC curves themselves.
 
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
   curves and curves with different \code{direction}, where \code{bootstrap}
-  is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported in pROC and result in an error.
+  is used. Unpaired curves both smoothed with \code{method="binormal"} or
+  \code{"proper"} are compared with \dQuote{ml}, unless a partial AUC is
+  specified. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
+  supported in pROC and result in an error, as is \dQuote{ml} for
+  anything else than the full AUC of two unpaired binormal or proper
+  smoothed curves.
   It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
   \code{direction} (a warning is issued but the spurious comparison is
   enforced). \dQuote{venkatraman}'s test cannot be employed to compare smoothed
@@ -232,6 +236,17 @@ na.rm=TRUE, method=NULL, ...)
   }
   is compared to the normal distribution (Hanley and McNeil, 1983).
 
+  With \code{method="ml"}, the variances \eqn{V^r}{V^r} and
+  \eqn{V^s}{V^s} of the AUC of the two curves are computed as described in
+  \code{\link{var}}, and the statistic
+  \deqn{
+    Z=\frac{\theta^r - \theta^s}{\sqrt{V^r + V^s}}
+  }{
+    Z=(\theta^r - \theta^s) / sqrt(V^r + V^s)
+  }
+  is compared to the normal distribution (Dorfman and Alf, 1969, p. 494;
+  Pesce and Metz, 2007, p. 822).
+
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
   (2000) (for unpaired ROC curves) with \code{boot.n} permutation of
@@ -285,7 +300,7 @@ na.rm=TRUE, method=NULL, ...)
   \code{boot.stratified=TRUE}.
   
   When both ROC curves have an \code{\link{auc}} of 1 (or 100\%), their variances and covariance will always be null,
-  and therefore the p-value will always be 1. This is true for both \dQuote{delong}, \dQuote{bootstrap} and 
+  and therefore the p-value will always be 1. This is true for the \dQuote{delong}, \dQuote{bootstrap}, \dQuote{ml} and 
   \dQuote{venkatraman} methods. This result is misleading, as the variances and covariance are of course not null.
   A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
 }
@@ -318,7 +333,7 @@ na.rm=TRUE, method=NULL, ...)
   A list of class "htest" with following content:
   \item{p.value}{the p-value of the test.}
   \item{statistic}{the value of the Z (\code{method="delong"}, paired
-    curves), D (\code{method="delong"} with unpaired curves,
+    curves, and \code{method="ml"}), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
@@ -357,6 +372,12 @@ na.rm=TRUE, method=NULL, ...)
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Donald D. Dorfman, Edward Alf, Jr. (1969) ``Maximum-likelihood
+  estimation of parameters of signal-detection theory and determination
+  of confidence intervals---rating-method data''. \emph{Journal of
+  Mathematical Psychology} \bold{6}, 487--496.
+  DOI: \doi{10.1016/0022-2496(69)90019-4}.
   
   James A. Hanley and Barbara J. McNeil (1982) ``The meaning and use of
   the area under a receiver operating characteristic (ROC)
@@ -369,6 +390,11 @@ na.rm=TRUE, method=NULL, ...)
   Margaret Pepe, Gary Longton and Holly Janes (2009) ``Estimation and
   Comparison of Receiver Operating Characteristic Curves''. \emph{The
   Stata journal} \bold{9}(1), 1--16. DOI: \doi{10.1177/1536867X0900900101}.
+
+  Lorenzo L. Pesce, Charles E. Metz (2007) ``Reliable and computationally
+  efficient maximum-likelihood estimation of "proper" binormal ROC
+  curves''. \emph{Academic Radiology} \bold{14}, 814--829.
+  DOI: \doi{10.1016/j.acra.2007.03.012}.
   
   Xavier Robin, Natacha Turck, Jean-Charles Sanchez and Markus Müller
   (2009) ``Combination of protein biomarkers''. \emph{useR! 2009}, Rennes.
@@ -420,7 +446,13 @@ roc.test(roc1, roc2, paired = FALSE)
 roc.test(roc1, roc2, method = "bootstrap")}\dontshow{
 roc.test(roc1, roc2, method = "bootstrap", boot.n = 10)}
 
-# Smoothed curves are bootstrapped, and smoothing is redone at each replicate
+# Unpaired binormal or proper smoothed curves: ML method
+male <- aSAH$gender == "Male"
+roc.test(smooth(roc(aSAH$outcome[male], aSAH$s100b[male])),
+         smooth(roc(aSAH$outcome[!male], aSAH$s100b[!male])))
+
+# Paired smoothed curves, and other smoothings, are bootstrapped, and smoothing
+# is redone at each replicate
 \dontrun{
 roc.test(smooth(roc1), smooth(roc2))}\dontshow{
 roc.test(smooth(roc1), smooth(roc2), boot.n = 10)}

@@ -80,11 +80,6 @@ ci.auc.smooth.roc <- function(smooth.roc,
     stop("conf.level must be a single number within the interval [0,1].")
   }
 
-  # Smoothed curves are always bootstrapped
-  if (identical(pmatch(method, c("delong", "bootstrap")), 1L)) {
-    warning("DeLong method is not supported for smoothed ROCs. Using bootstrap instead.")
-  }
-
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
   }
@@ -101,6 +96,19 @@ ci.auc.smooth.roc <- function(smooth.roc,
 
   roc_utils_stop_if_numeric_density(smooth.roc, "CI of")
 
+  # Check the method
+  if (is.null(method)) {
+    method <- if (roc_utils_has_ml(smooth.roc)) "ml" else "bootstrap"
+  } else {
+    method <- match.arg(method, c("delong", "bootstrap", "ml"))
+    if (method == "delong") {
+      warning("DeLong method is not supported for smoothed ROCs. Using bootstrap instead.")
+      method <- "bootstrap"
+    } else if (method == "ml") {
+      roc_utils_stop_if_no_ml(smooth.roc)
+    }
+  }
+
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
 
@@ -116,24 +124,33 @@ ci.auc.smooth.roc <- function(smooth.roc,
     }
   }
 
-  boot.n <- roc_utils_check_boot_n(boot.n)
-  aucs <- roc_utils_drop_na_replicates(
-    bootstrap.replicates(boot.n, bootstrap.replicate,
-      roc = roc, stratified = boot.stratified,
-      statistic = bootstrap.auc, auc.args = bootstrap.auc.args(smooth.roc$auc), na = NA_real_,
-      smoothing.args = smooth.roc$smoothing.args,
-      FUN.VALUE = NA_real_, progress = progress, cl = cl
+  if (method == "ml") {
+    # The standard confidence interval, AUC +- z SE (Efron & Tibshirani 1993,
+    # p. 154, Eq. 12.5), bounded to [0, 1] as DeLong's (ci_auc_delong)
+    ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2),
+      mean = as.numeric(oldauc) / ifelse(percent, 100, 1), sd = sqrt(var_roc_ml(smooth.roc))
     )
-  )
-  # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
-  # Prepare the return value
-  ci <- quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
+    ci[ci > 1] <- 1
+    ci[ci < 0] <- 0
+  } else {
+    boot.n <- roc_utils_check_boot_n(boot.n)
+    aucs <- roc_utils_drop_na_replicates(
+      bootstrap.replicates(boot.n, bootstrap.replicate,
+        roc = roc, stratified = boot.stratified,
+        statistic = bootstrap.auc, auc.args = bootstrap.auc.args(smooth.roc$auc), na = NA_real_,
+        smoothing.args = smooth.roc$smoothing.args,
+        FUN.VALUE = NA_real_, progress = progress, cl = cl
+      )
+    )
+    # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
+    # Prepare the return value
+    ci <- quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
+  }
   if (percent) {
     ci <- ci * 100
-    aucs <- aucs * 100
   }
   attr(ci, "conf.level") <- conf.level
-  attr(ci, "method") <- "bootstrap"
+  attr(ci, "method") <- method
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "auc") <- oldauc

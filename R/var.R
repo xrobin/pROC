@@ -40,7 +40,7 @@ var.smooth.roc <- function(smooth.roc, ...) {
 }
 
 var.roc <- function(roc,
-                    method = c("delong", "bootstrap", "obuchowski"),
+                    method = c("delong", "bootstrap", "obuchowski", "ml"),
                     boot.n = 2000,
                     boot.stratified = TRUE,
                     reuse.auc = TRUE,
@@ -71,8 +71,10 @@ var.roc <- function(roc,
     if (has.partial.auc(roc)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
+    } else if (roc_utils_has_ml(roc)) {
+      method <- "ml"
     } else if (inherits(roc, "smooth.roc")) {
-      # smoothing: bootstrap
+      # other smoothings: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"
@@ -93,6 +95,8 @@ var.roc <- function(roc,
       if (has.partial.auc(roc) && attr(roc$auc, "partial.auc.focus") == "sensitivity") {
         stop("Obuchowski method is not supported for partial AUC on sensitivity region. Use method=\"bootstrap\" instead.")
       }
+    } else if (method == "ml") {
+      roc_utils_stop_if_no_ml(roc)
     }
   }
 
@@ -103,6 +107,8 @@ var.roc <- function(roc,
     var <- var(V$Y) / n + var(V$X) / m
   } else if (method == "obuchowski") {
     var <- var_roc_obuchowski(roc) / length(roc$cases)
+  } else if (method == "ml") {
+    var <- var_roc_ml(roc)
   } else {
     var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }

@@ -78,7 +78,7 @@ test_that("smoothed bootstraps run on a cluster", {
   skip_if_no_cluster()
   s <- smooth(r.ndka)
   with_cluster(2, function(cl) {
-    expect_s3_class(ci.auc(s, boot.n = B, cl = cl), "ci.auc")
+    expect_s3_class(ci.auc(s, method = "bootstrap", boot.n = B, cl = cl), "ci.auc")
     expect_s3_class(ci.se(s, specificities = c(0.1, 0.9), boot.n = B, cl = cl), "ci.se")
   })
 })

@@ -5,6 +5,8 @@
   - [Small datasets (D&B Tables 1, 3, 4 and
     5)](#small-datasets-db-tables-1-3-4-and-5)
   - [Large datasets (D&B Table 2)](#large-datasets-db-table-2)
+  - [Standard error of the AUC (delta
+    method)](#standard-error-of-the-auc-delta-method)
   - [Discussion](#discussion)
 
 <!-- binormal_validation.md is generated from binormal_validation.Rmd. Please edit that file -->
@@ -14,8 +16,9 @@
 This report checks `smooth(method = "binormal")`, the maximum-likelihood
 fit of the binormal model $\Phi^{-1}(TPF) = a + b \Phi^{-1}(FPF)$,
 against the published results of ROCFIT, the maximum-likelihood program
-of Metz. It is maintainer-only: knit it from the package root with the
-version of pROC to check installed:
+of Metz, and the standard error of its AUC by the delta method
+(`var(method = "ml")`). It is maintainer-only: knit it from the package
+root with the version of pROC to check installed:
 
 ``` r
 rmarkdown::render("tools/binormal_validation.Rmd")
@@ -33,6 +36,9 @@ Sources:
 - **D&B**: Dorfman DD, Berbaum KS (1995) Degeneracy and discrete
   receiver operating characteristic rating data. *Acad Radiol*
   2:907–915.
+- **O&M**: Obuchowski NA, McClish DK (1997) Sample size determination
+  for diagnostic accuracy studies involving binormal ROC curve indices.
+  *Stat Med* 16:1529–1542.
 
 ``` r
 library(pROC)
@@ -49,7 +55,7 @@ RNGkind("L'Ecuyer-CMRG")
 set.seed(20261106)
 c(pROC = as.character(packageVersion("pROC")), R = R.version.string)
 #>                           pROC                              R 
-#>                    "1.19.9999" "R version 4.3.3 (2024-02-29)"
+#>                    "1.19.9999" "R version 4.6.2 (2026-10-29)"
 ```
 
 ## Design
@@ -91,8 +97,9 @@ one <- function(n.controls, n.cases) {
   )
   s <- tryCatch(smooth(r, method = "binormal"), error = function(e) NULL)
   if (is.null(s)) {
-    return(rep(NA_real_, 12))
+    return(rep(NA_real_, 14))
   }
+  ci <- ci.auc(s)
   ml <- s$binormal
   df <- data.frame(sp = qnorm(r$specificities), se = qnorm(r$sensitivities))
   df <- df[is.finite(df$sp) & is.finite(df$se), ]
@@ -100,7 +107,8 @@ one <- function(n.controls, n.cases) {
   c(
     a = ml$a, b = ml$b, auc = as.numeric(auc(s)),
     tpf = pnorm(ml$a + ml$b * qnorm(fpf.at)), pa = partial.areas(ml$a, ml$b),
-    ls.a = ls[["a"]], ls.b = ls[["b"]]
+    ls.a = ls[["a"]], ls.b = ls[["b"]],
+    se = sqrt(var(s)), covered = ci[1] <= true[["auc"]] && true[["auc"]] <= ci[3]
   )
 }
 summarize <- function(x, true, published, published.rmse) {
@@ -184,6 +192,31 @@ knitr::kable(summarize(large[, 1:3],
 | b   | 0.8000 | 0.8002 |     0.799 | 0.0386 |         0.0398 |
 | auc | 0.8793 | 0.8791 |     0.879 | 0.0060 |         0.0059 |
 
+## Standard error of the AUC (delta method)
+
+`var()` and `ci.auc()` of the fit use the delta method: O&M Eq. 6
+(p. 1531), with the variances and covariance of $a$ and $b$ from the
+inverse of the expected information at the maximum (D&A p. 490), and a
+Wald interval. The mean and median of the estimated SE are compared with
+the empirical SD of the AUC estimates, with the coverage of the 95% CI,
+on the datasets fitted above:
+
+``` r
+se.table <- function(x) {
+  x <- x[!is.na(x[, 1]), , drop = FALSE]
+  data.frame(
+    datasets = nrow(x), sd = sd(x[, "auc"]), mean.se = mean(x[, "se"]), median.se = median(x[, "se"]),
+    coverage = mean(x[, "covered"])
+  )
+}
+knitr::kable(rbind(small = se.table(small), large = se.table(large)), digits = 4)
+```
+
+|       | datasets |     sd | mean.se | median.se | coverage |
+|:------|---------:|-------:|--------:|----------:|---------:|
+| small |     1194 | 0.0459 |  0.0472 |    0.0471 |   0.9439 |
+| large |     2000 | 0.0060 |  0.0062 |    0.0062 |   0.9565 |
+
 ## Discussion
 
 **Degenerate data.** pROC refuses about as many datasets as ROCFIT
@@ -200,6 +233,10 @@ overestimate $a$ and $b$ and slightly underestimate the area. The RMSEs
 of $a$, $b$ and the area are 2% to 6% lower than ROCFIT’s.
 
 **Large datasets.** The means and RMSEs agree with ROCFIT’s.
+
+**Standard error.** The mean SE of the delta method is within 2.8% of
+the empirical SD of the AUC estimates, and the coverage of the 95% Wald
+interval is 0.944 on the small datasets and 0.957 on the large ones.
 
 **Least squares.** The least-squares line, the binormal smoothing of
 pROC 1.19 and the start of the fit, overestimates $a$ and $b$ more

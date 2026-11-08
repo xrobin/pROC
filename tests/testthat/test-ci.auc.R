@@ -121,7 +121,7 @@ test_that("ci functions reject a missing or vector conf.level", {
 test_that("ci.auc and ci formula/default methods with smooth = TRUE take method", {
   s <- smooth(r.s100b)
   set.seed(42)
-  expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
+  expected <- as.numeric(ci.auc(s, method = "bootstrap", boot.n = 5, progress = "none"))
   set.seed(42)
   expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "bootstrap", boot.n = 5, progress = "none", quiet = TRUE)), expected)
   set.seed(42)
@@ -133,9 +133,7 @@ test_that("ci.auc and ci formula/default methods with smooth = TRUE take method"
 test_that("ci.auc of a smoothed curve takes method and bootstraps DeLong with a warning", {
   s <- smooth(r.s100b)
   set.seed(42)
-  expected <- as.numeric(ci.auc(s, boot.n = 5, progress = "none"))
-  set.seed(42)
-  expect_equal(as.numeric(ci.auc(s, method = "bootstrap", boot.n = 5, progress = "none")), expected)
+  expected <- as.numeric(ci.auc(s, method = "bootstrap", boot.n = 5, progress = "none"))
   # DeLong is not supported for smoothed curves: same bootstrap CI, with a warning
   msg <- "DeLong method is not supported for smoothed ROCs. Using bootstrap instead."
   set.seed(42)
@@ -144,10 +142,14 @@ test_that("ci.auc of a smoothed curve takes method and bootstraps DeLong with a 
   set.seed(42)
   expect_warning(ci <- ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, method = "delong", boot.n = 5, progress = "none", quiet = TRUE), msg, fixed = TRUE)
   expect_equal(as.numeric(ci), expected)
-  # A CI of the unsmoothed curve computed with DeLong is reused with bootstrap, without warning
+  # A CI of the unsmoothed curve computed with DeLong is reused with the
+  # default method of the smoothed curve, without warning
   r <- r.s100b
-  r$ci <- ci.auc(r, method = "delong", boot.n = 5) # boot.n: stored for the reuse
-  set.seed(42)
+  r$ci <- ci.auc(r, method = "delong")
   expect_no_warning(s.ci <- smooth(r, reuse.ci = TRUE)$ci)
-  expect_equal(as.numeric(s.ci), expected)
+  expect_equal(as.numeric(s.ci), as.numeric(ci.auc(s)))
+  expect_identical(attr(s.ci, "method"), "ml")
+  # An explicit bootstrap is kept
+  r$ci <- ci.auc(r, method = "bootstrap", boot.n = 2, progress = "none")
+  expect_identical(attr(smooth(r, reuse.ci = TRUE)$ci, "method"), "bootstrap")
 })

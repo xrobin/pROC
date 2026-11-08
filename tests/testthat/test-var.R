@@ -80,12 +80,12 @@ test_that("var works on smoothed percent curves", {
   s <- smooth(r.s100b)
   s.percent <- smooth(r.s100b.percent)
   set.seed(42)
-  v <- var(s, boot.n = 20, progress = "none")
+  v <- var(s, method = "bootstrap", boot.n = 20, progress = "none")
   set.seed(42)
-  v.percent <- var(s.percent, boot.n = 20, progress = "none")
+  v.percent <- var(s.percent, method = "bootstrap", boot.n = 20, progress = "none")
   expect_equal(v.percent, v * 100^2)
   set.seed(42)
-  expect_equal(var(auc(s.percent), boot.n = 20, progress = "none"), v * 100^2)
+  expect_equal(var(auc(s.percent), method = "bootstrap", boot.n = 20, progress = "none"), v * 100^2)
 })
 
 test_that("var of a smoothed curve with a corrected partial AUC does not warn for each resample", {

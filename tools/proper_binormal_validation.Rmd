@@ -20,7 +20,9 @@ knitr::opts_chunk$set(
 # Validation of the proper binormal fit
 
 This report checks `smooth(method = "proper")` (issue
-#152) against the published results of the "proper" binormal model (PBM). It
+#152), and the standard error of its AUC by the delta method
+(`var(method = "ml")`), against the published results of the "proper"
+binormal model (PBM). It
 is maintainer-only: knit it from the package root with the version of pROC
 to check installed, and mvtnorm:
 
@@ -125,7 +127,9 @@ fit.auc <- function(d) {
     # perfect performance: the limit AUC = 1, without a log-likelihood
     perfect = !is.null(s) && is.na(s$proper$logLik),
     lm = ls.auc(r),
-    empirical = as.numeric(auc(r))
+    empirical = as.numeric(auc(r)),
+    # the delta method; 0 at perfect performance (var() warns)
+    se = if (is.null(s)) NA_real_ else if (is.na(s$proper$logLik)) 0 else sqrt(var(s))
   )
 }
 # P&M Tables 2-4 (pp. 826-827), 50 positive and 50 negative cases: mean AUC
@@ -152,6 +156,28 @@ summary.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
 }))
 summary.continuous$z <- (summary.continuous$mean - summary.continuous$published) / summary.continuous$se
 knitr::kable(summary.continuous, digits = c(2, 0, 4, 4, 3, 4, 3, 0, 0, 1))
+```
+
+### Standard error (delta method)
+
+`var()` and `ci.auc()` of the fit use the delta method on Eq. 36, with the
+inverse of the expected information, leaving out the eigenvector of the
+smallest eigenvalue if it is less than $10^{-6}$ times the next one (P&M
+p. 821). P&M Tables 2–4 give the mean of the estimated SEs ("SE^") next to
+the empirical SD of the AUC estimates (50 + 50 cases):
+
+```{r se}
+published.se <- c(0.050, 0.051, 0.052, 0.033, 0.037, 0.037, 0.018, 0.021, 0.020)
+se.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
+  res <- continuous[[i]][!is.na(continuous[[i]][, "proper"]), , drop = FALSE]
+  data.frame(
+    auc = table1$auc[i], shape = table1$shape[i],
+    sd = sd(res[, "proper"]), published.sd = published$sd[i],
+    mean.se = mean(res[, "se"]), published.se = published.se[i], median.se = median(res[, "se"]),
+    coverage = mean(abs(res[, "proper"] - table1$auc[i]) <= qnorm(0.975) * res[, "se"])
+  )
+}))
+knitr::kable(se.continuous, digits = c(2, 0, 4, 3, 4, 3, 4, 3))
 ```
 
 ### Bias, and comparison with the least-squares fit
@@ -388,6 +414,14 @@ original PROPROC collapsed them into at most 10 or 20, which P&M found
 What remains is a detail of the data generation that P&M do not give, or
 chance. The SDs agree with the published ones within
 `r round(100 * max(abs(summary.continuous$sd / summary.continuous$published.sd - 1)))`%.
+
+**Standard error.** The mean SEs of the delta method are within
+`r sprintf("%.4f", max(abs(se.continuous$mean.se - se.continuous$published.se)))`
+of P&M's (rounded to 3 decimals), and within
+`r round(100 * max(abs(se.continuous$mean.se / se.continuous$sd - 1)))`% of
+the empirical SDs. The coverage of the 95% Wald interval ranges from
+`r sprintf("%.3f", min(se.continuous$coverage))` to
+`r sprintf("%.3f", max(se.continuous$coverage))`.
 
 **Bias.** The proper fit overestimates the AUC by up to
 `r sprintf("%.3f", max(bias$bias.proper))`, most at low AUC and high skew,

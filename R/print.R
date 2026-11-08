@@ -195,6 +195,8 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(signif.ci[1], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), "-", signif.ci[3], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), sep = "")
   if (attr(x, "method") == "delong") {
     cat(" (DeLong)\n", sep = "")
+  } else if (attr(x, "method") == "ml") {
+    cat(" (maximum likelihood)\n", sep = "")
   } else {
     cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates)\n", sep = "")
   }

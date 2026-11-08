@@ -214,17 +214,24 @@ binormal_tridiagonal_solve <- function(t.diag, t.off, y) {
   y
 }
 
+# The tridiagonal block T of the information d (binormal_derivatives)
+# solved for y and for the border, and the Schur complement of T, in O(I)
+binormal_schur <- function(d, y = NULL) {
+  solved <- binormal_tridiagonal_solve(d$t.diag, d$t.off, cbind(d$border, y))
+  border <- solved[, 1:2, drop = FALSE]
+  list(y = solved[, -(1:2)], border = border, complement = d$ab - crossprod(d$border, border))
+}
+
 # The step information^-1 score at theta, solved through the tridiagonal
 # block of the information (Schur complement), in O(I); NULL if it fails
 binormal_step <- function(theta, k, l, observed) {
   d <- binormal_derivatives(theta, k, l, observed)
-  solved <- binormal_tridiagonal_solve(d$t.diag, d$t.off, cbind(d$score[-(1:2)], d$border))
-  schur <- d$ab - crossprod(d$border, solved[, -1])
-  step.ab <- tryCatch(solve(schur, d$score[1:2] - crossprod(d$border, solved[, 1])), error = function(e) NULL)
+  schur <- binormal_schur(d, d$score[-(1:2)])
+  step.ab <- tryCatch(solve(schur$complement, d$score[1:2] - crossprod(d$border, schur$y)), error = function(e) NULL)
   if (is.null(step.ab)) {
     return(NULL)
   }
-  step <- c(step.ab, solved[, 1] - solved[, -1] %*% step.ab)
+  step <- c(step.ab, schur$y - schur$border %*% step.ab)
   if (!all(is.finite(step))) {
     return(NULL)
   }
@@ -325,6 +332,12 @@ smooth_roc_proper <- function(roc, n) {
   fit <- proper_binormal_fit(k, l, proper_binormal_start(k, l))
   if (fit$convergence != 0) {
     stop("ROC curve not smoothable (the proper binormal fit did not converge).")
+  }
+  # A single point (two categories) gives two rates for three parameters (da,
+  # c and its cut-point): a family of proper curves passes through it, with
+  # different AUCs, and the fit is one of them
+  if (I == 2) {
+    warning("A proper curve through a single point is arbitrary and can be misleading.", call. = FALSE)
   }
 
   # The curve (M&P Eqs. 33-34), at cut-points where FPF and TPF alternately
@@ -770,4 +783,108 @@ proper_binormal_interval <- function(da, c) {
   range <- proper_binormal_range(da, c)
   far <- (40 + da * sqrt(1 + c^2)) / (1 - abs(c))
   c(max(range[1], -far), min(range[2], far))
+}
+
+# Variance of the AUC of a curve that roc_utils_has_ml(), as a fraction
+var_roc_ml <- function(smooth.roc) {
+  if (!is.null(smooth.roc$binormal)) {
+    binormal_var_auc(smooth.roc$binormal)
+  } else {
+    proper_binormal_var_auc(smooth.roc$proper)
+  }
+}
+
+# Variance of the AUC of the binormal fit by the delta method, O&M Eq. 6
+# (Obuchowski NA, McClish DK (1997) Stat Med 16:1529-1542, p. 1531):
+# var = f^2 var(a) + g^2 var(b) + 2 f g cov(a, b), with f and g the
+# derivatives of the AUC with respect to a and b (O&M Table I, f.full and
+# g.full; their A and B are a and b). The variance-covariance matrix of a and
+# b is the (a, b) block of A^-1, the inverse of the expected information at
+# the maximum (D&A p. 490): the inverse of the Schur complement of its block
+# of cut-points.
+binormal_var_auc <- function(fit) {
+  d <- binormal_derivatives(c(fit$a, fit$b, fit$cutpoints), fit$categories$controls, fit$categories$cases)
+  vcov <- solve(binormal_schur(d)$complement)
+  fg <- c(f.full(fit$a, fit$b), g.full(fit$a, fit$b))
+  sum(fg * (vcov %*% fg))
+}
+
+# Variance of the AUC of the proper binormal fit by the delta method on Eq. 36
+# (P&M p. 820), from the inverse of the expected information over (da, c, v)
+# (the Hessian of expected second derivatives, P&M p. 819). As P&M
+# (p. 821), the eigenvector of the smallest eigenvalue is left out of the
+# inverse if that eigenvalue is less than 1e-6 times the next one (the
+# Moore-Penrose pseudo-inverse): the log-likelihood can be nearly flat in a
+# direction that does not change the curve. The derivatives of Eq. 36 are
+# central differences (Eq. 36 is computed to machine precision).
+# The limit of perfect performance (no maximum: smooth_roc_proper) has an AUC
+# of 1, of variance 0 as the empirical curve (DeLong) and its bootstrap.
+# At the chance line (AUC 0.5, da = 0 and c = 0, proper_binormal_fit) the
+# AUC of Eq. 36 has a cusp and the variance is unstable (P&M p. 828): it is
+# returned with a warning, as PROPROC returns it.
+proper_binormal_var_auc <- function(fit) {
+  if (is.na(fit$logLik)) {
+    return(0)
+  }
+  if (fit$da == 0 && fit$c == 0) {
+    warning("The ML variance of a proper curve with AUC == 0.5 is unstable and can be misleading.", call. = FALSE)
+  }
+  # A single point (smooth_roc_proper): the direction left out below is the
+  # one along which the curves through the point change their AUC
+  if (nrow(fit$categories) == 2) {
+    warning("The ML variance of a proper curve through a single point is unreliable and can be misleading.", call. = FALSE)
+  }
+  info <- proper_binormal_information(fit$da, fit$c, fit$cutpoints, fit$categories$controls, fit$categories$cases)
+  e <- eigen(info, symmetric = TRUE) # decreasing eigenvalues
+  n <- length(e$values)
+  keep <- seq_len(n)
+  if (e$values[n] < 1e-6 * e$values[n - 1]) {
+    keep <- keep[-n]
+  }
+  h <- 1e-6
+  gradient <- c(
+    proper_binormal_auc(fit$da + h, fit$c) - proper_binormal_auc(fit$da - h, fit$c),
+    proper_binormal_auc(fit$da, fit$c + h) - proper_binormal_auc(fit$da, fit$c - h),
+    numeric(n - 2)
+  ) / (2 * h)
+  sum(crossprod(e$vectors[, keep], gradient)^2 / e$values[keep])
+}
+
+# Expected information of the PBM over (da, c, v): for the controls and the
+# cases, the sum over the categories of n p' p'^T / p (as for the binormal
+# fit, binormal_derivatives), with p the probability of a category (M&P
+# Eqs. 24-25), the difference of FPF (or TPF) at its two cut-points.
+# FPF and TPF are 1 and 0 at the ends of the range of Eq. 35 for any (da, c).
+proper_binormal_information <- function(da, c, v, k, l) {
+  range <- proper_binormal_range(da, c)
+  groups <- list(list(n = k, slope = 1 - c, sign = -1), list(n = l, slope = 1 + c, sign = 1))
+  Reduce(`+`, lapply(groups, function(g) {
+    p <- proper_binormal_probs(proper_binormal_args(c(range[1], v, range[2]), da, c, g$slope, g$sign))
+    rate <- proper_binormal_rate_gradient(v, da, c, g$slope, g$sign)
+    zero <- numeric(ncol(rate))
+    gradient <- rbind(zero, rate) - rbind(rate, zero)
+    w <- ifelse(p > 0, sum(g$n) / p, 0)
+    crossprod(gradient * sqrt(w))
+  }))
+}
+
+# Derivatives of FPF (slope 1 - c, sign -1) or TPF (slope 1 + c, sign 1),
+# Eqs. 33-34, with respect to da, c and the cut-points v, at each cut-point
+# (one row each). The rate is Phi(A) + Phi(B) up to the constant H(c) (B
+# vanishes for c = 0), with s = da sqrt(1 + c^2), A = -slope v + sign s / 2
+# and B = -slope v + s / (2 c) (proper_binormal_args), so that
+# d/dx = phi(A) dA/dx + phi(B) dB/dx.
+proper_binormal_rate_gradient <- function(v, da, c, slope, sign) {
+  args <- proper_binormal_args(v, da, c, slope, sign)
+  root <- sqrt(1 + c^2)
+  phi.A <- dnorm(args$A)
+  dda <- phi.A * sign * root / 2
+  dc <- phi.A * sign * (da * c / (2 * root) - v)
+  if (c != 0) {
+    phi.B <- dnorm(args$B)
+    # phi(B) underflows to 0 as c tends to 0, where dB/dc diverges
+    dda <- dda + ifelse(phi.B > 0, phi.B * root / (2 * c), 0)
+    dc <- dc + ifelse(phi.B > 0, phi.B * (-sign * v - da / (2 * c^2 * root)), 0)
+  }
+  cbind(dda, dc, diag(proper_binormal_rate_dv(args, c, slope), length(v)), deparse.level = 0)
 }

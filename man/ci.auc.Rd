@@ -54,7 +54,8 @@ method = NULL)
   in percent. Default: 0.95, resulting in a 95\% CI.
   }
   \item{method}{the method to use, either \dQuote{delong} or
-    \dQuote{bootstrap}. The first letter is sufficient. If omitted, the
+    \dQuote{bootstrap}, or \dQuote{ml} for smoothed curves. The first
+    letter is sufficient. If omitted, the
     appropriate method is selected as explained in details.
   }
   \item{boot.n}{the number of bootstrap replicates. Default: 2000.}
@@ -96,17 +97,20 @@ method = NULL)
 }
 
 \details{
-  This function computes the CI of an AUC. Two methods are available:
-  \dQuote{delong} and \dQuote{bootstrap} with the parameters defined in \dQuote{roc$auc} to
+  This function computes the CI of an AUC. Three methods are available:
+  \dQuote{delong}, \dQuote{bootstrap} and \dQuote{ml} with the parameters defined in \dQuote{roc$auc} to
   compute a CI. When it is called with two vectors (response, predictor)
   or a formula (response~predictor) arguments, the \code{\link{roc}}
   function is called to build the ROC curve first.
 
   The default is to use the \dQuote{delong} method, except for comparison of
-  partial AUC and smoothed curves, where \code{bootstrap} is used. Using
+  partial AUC and smoothed curves. The full AUC of curves smoothed with
+  \code{method="binormal"} or \code{"proper"} uses \dQuote{ml};
+  partial AUC and other smoothed curves use \code{bootstrap}. Using
   \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
-  partial AUC it is an error, and smoothed curves are always bootstrapped
-  (with a warning if \code{method="delong"}).
+  partial AUC it is an error, and smoothed curves are bootstrapped
+  instead (with a warning). \dQuote{ml} is an error for anything
+  else than the full AUC of binormal and proper smoothed curves.
 
   With \code{method="bootstrap"}, the function calls \code{\link{auc}}
   \code{boot.n} times. For more details about the bootstrap, see the Bootstrap section in
@@ -121,6 +125,11 @@ method = NULL)
   With \code{method="delong"}, the variance of the AUC is computed as
   defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014) 
   and the CI is deduced with \code{\link{qnorm}}.
+
+  With \code{method="ml"}, the variance of the AUC is computed as
+  described in \code{\link{var}}, and the CI is deduced with
+  \code{\link{qnorm}}: the standard confidence interval of Efron and
+  Tibshirani (1993, p. 154, Eq. 12.5).
   
   CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
   methods returns an error.
@@ -165,7 +174,8 @@ bound, the central value and the upper bound of the CI, and the following attrib
 \item{auc}{an object of class \dQuote{\link{auc}} stored for reference about the
   computed AUC details (partial, percent, ...)}
 
-The central value is the AUC itself with \code{method="delong"}, and the
+The central value is the AUC itself with \code{method="delong"} and
+\code{"ml"}, and the
 median of the bootstrapped AUCs with \code{method="bootstrap"}.
 
 The \code{aucs} item is not included in this list since version 1.2 for
@@ -175,6 +185,9 @@ consistency reasons.
   James Carpenter and John Bithell (2000) ``Bootstrap confidence intervals:
   when, which, what? A practical guide for medical statisticians''.
   \emph{Statistics in Medicine} \bold{19}, 1141--1164.
+
+  Bradley Efron and Robert J. Tibshirani (1993) \emph{An Introduction to
+  the Bootstrap}. Chapman & Hall, New York.
   DOI: \doi{10.1002/(SICI)1097-0258(20000515)19:9<1141::AID-SIM479>3.0.CO;2-F}.
 
   Elisabeth R. DeLong, David M. DeLong and Daniel L. Clarke-Pearson
@@ -215,7 +228,10 @@ auc1 <- auc(roc1, partial.auc = c(1, .8), partial.auc.focus = "se",
 ci.auc(auc1)}\dontshow{
 ci.auc(auc1, boot.n = 10)}
 
-# Smoothed curves are bootstrapped as well
+# Binormal and proper smoothed curves: ML method
+ci.auc(smooth(roc1))
+
+# Other smoothed curves are bootstrapped
 \dontrun{
 ci.auc(smooth(roc1, method = "density"))}\dontshow{
 ci.auc(smooth(roc1, method = "density"), boot.n = 10)}

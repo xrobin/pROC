@@ -307,7 +307,7 @@ test_that("boot.n must be a non-negative number", {
       }
     }
     expect_boot.n_error(ci.auc(r.s100b, method = "bootstrap", boot.n = boot.n))
-    expect_boot.n_error(ci.auc(smooth(r.s100b), boot.n = boot.n))
+    expect_boot.n_error(ci.auc(smooth(r.s100b), method = "bootstrap", boot.n = boot.n))
     expect_boot.n_error(var(r.s100b, method = "bootstrap", boot.n = boot.n))
     expect_boot.n_error(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n))
     expect_boot.n_error(roc.test(r.s100b, r.ndka, method = "bootstrap", boot.n = boot.n))
@@ -338,7 +338,7 @@ test_that("boot.n is read as seq_len() does", {
   # Every function reports the number of replicates it ran
   s <- smooth(r.s100b)
   expect_equal(attr(a, "boot.n"), 2)
-  expect_equal(attr(ci.auc(s, boot.n = 2.5), "boot.n"), 2)
+  expect_equal(attr(ci.auc(s, method = "bootstrap", boot.n = 2.5), "boot.n"), 2)
   expect_equal(attr(ci.se(r.s100b, boot.n = 2.5), "boot.n"), 2)
   expect_equal(attr(ci.se(s, boot.n = 2.5), "boot.n"), 2)
   expect_equal(attr(ci.sp(r.s100b, boot.n = 2.5), "boot.n"), 2)
