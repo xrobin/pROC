@@ -119,8 +119,9 @@ method = NULL)
   be performed and an error is issued.
 
   With \code{method="delong"}, the variance of the AUC is computed as
-  defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014) 
-  and the CI is deduced with \code{\link{qnorm}}.
+  defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014).
+  The CI is a normal interval on the logit scale, back-transformed to the
+  AUC scale (Pepe, 2003, p. 107).
   
   CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
   methods returns an error.
@@ -181,7 +182,10 @@ consistency reasons.
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
-  
+
+  Margaret Sullivan Pepe (2003) \emph{The Statistical Evaluation of Medical
+  Tests for Classification and Prediction}. Oxford University Press.
+
   Xu Sun and Weichao Xu (2014) ``Fast Implementation of DeLongs Algorithm for Comparing
   the Areas Under Correlated Receiver Operating Characteristic Curves''. \emph{IEEE Signal
   Processing Letters}, \bold{21}, 1389--1393. 

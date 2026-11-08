@@ -81,19 +81,14 @@ ci_auc_delong <- function(roc, conf.level) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = V$theta, sd = sqrt(S))
-  # In some rare cases we have ci[3] > 1 or ci[1] < 0
-  ci[ci > 1] <- 1
-  ci[ci < 0] <- 0
-
-  # According to Pepe (p. 107), we should probably be doing something like
-  # log(roc$auc / (1 - roc$auc)) + pnorm( 1-conf.level/2) * (S / (roc$auc * (1 - roc$auc)))
-  # log(roc$auc / (1 - roc$auc)) - pnorm( 1-conf.level/2) * (S / (roc$auc * (1 - roc$auc)))
-  # for logit AUC, so that for AUC:
-  # exp(log(roc$auc / (1 - roc$auc)) + pnorm( 1-conf.level/2) * (S / (roc$auc * (1 - roc$auc)))) * (1 - roc$auc)
-  # exp(log(roc$auc / (1 - roc$auc)) - pnorm( 1-conf.level/2) * (S / (roc$auc * (1 - roc$auc)))) * (1 - roc$auc)
-  # However the bounds are very very much smaller (about 10 times) than bootstrap, which seems unrealistic
-  # Stay with normal conf interval for now.
+  # S == 0 (AUC of 0 or 1, or all values tied): no interval; the logit interval would be NaN.
+  # conf.level == 0: no interval either, and plogis(qlogis(theta)) can be 1 ulp off theta
+  if (S == 0 || conf.level == 0) {
+    return(rep(V$theta, 3))
+  }
+  # Normal interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
+  half <- qnorm(1 - (1 - conf.level) / 2) * sqrt(S) / (V$theta * (1 - V$theta))
+  ci <- c(plogis(qlogis(V$theta) - half), V$theta, plogis(qlogis(V$theta) + half))
 
   return(ci)
 }

@@ -3,12 +3,36 @@ data(aSAH)
 
 context("ci.auc")
 
-expected.ci.auc <- c(0.501244999271703, 0.611957994579946, 0.722670989888189)
+expected.ci.auc <- c(0.497330565621015, 0.611957994579946, 0.715404233940336)
 
 test_that("ci.auc with delong works", {
   test.ci <- ci.auc(r.ndka)
   expect_is(test.ci, "ci.auc")
   expect_equal(as.numeric(test.ci), expected.ci.auc)
+})
+
+test_that("ci.auc with delong stays within (0, 1) on the logit scale", {
+  r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(4.5, 6, 7, 8, 9), quiet = TRUE)
+  expect_equal(as.numeric(ci.auc(r)), c(0.572180762635470, 0.96, 0.997683441755321))
+})
+
+test_that("ci.auc with delong handles direction and extreme conf.level", {
+  r.rev <- roc(aSAH$outcome, aSAH$ndka, direction = ">", quiet = TRUE)
+  expect_equal(as.numeric(ci.auc(r.rev)), 1 - rev(expected.ci.auc))
+  expect_equal(as.numeric(ci.auc(r.ndka, conf.level = 1)), c(0, as.numeric(auc(r.ndka)), 1))
+  r <- roc(controls = 1:5, cases = c(1.5, 2.5), direction = "<", quiet = TRUE)
+  ci <- as.numeric(ci.auc(r, conf.level = 0))
+  expect_identical(ci, rep(ci[2], 3))
+})
+
+test_that("ci.auc with delong of a perfect curve is a null interval", {
+  r <- roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE)
+  expect_warning(ci <- ci.auc(r), "ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.", fixed = TRUE)
+  expect_identical(as.numeric(ci), c(1, 1, 1))
+  r0 <- roc(controls = c(4, 5, 6), cases = c(1, 2, 3), direction = "<", quiet = TRUE)
+  expect_identical(as.numeric(ci.auc(r0)), c(0, 0, 0))
+  rt <- roc(controls = rep(1, 3), cases = rep(1, 3), quiet = TRUE)
+  expect_identical(as.numeric(ci.auc(rt, conf.level = 1)), c(0.5, 0.5, 0.5))
 })
 
 
@@ -26,7 +50,7 @@ test_that("ci.auc works with a formula", {
   expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH)), expected.ci.auc)
   expect_equal(
     as.numeric(ci.auc(outcome ~ ndka, data = aSAH, subset = (gender == "Female"))),
-    c(0.5261398281, 0.6671428571, 0.8081458862)
+    c(0.515076172852731, 0.667142857142857, 0.790883412202345)
   )
 })
 

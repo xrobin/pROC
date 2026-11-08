@@ -13,6 +13,7 @@
   * Added maximum-likelihood fitting of "proper" binormal ROC curves with 'smooth(method = "proper")' (issue #152)
   * 'smooth(method = "binormal")' fits the binormal model by maximum likelihood instead of least squares: smoothed curves, their AUC and their coordinates change
   * The "obuchowski" methods of 'var', 'cov' and 'power.roc.test' use the maximum-likelihood binormal parameters, as in Obuchowski and McClish (1997)
+  * The DeLong CI of the AUC is computed on the logit scale
   * Ordered predictors are no longer converted to numeric (issue #63, https://xavier.robin.info/en/blog/2026/10/06/breaking-changes-for-ordered-predictors-in-upcoming-proc-1.20.0). Thresholds are the levels plus an Inf sentinel; pass those labels (not numbers) to coords(), ci.thresholds(), ci.coords() and plot.roc(print.thres).
   * Added ggplot2 layers for 'ggroc' plots: 'geom_polygon_auc', 'geom_polygon_max_auc', 'geom_roc_identity', 'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and 'geom_errorbar_ci' (issue #129)
   * All-in-one calls are superseded by modular calls, described in the new '?all_in_one_calls' help page (issues #70 and #149):
