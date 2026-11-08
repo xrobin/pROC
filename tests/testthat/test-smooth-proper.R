@@ -248,7 +248,8 @@ test_that("a single category is not smoothable", {
 
 test_that("a single interior point gives a proper curve through it", {
   r <- roc(controls = c(1, 1, 1, 2, 2), cases = c(1, 2, 2, 2, 2), quiet = TRUE)
-  s <- smooth(r, method = "proper")
+  # the curve through it is arbitrary
+  expect_warning(s <- smooth(r, method = "proper"), "A proper curve through a single point is arbitrary and can be misleading.", fixed = TRUE)
   expect_true(all(diff(proper_slopes(s)) <= 0))
   # the fit has the likelihood of the saturated model (the data are the
   # categories' observed proportions)
@@ -260,7 +261,7 @@ test_that("a single interior point gives a proper curve through it", {
 test_that("bootstrap CI of a proper fit", {
   skip_slow()
   s <- proper.s100b
-  ci <- ci.auc(s, boot.n = 10)
+  ci <- ci.auc(s, method = "bootstrap", boot.n = 10)
   expect_is(ci, "ci.auc")
   expect_true(ci[1] <= ci[2] && ci[2] <= ci[3])
 })

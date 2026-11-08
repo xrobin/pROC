@@ -1132,3 +1132,25 @@ roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitiv
   }
   sprintf(pattern, threshold, specificity, sensitivity)
 }
+
+# The ML method (var_roc_ml) applies to the full AUC ('auc', that of the
+# curve by default) of curves smoothed with method = "binormal" or "proper"
+# by pROC 1.20 or later, which keep the fit (smooth_roc_binormal_params:
+# curves of pROC 1.19 hold a least-squares model instead)
+roc_utils_has_ml <- function(roc, auc = roc$auc) {
+  inherits(roc, "smooth.roc") && !isTRUE(has.partial.auc.auc(auc)) && (!is.null(roc$binormal) || !is.null(roc$proper))
+}
+
+roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
+  if (!roc_utils_has_ml(roc, auc)) {
+    stop("The ML method is only supported for the full AUC of curves smoothed with method=\"binormal\" or \"proper\". Use method=\"bootstrap\" instead.")
+  }
+}
+
+# The standard confidence interval of an AUC, AUC +- z SE (Efron &
+# Tibshirani 1993, p. 154, Eq. 12.5), as (lower, AUC, upper), bounded to
+# [0, 1]: the bounds can go beyond in rare cases
+roc_utils_normal_ci <- function(auc, sd, conf.level) {
+  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = auc, sd = sd)
+  pmin(pmax(ci, 0), 1)
+}

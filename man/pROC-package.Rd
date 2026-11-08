@@ -160,7 +160,8 @@ aSAH \%>\%
 	  bootstrapping only 100 replicates.
 
 	  DeLong does not always apply. It covers the AUC of an empirical curve, so a
-	  smoothed curve, a partial AUC, or an interval of sensitivities,
+	  smoothed curve (except the full AUC of binormal and proper smoothing,
+	  which has the \dQuote{ml} method), a partial AUC, or an interval of sensitivities,
 	  specificities, thresholds or coordinates is bootstrapped whatever you ask
 	  for. That is usually why a computation is slow.
 
