@@ -714,13 +714,27 @@ proper_binormal_fit_from <- function(start, k, l) {
     c(numerical, g)
   }
   par <- c(start[["da"]], atanh(start[["c"]]), proper_binormal_start_v(start[["da"]], start[["c"]], k, l))
-  if (!is.finite(minus.loglik(par))) { # the start does not fit the data
+  best <- list(par = par, value = minus.loglik(par))
+  if (!is.finite(best$value)) { # the start does not fit the data
     return(list(da = start[["da"]], c = start[["c"]], logLik = -Inf, cutpoints = NULL, convergence = 1))
   }
-  o <- optim(par, minus.loglik, gradient, method = "BFGS", control = list(maxit = 5000, reltol = 1e-12))
+  # optim's BFGS (vmmin) can return a point it did not evaluate (the last
+  # trial point of a line search where no parameter changed by more than its
+  # own test, which can be outside the range, e.g. c changing sign around
+  # 0), or the objective of another point. The fit is the best point with a
+  # finite objective that optim evaluated, so that its parameters and logLik
+  # come from the same evaluation; convergence is optim's.
+  objective <- function(par) {
+    value <- minus.loglik(par)
+    if (value < best$value) {
+      best <<- list(par = par, value = value)
+    }
+    value
+  }
+  o <- optim(par, objective, gradient, method = "BFGS", control = list(maxit = 5000, reltol = 1e-12))
   list(
-    da = abs(o$par[1]), c = tanh(o$par[2]), logLik = -o$value,
-    cutpoints = o$par[-(1:2)], convergence = o$convergence
+    da = abs(best$par[1]), c = tanh(best$par[2]), logLik = -best$value,
+    cutpoints = best$par[-(1:2)], convergence = o$convergence
   )
 }
 

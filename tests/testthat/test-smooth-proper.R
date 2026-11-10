@@ -165,6 +165,25 @@ test_that("a fit started at d_a = 0 can leave it", {
   expect_true(from0$da > 1)
 })
 
+test_that("the fit lies inside the range of Eq. 35, with its logLik", {
+  # The maximum is about c = 0: a step of optim moved atanh(c) across 0 by
+  # about 1e-16, below optim's test for an unchanged parameter, and optim
+  # returned that point out of the range (logLik -Inf) with the logLik of
+  # another point (-13.18)
+  s <- smooth(roc(controls = c(1, 1, 2, 2, 3, 3), cases = c(1, 2, 3, 1, 2, 3), quiet = TRUE), method = "proper")
+  p <- s$proper
+  loglik <- pROC:::proper_binormal_loglik(p$cutpoints, p$da, p$c, p$categories$controls, p$categories$cases)
+  expect_identical(loglik, p$logLik)
+  # The same from starts at about c = 0 (the step above depends on the
+  # platform; these ones changed the sign of c on Linux x86_64)
+  k <- p$categories$controls
+  l <- p$categories$cases
+  for (c in c(-1.1e-16, 1e-16, 3e-16)) {
+    fit <- pROC:::proper_binormal_fit_from(c(da = 1e-16, c = c), k, l)
+    expect_identical(pROC:::proper_binormal_loglik(fit$cutpoints, fit$da, fit$c, k, l), fit$logLik)
+  }
+})
+
 test_that("the skewed starts find a maximum the least-squares start misses", {
   # A sample of 25 + 25 cases of a Pesce & Metz population: the
   # least-squares c is about 0, and the starts at c = 0 and +-c all reached
