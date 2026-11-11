@@ -631,7 +631,27 @@ proper_binormal_fit <- function(k, l, start) {
     fits <- c(fits, lapply(more, proper_binormal_fit_from, k = k, l = l))
     loglik <- vapply(fits, `[[`, numeric(1), "logLik")
   }
-  fits[[which.max(loglik)]]
+  best <- fits[[which.max(loglik)]]
+  # The chance line (da = 0 and c = 0, P&M p. 820, note) can be the maximum.
+  # The log-likelihood has a cusp there (P&M p. 828): it falls linearly away
+  # from it, and the search stalls next to it. Its maximum is in closed form
+  # (proper_binormal_chance_line): if no fit is better, it is the fit.
+  chance <- proper_binormal_chance_line(k, l)
+  if (!isTRUE(best$logLik > chance$logLik + 1e-10 * max(1, abs(chance$logLik)))) {
+    best <- chance
+  }
+  best
+}
+
+# Maximum of the likelihood on the chance line, where FPF = TPF = Phi(-v):
+# each category has the pooled proportion of the controls and cases, and the
+# cut-points are at the pooled cumulative proportions
+proper_binormal_chance_line <- function(k, l) {
+  p <- (k + l) / sum(k, l)
+  list(
+    da = 0, c = 0, cutpoints = qnorm(cumsum(p)[-length(p)]),
+    logLik = sum(k[k > 0] * log(p[k > 0])) + sum(l[l > 0] * log(p[l > 0])), convergence = 0
+  )
 }
 
 proper_binormal_isopleth_starts <- function(k, l) {
