@@ -136,10 +136,8 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
 
 ### Working with the maintainer
-- **Every analysis of a bug starts with "The bug":**
-  - the call;
-  - what you get;
-  - what you should get, and why;
+- **Describe the bug before proposing a fix**, so that the reason for the fix is clear. Cover what is relevant, in plain prose, with no fixed format:
+  - the call, what you get, and what you should get, and why;
   - who is affected (in the release, or new in this development cycle);
   - how bad it is (silent wrong numbers, an error, cosmetic, inconsistency).
 
