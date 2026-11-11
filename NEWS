@@ -24,6 +24,7 @@
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
   * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another coordinate system (for example 'coord_cartesian()') to replace it.
   * Added a ggplot2 screenshot gallery vignette
+  * DeLong and bootstrap 'roc.test' now all return a 'conf.int' of the difference (issue #73)
   * 'size' is deprecated in 'ggroc' and the ggplot2 line and polygon layers in favour of 'linewidth'
 
 1.19.1 (2026-08-27)
