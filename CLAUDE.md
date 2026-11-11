@@ -123,12 +123,18 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
   - it is wrong;
   - it misses a real, non-obvious specification;
   - a new argument needs documenting.
-- **Never restate a fix in the Rd.** NEWS records fixes.
+- **Never restate a fix in the Rd.** The commit message records fixes.
 - **Don't quote error messages in the Rd,** don't state what a definition already implies, and don't repeat the same paragraph across pages.
-- **NEWS:**
-  - one line per user-visible change;
-  - no entries for functions that are new in the release being prepared: fold them into the "Added" entry;
-  - in-PR fix-ups get no entry.
+- **NEWS is short.** It tells users whether an upgrade affects them; details belong in the commit message, the Rd or the linked issue. See the 1.20 cleanup (53dc566a) for the target style.
+  - Only user-visible changes, one short line each: what changed, not why or how. No rationale, workaround, example, or "also fixes" clause. Example: "DeLong and bootstrap 'roc.test' now all return a 'conf.int' of the difference (issue #73)".
+  - At most one entry per feature, PR or issue, however many methods or commits it spans: the CIs of DeLong and bootstrap `roc.test` share the line above. If the PR or issue already has an entry, extend that one.
+  - Read the current NEWS section before writing: extend an existing entry rather than add one, and never repeat a change that another entry (including the bug-hunt summary) already covers.
+  - Group related changes under one entry with sub-items, and breaking changes under "Breaking changes".
+  - Name families, not every member: "'text' and 'points' methods", not the list of classes.
+  - Bug fixes get no individual entry: the summary line of the bug hunt counts them.
+  - Changes that alter results (new statistical method, different CI, more accurate AUC) get an entry, even when they are fixes.
+  - No entry for anything new or changed earlier in the same development cycle: fold new functions into their "Added" entry, and drop entries for in-PR fix-ups.
+  - No entry for tests, CI, refactoring or Rd changes. Exception: an Rd change that closes a GitHub issue, e.g. "Documented the justification of the stratified bootstrap (issue #131)".
 
 ### Commits
 - **One commit holds code, tests, Rd and NEWS together.** Fold in-PR fix-ups into the commit that introduced the problem.
@@ -136,7 +142,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
 
 ### Working with the maintainer
-- **Every analysis of a bug starts with "The bug":**
+- **Every analysis of a bug starts by describing the bug:**
   - the call;
   - what you get;
   - what you should get, and why;
