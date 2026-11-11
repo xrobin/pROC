@@ -264,3 +264,20 @@ test_that("bootstrap CI of a proper fit", {
   expect_is(ci, "ci.auc")
   expect_true(ci[1] <= ci[2] && ci[2] <= ci[3])
 })
+
+test_that("the fit is the chance line when no proper curve is better", {
+  # Empirical AUC below 0.5: the search stalls next to the chance line,
+  # where the log-likelihood has a cusp
+  r <- roc(controls = c(2, 4, 6, 8), cases = c(1, 3, 5, 7), direction = "<", quiet = TRUE)
+  s <- smooth(r, method = "proper")
+  expect_identical(s$proper[c("da", "c")], list(da = 0, c = 0))
+  k <- s$proper$categories$controls
+  l <- s$proper$categories$cases
+  p <- (k + l) / sum(k, l)
+  expect_equal(s$proper$logLik, sum(k * log(p)) + sum(l * log(p)))
+  expect_equal(pROC:::proper_binormal_loglik(s$proper$cutpoints, 0, 0, k, l), s$proper$logLik)
+  expect_equal(s$sensitivities, 1 - s$specificities)
+  expect_equal(as.numeric(auc(s)), 0.5)
+  # a curve above the chance line is not replaced
+  expect_gt(proper.s100b$proper$da, 0)
+})
