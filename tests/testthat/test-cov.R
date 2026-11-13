@@ -153,6 +153,14 @@ test_that("obuchowski cov of percent curves with partial AUC is the fraction cov
   )
 })
 
+test_that("obuchowski cov of corrected partial AUCs is on the corrected scale", {
+  # McClish: (1 + (auc - min) / (max - min)) / 2, with min = 0.11 * 0.09 / 2 and max = 0.09
+  slope <- 1 / (2 * (0.09 - 0.11 * 0.09 / 2))
+  r1 <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.99), partial.auc.correct = TRUE)
+  r2 <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE, partial.auc = c(0.9, 0.99), partial.auc.correct = TRUE)
+  expect_equal(cov(r1, r2, method = "obuchowski"), cov(r.s100b.partial1, r.ndka.partial1, method = "obuchowski") * slope^2)
+})
+
 test_that("cov re-pairs curves with NAs at different positions", {
   x1 <- aSAH$s100b
   x2 <- aSAH$ndka

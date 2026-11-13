@@ -1,5 +1,5 @@
 1.19.9999 (development)
-  * 130 bugs fixed and 77 documentation and test problems corrected (https://xavier.robin.info/en/blog/2026/11/02/130-bugs-fixed-in-proc-1.20 and pr #148)
+  * 131 bugs fixed and 77 documentation and test problems corrected (https://xavier.robin.info/en/blog/2026/11/02/130-bugs-fixed-in-proc-1.20 and pr #148)
   * Breaking changes:
     - 'geom_polygon_auc' has no 'legacy.axes' argument
     - The formula methods of 'plot.roc' and 'lines.roc' take 'subset' and 'na.action' after '...'
