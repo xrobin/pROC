@@ -24,7 +24,6 @@ roc_utils_draw_max_auc_polygon <- function(auc, col = "#EEEEEE", lty = par("lty"
 
 roc_utils_draw_auc_polygon <- function(roc, auc, col = "gainsboro", lty = par("lty"),
                                         density = NULL, angle = 45, border = NULL, ...) {
-  percent <- attr(auc, "percent")
   partial.auc <- attr(auc, "partial.auc")
   partial.auc.focus <- attr(auc, "partial.auc.focus")
   se <- sort(roc$sensitivities, decreasing = TRUE)

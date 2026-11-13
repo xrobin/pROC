@@ -220,13 +220,6 @@ S3method("geom_errorbar_ci", "ci.thresholds")
 # Delayed registration: ggplot2 is in Suggests (R >= 3.6)
 S3method(ggplot2::ggplot_add, ggroc_layer)
 
-#export(select)
-#export(select_)
-#importFrom("dplyr", "select")
-#importFrom("dplyr", "select_")
-#S3method("select", "roc")
-#S3method("select_", "roc")
-
 # Fix R CMD check warning false positives
 # "apparent S3 methods exported but not registered"
 # Note: these methods have an export() above
