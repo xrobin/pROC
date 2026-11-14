@@ -94,33 +94,64 @@ ci_auc_delong <- function(roc, conf.level) {
 # Runs the placements and main calculations for the paired DeLong's test
 #  so that they can be easily used by both the test and CI functions.
 delong.paired.calculations <- function(roc1, roc2) {
-  n <- length(roc1$controls)
-  m <- length(roc1$cases)
-
-  VR <- delongPlacements(roc1)
-  VS <- delongPlacements(roc2)
-
-  SX <- matrix(NA, ncol = 2, nrow = 2)
-  SX[1, 1] <- sum((VR$X - VR$theta) * (VR$X - VR$theta)) / (m - 1)
-  SX[1, 2] <- sum((VR$X - VR$theta) * (VS$X - VS$theta)) / (m - 1)
-  SX[2, 1] <- sum((VS$X - VS$theta) * (VR$X - VR$theta)) / (m - 1)
-  SX[2, 2] <- sum((VS$X - VS$theta) * (VS$X - VS$theta)) / (m - 1)
-
-  SY <- matrix(NA, ncol = 2, nrow = 2)
-  SY[1, 1] <- sum((VR$Y - VR$theta) * (VR$Y - VR$theta)) / (n - 1)
-  SY[1, 2] <- sum((VR$Y - VR$theta) * (VS$Y - VS$theta)) / (n - 1)
-  SY[2, 1] <- sum((VS$Y - VS$theta) * (VR$Y - VR$theta)) / (n - 1)
-  SY[2, 2] <- sum((VS$Y - VS$theta) * (VS$Y - VS$theta)) / (n - 1)
-
-  S <- SX / m + SY / n
+  calcs <- delong.cov(list(roc1, roc2))
   L <- c(1, -1)
-  sig <- sqrt(L %*% S %*% L)
-  d <- VR$theta - VS$theta
-  # A single case or control: the variance is undefined (as in ci_auc_delong)
-  if (m <= 1 || n <= 1) {
-    return(list("d" = d, "sig" = NA_real_))
+  # A single case or control: cov() and thus sig are NA (as in ci_auc_delong)
+  list("d" = sum(L * calcs$theta), "sig" = sqrt(drop(L %*% calcs$S %*% L)))
+}
+
+# AUCs (theta) of k paired ROC curves and their covariance matrix S,
+# DeLong et al. (1988) p. 840: S = S10 / m + S01 / n
+delong.cov <- function(rocs) {
+  V <- lapply(rocs, delongPlacements)
+  X <- do.call(cbind, lapply(V, `[[`, "X")) # V10, m x k
+  Y <- do.call(cbind, lapply(V, `[[`, "Y")) # V01, n x k
+  list(
+    theta = vapply(V, `[[`, numeric(1), "theta"),
+    S = stats::cov(X) / nrow(X) + stats::cov(Y) / nrow(Y)
+  )
+}
+
+# Validates a list of curves for the k-curve DeLong methods (roc.test.list,
+# cov.list). Returns them as roc objects carrying their AUC.
+delong_list_rocs <- function(rocs) {
+  if (length(rocs) < 2) {
+    stop("At least 2 ROC curves are required.")
   }
-  return(list("d" = d, "sig" = sig[[1]]))
+  rocs <- lapply(rocs, function(roc) {
+    if (methods::is(roc, "auc")) {
+      # take the roc but keep the auc specifications
+      auc <- roc
+      roc <- attr(auc, "roc")
+      attr(auc, "roc") <- NULL
+      roc$auc <- auc
+    }
+    if (methods::is(roc, "smooth.roc")) {
+      stop("DeLong's method is not supported for smoothed ROCs.")
+    }
+    if (!methods::is(roc, "roc")) {
+      stop("All the elements of the list must be 'roc' or 'auc' objects.")
+    }
+    if (is.null(roc$auc)) {
+      roc$auc <- auc(roc)
+    }
+    if (has.partial.auc(roc)) {
+      stop("DeLong's method is not supported for partial AUC.")
+    }
+    roc
+  })
+  for (roc in rocs[-1]) {
+    if (!are.paired(rocs[[1]], roc)) {
+      stop("DeLong's method for a list of ROC curves requires paired ROC curves.")
+    }
+    if (!identical(unname(rocs[[1]]$response), unname(roc$response))) {
+      stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
+    }
+    if (rocs[[1]]$direction != roc$direction) {
+      warning("DeLong's method should not be applied to ROC curves with a different direction.")
+    }
+  }
+  rocs
 }
 
 # Calls delongPlacementsCpp safely

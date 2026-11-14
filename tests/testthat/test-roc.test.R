@@ -718,3 +718,83 @@ test_that("roc.test, cov and power.roc.test take the same 'paired' argument", {
   expect_error(cov(r1, r3, paired = TRUE), msg, fixed = TRUE)
   expect_error(power.roc.test(r1, r3, paired = TRUE), msg, fixed = TRUE)
 })
+
+
+test_that("roc.test with a list of curves works", {
+  rocs <- list(s100b = r.s100b, ndka = r.ndka, wfns = r.wfns)
+  ht <- roc.test(rocs)
+  expect_s3_class(ht, "htest")
+  expect_equal(ht$statistic, c("X-squared" = 12.5127282824235))
+  expect_equal(ht$parameter, c(df = 2))
+  expect_equal(ht$p.value, pchisq(12.5127282824235, 2, lower.tail = FALSE))
+  expect_equal(ht$estimate, c("AUC of s100b" = 0.731368563685637, "AUC of ndka" = 0.611957994579946, "AUC of wfns" = 0.823678861788618))
+  expect_null(ht$conf.int)
+  expect_identical(ht$data.name, "rocs")
+  # The same hypothesis with other contrasts, also redundant ones
+  expect_equal(roc.test(rocs, contrast = rbind(c(1, -1, 0), c(1, 0, -1)))$statistic, ht$statistic)
+  redundant <- roc.test(rocs, contrast = rbind(c(1, -1, 0), c(1, 0, -1), c(0, 1, -1)))
+  expect_equal(redundant[c("statistic", "parameter")], ht[c("statistic", "parameter")])
+  # auc objects and unnamed lists
+  ht.auc <- roc.test(list(auc(r.s100b), r.ndka, auc(r.wfns)))
+  expect_equal(ht.auc$statistic, ht$statistic)
+  expect_named(ht.auc$estimate, paste("AUC of", c("roc1", "roc2", "roc3")))
+  # The list that roc.formula returns
+  expect_equal(roc.test(roc(outcome ~ s100b + ndka + wfns, aSAH, quiet = TRUE))$statistic, ht$statistic)
+})
+
+test_that("roc.test with a list of curves and one contrast works", {
+  rocs <- list(r.s100b, r.ndka, r.wfns)
+  ht <- roc.test(rocs, contrast = c(1, -0.5, -0.5))
+  expect_equal(ht$statistic, c(Z = 0.2422995896107383))
+  expect_equal(ht$p.value, 2 * pnorm(-0.2422995896107383))
+  expect_equal(as.numeric(ht$conf.int), c(-0.0960570562027631, 0.1231573272054731))
+  expect_equal(ht$null.value, c("contrast of AUCs" = 0))
+  # A difference between two curves is the two-curve test
+  two <- roc.test(r.s100b, r.ndka, alternative = "greater")
+  for (ht in list(
+    roc.test(list(r.s100b, r.ndka), alternative = "greater"),
+    roc.test(rocs, contrast = c(1, -1, 0), alternative = "greater")
+  )) {
+    expect_equal(ht[c("statistic", "p.value", "conf.int")], two[c("statistic", "p.value", "conf.int")])
+  }
+  # and its square with redundant contrasts
+  ht <- roc.test(list(r.s100b, r.ndka), contrast = rbind(c(1, -1), c(2, -2)))
+  expect_equal(unname(ht$statistic), unname(two$statistic)^2)
+  expect_equal(ht$parameter, c(df = 1))
+  # percent
+  ht <- roc.test(list(r.s100b.percent, r.ndka.percent, r.wfns.percent), contrast = c(1, -1, 0))
+  two <- roc.test(r.s100b.percent, r.ndka.percent)
+  expect_equal(ht[c("statistic", "p.value", "conf.int")], two[c("statistic", "p.value", "conf.int")])
+})
+
+test_that("roc.test with a list of curves handles degenerate cases", {
+  # Identical curves
+  ht <- roc.test(list(r.s100b, r.s100b, r.s100b))
+  expect_equal(ht[c("statistic", "parameter", "p.value")], list(statistic = c("X-squared" = 0), parameter = c(df = 0), p.value = 1))
+  expect_equal(roc.test(list(r.s100b, r.s100b, r.ndka))$parameter, c(df = 1))
+  # A single case: no variance
+  one <- lapply(list(c(1, 2, 3, 4), c(1, 3, 2, 4), c(2, 1, 3, 4)), function(x) roc(c(0, 0, 0, 1), x, quiet = TRUE))
+  expect_identical(roc.test(one)$p.value, NA_real_)
+  expect_identical(roc.test(one, contrast = c(1, -1, 0))$p.value, NA_real_)
+})
+
+test_that("roc.test with a list of curves refuses what it does not support", {
+  rocs <- list(r.s100b, r.ndka, r.wfns)
+  expect_error(roc.test(list(r.s100b)), "At least 2 ROC curves")
+  expect_error(roc.test(list(r.s100b, 1)), "must be 'roc' or 'auc' objects")
+  expect_error(roc.test(rocs, contrast = 1:2), "'contrast' must be")
+  expect_error(roc.test(rocs, contrast = c("a", "b", "c")), "'contrast' must be")
+  expect_error(roc.test(rocs, alternative = "less"), "Only two-sided tests")
+  expect_error(roc.test(list(r.s100b, r.ndka.partial, r.wfns)), "not supported for partial AUC")
+  expect_error(roc.test(list(r.s100b, smooth(r.ndka), r.wfns)), "not supported for smoothed ROCs")
+  unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  expect_error(roc.test(list(r.s100b, unpaired, r.wfns)), "requires paired ROC curves")
+  missing <- roc(aSAH$outcome, c(NA, aSAH$ndka[-1]), quiet = TRUE)
+  expect_error(roc.test(list(r.s100b, missing, r.wfns)), "different missing values")
+  reversed <- roc(aSAH$outcome, -aSAH$ndka, direction = ">", quiet = TRUE)
+  expect_warning(roc.test(list(r.s100b, reversed, r.wfns)), "different direction")
+})
+
+test_that("roc.test with a list of curves warns about arguments it does not use", {
+  expect_warning(roc.test(list(r.s100b, r.ndka, r.wfns), method = "bootstrap"), "will be disregarded")
+})

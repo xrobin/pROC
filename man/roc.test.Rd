@@ -6,9 +6,10 @@
 \alias{roc.test.formula}
 \alias{roc.test.auc}
 \alias{roc.test.smooth.roc}
+\alias{roc.test.list}
 
 \title{
-  Compare two ROC curves
+  Compare ROC curves
 }
 \description{
   This function compares two correlated (or paired) or uncorrelated (unpaired)
@@ -20,7 +21,8 @@
   Several syntaxes are available: two object of class roc (which can be AUC
   or smoothed ROC), or either three vectors (response, predictor1, predictor2)
   or a response vector and a matrix or data.frame with two columns
-  (predictors).
+  (predictors). A list of more than two paired ROC curves is compared
+  with DeLong's test.
 }
 \usage{
 # roc.test(...)
@@ -32,6 +34,8 @@ ties.method="random", progress = getOption("pROCProgress", interactive()),
 parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
+\S3method{roc.test}{list}(rocs, contrast=NULL,
+alternative = c("two.sided", "less", "greater"), conf.level=0.95, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
 na.rm=TRUE, method=NULL, ...)
@@ -41,6 +45,15 @@ na.rm=TRUE, method=NULL, ...)
   \item{roc1, roc2}{the two ROC curves to compare. Either
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed).
+  }
+  \item{rocs}{a list of two or more paired ROC curves, as
+    \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
+    observations. Partial AUCs and smoothed curves are not supported.
+  }
+  \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
+    vector with one coefficient per curve in \code{rocs}, or a matrix
+    with one such row per contrast. If \code{NULL} (default), the
+    equality of all the AUCs is tested.
   }
   \item{response}{a vector or factor, as for the \link{roc} function.
     The default and formula methods, which build the curves, are
@@ -79,7 +92,7 @@ na.rm=TRUE, method=NULL, ...)
   \item{alternative}{specifies the alternative hypothesis. Either of
     \dQuote{two.sided}, \dQuote{less} or \dQuote{greater}. The first letter is
     sufficient. Default: \dQuote{two.sided}. Only \dQuote{two.sided} is available
-    with \code{method="venkatraman"}.
+    with \code{method="venkatraman"} and with several contrasts.
   }
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
@@ -226,14 +239,34 @@ na.rm=TRUE, method=NULL, ...)
 
   With \code{method="delong"}, the processing is done as described in
   DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
-  of Sun and Xu (2014). Only comparison of
-  two ROC curves is implemented. For unpaired ROC curves, the statistic
+  of Sun and Xu (2014). For unpaired ROC curves, the statistic
   \deqn{
     D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
     D=(\theta^r - \theta^s) / sqrt(S^r + S^s)
   }
   is compared to the normal distribution (Hanley and McNeil, 1983).
+
+  For a list of \var{k} paired ROC curves, with \eqn{\theta} the vector
+  of their AUCs, \var{S} its covariance matrix (see
+  \code{\link[=cov.roc]{cov}}) and \var{L} the \code{contrast},
+  DeLong \emph{et al.} (1988, p. 841) is applied. With one contrast,
+  \deqn{
+    Z=\frac{L\theta}{\sqrt{LSL'}}
+  }{
+    Z=L\theta / sqrt(LSL')
+  }
+  is compared to the normal distribution, and \code{conf.int} is the
+  confidence interval of \eqn{L\theta}. With several contrasts,
+  \deqn{
+    X^2=(L\theta)'(LSL')^{-1}(L\theta)
+  }{
+    X^2=(L\theta)' (LSL')^-1 (L\theta)
+  }
+  is compared to the chi-square distribution with the rank of
+  \eqn{LSL'} as degrees of freedom (Equation 5). The default
+  \code{contrast} is the \eqn{k-1} differences between successive
+  curves.
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
@@ -324,6 +357,7 @@ na.rm=TRUE, method=NULL, ...)
     curves), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
+    For a list of curves, Z with one contrast and X-squared with several.
   }
   \item{conf.int}{the confidence interval of the difference tested
     (not returned with \code{method="venkatraman"}). Has an attribute \code{conf.level} specifying the level of the test.}
@@ -347,8 +381,11 @@ na.rm=TRUE, method=NULL, ...)
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
-    value of \code{boot.n}.
+    value of \code{boot.n}. For a list of curves with several
+    contrasts: the degrees of freedom.
   }
+  \item{rocs, contrast}{for a list of curves: the ROC curves that were
+    compared, and the matrix of contrasts that was tested.}
 }
 
 \section{Acknowledgements}{
@@ -418,6 +455,14 @@ roc.test(auc(roc1), roc2)
 
 # Force an unpaired test
 roc.test(roc1, roc2, paired = FALSE)
+
+# More than two paired curves: are all the AUCs equal?
+rocs <- list(s100b = roc1, wfns = roc2, ndka = roc(aSAH$outcome, aSAH$ndka))
+roc.test(rocs)
+# One contrast: s100b against the mean of the other two
+roc.test(rocs, contrast = c(1, -0.5, -0.5))
+# Several contrasts, one per row
+roc.test(rocs, contrast = rbind(c(1, -1, 0), c(1, 0, -1)))
 
 # Bootstrap
 \dontrun{

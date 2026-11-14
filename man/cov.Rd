@@ -5,13 +5,15 @@
 \alias{cov.auc}
 \alias{cov.smooth.roc}
 \alias{cov.roc}
+\alias{cov.list}
 
 \title{
-  Covariance of two paired ROC curves
+  Covariance of paired ROC curves
 }
 \description{
   This function computes the covariance between the AUC of two correlated (or paired) ROC
-  curves. 
+  curves, or the covariance matrix of the AUCs of a list of paired ROC
+  curves.
 }
 \usage{
 cov(...)
@@ -22,6 +24,7 @@ cov(...)
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
   progress = getOption("pROCProgress", interactive()), parallel=FALSE,
   paired = NULL, cl = NULL, ...)
+\S3method{cov}{list}(x, ...)
 }
 
 \arguments{
@@ -29,6 +32,12 @@ cov(...)
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
+  }
+  \item{x}{a list of two or more paired ROC curves, as
+    \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
+    observations. Partial AUCs and smoothed curves are not supported, and
+    no further argument is accepted. Any other list is passed to
+    \code{\link[stats:cor]{cov}} in the \pkg{stats} package.
   }
   \item{method}{the method to use, either \dQuote{delong},
     \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
@@ -161,6 +170,9 @@ cov(...)
 \value{
   The numeric value of the covariance.
 
+  For a list of curves, the covariance matrix of their AUCs (DeLong
+  \emph{et al.}, 1988, p. 840), with the variances on the diagonal.
+
   If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
   \code{resampled.values} is set with the resampled (bootstrapped)
   values. It contains a matrix with 2 rows representing the two ROC
@@ -266,6 +278,9 @@ cov(roc1, roc2, method = "obuchowski")
 
 # From an AUC, without smoothing
 cov(auc(roc1), roc2)
+
+# Covariance matrix of more than two paired curves
+cov(list(s100b = roc1, wfns = roc2, ndka = roc(aSAH$outcome, aSAH$ndka)))
 
 # Bootstrap
 \dontrun{

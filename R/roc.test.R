@@ -118,6 +118,83 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   return(testres)
 }
 
+# DeLong's test for k paired ROC curves: DeLong et al. (1988) p. 841
+roc.test.list <- function(rocs, contrast = NULL,
+                          alternative = c("two.sided", "less", "greater"),
+                          conf.level = 0.95, ...) {
+  chkDots(...)
+  alternative <- match.arg(alternative)
+  data.name <- deparse1(substitute(rocs))
+  rocs <- delong_list_rocs(rocs)
+  k <- length(rocs)
+
+  if (is.null(contrast)) {
+    # the k - 1 successive differences: all the AUCs are equal
+    contrast <- cbind(diag(k - 1), 0) - cbind(0, diag(k - 1))
+  } else if (!is.matrix(contrast)) {
+    contrast <- matrix(contrast, nrow = 1)
+  }
+  if (!is.numeric(contrast) || ncol(contrast) != k || anyNA(contrast)) {
+    stop("'contrast' must be a numeric vector with one coefficient per ROC curve, or a matrix with one such row per contrast.")
+  }
+
+  estimate <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
+  names(estimate) <- paste("AUC of", if (is.null(names(rocs))) paste0("roc", seq_len(k)) else names(rocs))
+  htest <- list(
+    alternative = alternative,
+    data.name = data.name,
+    estimate = estimate,
+    method = sprintf("DeLong's test for %d correlated ROC curves", k)
+  )
+  class(htest) <- "htest"
+
+  calcs <- delong.cov(rocs)
+  d <- drop(contrast %*% calcs$theta) # L theta
+  M <- contrast %*% calcs$S %*% t(contrast) # L S L'
+
+  if (nrow(contrast) == 1) {
+    # One contrast: L theta / sqrt(L S L') is standard normal
+    roc_test_check_conf_level(conf.level)
+    sig <- sqrt(M[1, 1])
+    stat <- delong.test(list(d = d, sig = sig))
+    htest$statistic <- c("Z" = stat)
+    htest$null.value <- c("contrast of AUCs" = 0)
+    htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
+    if (rocs[[1]]$percent) {
+      # the placements are on the 0-1 scale, the estimates on 0-100
+      htest$conf.int <- htest$conf.int * 100
+    }
+    htest$p.value <- switch(alternative,
+      two.sided = 2 * pnorm(-abs(stat)),
+      greater = pnorm(-stat),
+      less = pnorm(stat)
+    )
+  } else {
+    # Several contrasts, Eq. 5: (L theta)' (L S L')^-1 (L theta) is chi-square
+    # with the rank of L S L' as degrees of freedom
+    if (alternative != "two.sided") {
+      stop("Only two-sided tests are available with several contrasts.")
+    }
+    if (anyNA(M)) {
+      # A single case or control: the variance is undefined
+      stat <- df <- NA_real_
+    } else {
+      # Redundant contrasts do not change the statistic: keep a full-rank subset
+      qrM <- qr(M)
+      df <- qrM$rank
+      keep <- qrM$pivot[seq_len(df)]
+      # rank 0: no difference between the curves, as for delong.test
+      stat <- if (df > 0) sum(d[keep] * solve(M[keep, keep, drop = FALSE], d[keep])) else 0
+    }
+    htest$statistic <- c("X-squared" = stat)
+    htest$parameter <- c("df" = df)
+    htest$p.value <- pchisq(stat, df, lower.tail = FALSE)
+  }
+  htest$contrast <- contrast
+  htest$rocs <- rocs
+  return(htest)
+}
+
 roc.test.roc <- function(roc1, roc2,
                          method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity"),
                          sensitivity = NULL, specificity = NULL,
