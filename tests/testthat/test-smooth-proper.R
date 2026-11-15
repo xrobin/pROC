@@ -282,3 +282,11 @@ test_that("the fit is the chance line when no proper curve is better", {
   # a curve above the chance line is not replaced
   expect_gt(proper.s100b$proper$da, 0)
 })
+
+test_that("the starts of large data do not overflow", {
+  # 60000 x 60000 pairs of controls and cases exceed .Machine$integer.max
+  k <- c(20000L, 15000L, 12000L, 8000L, 5000L)
+  l <- rev(k)
+  expect_no_warning(starts <- pROC:::proper_binormal_isopleth_starts(k, l))
+  expect_true(all(is.finite(unlist(starts))))
+})

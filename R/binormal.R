@@ -672,7 +672,8 @@ proper_binormal_chance_line <- function(k, l) {
 proper_binormal_isopleth_starts <- function(k, l) {
   # empirical AUC from the counts: P(case > control) + P(tie) / 2
   cases.above <- rev(cumsum(rev(l))) - l
-  auc <- sum(k * (cases.above + l / 2)) / (sum(k) * sum(l))
+  # (as.numeric: the product of two integer counts can overflow)
+  auc <- sum(k * (cases.above + l / 2)) / (as.numeric(sum(k)) * sum(l))
   # At AUC <= 0.5 the isopleth is the chance line alone, a stationary point
   # of the search: the grid is taken on the isopleth of 1 - AUC instead, and
   # at least on that of the smallest AUC above 0.5 the counts allow (no
