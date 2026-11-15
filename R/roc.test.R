@@ -343,7 +343,7 @@ roc.test.roc <- function(roc1, roc2,
       stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.unpaired.test
     }
     htest$statistic <- stat
-    htest$method <- "Maximum-likelihood test for two ROC curves"
+    htest$method <- "Maximum-likelihood test for two binormal ROC curves"
     htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else if (method == "venkatraman") {
     boot.n <- roc_utils_check_boot_n(boot.n)
