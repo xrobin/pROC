@@ -57,12 +57,12 @@
   their index) and the plot has a \code{name} column, so that
   \code{facet_grid(. ~ name)} draws each curve in its own panel.
 
-  The \code{geom_*} layers also accept a list, named the same way. They
-  draw one layer per curve with the same \code{name} column, so each
-  layer is drawn in the panel of its curve. The other arguments of the
-  layer apply to all the curves. Build lists of \code{\link{auc}} or
-  \code{\link{ci.se}} objects from a list of curves with
-  \code{\link{lapply}}, as in the examples.
+  The \code{geom_*} layers also accept a list, named the same way. Their
+  data get the same \code{name} column, so each curve's polygon, point
+  or label is drawn in the panel of its curve. The other arguments of
+  the layer apply to all the curves. Build lists of \code{\link{auc}},
+  \code{\link{ci.auc}} or \code{\link{ci.se}} objects from a list of
+  curves with \code{\link{lapply}}, as in the examples.
 }
 
 
@@ -130,6 +130,7 @@ g.list + facet_grid(. ~ name) +
   geom_polygon_max_auc(rocs) +
   geom_polygon_auc(rocs) +
   geom_polygon_ci(ci_ses, fill = "#1c61b6", alpha = 0.3) +
-  geom_roc_threshold(rocs, thresholds = "best")
+  geom_roc_threshold(rocs, thresholds = "best") +
+  geom_text_auc(lapply(rocs, ci))
 }
 }

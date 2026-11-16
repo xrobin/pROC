@@ -205,6 +205,8 @@ export(geom_text_auc)
 S3method("geom_text_auc", "auc")
 S3method("geom_text_auc", "roc")
 S3method("geom_text_auc", "smooth.roc")
+S3method("geom_text_auc", "ci.auc")
+S3method("geom_text_auc", "list")
 
 export(geom_roc_threshold)
 S3method("geom_roc_threshold", "roc")
