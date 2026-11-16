@@ -302,45 +302,30 @@ roc.test.roc <- function(roc1, roc2,
   class(htest) <- "htest"
 
   if (method == "delong") {
+    roc_test_check_conf_level(conf.level)
     if (paired) {
-      # Check if conf.level is specified correctly. It is only used here, for the
-      # CI of the paired test, whether the method was given or selected automatically.
-      # A logical counts as a number, as in t.test()
-      if (!is.numeric(conf.level) && !is.logical(conf.level)) {
-        stop("conf.level must be numeric between 0 and 1.")
-      } else if (!roc_utils_is_single_number(conf.level)) {
-        stop("conf.level must be a single number between 0 and 1.")
-      } else if (0 > conf.level || 1 < conf.level) {
-        stop("conf.level must be between 0 and 1.")
-      }
       delong.calcs <- delong.paired.calculations(roc1, roc2)
-      stat <- delong.paired.test(delong.calcs)
-      stat.ci <- ci_delong_paired(delong.calcs, conf.level, alternative)
-      names(stat) <- "Z"
-      htest$statistic <- stat
+      stat <- c("Z" = delong.test(delong.calcs))
       htest$method <- "DeLong's test for two correlated ROC curves"
-      htest$conf.int <- c(stat.ci$lower, stat.ci$upper)
-      if (roc1$percent) {
-        # the placements are on the 0-1 scale, the estimates on 0-100
-        htest$conf.int <- htest$conf.int * 100
-      }
-      attr(htest$conf.int, "conf.level") <- stat.ci$level
-
-      htest$p.value <- roc_test_normal_pvalue(stat, alternative)
     } else {
-      stat <- delong.unpaired.test(roc1, roc2)
-      htest$statistic <- c("D" = stat)
+      delong.calcs <- delong.unpaired.calculations(roc1, roc2)
+      stat <- c("D" = delong.test(delong.calcs))
       htest$method <- "DeLong's test for two ROC curves"
-
-      htest$p.value <- roc_test_normal_pvalue(stat, alternative)
     }
+    htest$statistic <- stat
+    htest$conf.int <- roc_test_ci_normal(delong.calcs$d, delong.calcs$sig, conf.level, alternative)
+    if (roc1$percent) {
+      # the placements are on the 0-1 scale, the estimates on 0-100
+      htest$conf.int <- htest$conf.int * 100
+    }
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else if (method == "ml") {
     # The AUCs of independent samples: z = (AUC1 - AUC2) / sqrt(var1 + var2)
     # (the test of D&A p. 494 for two independent estimates)
     variances <- vapply(list(curve1, curve2), function(curve) var_roc_ml(curve) * ifelse(curve$percent, 100^2, 1), numeric(1))
     stat <- c(Z = (estimate[[1]] - estimate[[2]]) / sqrt(sum(variances)))
     if (estimate[[1]] == estimate[[2]] && sum(variances) == 0) {
-      stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.unpaired.test
+      stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.test
     }
     htest$statistic <- stat
     htest$method <- "Maximum-likelihood test for two binormal ROC curves"
@@ -365,12 +350,13 @@ roc.test.roc <- function(roc1, roc2,
     names(htest$null.value) <- "difference in at least one ROC operating point"
     htest$estimate <- NULL # AUC not relevant in venkatraman
   } else { # method == "bootstrap" or "sensitivity" or "specificity"
+    roc_test_check_conf_level(conf.level)
     boot.n <- roc_utils_check_boot_n(boot.n)
     if (method == "specificity") {
       if (!is.numeric(specificity) || length(specificity) != 1) {
         stop("Argument 'specificity' must be numeric of length 1 for a specificity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "sp", specificity, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -382,13 +368,13 @@ roc.test.roc <- function(roc1, roc2,
         "difference in sensitivity at %s specificity",
         specificity
       )
-      htest$estimate <- attr(stat, "estimate")
+      htest$estimate <- boot$estimate
       names(htest$estimate) <- sprintf("sensitivity of roc%d at %s specificity", 1:2, specificity)
     } else if (method == "sensitivity") {
       if (!is.numeric(sensitivity) || length(sensitivity) != 1) {
         stop("Argument 'sensitivity' must be numeric of length 1 for a sensitivity test.")
       }
-      stat <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "se", sensitivity, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -401,10 +387,10 @@ roc.test.roc <- function(roc1, roc2,
         "difference in specificity at %s sensitivity",
         sensitivity
       )
-      htest$estimate <- attr(stat, "estimate")
+      htest$estimate <- boot$estimate
       names(htest$estimate) <- sprintf("specificity of roc%d at %s sensitivity", 1:2, sensitivity)
     } else {
-      stat <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
+      boot <- bootstrap.test(roc1, roc2, "boot", NULL, paired, boot.n, boot.stratified, smoothing.args,
         progress = progress, cl = cl
       )
       if (paired) {
@@ -413,9 +399,9 @@ roc.test.roc <- function(roc1, roc2,
         htest$method <- "Bootstrap test for two ROC curves"
       }
     }
-    stat <- as.vector(stat) # remove auc attributes
-    names(stat) <- "D"
+    stat <- c("D" = boot$statistic)
     htest$statistic <- stat
+    htest$conf.int <- roc_test_ci_normal(boot$d, boot$sig, conf.level, alternative)
     parameter <- c(boot.n, boot.stratified)
     names(parameter) <- c("boot.n", "boot.stratified")
     htest$parameter <- parameter
@@ -440,4 +426,28 @@ roc_test_normal_pvalue <- function(stat, alternative) {
   } else {
     pnorm(stat)
   }
+}
+
+# Checks conf.level for the tests that return a CI
+roc_test_check_conf_level <- function(conf.level) {
+  # A logical counts as a number, as in t.test()
+  if (!is.numeric(conf.level) && !is.logical(conf.level)) {
+    stop("conf.level must be numeric between 0 and 1.")
+  } else if (!roc_utils_is_single_number(conf.level)) {
+    stop("conf.level must be a single number between 0 and 1.")
+  } else if (0 > conf.level || 1 < conf.level) {
+    stop("conf.level must be between 0 and 1.")
+  }
+}
+
+# Normal CI of the difference d with standard error sig, the inverse of the
+# Z test. One-sided alternatives give a one-sided interval, as in t.test.
+roc_test_ci_normal <- function(d, sig, conf.level, alternative) {
+  crit_z <- qnorm(if (alternative == "two.sided") 1 - (1 - conf.level) / 2 else conf.level)
+  conf.int <- c(
+    if (alternative == "less") -Inf else d - crit_z * sig,
+    if (alternative == "greater") Inf else d + crit_z * sig
+  )
+  attr(conf.int, "conf.level") <- conf.level
+  conf.int
 }

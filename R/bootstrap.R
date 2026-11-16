@@ -62,24 +62,23 @@ bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified,
   if (test == "sp") {
     coord1 <- coords(roc1, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
     coord2 <- coords(roc2, x = x, input = c("specificity"), ret = c("sensitivity"))[1, 1]
-    D <- (coord1 - coord2) / sd(diffs)
   } else if (test == "se") {
     coord1 <- coords(roc1, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
     coord2 <- coords(roc2, x = x, input = c("sensitivity"), ret = c("specificity"))[1, 1]
-    D <- (coord1 - coord2) / sd(diffs)
   } else {
-    D <- (roc1$auc - roc2$auc) / sd(diffs)
+    coord1 <- as.numeric(roc1$auc)
+    coord2 <- as.numeric(roc2$auc)
   }
-  estimates.equal <- if (test %in% c("sp", "se")) coord1 == coord2 else roc1$auc == roc2$auc
-  if (is.nan(D) && all(diffs == 0) && estimates.equal) {
+  d <- coord1 - coord2
+  sig <- sd(diffs)
+  D <- d / sig
+  if (is.nan(D) && all(diffs == 0) && d == 0) {
     D <- 0
   } # special case: no difference between the tested values produces a NaN
-  if (test %in% c("sp", "se")) {
-    # the tested values, reported as estimates by roc.test
-    attr(D, "estimate") <- c(coord1, coord2)
-  }
 
-  return(D)
+  # the tested values, reported as estimates by roc.test, and the difference
+  # with its bootstrap standard error, for the confidence interval
+  return(list(statistic = D, estimate = c(coord1, coord2), d = d, sig = sig))
 }
 
 ##########  Running the replicates  ##########

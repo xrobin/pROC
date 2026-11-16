@@ -31,6 +31,11 @@ export R_LIBS_USER="$REVDEP_LIB"
 export R_LIBS="$REVDEP_LIB"
 export R_LIBS_SITE=/dev/null
 export R_ENVIRON_USER=/dev/null
+# R CMD check reads ~/.R/check.Renviron (or $R_CHECK_ENVIRON) and it is NOT
+# covered by R_ENVIRON_USER. A stale one here once prepended the old side's
+# library to R_LIBS inside every check, so both sides silently tested the same
+# pROC and the comparison was meaningless. Point it at an empty file.
+export R_CHECK_ENVIRON=/dev/null
 export R_PROFILE_USER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/Rprofile.R"
 
 # R-level parallelism only; nested make on top of it overloads the node.

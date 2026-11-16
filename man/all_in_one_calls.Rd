@@ -40,7 +40,7 @@ the curve also take precedence over explicit arguments:
 \preformatted{
 r1 <- roc(aSAH$outcome, aSAH$s100b)
 ci.auc(r1, partial.auc = c(1, 0.8))
-# 95\% CI: 0.6301-0.8326 (DeLong)
+# 95\% CI: 0.6192-0.8201 (DeLong)
 }
 
 This is the CI of the full AUC (0.731), not of the partial AUC: \code{r1}

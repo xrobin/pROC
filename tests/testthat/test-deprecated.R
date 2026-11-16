@@ -11,30 +11,30 @@ B <- 3
 
 test_that("'parallel' warns and is ignored", {
   expect_warning(ci.auc(r.wfns, method = "bootstrap", boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.se(r.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.sp(r.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.thresholds(r.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(var(r.wfns, method = "bootstrap", boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(cov(r.wfns, r.ndka, method = "bootstrap", boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(roc.test(r.wfns, r.ndka, method = "bootstrap", boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
 })
 
 
 test_that("'parallel' on a smoothed curve warns too", {
   s.wfns <- smooth(r.ndka)
   expect_warning(ci.auc(s.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.se(s.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.sp(s.wfns, boot.n = B, parallel = TRUE),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
 })
 
 
@@ -50,11 +50,11 @@ test_that("any non-FALSE 'parallel' warns, not just TRUE", {
   # Before 1.19 'parallel' was a logical, but accept anything truthy here: the
   # point is that a request to go parallel is never silently dropped.
   expect_warning(ci.auc(r.wfns, method = "bootstrap", boot.n = B, parallel = 2),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.auc(r.wfns, method = "bootstrap", boot.n = B, parallel = "snow"),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
   expect_warning(ci.auc(r.wfns, method = "bootstrap", boot.n = B, parallel = NULL),
-                 "Parallel processing is deprecated")
+                 class = "deprecatedWarning")
 })
 
 
@@ -62,17 +62,35 @@ test_that("the deprecated argument does not change the result", {
   set.seed(42)
   expect_warning(
     with.arg <- ci.auc(r.wfns, method = "bootstrap", boot.n = 20, parallel = TRUE),
-    "Parallel processing is deprecated"
+    class = "deprecatedWarning"
   )
   set.seed(42)
   without.arg <- ci.auc(r.wfns, method = "bootstrap", boot.n = 20)
   expect_equal(as.numeric(with.arg), as.numeric(without.arg))
 })
 
-test_that("deprecated algorithm argument warns with its value", {
+test_that("deprecated algorithm argument warns and is ignored", {
   expect_warning(
     r <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), algorithm = 3, quiet = TRUE),
-    "Ignoring algorithm=3 argument", fixed = TRUE
+    class = "deprecatedWarning"
   )
   expect_equal(as.numeric(r$auc), 1)
+})
+
+test_that("deprecation warnings are attributed to the user's call", {
+  w <- capture_warning(ci.auc(r.wfns, method = "bootstrap", boot.n = B, parallel = TRUE))
+  expect_s3_class(w, "deprecatedWarning")
+  expect_identical(conditionCall(w)[[1]], quote(ci.auc.roc))
+  w <- capture_warning(coords(r.s100b, "best", as.list = TRUE))
+  expect_s3_class(w, "deprecatedWarning")
+  expect_identical(conditionCall(w)[[1]], quote(coords.roc))
+})
+
+test_that("roc$fun.sesp warns and still works", {
+  expect_warning(
+    res <- r.s100b$fun.sesp(r.s100b$thresholds, r.s100b$controls, r.s100b$cases, r.s100b$direction),
+    class = "deprecatedWarning"
+  )
+  expect_equal(res$se, r.s100b$sensitivities)
+  expect_equal(res$sp, r.s100b$specificities)
 })

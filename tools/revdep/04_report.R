@@ -67,6 +67,19 @@ degraded <- lapply(pkgs, function(p) {
 })
 names(degraded) <- pkgs
 
+## Compare the SETS, not the counts. Equal counts prove nothing: a run where
+## two packages fail on each side, but not the same two, produces one false
+## regression and one false improvement while looking balanced.
+x11_pkgs <- function(side) {
+  f <- Sys.glob(file.path(run_dir, side, "*.Rcheck", "00check.log"))
+  hit <- Filter(function(x) any(grepl("unable to open connection to X11", readLines(x, warn = FALSE))), f)
+  sub("^rdepends_", "", sub("\\.Rcheck$", "", basename(dirname(hit))))
+}
+x11_old <- x11_pkgs("old"); x11_new <- x11_pkgs("new")
+x11 <- c(old = length(x11_old), new = length(x11_new))
+## Packages whose X11 fate differs between sides cannot be compared at all.
+x11_lopsided <- union(setdiff(x11_old, x11_new), setdiff(x11_new, x11_old))
+
 summary_df <- data.frame(
   package  = pkgs,
   old      = vapply(pkgs, function(p) status_of(old, p), ""),
@@ -78,6 +91,9 @@ summary_df <- data.frame(
 summary_df$verdict <- with(summary_df,
   ifelse(new_rank > old_rank | n_degraded > 0, "WORSE",
   ifelse(new_rank < old_rank, "better", "same")))
+## A package compromised by the display on one side only is not evidence
+## either way; mark it rather than let it count as worse or better.
+summary_df$verdict[summary_df$package %in% x11_lopsided] <- "x11-unreliable"
 summary_df$degraded_items <- vapply(pkgs, function(p)
   paste(degraded[[p]], collapse = "; "), "")
 write.csv(summary_df[, c("package","old","new","verdict","degraded_items")],
@@ -131,16 +147,31 @@ if (!nrow(worse)) {
     }
   }
 }
-counts <- table(factor(summary_df$verdict, levels = c("WORSE","same","better")))
+## X11 failures are environmental. They are only safe to ignore when both
+## sides suffer them equally; an imbalance invents regressions or improvements.
+died <- file.path(run_dir, "DISPLAY_DIED")
+x11_note <- if (file.exists(died)) {
+  sprintf("WARNING: the X display died during the %s side. Packages drawing PNGs failed there for environmental reasons; differences involving them are not trustworthy. X11 failures: old %d, new %d.",
+          paste(readLines(died), collapse = ", "), x11[["old"]], x11[["new"]])
+} else if (length(x11_lopsided)) {
+  sprintf("WARNING: these packages hit X11 (virtual display) failures on one side but not the other, so they cannot be compared and are excluded from the verdict: %s. X11 failures: old %d, new %d.",
+          paste(sort(x11_lopsided), collapse = ", "), x11[["old"]], x11[["new"]])
+} else if (x11[["old"]] > 0) {
+  sprintf("Note: %d packages hit X11 failures identically on both sides, so they cancel.", x11[["old"]])
+} else ""
+
+counts <- table(factor(summary_df$verdict, levels = c("WORSE","same","better","x11-unreliable")))
 md <- c(md, "## All packages", "",
         sprintf("- worse: %d", counts[["WORSE"]]),
         sprintf("- unchanged: %d", counts[["same"]]),
-        sprintf("- improved: %d", counts[["better"]]), "",
+        sprintf("- improved: %d", counts[["better"]]),
+        sprintf("- not comparable (X11): %d", counts[["x11-unreliable"]]), "",
         sprintf("Full table: `%s`", file.path(run_dir, "revdep_summary.csv")), "")
 if (length(req$unavailable))
   md <- c(md, sprintf("Suggested but not installable on either side: %s",
                       paste(req$unavailable, collapse = ", ")), "")
 md <- c(md, "",
+  x11_note,
   "Environment note: LaTeX comes from TinyTeX under $REVDEP_WORK, so vignettes",
   "build normally. PDF manual checks are still skipped (--no-manual): they test",
   "the formatting of each package's own Rd files and cannot be affected by this",

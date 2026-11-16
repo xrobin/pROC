@@ -76,6 +76,15 @@ test_that("var with unsupported obuchowski cases errors without claiming to use 
   expect_error(var(r.s100b.partial2, method = "obuchowski"), "Use method=\"bootstrap\" instead")
 })
 
+test_that("obuchowski var of a corrected partial AUC is on the corrected scale", {
+  # McClish: (1 + (auc - min) / (max - min)) / 2, with min = 0.11 * 0.09 / 2 and max = 0.09
+  slope <- 1 / (2 * (0.09 - 0.11 * 0.09 / 2))
+  r.corrected <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE, partial.auc = c(0.9, 0.99), partial.auc.correct = TRUE)
+  expect_equal(var(r.corrected, method = "obuchowski"), var(r.s100b.partial1, method = "obuchowski") * slope^2)
+  r.corrected.percent <- roc(aSAH$outcome, aSAH$s100b, percent = TRUE, quiet = TRUE, partial.auc = c(90, 99), partial.auc.correct = TRUE)
+  expect_equal(var(r.corrected.percent, method = "obuchowski"), var(r.corrected, method = "obuchowski") * 100^2)
+})
+
 test_that("var works on smoothed percent curves", {
   s <- smooth(r.s100b)
   s.percent <- smooth(r.s100b.percent)

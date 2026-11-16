@@ -161,34 +161,104 @@ start_xvfb <- function() {
   stop("could not start an Xvfb on which png() works")
 }
 
-xserver <- start_xvfb()
-check_env <- c(check_env, sprintf("DISPLAY=:%d", xserver$display))
-## on.exit() is useless here: at the top level of a script there is no function
-## to exit from, so it never runs and the server is leaked. Shut it down
-## explicitly, and from an on.exit INSIDE a function for the error path.
-stop_xserver <- function() {
-  try(system2("kill", xserver$pid, stdout = NULL, stderr = NULL), silent = TRUE)
-  unlink(sprintf("/tmp/.X%d-lock", xserver$display))
+## One Xvfb per side, not one for the whole run. A single server does not
+## reliably survive three hours of parallel checks; when it dies every package
+## that draws a PNG fails, and because it affects one side only, the result
+## looks like a regression (or an improvement). Restarting per side bounds it,
+## and display_alive() afterwards says whether it happened at all.
+stop_xserver <- function(x) {
+  try(system2("kill", x$pid, stdout = NULL, stderr = NULL), silent = TRUE)
+  unlink(sprintf("/tmp/.X%d-lock", x$display))
+}
+
+display_alive <- function(display) {
+  identical(0L, system2("Rscript", c("--vanilla", "-e", shQuote(
+      'q(status = if (!inherits(try({png(tempfile(fileext=".png")); plot(1); dev.off()}, silent = TRUE), "try-error")) 0L else 1L)')),
+    env = sprintf("DISPLAY=:%d", display), stdout = NULL, stderr = NULL))
 }
 
 run_sides <- function() {
-on.exit(stop_xserver(), add = TRUE)
+## ---- prove which pROC a side will actually use ------------------------
+## R CMD check resolves libraries through its own environment file, so what a
+## plain Rscript sees is not proof. This installs the side's pROC into the
+## side library explicitly, then runs a throwaway package through R CMD check
+## and reads back the pROC version its examples saw. A mismatch aborts the run:
+## a comparison that cannot name the version it tested is worthless.
+canary_version <- function(side_lib) {
+  d <- file.path(tempdir(), paste0("canary", as.integer(runif(1, 1e6, 9e6))))
+  pk <- file.path(d, "canary")
+  dir.create(file.path(pk, "R"), recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(pk, "tests"), showWarnings = FALSE)
+  writeLines(c("Package: canary", "Version: 1.0", "Title: Canary",
+               "Description: Reports the pROC version seen by R CMD check.",
+               ## Author/Maintainer literally: Authors@R is not expanded when
+               ## R CMD check runs against a source directory.
+               "Author: X Y <x@example.org>",
+               "Maintainer: X Y <x@example.org>",
+               "License: GPL-3", "Suggests: pROC"),
+             file.path(pk, "DESCRIPTION"))
+  writeLines("canary_fun <- function() invisible(NULL)", file.path(pk, "R", "f.R"))
+  writeLines("export(canary_fun)", file.path(pk, "NAMESPACE"))
+  ## A test file, not an Rd example: plain R, so no Rd escaping to get wrong.
+  writeLines('cat("PROC_SEEN:", as.character(utils::packageVersion("pROC")), "\\n")',
+             file.path(pk, "tests", "canary.R"))
+  owd <- setwd(d); on.exit(setwd(owd), add = TRUE)
+  system2(file.path(R.home("bin"), "R"), c("CMD", "check", "--no-manual", "canary"),
+          stdout = NULL, stderr = NULL,
+          env = c(sprintf("R_LIBS=%s", paste(c(side_lib, .libPaths()), collapse = ":")),
+                  "R_CHECK_ENVIRON=/dev/null", "_R_CHECK_FORCE_SUGGESTS_=false"))
+  out <- file.path(d, "canary.Rcheck", "tests", "canary.Rout")
+  if (!file.exists(out)) out <- file.path(d, "canary.Rcheck", "tests", "canary.Rout.fail")
+  if (!file.exists(out)) return(NA_character_)
+  ## Anchor it: the .Rout echoes the command line too, which also contains
+  ## the marker. Only the output line starts with it.
+  ln <- grep("^PROC_SEEN:", readLines(out, warn = FALSE), value = TRUE)
+  if (!length(ln)) NA_character_ else sub(".*PROC_SEEN: *([0-9.]+).*", "\\1", ln[1])
+}
+
+expected <- c(old = req$cran_version, new = req$local_version)
+
 for (side in SIDES) {
   message(sprintf("\n=== checking %s side: %d reverse dependencies ===", side, length(req$tocheck)))
   message(format(Sys.time()))
+
+  side_lib <- file.path(dirs[[side]], "Library")
+  dir.create(side_lib, showWarnings = FALSE, recursive = TRUE)
+  tb <- Sys.glob(file.path(dirs[[side]], sprintf("%s_*.tar.gz", req$pkg)))
+  stopifnot(length(tb) == 1L)
+  install.packages(tb, lib = side_lib, repos = NULL, type = "source")
+  seen <- canary_version(side_lib)
+  message(sprintf("  R CMD check on the %s side resolves %s %s (expected %s)",
+                  side, req$pkg, seen, expected[[side]]))
+  if (is.na(seen) || !identical(seen, expected[[side]])) {
+    stop(sprintf("%s side would check against %s %s, not %s -- aborting",
+                 side, req$pkg, seen, expected[[side]]))
+  }
+  xserver <- start_xvfb()
+  side_env <- c(check_env, sprintf("DISPLAY=:%d", xserver$display))
+  on.exit(stop_xserver(xserver), add = TRUE)
+
   res <- tools::check_packages_in_dir(
     dir        = dirs[[side]],
     reverse    = req$tocheck,          # explicit vector; never recomputed
     check_args = check_args,
-    check_env  = list(check_env, check_env),
+    check_env  = list(side_env, side_env),
     Ncpus      = NCPUS,
     clean      = FALSE,
     xvfb       = FALSE)   # we start and verify our own, above
   saveRDS(res, file.path(run_dir, sprintf("result_%s.rds", side)))
+
+  ## Did the display survive? If not, every PNG-drawing package on this side
+  ## failed for an environmental reason and the side is not comparable.
+  if (!display_alive(xserver$display)) {
+    warning(sprintf("the X display died during the %s side: PNG-drawing packages on that side failed for environmental reasons, and differences against the other side are not trustworthy", side),
+            immediate. = TRUE)
+    writeLines(side, file.path(run_dir, "DISPLAY_DIED"))
+  }
+  stop_xserver(xserver)
   message(sprintf("=== %s side finished %s ===", side, format(Sys.time())))
 }
 }
 run_sides()
-stop_xserver()
 writeLines(run_dir, file.path(WORK, "last_run_dir.txt"))
 message("\nrun directory: ", run_dir)

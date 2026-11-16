@@ -275,11 +275,11 @@ test_that("transpose with numeric-only ret stays numeric on an ordered ROC", {
   r <- roc(aSAH$outcome, text.levels, quiet = TRUE)
   expect_warning(
     obtained <- coords(r, "all", ret = c("specificity", "sensitivity"), transpose = TRUE),
-    "'transpose=TRUE' is deprecated"
+    class = "deprecatedWarning"
   )
   expect_warning(
     obtained_m <- coords(r, "all", ret = c("specificity", "sensitivity"), as.matrix = TRUE),
-    "'as.matrix' is deprecated"
+    class = "deprecatedWarning"
   )
   expect_type(obtained, "double")
   expect_type(obtained_m, "double")
