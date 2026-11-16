@@ -52,6 +52,19 @@
   \code{\link[ggplot2:coord_cartesian]{coord_cartesian}()}).
 }
 
+\section{Lists and facets}{
+  With a list, the curves are named by the list (unnamed elements by
+  their index) and the plot has a \code{name} column, so that
+  \code{facet_grid(. ~ name)} draws each curve in its own panel.
+
+  The \code{geom_*} layers also accept a list, named the same way. They
+  draw one layer per curve with the same \code{name} column, so each
+  layer is drawn in the panel of its curve. The other arguments of the
+  layer apply to all the curves. Build lists of \code{\link{auc}} or
+  \code{\link{ci.se}} objects from a list of curves with
+  \code{\link{lapply}}, as in the examples.
+}
+
 
 \seealso{
 \code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
@@ -110,5 +123,13 @@ g.list + scale_colour_brewer(palette = "RdGy")
 
 # Facets
 g.list + facet_grid(. ~ name) + theme(legend.position = "none")
+
+# Layers in facets: lists of curves, AUCs or CIs, built with lapply
+ci_ses <- lapply(rocs, ci.se, specificities = seq(0, 1, 0.05), boot.n = 100)
+g.list + facet_grid(. ~ name) +
+  geom_polygon_max_auc(rocs) +
+  geom_polygon_auc(rocs) +
+  geom_polygon_ci(ci_ses, fill = "#1c61b6", alpha = 0.3) +
+  geom_roc_threshold(rocs, thresholds = "best")
 }
 }

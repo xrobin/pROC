@@ -3,6 +3,7 @@
 \alias{geom_polygon_ci}
 \alias{geom_polygon_ci.ci.se}
 \alias{geom_polygon_ci.ci.sp}
+\alias{geom_polygon_ci.list}
 
 \title{
   Add a CI band to a ggroc plot
@@ -14,10 +15,13 @@
 \usage{
 \S3method{geom_polygon_ci}{ci.se}(data, fill = "gainsboro", colour = NA, ...)
 \S3method{geom_polygon_ci}{ci.sp}(data, fill = "gainsboro", colour = NA, ...)
+\S3method{geom_polygon_ci}{list}(data, ...)
 }
 
 \arguments{
   \item{data}{a \code{\link{ci.se}} or \code{\link{ci.sp}} object.
+    Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
+    per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
   \item{fill, colour}{fill and border for the band.
   }

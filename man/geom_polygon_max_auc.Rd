@@ -4,6 +4,7 @@
 \alias{geom_polygon_max_auc.auc}
 \alias{geom_polygon_max_auc.roc}
 \alias{geom_polygon_max_auc.smooth.roc}
+\alias{geom_polygon_max_auc.list}
 
 \title{
   Add the maximal AUC rectangle to a ggroc plot
@@ -16,11 +17,14 @@
 \S3method{geom_polygon_max_auc}{auc}(data, fill = "#EEEEEE", colour = NA, ...)
 \S3method{geom_polygon_max_auc}{roc}(data, ...)
 \S3method{geom_polygon_max_auc}{smooth.roc}(data, ...)
+\S3method{geom_polygon_max_auc}{list}(data, ...)
 }
 
 \arguments{
   \item{data}{a \code{\link{roc}} or \code{\link{auc}} object. Partial
     AUC bounds are taken from the AUC.
+    Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
+    per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
   \item{fill, colour}{fill and border for the rectangle.
   }

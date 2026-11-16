@@ -146,3 +146,7 @@ geom_errorbar_ci.ci.thresholds <- function(data, ...) {
     }
   )
 }
+
+geom_errorbar_ci.list <- function(data, ...) {
+  ggroc_layer_list(data, geom_errorbar_ci, ...)
+}
