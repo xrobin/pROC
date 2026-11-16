@@ -93,20 +93,21 @@ ggroc(roc1, legacy.axes = TRUE)
 # The result is a regular ggplot, with your own theme, title, etc.
 g + theme_minimal() + ggtitle("My ROC curve")
 
-# All the layers that add to a ggroc plot: the AUC, the identity line,
-# a threshold, and confidence intervals (see their help pages)
-auc1 <- auc(roc1)
-ci_auc <- ci(roc1)
+# All the layers that add to a ggroc plot: the partial AUC between 90 and
+# 100% specificity, the identity line, the best threshold within it, and
+# confidence intervals (see their help pages)
+auc1 <- auc(roc1, partial.auc = c(1, 0.9))
+ci_auc <- ci(auc1, boot.n = 100)
 ci_se <- ci.se(roc1, specificities = seq(0, 1, 0.05), boot.n = 100)
-ci_th <- ci.thresholds(roc1, thresholds = "best", boot.n = 100)
+ci_th <- ci.thresholds(auc1, thresholds = "best", boot.n = 100)
 ggroc(roc1) +
   geom_polygon_max_auc(auc1) +
   geom_polygon_auc(auc1) +
   geom_roc_identity(roc1) +
   geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0.3) +
   geom_errorbar_ci(ci_th) +
-  geom_roc_threshold(roc1, thresholds = "best") +
-  geom_text_auc(auc1, ci = ci_auc)
+  geom_roc_threshold(auc1, thresholds = "best") +
+  geom_text_auc(ci_auc)
 
 # Multiple curves, from a list or from a formula
 rocs <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
@@ -125,12 +126,14 @@ g.list + scale_colour_brewer(palette = "RdGy")
 g.list + facet_grid(. ~ name) + theme(legend.position = "none")
 
 # Layers in facets: lists of curves, AUCs or CIs, built with lapply
+aucs <- lapply(rocs, auc, partial.auc = c(1, 0.9))
+ci_aucs <- lapply(aucs, ci, boot.n = 100)
 ci_ses <- lapply(rocs, ci.se, specificities = seq(0, 1, 0.05), boot.n = 100)
 g.list + facet_grid(. ~ name) +
-  geom_polygon_max_auc(rocs) +
-  geom_polygon_auc(rocs) +
+  geom_polygon_max_auc(aucs) +
+  geom_polygon_auc(aucs) +
   geom_polygon_ci(ci_ses, fill = "#1c61b6", alpha = 0.3) +
-  geom_roc_threshold(rocs, thresholds = "best") +
-  geom_text_auc(lapply(rocs, ci))
+  geom_roc_threshold(aucs, thresholds = "best") +
+  geom_text_auc(ci_aucs)
 }
 }
