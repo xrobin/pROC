@@ -103,6 +103,15 @@ test_that("unpaired roc.test of binormal fits defaults to the ML method", {
   expect_equal(t$p.value, 2 * pnorm(-abs(z)))
   expect_equal(roc.test(s1, s2, alternative = "greater")$p.value, pnorm(-z))
   expect_equal(roc.test(s1, s2, alternative = "less")$p.value, pnorm(z))
+  # CI of the difference, two- and one-sided as for DeLong
+  d <- as.numeric(auc(s1)) - as.numeric(auc(s2))
+  se <- sqrt(var(s1) + var(s2))
+  expect_equal(as.numeric(t$conf.int), d + c(-1, 1) * qnorm(0.975) * se)
+  expect_identical(attr(t$conf.int, "conf.level"), 0.95)
+  expect_equal(as.numeric(roc.test(s1, s2, conf.level = 0.9)$conf.int), d + c(-1, 1) * qnorm(0.95) * se)
+  expect_equal(as.numeric(roc.test(s1, s2, alternative = "greater")$conf.int), c(d - qnorm(0.95) * se, Inf))
+  expect_equal(as.numeric(roc.test(s1, s2, alternative = "less")$conf.int), c(-Inf, d + qnorm(0.95) * se))
+  expect_error(roc.test(s1, s2, conf.level = 2), "conf.level must be between 0 and 1.", fixed = TRUE)
   expect_identical(roc.test(s1, s2, method = "ml")[c("statistic", "p.value", "method")], t[c("statistic", "p.value", "method")])
   expect_identical(t$roc1$binormal, s1$binormal)
   expect_identical(t$roc2$binormal, s2$binormal)
@@ -111,6 +120,7 @@ test_that("unpaired roc.test of binormal fits defaults to the ML method", {
   s1.percent <- smooth(roc(aSAH$outcome[male], aSAH$s100b[male], percent = TRUE, quiet = TRUE))
   s2.percent <- smooth(roc(aSAH$outcome[!male], aSAH$s100b[!male], percent = TRUE, quiet = TRUE))
   expect_equal(roc.test(s1.percent, s2.percent)$statistic, t$statistic)
+  expect_equal(roc.test(s1.percent, s2.percent)$conf.int, t$conf.int * 100)
   # One curve not smoothed: bootstrap, and ML is refused
   r2 <- roc(aSAH$outcome[!male], aSAH$s100b[!male], quiet = TRUE)
   expect_warning(
