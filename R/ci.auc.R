@@ -125,7 +125,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   }
 
   if (method == "ml") {
-    ci <- roc_utils_normal_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level)
+    ci <- roc_utils_logit_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level)
   } else {
     boot.n <- roc_utils_check_boot_n(boot.n)
     aucs <- roc_utils_drop_na_replicates(

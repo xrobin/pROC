@@ -39,6 +39,8 @@ Sources:
 - **O&M**: Obuchowski NA, McClish DK (1997) Sample size determination
   for diagnostic accuracy studies involving binormal ROC curve indices.
   *Stat Med* 16:1529–1542.
+- **Pepe**: Pepe MS (2003) *The Statistical Evaluation of Medical Tests
+  for Classification and Prediction*. Oxford University Press.
 
 ``` r
 library(pROC)
@@ -197,9 +199,9 @@ knitr::kable(summarize(large[, 1:3],
 `var()` and `ci.auc()` of the fit use the delta method: O&M Eq. 6
 (p. 1531), with the variances and covariance of $a$ and $b$ from the
 inverse of the expected information at the maximum (D&A p. 490), and a
-Wald interval. The mean and median of the estimated SE are compared with
-the empirical SD of the AUC estimates, with the coverage of the 95% CI,
-on the datasets fitted above:
+normal CI on the logit scale (Pepe p. 107). The mean and median of the
+estimated SE are compared with the empirical SD of the AUC estimates,
+with the coverage of the 95% CI, on the datasets fitted above:
 
 ``` r
 se.table <- function(x) {
@@ -214,8 +216,8 @@ knitr::kable(rbind(small = se.table(small), large = se.table(large)), digits = 4
 
 |       | datasets |     sd | mean.se | median.se | coverage |
 |:------|---------:|-------:|--------:|----------:|---------:|
-| small |     1194 | 0.0459 |  0.0472 |    0.0471 |   0.9439 |
-| large |     2000 | 0.0060 |  0.0062 |    0.0062 |   0.9565 |
+| small |     1194 | 0.0459 |  0.0472 |    0.0471 |   0.9606 |
+| large |     2000 | 0.0060 |  0.0062 |    0.0062 |   0.9540 |
 
 ## Discussion
 
@@ -235,8 +237,8 @@ of $a$, $b$ and the area are 2% to 6% lower than ROCFIT’s.
 **Large datasets.** The means and RMSEs agree with ROCFIT’s.
 
 **Standard error.** The mean SE of the delta method is within 2.8% of
-the empirical SD of the AUC estimates, and the coverage of the 95% Wald
-interval is 0.944 on the small datasets and 0.957 on the large ones.
+the empirical SD of the AUC estimates, and the coverage of the 95% CI is
+0.961 on the small datasets and 0.954 on the large ones.
 
 **Least squares.** The least-squares line, the binormal smoothing of
 pROC 1.19 and the start of the fit, overestimates $a$ and $b$ more

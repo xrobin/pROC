@@ -1173,10 +1173,14 @@ roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
   }
 }
 
-# The standard confidence interval of an AUC, AUC +- z SE (Efron &
-# Tibshirani 1993, p. 154, Eq. 12.5), as (lower, AUC, upper), bounded to
-# [0, 1]: the bounds can go beyond in rare cases
-roc_utils_normal_ci <- function(auc, sd, conf.level) {
-  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = auc, sd = sd)
-  pmin(pmax(ci, 0), 1)
+# CI of an AUC with standard error sd, as (lower, AUC, upper): a normal
+# interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
+roc_utils_logit_ci <- function(auc, sd, conf.level) {
+  # sd == 0 (AUC of 0 or 1, or all values tied): no interval; the logit interval would be NaN.
+  # conf.level == 0: no interval either, and plogis(qlogis(auc)) can be 1 ulp off auc
+  if (sd == 0 || conf.level == 0) {
+    return(rep(auc, 3))
+  }
+  half <- qnorm(1 - (1 - conf.level) / 2) * sd / (auc * (1 - auc))
+  c(plogis(qlogis(auc) - half), auc, plogis(qlogis(auc) + half))
 }

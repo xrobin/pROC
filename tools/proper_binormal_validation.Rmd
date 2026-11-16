@@ -44,6 +44,8 @@ Sources:
   Radiol* 14:814–829.
 - **Owen**: Owen DB (1956) Tables for computing bivariate normal
   probabilities. *Ann Math Stat* 27:1075–1090.
+- **Pepe**: Pepe MS (2003) *The Statistical Evaluation of Medical Tests for
+  Classification and Prediction*. Oxford University Press.
 
 ```{r setup}
 library(pROC)
@@ -174,7 +176,11 @@ se.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
     auc = table1$auc[i], shape = table1$shape[i],
     sd = sd(res[, "proper"]), published.sd = published$sd[i],
     mean.se = mean(res[, "se"]), published.se = published.se[i], median.se = median(res[, "se"]),
-    coverage = mean(abs(res[, "proper"] - table1$auc[i]) <= qnorm(0.975) * res[, "se"])
+    # the 95% CI of ci.auc(): normal on the logit scale (Pepe p. 107)
+    coverage = mean(mapply(function(auc, se) {
+      ci <- pROC:::roc_utils_logit_ci(auc, se, 0.95)
+      ci[1] <= table1$auc[i] && table1$auc[i] <= ci[3]
+    }, res[, "proper"], res[, "se"]))
   )
 }))
 knitr::kable(se.continuous, digits = c(2, 0, 4, 3, 4, 3, 4, 3))
@@ -419,7 +425,8 @@ chance. The SDs agree with the published ones within
 `r sprintf("%.4f", max(abs(se.continuous$mean.se - se.continuous$published.se)))`
 of P&M's (rounded to 3 decimals), and within
 `r round(100 * max(abs(se.continuous$mean.se / se.continuous$sd - 1)))`% of
-the empirical SDs. The coverage of the 95% Wald interval ranges from
+the empirical SDs. The coverage of the 95% CI (normal on the logit scale,
+Pepe p. 107) ranges from
 `r sprintf("%.3f", min(se.continuous$coverage))` to
 `r sprintf("%.3f", max(se.continuous$coverage))`.
 

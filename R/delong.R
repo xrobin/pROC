@@ -79,16 +79,7 @@ ci_auc_delong <- function(roc, conf.level) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  # S == 0 (AUC of 0 or 1, or all values tied): no interval; the logit interval would be NaN.
-  # conf.level == 0: no interval either, and plogis(qlogis(theta)) can be 1 ulp off theta
-  if (S == 0 || conf.level == 0) {
-    return(rep(V$theta, 3))
-  }
-  # Normal interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
-  half <- qnorm(1 - (1 - conf.level) / 2) * sqrt(S) / (V$theta * (1 - V$theta))
-  ci <- c(plogis(qlogis(V$theta) - half), V$theta, plogis(qlogis(V$theta) + half))
-
-  return(ci)
+  roc_utils_logit_ci(V$theta, sqrt(S), conf.level)
 }
 
 # Runs the placements and main calculations for the paired DeLong's test

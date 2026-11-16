@@ -38,9 +38,11 @@ test_that("var and ci.auc of binormal and proper fits default to the ML method",
   expect_identical(ci, ci(s.s100b))
   expect_identical(ci, ci.auc(s.s100b, method = "ml"))
   # Wald interval around the AUC
-  expect_equal(as.numeric(ci), as.numeric(auc(s.s100b)) + c(-1, 0, 1) * qnorm(0.975) * sqrt(var(s.s100b)))
-  expect_equal(as.numeric(ci.auc(s.s100b, conf.level = 0.9)), as.numeric(auc(s.s100b)) + c(-1, 0, 1) * qnorm(0.95) * sqrt(var(s.s100b)))
-  expect_output(print(ci), "95% CI: 0.632-0.8345 (maximum likelihood)", fixed = TRUE)
+  # normal interval on the logit scale (Pepe 2003, p. 107)
+  logit_ci <- function(auc, se, z) plogis(qlogis(auc) + c(-1, 0, 1) * z * se / (auc * (1 - auc)))
+  expect_equal(as.numeric(ci), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.975)))
+  expect_equal(as.numeric(ci.auc(s.s100b, conf.level = 0.9)), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.95)))
+  expect_output(print(ci), "95% CI: 0.6209-0.8219 (maximum likelihood)", fixed = TRUE)
   # from the shortcuts
   for (shortcut in list(
     ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE),

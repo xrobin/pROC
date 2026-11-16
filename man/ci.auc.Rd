@@ -128,9 +128,8 @@ method = NULL)
   AUC scale (Pepe, 2003, p. 107).
 
   With \code{method="ml"}, the variance of the AUC is computed as
-  described in \code{\link{var}}, and the CI is deduced with
-  \code{\link{qnorm}}: the standard confidence interval of Efron and
-  Tibshirani (1993, p. 154, Eq. 12.5).
+  described in \code{\link{var}}, and the CI is computed on the logit
+  scale as with \code{method="delong"}.
   
   CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
   methods returns an error.
@@ -192,9 +191,6 @@ consistency reasons.
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
-
-  Bradley Efron and Robert J. Tibshirani (1993) \emph{An Introduction to
-  the Bootstrap}. Chapman & Hall, New York.
 
   Margaret Sullivan Pepe (2003) \emph{The Statistical Evaluation of Medical
   Tests for Classification and Prediction}. Oxford University Press.
