@@ -243,8 +243,11 @@ binormal_step <- function(theta, k, l, observed) {
 # not decrease, approaches the maximum. It can stall close to it, where
 # the expected information differs from the curvature of the
 # log-likelihood: Newton steps with the observed information finish, until
-# the step is below 1e-10 of the parameters, which then also bounds the
-# error of the estimates.
+# a full step gains (score . step, twice the expected increase of the
+# log-likelihood) no more than the rounding slack of the log-likelihood.
+# The step itself can stay above any fixed precision when the rounding of
+# the score dominates (very unbalanced data, n0 / n1 > 1e7); the full step
+# taken last keeps the estimates within a few ulps of the maximum.
 binormal_scoring <- function(theta, k, l) {
   ll <- binormal_loglik(theta, k, l)
   # slack for the Newton steps, which may lower the log-likelihood by its
@@ -285,7 +288,7 @@ binormal_scoring <- function(theta, k, l) {
     }
     theta <- candidate
     ll <- ll.candidate
-    if (all(abs(st$step) <= 1e-10 * pmax(1, abs(theta)))) {
+    if (halving == 0 && st$gain <= tolerance) {
       return(list(a = theta[1], b = theta[2], cutpoints = theta[-(1:2)], logLik = ll, converged = TRUE))
     }
   }
