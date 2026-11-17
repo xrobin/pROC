@@ -81,3 +81,7 @@ geom_polygon_ci.ci.sp <- function(data, fill = "gainsboro", colour = NA, ...) {
     }
   )
 }
+
+geom_polygon_ci.list <- function(data, ...) {
+  ggroc_layer_list(data, geom_polygon_ci, ...)
+}

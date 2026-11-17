@@ -52,6 +52,19 @@
   \code{\link[ggplot2:coord_cartesian]{coord_cartesian}()}).
 }
 
+\section{Lists and facets}{
+  With a list, the curves are named by the list (unnamed elements by
+  their index) and the plot has a \code{name} column, so that
+  \code{facet_grid(. ~ name)} draws each curve in its own panel.
+
+  The \code{geom_*} layers also accept a list, named the same way. Their
+  data get the same \code{name} column, so each curve's polygon, point
+  or label is drawn in the panel of its curve. The other arguments of
+  the layer apply to all the curves. Build lists of \code{\link{auc}},
+  \code{\link{ci.auc}} or \code{\link{ci.se}} objects from a list of
+  curves with \code{\link{lapply}}, as in the examples.
+}
+
 
 \seealso{
 \code{\link{roc}}, \code{\link{plot.roc}}, \code{\link{geom_polygon_auc}},
@@ -80,20 +93,21 @@ ggroc(roc1, legacy.axes = TRUE)
 # The result is a regular ggplot, with your own theme, title, etc.
 g + theme_minimal() + ggtitle("My ROC curve")
 
-# All the layers that add to a ggroc plot: the AUC, the identity line,
-# a threshold, and confidence intervals (see their help pages)
-auc1 <- auc(roc1)
-ci_auc <- ci(roc1)
+# All the layers that add to a ggroc plot: the partial AUC between 90 and
+# 100% specificity, the identity line, the best threshold within it, and
+# confidence intervals (see their help pages)
+auc1 <- auc(roc1, partial.auc = c(1, 0.9))
+ci_auc <- ci(auc1, boot.n = 100)
 ci_se <- ci.se(roc1, specificities = seq(0, 1, 0.05), boot.n = 100)
-ci_th <- ci.thresholds(roc1, thresholds = "best", boot.n = 100)
+ci_th <- ci.thresholds(auc1, thresholds = "best", boot.n = 100)
 ggroc(roc1) +
   geom_polygon_max_auc(auc1) +
   geom_polygon_auc(auc1) +
   geom_roc_identity(roc1) +
   geom_polygon_ci(ci_se, fill = "#1c61b6", alpha = 0.3) +
   geom_errorbar_ci(ci_th) +
-  geom_roc_threshold(roc1, thresholds = "best") +
-  geom_text_auc(auc1, ci = ci_auc)
+  geom_roc_threshold(auc1, thresholds = "best") +
+  geom_text_auc(ci_auc)
 
 # Multiple curves, from a list or from a formula
 rocs <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
@@ -110,5 +124,16 @@ g.list + scale_colour_brewer(palette = "RdGy")
 
 # Facets
 g.list + facet_grid(. ~ name) + theme(legend.position = "none")
+
+# Layers in facets: lists of curves, AUCs or CIs, built with lapply
+aucs <- lapply(rocs, auc, partial.auc = c(1, 0.9))
+ci_aucs <- lapply(aucs, ci, boot.n = 100)
+ci_ses <- lapply(rocs, ci.se, specificities = seq(0, 1, 0.05), boot.n = 100)
+g.list + facet_grid(. ~ name) +
+  geom_polygon_max_auc(aucs) +
+  geom_polygon_auc(aucs) +
+  geom_polygon_ci(ci_ses, fill = "#1c61b6", alpha = 0.3) +
+  geom_roc_threshold(aucs, thresholds = "best") +
+  geom_text_auc(ci_aucs)
 }
 }

@@ -4,6 +4,7 @@
 \alias{geom_errorbar_ci.ci.se}
 \alias{geom_errorbar_ci.ci.sp}
 \alias{geom_errorbar_ci.ci.thresholds}
+\alias{geom_errorbar_ci.list}
 
 \title{
   Add CI error bars to a ggroc plot
@@ -18,11 +19,14 @@
 \S3method{geom_errorbar_ci}{ci.se}(data, ...)
 \S3method{geom_errorbar_ci}{ci.sp}(data, ...)
 \S3method{geom_errorbar_ci}{ci.thresholds}(data, ...)
+\S3method{geom_errorbar_ci}{list}(data, ...)
 }
 
 \arguments{
   \item{data}{a \code{\link{ci.se}}, \code{\link{ci.sp}}, or
     \code{\link{ci.thresholds}} object.
+    Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
+    per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
   \item{\dots}{additional aesthetics for \code{\link[ggplot2:geom_errorbar]{geom_errorbar}}.
   }

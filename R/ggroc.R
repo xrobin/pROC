@@ -91,6 +91,22 @@ ggroc.roc <- function(data, legacy.axes = FALSE, ...) {
 
 ggroc.smooth.roc <- ggroc.roc
 
+# Name the curves of a list as ggroc.list does: unnamed elements are named by
+# index, and names must be unique. The layers' list methods use the same names
+# so that they match the 'name' column of the ggroc.list plot.
+ggroc_name_list <- function(data) {
+  if (is.null(names(data))) {
+    names(data) <- seq(data)
+  } else {
+    unnamed <- is.na(names(data)) | names(data) == ""
+    names(data)[unnamed] <- which(unnamed)
+  }
+  if (any(duplicated(names(data)))) {
+    stop("Names of 'data' must be unique")
+  }
+  data
+}
+
 ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth", "group"), legacy.axes = FALSE, ...) {
   load.ggplot2()
   if (missing(aes)) {
@@ -115,17 +131,7 @@ ggroc.list <- function(data, aes = c("colour", "alpha", "linetype", "linewidth",
     stop("ROC curves use percent inconsistently and cannot be plotted together")
   }
 
-  # Make sure the data is a named list: unnamed elements are named by index
-  if (is.null(names(data))) {
-    names(data) <- seq(data)
-  } else {
-    unnamed <- is.na(names(data)) | names(data) == ""
-    names(data)[unnamed] <- which(unnamed)
-  }
-  # Make sure names are unique:
-  if (any(duplicated(names(data)))) {
-    stop("Names of 'data' must be unique")
-  }
+  data <- ggroc_name_list(data)
 
   # Get the coords
   coord.dfs <- sapply(data, get.coords.for.ggplot, simplify = FALSE, ignore.partial.auc = TRUE)
