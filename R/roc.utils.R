@@ -1086,7 +1086,7 @@ roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...,
 }
 
 # roc() for the default and formula methods of ci and ci.auc. Their ... also
-# holds the method of ci.auc ("delong" or "bootstrap"), which roc(smooth = TRUE)
+# holds the method of ci.auc ("delong", "bootstrap" or "ml"), which roc(smooth = TRUE)
 # would pass to smooth.roc as a second 'method' (BUG-166): capture it here.
 roc_utils_roc_ci <- function(response, predictor, ..., method) {
   roc.default(response, predictor, ...)
