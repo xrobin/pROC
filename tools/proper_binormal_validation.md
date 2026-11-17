@@ -37,9 +37,17 @@ Sources:
   curves. *Acad Radiol* 14:814–829.
 - **Owen**: Owen DB (1956) Tables for computing bivariate normal
   probabilities. *Ann Math Stat* 27:1075–1090.
+- **Pepe**: Pepe MS (2003) *The Statistical Evaluation of Medical Tests
+  for Classification and Prediction*. Oxford University Press.
 
 ``` r
 library(pROC)
+#> Type 'citation("pROC")' for a citation.
+#> 
+#> Attaching package: 'pROC'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     cov, smooth, var
 library(parallel)
 B <- params$B
 cores <- params$cores
@@ -78,6 +86,7 @@ table1 <- data.frame(
   c = c(-0.154357, -0.046907, 0, -0.428571, -0.14, 0, -0.853738, -0.292369, 0)
 )
 table1$eq36 <- mapply(pROC:::proper_binormal_auc, table1$da, table1$c)
+#> Loading required namespace: mvtnorm
 knitr::kable(table1, digits = 8)
 ```
 
@@ -93,8 +102,8 @@ knitr::kable(table1, digits = 8)
 | 0.95 | medium    | 2.3240000 | -0.292369 | 0.9500000 |
 | 0.95 | symmetric | 2.3261800 |  0.000000 | 0.9500004 |
 
-The largest difference to the published AUCs is 4.2 × 10<sup>-7</sup>,
-within the rounding of the parameters.
+The largest difference to the published AUCs is 4.2^{-7}, within the
+rounding of the parameters.
 
 At $d_a = 0$, $F(0, 0; \rho) = 1/4 + \arcsin(\rho) / (2\pi)$ (Owen
 p. 1078), so the AUC is $1 + \arcsin(\rho) / \pi$ with
@@ -198,7 +207,11 @@ se.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
     auc = table1$auc[i], shape = table1$shape[i],
     sd = sd(res[, "proper"]), published.sd = published$sd[i],
     mean.se = mean(res[, "se"]), published.se = published.se[i], median.se = median(res[, "se"]),
-    coverage = mean(abs(res[, "proper"] - table1$auc[i]) <= qnorm(0.975) * res[, "se"])
+    # the 95% CI of ci.auc(): normal on the logit scale (Pepe p. 107)
+    coverage = mean(mapply(function(auc, se) {
+      ci <- pROC:::roc_utils_logit_ci(auc, se, 0.95)
+      ci[1] <= table1$auc[i] && table1$auc[i] <= ci[3]
+    }, res[, "proper"], res[, "se"]))
   )
 }))
 knitr::kable(se.continuous, digits = c(2, 0, 4, 3, 4, 3, 4, 3))
@@ -206,15 +219,15 @@ knitr::kable(se.continuous, digits = c(2, 0, 4, 3, 4, 3, 4, 3))
 
 |  auc | shape     |     sd | published.sd | mean.se | published.se | median.se | coverage |
 |-----:|:----------|-------:|-------------:|--------:|-------------:|----------:|---------:|
-| 0.60 | high      | 0.0483 |        0.049 |  0.0488 |        0.050 |    0.0458 |    0.936 |
-| 0.60 | medium    | 0.0511 |        0.050 |  0.0504 |        0.051 |    0.0520 |    0.938 |
-| 0.60 | symmetric | 0.0514 |        0.051 |  0.0510 |        0.052 |    0.0531 |    0.942 |
-| 0.85 | high      | 0.0336 |        0.034 |  0.0328 |        0.033 |    0.0325 |    0.887 |
-| 0.85 | medium    | 0.0380 |        0.038 |  0.0363 |        0.037 |    0.0365 |    0.916 |
-| 0.85 | symmetric | 0.0375 |        0.038 |  0.0367 |        0.037 |    0.0369 |    0.922 |
-| 0.95 | high      | 0.0187 |        0.018 |  0.0171 |        0.018 |    0.0173 |    0.819 |
-| 0.95 | medium    | 0.0213 |        0.021 |  0.0198 |        0.021 |    0.0199 |    0.871 |
-| 0.95 | symmetric | 0.0195 |        0.019 |  0.0197 |        0.020 |    0.0197 |    0.907 |
+| 0.60 | high      | 0.0483 |        0.049 |  0.0488 |        0.050 |    0.0458 |    0.950 |
+| 0.60 | medium    | 0.0511 |        0.050 |  0.0504 |        0.051 |    0.0520 |    0.950 |
+| 0.60 | symmetric | 0.0514 |        0.051 |  0.0510 |        0.052 |    0.0531 |    0.951 |
+| 0.85 | high      | 0.0336 |        0.034 |  0.0328 |        0.033 |    0.0325 |    0.946 |
+| 0.85 | medium    | 0.0380 |        0.038 |  0.0363 |        0.037 |    0.0365 |    0.948 |
+| 0.85 | symmetric | 0.0375 |        0.038 |  0.0367 |        0.037 |    0.0369 |    0.951 |
+| 0.95 | high      | 0.0187 |        0.018 |  0.0171 |        0.018 |    0.0173 |    0.957 |
+| 0.95 | medium    | 0.0213 |        0.021 |  0.0198 |        0.021 |    0.0199 |    0.950 |
+| 0.95 | symmetric | 0.0195 |        0.019 |  0.0197 |        0.020 |    0.0197 |    0.965 |
 
 ### Bias, and comparison with the least-squares fit
 
@@ -415,9 +428,9 @@ summary(proproc$ll.diff)
 #> -2.136e-03 -2.036e-08  0.000e+00 -9.124e-06  0.000e+00  9.630e-09          1
 summary(abs(proproc$auc.diff))
 #>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-#> 0.000e+00 6.000e-09 4.500e-08 1.864e-04 1.190e-07 4.395e-02
+#> 0.000e+00 5.000e-09 4.500e-08 1.864e-04 1.190e-07 4.395e-02
 mean(proproc$auc.diff)
-#> [1] -0.0001863363
+#> [1] -0.0001863328
 ```
 
 Eq. 36 (pROC’s AUC) at PROPROC’s own estimates, against PROPROC’s AUC:
@@ -475,7 +488,8 @@ agree with the published ones within 4%.
 
 **Standard error.** The mean SEs of the delta method are within 0.0012
 of P&M’s (rounded to 3 decimals), and within 9% of the empirical SDs.
-The coverage of the 95% Wald interval ranges from 0.819 to 0.942.
+The coverage of the 95% CI (normal on the logit scale, Pepe p. 107)
+ranges from 0.946 to 0.965.
 
 **Bias.** The proper fit overestimates the AUC by up to 0.018, most at
 low AUC and high skew, like the published fits. P&M (pp. 825–826)
