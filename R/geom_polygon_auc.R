@@ -12,22 +12,21 @@ ggroc_auc_polygon_close <- function(df, specificity, sensitivity, one) {
   rbind(df, extra)
 }
 
-geom_polygon_auc.auc <- function(data, fill = "gainsboro", colour = NA, ...) {
+geom_polygon_auc.auc <- function(data, fill = NULL, colour = NA, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill
   }
-  if (is.null(extras$colour)) {
+  if (is.null(extras$colour) && is.null(mapping$colour)) {
     extras$colour <- colour
   }
   roc <- attr(data, "roc")
   roc$auc <- data
   new_ggroc_layer(
     behind = TRUE,
-    make_layers = function(plot) {
-      la <- ggroc_legacy_axes_from_plot(plot)
+    make_layers = function(plot, named = FALSE) {
       df <- get.coords.for.ggplot(roc, ignore.partial.auc = FALSE)
 
       partial.auc <- attr(data, "partial.auc")
@@ -40,11 +39,13 @@ geom_polygon_auc.auc <- function(data, fill = "gainsboro", colour = NA, ...) {
         df <- ggroc_auc_polygon_close(df, rev(partial.auc), c(0, 0), one.or.hundred)
       }
 
-      aes <- get.aes.for.ggplot(roc, la)
-      list(do.call(
+      fill <- ggroc_curve_colour(plot, named, extras, mapping, "fill")
+      aes <- ggroc_add_mapping(ggroc_xy_aes(plot, fill$mapping), mapping)
+      layer <- do.call(
         ggplot2::geom_polygon,
-        c(list(mapping = aes$aes, data = df), extras, list(inherit.aes = FALSE))
-      ))
+        c(list(mapping = aes, data = df), fill$extras, list(inherit.aes = FALSE))
+      )
+      list(ggroc_theme_defaults(layer, fill$defaults))
     }
   )
 }

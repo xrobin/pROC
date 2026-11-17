@@ -2,14 +2,14 @@ geom_polygon_max_auc <- function(data, ...) {
   UseMethod("geom_polygon_max_auc")
 }
 
-geom_polygon_max_auc.auc <- function(data, fill = "#EEEEEE", colour = NA, ...) {
+geom_polygon_max_auc.auc <- function(data, fill = NULL, colour = NA, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill
   }
-  if (is.null(extras$colour)) {
+  if (is.null(extras$colour) && is.null(mapping$colour)) {
     extras$colour <- colour
   }
   percent <- attr(data, "percent")
@@ -17,7 +17,7 @@ geom_polygon_max_auc.auc <- function(data, fill = "#EEEEEE", colour = NA, ...) {
   partial.auc.focus <- attr(data, "partial.auc.focus")
   new_ggroc_layer(
     behind = TRUE,
-    make_layers = function(plot) {
+    make_layers = function(plot, ...) {
       one <- if (percent) 100 else 1
       if (identical(partial.auc, FALSE)) {
         df <- data.frame(
@@ -36,15 +36,16 @@ geom_polygon_max_auc.auc <- function(data, fill = "#EEEEEE", colour = NA, ...) {
         )
       }
       df <- ggroc_add_one_or_hundred(df, percent)
-      aes <- ggroc_xy_aes(plot)
-      list(do.call(
+      aes <- ggroc_add_mapping(ggroc_xy_aes(plot), mapping)
+      layer <- do.call(
         ggplot2::geom_polygon,
         c(
           list(mapping = aes, data = df),
           extras,
           list(inherit.aes = FALSE)
         )
-      ))
+      )
+      list(ggroc_theme_defaults(layer, if (is.null(extras$fill) && is.null(mapping$fill)) list(fill = ggroc_theme_mix(0.8))))
     }
   )
 }

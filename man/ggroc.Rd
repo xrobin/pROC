@@ -60,9 +60,25 @@
   The \code{geom_*} layers also accept a list, named the same way. Their
   data get the same \code{name} column, so each curve's polygon, point
   or label is drawn in the panel of its curve. The other arguments of
-  the layer apply to all the curves. Build lists of \code{\link{auc}},
+  the layer apply to all the curves, and its \code{mapping} can map
+  aesthetics to \code{name} through the scales of the plot, for instance
+  \code{aes(colour = name)}. Build lists of \code{\link{auc}},
   \code{\link{ci.auc}} or \code{\link{ci.se}} objects from a list of
   curves with \code{\link{lapply}}, as in the examples.
+}
+
+\section{Colours of the layers}{
+  The polygons and error bars of a curve (\code{\link{geom_polygon_auc}},
+  \code{\link{geom_polygon_ci}} and \code{\link{geom_errorbar_ci}})
+  take the colour of their curve: the colour that \code{ggroc} maps to
+  the curves of a list, otherwise the fixed colour of the ROC line,
+  otherwise the theme's ink
+  (\code{\link[ggplot2:element_geom]{element_geom}}). Polygons are
+  filled with it at 25\% opacity. The threshold points and AUC text
+  (\code{\link{geom_roc_threshold}} and \code{\link{geom_text_auc}})
+  are in the theme's ink, which stands out over the polygons. A
+  \code{colour} (\code{fill} for the polygons), set or mapped, replaces
+  these defaults.
 }
 
 
@@ -125,14 +141,15 @@ g.list + scale_colour_brewer(palette = "RdGy")
 # Facets
 g.list + facet_grid(. ~ name) + theme(legend.position = "none")
 
-# Layers in facets: lists of curves, AUCs or CIs, built with lapply
+# Layers in facets: lists of curves, AUCs or CIs, built with lapply.
+# The polygons take the colour of their curve.
 aucs <- lapply(rocs, auc, partial.auc = c(1, 0.9))
 ci_aucs <- lapply(aucs, ci, boot.n = 100)
 ci_ses <- lapply(rocs, ci.se, specificities = seq(0, 1, 0.05), boot.n = 100)
 g.list + facet_grid(. ~ name) +
   geom_polygon_max_auc(aucs) +
   geom_polygon_auc(aucs) +
-  geom_polygon_ci(ci_ses, fill = "#1c61b6", alpha = 0.3) +
+  geom_polygon_ci(ci_ses) +
   geom_roc_threshold(aucs, thresholds = "best") +
   geom_text_auc(ci_aucs)
 }

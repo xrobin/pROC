@@ -17,11 +17,11 @@
 \S3method{geom_roc_threshold}{roc}(data, thresholds = "best", pattern = NULL,
       hjust = -0.05, vjust = 1.25, size = 2,
       best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
-      ...)
+      mapping = NULL, ...)
 \S3method{geom_roc_threshold}{smooth.roc}(data, thresholds = "best", pattern = NULL,
       hjust = -0.05, vjust = 1.25, size = 2,
       best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
-      ...)
+      mapping = NULL, ...)
 \S3method{geom_roc_threshold}{auc}(data, ...)
 \S3method{geom_roc_threshold}{list}(data, ...)
 }
@@ -51,6 +51,10 @@
     as \code{print.thres.best.method} and \code{print.thres.best.weights}
     in \code{\link{plot.roc}}. Passed to \code{\link{coords}}; see its
     arguments \code{best.method} and \code{best.weights} for details.
+  }
+  \item{mapping}{additional aesthetic mappings, created with
+    \code{\link[ggplot2:aes]{aes}()}: see \sQuote{Lists and facets} in
+    \code{\link{ggroc}}.
   }
   \item{\dots}{additional aesthetics for the point and text layers.
     For \code{geom_roc_threshold.auc}, the arguments of
