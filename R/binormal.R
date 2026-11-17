@@ -660,12 +660,13 @@ proper_binormal_fit <- function(k, l, start) {
 
 # Maximum of the likelihood on the chance line, where FPF = TPF = Phi(-v):
 # each category has the pooled proportion of the controls and cases, and the
-# cut-points are at the pooled cumulative proportions (from the counts)
+# cut-points are at the pooled cumulative proportions (from the counts). Its
+# logLik is computed as that of the other fits, at the cut-points.
 proper_binormal_chance_line <- function(k, l) {
-  p <- (k + l) / sum(k, l)
+  cutpoints <- qnorm(cumsum(k + l)[-length(k)] / sum(k, l))
   list(
-    da = 0, c = 0, cutpoints = qnorm(cumsum(k + l)[-length(k)] / sum(k, l)),
-    logLik = sum(k[k > 0] * log(p[k > 0])) + sum(l[l > 0] * log(p[l > 0])), convergence = 0
+    da = 0, c = 0, cutpoints = cutpoints,
+    logLik = proper_binormal_loglik(cutpoints, 0, 0, k, l), convergence = 0
   )
 }
 
