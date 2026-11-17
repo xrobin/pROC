@@ -324,13 +324,14 @@ roc.test.roc <- function(roc1, roc2,
     # The AUCs of independent samples: z = (AUC1 - AUC2) / sqrt(var1 + var2)
     # (the test of D&A p. 494 for two independent estimates)
     variances <- vapply(list(curve1, curve2), function(curve) var_roc_ml(curve) * ifelse(curve$percent, 100^2, 1), numeric(1))
+    variance <- variances[[1]] + variances[[2]]
     d <- estimate[[1]] - estimate[[2]]
-    stat <- c(Z = d / sqrt(sum(variances)))
-    if (d == 0 && sum(variances) == 0) {
+    stat <- c(Z = d / sqrt(variance))
+    if (d == 0 && variance == 0) {
       stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.test
     }
     htest$statistic <- stat
-    htest$conf.int <- roc_test_ci_normal(d, sqrt(sum(variances)), conf.level, alternative)
+    htest$conf.int <- roc_test_ci_normal(d, sqrt(variance), conf.level, alternative)
     htest$method <- "Maximum-likelihood test for two binormal ROC curves"
     htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else if (method == "venkatraman") {
