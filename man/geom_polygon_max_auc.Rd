@@ -14,7 +14,7 @@
   \code{\link{plot.roc}(max.auc.polygon = TRUE)}.
 }
 \usage{
-\S3method{geom_polygon_max_auc}{auc}(data, fill = "#EEEEEE", colour = NA, ...)
+\S3method{geom_polygon_max_auc}{auc}(data, fill = NULL, colour = NA, mapping = NULL, ...)
 \S3method{geom_polygon_max_auc}{roc}(data, ...)
 \S3method{geom_polygon_max_auc}{smooth.roc}(data, ...)
 \S3method{geom_polygon_max_auc}{list}(data, ...)
@@ -26,7 +26,14 @@
     Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
     per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
-  \item{fill, colour}{fill and border for the rectangle.
+  \item{fill, colour}{fill and border for the rectangle. If \code{fill} is
+    \code{NULL}, the theme's ink and paper colours
+    (\code{\link[ggplot2:element_geom]{element_geom}}) are mixed 80\% of
+    the way from ink to paper.
+  }
+  \item{mapping}{additional aesthetic mappings, created with
+    \code{\link[ggplot2:aes]{aes}()}: see \sQuote{Lists and facets} in
+    \code{\link{ggroc}}.
   }
   \item{\dots}{additional aesthetics for \code{\link[ggplot2:geom_polygon]{geom_polygon}}.
   }

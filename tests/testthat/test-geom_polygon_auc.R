@@ -88,13 +88,6 @@ test_that("geom_polygon_auc gives a clear error on a curve without AUC", {
   expect_error(geom_polygon_auc(r), "'data' has no 'auc'")
 })
 
-test_that("geom_polygon_auc fill defaults to plot.roc's auc.polygon.col", {
-  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
-  fill_of <- function(p) unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
-  expect_equal(fill_of(ggroc(r.s100b) + geom_polygon_auc(r.s100b)), "gainsboro")
-  expect_equal(fill_of(ggroc(r.s100b) + geom_polygon_auc(r.s100b, fill = "red")), "red")
-})
-
 test_that("geom_polygon_auc draws each curve of a list in its own facet", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   rocs <- list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)

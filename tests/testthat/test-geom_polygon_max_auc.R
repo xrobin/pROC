@@ -17,6 +17,15 @@ test_that("geom_polygon_max_auc sits behind geom_polygon_auc", {
   )
 })
 
+test_that("geom_polygon_max_auc fill defaults to the theme's ink and paper", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  fill_of <- function(p) unique(ggplot2::ggplot_build(p)$data[[1]]$fill)
+  p <- ggroc(r.s100b) + geom_polygon_max_auc(r.s100b)
+  expect_equal(fill_of(p), "#CCCCCCFF")
+  expect_equal(fill_of(p + ggplot2::theme_grey(ink = "white", paper = "black")), "#333333FF")
+  expect_equal(fill_of(ggroc(r.s100b) + geom_polygon_max_auc(r.s100b, fill = "red")), "red")
+})
+
 test_that("geom_polygon_max_auc screenshot looks normal", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   test_screenshot <- function() {

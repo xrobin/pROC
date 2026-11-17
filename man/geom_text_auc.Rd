@@ -15,7 +15,7 @@
 }
 \usage{
 \S3method{geom_text_auc}{auc}(data, ci = NULL, x = NULL, y = NULL, pattern = NULL,
-      hjust = 0, vjust = 1, ...)
+      hjust = 0, vjust = 1, mapping = NULL, ...)
 \S3method{geom_text_auc}{roc}(data, ci = NULL, ...)
 \S3method{geom_text_auc}{smooth.roc}(data, ci = NULL, ...)
 \S3method{geom_text_auc}{ci.auc}(data, ...)
@@ -43,6 +43,10 @@
   \item{hjust, vjust}{text justification (ggplot2), corresponding to
     \code{print.auc.adj = c(0, 1)} by default.
   }
+  \item{mapping}{additional aesthetic mappings, created with
+    \code{\link[ggplot2:aes]{aes}()}: see \sQuote{Lists and facets} in
+    \code{\link{ggroc}}.
+  }
   \item{\dots}{additional arguments to \code{\link[ggplot2:geom_text]{geom_text}}.
   }
 }
@@ -53,10 +57,8 @@
   \code{vjust}: in facets by \code{name}, each panel shows the label
   of its curve at (\code{x}, \code{y}).
 
-  Unless \code{colour} is given, each label takes the colour of its
-  curve, as with \code{print.auc.col} in \code{\link{plot.roc}}: the
-  colour that \code{\link{ggroc}} maps to the curves of a list, or
-  the fixed colour of the ROC line.
+  The default \code{colour} is the theme's ink: see
+  \sQuote{Colours of the layers} in \code{\link{ggroc}}.
 }
 
 \seealso{

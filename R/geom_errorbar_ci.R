@@ -2,13 +2,13 @@ geom_errorbar_ci <- function(data, ...) {
   UseMethod("geom_errorbar_ci")
 }
 
-geom_errorbar_ci.ci.se <- function(data, ...) {
+geom_errorbar_ci.ci.se <- function(data, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent
-  if (is.null(extras$width)) {
+  if (is.null(extras$width) && is.null(mapping$width)) {
     extras$width <- ggroc_errorbar_width(percent)
   }
   sp <- as.numeric(attr(data, "specificities"))
@@ -20,19 +20,21 @@ geom_errorbar_ci.ci.se <- function(data, ...) {
   df <- ggroc_add_one_or_hundred(df, percent)
   new_ggroc_layer(
     behind = FALSE,
-    make_layers = function(plot) {
+    make_layers = function(plot, named = FALSE) {
+      colour <- ggroc_curve_colour(plot, named, extras, mapping)
       xcol <- ggroc_x_col(plot)
       .data <- rlang::.data
-      mapping <- ggplot2::aes(
+      aes <- ggroc_add_mapping(ggplot2::aes(
         x = .data[[xcol]],
         ymin = .data$ymin,
-        ymax = .data$ymax
-      )
+        ymax = .data$ymax,
+        !!!colour$mapping
+      ), mapping)
       list(do.call(
         ggplot2::geom_errorbar,
         c(
-          list(mapping = mapping, data = df),
-          extras,
+          list(mapping = aes, data = df),
+          colour$extras,
           list(inherit.aes = FALSE)
         )
       ))
@@ -40,14 +42,14 @@ geom_errorbar_ci.ci.se <- function(data, ...) {
   )
 }
 
-geom_errorbar_ci.ci.sp <- function(data, ...) {
+geom_errorbar_ci.ci.sp <- function(data, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent
   one <- if (percent) 100 else 1
-  if (is.null(extras$width)) {
+  if (is.null(extras$width) && is.null(mapping$width)) {
     extras$width <- ggroc_errorbar_width(percent)
   }
   se <- as.numeric(attr(data, "sensitivities"))
@@ -58,7 +60,8 @@ geom_errorbar_ci.ci.sp <- function(data, ...) {
   )
   new_ggroc_layer(
     behind = FALSE,
-    make_layers = function(plot) {
+    make_layers = function(plot, named = FALSE) {
+      colour <- ggroc_curve_colour(plot, named, extras, mapping)
       bars <- df
       if (ggroc_legacy_axes_from_plot(plot)) {
         tmp <- one - bars$xmax
@@ -66,16 +69,17 @@ geom_errorbar_ci.ci.sp <- function(data, ...) {
         bars$xmin <- tmp
       }
       .data <- rlang::.data
-      mapping <- ggplot2::aes(
+      aes <- ggroc_add_mapping(ggplot2::aes(
         y = .data$sensitivity,
         xmin = .data$xmin,
-        xmax = .data$xmax
-      )
+        xmax = .data$xmax,
+        !!!colour$mapping
+      ), mapping)
       list(do.call(
         ggplot2::geom_errorbar,
         c(
-          list(mapping = mapping, data = bars),
-          extras,
+          list(mapping = aes, data = bars),
+          colour$extras,
           list(inherit.aes = FALSE, orientation = "y")
         )
       ))
@@ -83,14 +87,14 @@ geom_errorbar_ci.ci.sp <- function(data, ...) {
   )
 }
 
-geom_errorbar_ci.ci.thresholds <- function(data, ...) {
+geom_errorbar_ci.ci.thresholds <- function(data, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   roc <- attr(data, "roc")
   percent <- roc$percent
   one <- if (percent) 100 else 1
-  if (is.null(extras$width)) {
+  if (is.null(extras$width) && is.null(mapping$width)) {
     extras$width <- ggroc_errorbar_width(percent)
   }
   df <- data.frame(
@@ -104,7 +108,8 @@ geom_errorbar_ci.ci.thresholds <- function(data, ...) {
   df <- ggroc_add_one_or_hundred(df, percent)
   new_ggroc_layer(
     behind = FALSE,
-    make_layers = function(plot) {
+    make_layers = function(plot, named = FALSE) {
+      colour <- ggroc_curve_colour(plot, named, extras, mapping)
       xcol <- ggroc_x_col(plot)
       .data <- rlang::.data
       if (ggroc_legacy_axes_from_plot(plot)) {
@@ -115,22 +120,24 @@ geom_errorbar_ci.ci.thresholds <- function(data, ...) {
         df$h_xmin <- df$sp_lower
         df$h_xmax <- df$sp_upper
       }
-      v_aes <- ggplot2::aes(
+      v_aes <- ggroc_add_mapping(ggplot2::aes(
         x = .data[[xcol]],
         ymin = .data$se_lower,
-        ymax = .data$se_upper
-      )
-      h_aes <- ggplot2::aes(
+        ymax = .data$se_upper,
+        !!!colour$mapping
+      ), mapping)
+      h_aes <- ggroc_add_mapping(ggplot2::aes(
         y = .data$sensitivity,
         xmin = .data$h_xmin,
-        xmax = .data$h_xmax
-      )
+        xmax = .data$h_xmax,
+        !!!colour$mapping
+      ), mapping)
       list(
         do.call(
           ggplot2::geom_errorbar,
           c(
             list(mapping = v_aes, data = df),
-            extras,
+            colour$extras,
             list(inherit.aes = FALSE)
           )
         ),
@@ -138,7 +145,7 @@ geom_errorbar_ci.ci.thresholds <- function(data, ...) {
           ggplot2::geom_errorbar,
           c(
             list(mapping = h_aes, data = df),
-            extras,
+            colour$extras,
             list(inherit.aes = FALSE, orientation = "y")
           )
         )

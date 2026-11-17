@@ -2,7 +2,7 @@ geom_text_auc <- function(data, ...) {
   UseMethod("geom_text_auc")
 }
 
-geom_text_auc.auc <- function(data, ci = NULL, x = NULL, y = NULL, pattern = NULL, hjust = 0, vjust = 1, ...) {
+geom_text_auc.auc <- function(data, ci = NULL, x = NULL, y = NULL, pattern = NULL, hjust = 0, vjust = 1, mapping = NULL, ...) {
   load.ggplot2()
   extras <- list(...)
   names(extras) <- sub("color", "colour", names(extras))
@@ -15,7 +15,7 @@ geom_text_auc.auc <- function(data, ci = NULL, x = NULL, y = NULL, pattern = NUL
     y <- one / 2
   }
   label <- ggroc_auc_label(data, ci, pattern)
-  ggroc_text_layer(data.frame(x = x, y = y, label = label, vjust = vjust), hjust, extras)
+  ggroc_text_layer(data.frame(x = x, y = y, label = label, vjust = vjust), hjust, extras, mapping)
 }
 
 geom_text_auc.roc <- function(data, ci = NULL, ...) {
@@ -45,16 +45,13 @@ geom_text_auc.list <- function(data, ci = NULL, pattern = NULL, name = FALSE, ..
   if (name) {
     df$label <- paste(names(data), df$label)
   }
-  ggroc_text_layer(df, texts[[1]]$hjust, texts[[1]]$extras)
+  ggroc_text_layer(df, texts[[1]]$hjust, texts[[1]]$extras, texts[[1]]$mapping)
 }
 
 # The text layer of geom_text_auc. The labels that share a panel are stacked
 # 1.5 lines apart below the first one, so that facets show one label per
 # panel at (x, y) and a plot without facets shows them all.
-# Unless 'colour' is given, the labels take the colour of their curve, as
-# plot.roc(print.auc = TRUE) does: the ggroc colour mapping of the curves
-# for a list, or the fixed colour of the ROC line.
-ggroc_text_layer <- function(df, hjust, extras) {
+ggroc_text_layer <- function(df, hjust, extras, mapping) {
   layer <- new_ggroc_layer(
     behind = FALSE,
     make_layers = function(plot) {
@@ -70,30 +67,20 @@ ggroc_text_layer <- function(df, hjust, extras) {
         }
       )
       .data <- rlang::.data
-      mapping <- ggplot2::aes(x = .data$x, y = .data$y, label = .data$label, vjust = .data$vjust)
-      if (is.null(extras$colour)) {
-        plot_colour <- ggroc_plot_mapping(plot)$colour
-        if (!is.null(df$name) && !is.null(plot_colour) && rlang::as_label(plot_colour) == "name") {
-          mapping$colour <- ggplot2::expr(.data$name)
-          if (is.null(extras$show.legend)) {
-            extras$show.legend <- FALSE
-          }
-        } else {
-          roc_i <- ggroc_roc_line_index(plot@layers)
-          if (roc_i <= length(plot@layers)) {
-            extras$colour <- plot@layers[[roc_i]]$aes_params$colour
-          }
-        }
-      }
+      aes <- ggroc_add_mapping(
+        ggplot2::aes(x = .data$x, y = .data$y, label = .data$label, vjust = .data$vjust),
+        mapping
+      )
       list(do.call(
         ggplot2::geom_text,
         c(
-          list(mapping = mapping, data = df, stat = stat, hjust = hjust, inherit.aes = FALSE),
+          list(mapping = aes, data = df, stat = stat, inherit.aes = FALSE),
+          if (is.null(mapping$hjust)) list(hjust = hjust),
           extras
         )
       ))
     }
   )
-  layer$text <- list(df = df, hjust = hjust, extras = extras)
+  layer$text <- list(df = df, hjust = hjust, extras = extras, mapping = mapping)
   layer
 }
