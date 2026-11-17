@@ -265,11 +265,17 @@ test_that("a single category is not smoothable", {
   )
 })
 
-test_that("a single interior point gives a proper curve through it", {
+test_that("a single interior point gives the symmetric proper curve through it", {
   r <- roc(controls = c(1, 1, 1, 2, 2), cases = c(1, 2, 2, 2, 2), quiet = TRUE)
-  # the curve through it is arbitrary
-  expect_warning(s <- smooth(r, method = "proper"), "A proper curve through a single point is arbitrary and can be misleading.", fixed = TRUE)
+  # the curve through it is arbitrary: the symmetric one is returned
+  expect_warning(s <- smooth(r, method = "proper"), "A proper curve through a single point is arbitrary: the symmetric one (c = 0) is returned.", fixed = TRUE)
+  expect_identical(s$proper$c, 0)
   expect_true(all(diff(proper_slopes(s)) <= 0))
+  # through the point (FPF 2/5, TPF 4/5), with the AUC of Eq. 36 at c = 0
+  expect_equal(pROC:::proper_binormal_fpf(s$proper$cutpoints, s$proper$da, 0), 2 / 5)
+  expect_equal(pROC:::proper_binormal_tpf(s$proper$cutpoints, s$proper$da, 0), 4 / 5)
+  expect_equal(s$proper$da, qnorm(4 / 5) - qnorm(2 / 5))
+  expect_equal(as.numeric(auc(s)), pnorm(s$proper$da / sqrt(2)), tolerance = 1e-5)
   # the fit has the likelihood of the saturated model (the data are the
   # categories' observed proportions)
   k <- s$proper$categories$controls

@@ -179,7 +179,7 @@ test_that("the proper ML variance of a single point leaves out the singular dire
   # two categories, three parameters: the information is singular
   expect_warning(
     s <- smooth(roc(controls = c(1, 1, 1, 2, 2), cases = c(1, 2, 2, 2, 2), quiet = TRUE), method = "proper"),
-    "A proper curve through a single point is arbitrary and can be misleading.", fixed = TRUE
+    "A proper curve through a single point is arbitrary: the symmetric one (c = 0) is returned.", fixed = TRUE
   )
   fit <- s$proper
   e <- eigen(pROC:::proper_binormal_information(fit$da, fit$c, fit$cutpoints, fit$categories$controls, fit$categories$cases), symmetric = TRUE)

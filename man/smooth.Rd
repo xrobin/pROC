@@ -270,8 +270,8 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
 
   A curve with a single point above the chance line (such as that of a
   binary predictor) gives two rates for the three parameters of a proper
-  curve through it: the curve and its AUC are arbitrary, and a warning is
-  issued.
+  curve through it: the curve and its AUC are arbitrary. The symmetric
+  curve (\eqn{c = 0}{c = 0}) through the point is returned, with a warning.
 }
 
 \section{Errors}{

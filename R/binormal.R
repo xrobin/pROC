@@ -329,17 +329,16 @@ smooth_roc_proper <- function(roc, n) {
       )
     ))
   }
-  fit <- proper_binormal_fit(k, l, proper_binormal_start(k, l))
+  if (I == 2) {
+    fit <- proper_binormal_single_point(k, l)
+    if (fit$c == 0 && fit$da > 0) {
+      warning("A proper curve through a single point is arbitrary: the symmetric one (c = 0) is returned.", call. = FALSE)
+    }
+  } else {
+    fit <- proper_binormal_fit(k, l, proper_binormal_start(k, l))
+  }
   if (fit$convergence != 0) {
     stop("ROC curve not smoothable (the proper binormal fit did not converge).")
-  }
-  # A single point (two categories) gives two rates for three parameters (da,
-  # c and its cut-point): a family of proper curves passes through it, with
-  # different AUCs, and the fit is one of them. A point on or below the
-  # chance line has a single fit, the chance line (a concave curve touches
-  # the diagonal only if it is the diagonal).
-  if (I == 2 && !(fit$da == 0 && fit$c == 0)) {
-    warning("A proper curve through a single point is arbitrary and can be misleading.", call. = FALSE)
   }
 
   # The curve (M&P Eqs. 33-34), at cut-points where FPF and TPF alternately
@@ -656,6 +655,25 @@ proper_binormal_fit <- function(k, l, start) {
     best <- chance
   }
   best
+}
+
+# A single point (two categories) gives two rates for three parameters (da,
+# c and its cut-point): a family of proper curves passes through it, all with
+# the saturated likelihood, and the optimizer would stop on one of them by
+# rounding noise. The symmetric one (c = 0) is returned, in closed form: at
+# c = 0, FPF = Phi(-v - da / 2) and TPF = Phi(-v + da / 2) (M&P Eqs. 33-34).
+# A point on or below the chance line has a single fit, the chance line (a
+# concave curve touches the diagonal only if it is the diagonal). The test
+# is exact, on the counts.
+proper_binormal_single_point <- function(k, l) {
+  if (as.numeric(l[2]) * sum(k) <= as.numeric(k[2]) * sum(l)) {
+    return(proper_binormal_chance_line(k, l))
+  }
+  z.fpf <- qnorm(k[2] / sum(k))
+  z.tpf <- qnorm(l[2] / sum(l))
+  da <- z.tpf - z.fpf
+  v <- -(z.tpf + z.fpf) / 2
+  list(da = da, c = 0, cutpoints = v, logLik = proper_binormal_loglik(v, da, 0, k, l), convergence = 0)
 }
 
 # Maximum of the likelihood on the chance line, where FPF = TPF = Phi(-v):
