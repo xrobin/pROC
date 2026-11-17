@@ -4,6 +4,7 @@
 \alias{geom_roc_threshold.roc}
 \alias{geom_roc_threshold.smooth.roc}
 \alias{geom_roc_threshold.auc}
+\alias{geom_roc_threshold.list}
 
 \title{
   Print thresholds on a ggroc plot
@@ -22,6 +23,7 @@
       best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
       ...)
 \S3method{geom_roc_threshold}{auc}(data, ...)
+\S3method{geom_roc_threshold}{list}(data, ...)
 }
 
 \arguments{
@@ -29,6 +31,8 @@
     or an \code{\link{auc}} object, whose curve is used with its
     (partial) AUC specification: with a partial AUC, the thresholds
     (including \dQuote{best}) are searched within it.
+    Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
+    per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
   \item{thresholds}{passed as \code{x} to \code{\link{coords}}:
     \code{"best"}, \code{"all"}, \code{"local maximas"}, numeric

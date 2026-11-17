@@ -3,6 +3,7 @@
 \alias{geom_polygon_auc.auc}
 \alias{geom_polygon_auc.roc}
 \alias{geom_polygon_auc.smooth.roc}
+\alias{geom_polygon_auc.list}
 \alias{geom_polygon_auc}
 \alias{ggplot_add.ggroc_layer}
 
@@ -16,11 +17,14 @@
 \S3method{geom_polygon_auc}{auc}(data, fill = "gainsboro", colour = NA, ...)
 \S3method{geom_polygon_auc}{roc}(data, ...)
 \S3method{geom_polygon_auc}{smooth.roc}(data, ...)
+\S3method{geom_polygon_auc}{list}(data, ...)
 }
 
 \arguments{
   \item{data}{a roc object from the \link{roc} function, or its
     \code{auc}, same as the one used to build the ggroc initially.
+    Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
+    per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
   \item{fill, colour}{fill and border of the polygon. The default fill
     matches \code{auc.polygon.col} in \code{\link{plot.roc}}.
@@ -58,5 +62,10 @@ auc_se <- auc(roc1, partial.auc = c(0.8, 0.9), partial.auc.focus = "se")
 
 ggroc(roc1) + geom_polygon_auc(auc_sp)
 ggroc(roc1) + geom_polygon_auc(auc_se)
+
+# Multiple curves in facets, with partial AUCs
+rocs <- roc(outcome ~ s100b + ndka + wfns, data = aSAH)
+paucs <- lapply(rocs, auc, partial.auc = c(1, 0.8))
+ggroc(rocs) + geom_polygon_auc(paucs) + ggplot2::facet_grid(. ~ name)
 }
 }

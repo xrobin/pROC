@@ -143,3 +143,22 @@ ggroc_auc_label <- function(auc, ci = NULL, pattern = NULL) {
     sprintf(pattern, auc)
   }
 }
+
+# List method shared by the layers: one layer per curve, named as in
+# ggroc.list, with a 'name' column so that facet_*(~ name) draws each layer in
+# its own panel only.
+ggroc_layer_list <- function(data, layer_fun, ...) {
+  data <- ggroc_name_list(data)
+  layers <- lapply(data, layer_fun, ...)
+  new_ggroc_layer(
+    behind = any(vapply(layers, function(l) isTRUE(l$behind), logical(1))),
+    make_layers = function(plot) {
+      unlist(lapply(names(layers), function(name) {
+        lapply(layers[[name]]$make_layers(plot), function(layer) {
+          layer$data$name <- factor(name, levels = names(layers))
+          layer
+        })
+      }), recursive = FALSE)
+    }
+  )
+}

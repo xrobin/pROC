@@ -94,3 +94,49 @@ test_that("geom_polygon_auc fill defaults to plot.roc's auc.polygon.col", {
   expect_equal(fill_of(ggroc(r.s100b) + geom_polygon_auc(r.s100b)), "gainsboro")
   expect_equal(fill_of(ggroc(r.s100b) + geom_polygon_auc(r.s100b, fill = "red")), "red")
 })
+
+test_that("geom_polygon_auc draws each curve of a list in its own facet", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  rocs <- list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)
+  p <- ggroc(rocs) + ggplot2::facet_grid(. ~ name) + geom_polygon_auc(rocs)
+  expect_equal(
+    layer_geom_classes(p),
+    c("GeomPolygon", "GeomPolygon", "GeomPolygon", "GeomLine")
+  )
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(as.character(b$layout$layout$name), names(rocs))
+  for (i in 1:3) {
+    expect_equal(unique(as.integer(b$data[[i]]$PANEL)), i)
+  }
+})
+
+test_that("geom_polygon_auc names list elements as ggroc does", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  rocs <- list(r.s100b, wfns = r.wfns)
+  p <- ggroc(rocs) + geom_polygon_auc(rocs)
+  expect_equal(
+    unname(vapply(p@layers[1:2], function(l) as.character(unique(l$data$name)), character(1))),
+    c("1", "wfns")
+  )
+  expect_equal(levels(p@data$name), c("1", "wfns"))
+  expect_error(geom_polygon_auc(list(a = r.s100b, a = r.wfns)), "unique")
+})
+
+test_that("geom_polygon_auc keeps the ggroc panel order with a subset of the list", {
+  skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
+  rocs <- list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)
+  p <- ggroc(rocs) + ggplot2::facet_grid(. ~ name) +
+    geom_polygon_auc(rocs[c("ndka", "s100b")])
+  b <- ggplot2::ggplot_build(p)
+  expect_equal(as.character(b$layout$layout$name), names(rocs))
+  expect_equal(unique(as.integer(b$data[[1]]$PANEL)), 3L)
+  expect_equal(unique(as.integer(b$data[[2]]$PANEL)), 1L)
+})
+
+test_that("geom_polygon_auc works with a list in facets", {
+  test_geom_polygon_auc_list_facet_screenshot <- function() {
+    rocs <- list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)
+    print(ggroc(rocs) + ggplot2::facet_grid(. ~ name) + geom_polygon_auc(rocs))
+  }
+  expect_ggroc_doppelganger("geom_polygon_auc.list.facet.screenshot", test_geom_polygon_auc_list_facet_screenshot)
+})

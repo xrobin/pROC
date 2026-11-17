@@ -63,3 +63,7 @@ geom_roc_threshold.auc <- function(data, ...) {
   roc$auc <- data
   geom_roc_threshold(roc, ...)
 }
+
+geom_roc_threshold.list <- function(data, ...) {
+  ggroc_layer_list(data, geom_roc_threshold, ...)
+}

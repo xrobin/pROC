@@ -55,3 +55,7 @@ geom_polygon_max_auc.roc <- function(data, ...) {
 }
 
 geom_polygon_max_auc.smooth.roc <- geom_polygon_max_auc.roc
+
+geom_polygon_max_auc.list <- function(data, ...) {
+  ggroc_layer_list(data, geom_polygon_max_auc, ...)
+}
