@@ -224,7 +224,7 @@ test_that("cov with a list of curves works", {
   expect_equal(S["ndka", "wfns"], cov(r.ndka, r.wfns))
   expect_equal(unname(cov(list(auc(r.s100b), r.ndka, auc(r.wfns)))), unname(S))
   expect_equal(unname(cov(list(r.s100b.percent, r.ndka.percent, r.wfns.percent))), unname(S) * 100^2)
-  expect_error(cov(list(r.s100b, r.ndka.partial)), "not supported for partial AUC")
+  expect_error(cov(list(r.s100b.partial, r.ndka.partial), method = "delong"), "not supported for partial AUC")
   expect_error(cov(list(r.s100b, smooth(r.ndka))), "Smoothed ROCs are not supported")
   expect_error(cov(rocs, paired = FALSE), "'paired = FALSE' is not supported")
   expect_error(cov(rocs, method = "obuchowski"), "available for a list of ROC curves")
@@ -255,4 +255,24 @@ test_that("cov with a list of curves follows DeLong et al. (1988)", {
   L <- rbind(c(1, -1, 0), c(1, 0, -1))
   X2 <- theta %*% t(L) %*% solve(L %*% (S10 / m + S01 / n) %*% t(L)) %*% L %*% theta
   expect_equal(unname(roc.test(rocs, contrast = L)$statistic), drop(X2))
+})
+
+test_that("bootstrap cov with a list of curves works", {
+  rocs <- list(s100b = r.s100b.partial, ndka = r.ndka.partial, wfns = r.wfns.partial)
+  set.seed(42)
+  S <- cov(rocs, boot.n = 20, boot.return = TRUE, progress = FALSE)
+  expect_identical(dimnames(S), list(names(rocs), names(rocs)))
+  resampled <- attr(S, "resampled.values")
+  expect_identical(dim(resampled), c(3L, 20L))
+  expect_equal(unname(S[1:3, 1:3]), stats::cov(t(resampled)))
+  # The two-curve covariance and variance
+  set.seed(42)
+  expect_equal(S["s100b", "ndka"], cov(r.s100b.partial, r.ndka.partial, boot.n = 20, progress = FALSE))
+  set.seed(42)
+  expect_equal(S["wfns", "wfns"], var(r.wfns.partial, boot.n = 20, progress = FALSE))
+  # Percent
+  set.seed(42)
+  S.percent <- cov(list(r.s100b.percent, r.ndka.percent), method = "bootstrap", boot.n = 20, progress = FALSE)
+  set.seed(42)
+  expect_equal(S.percent, cov(list(r.s100b, r.ndka), method = "bootstrap", boot.n = 20, progress = FALSE) * 100^2)
 })

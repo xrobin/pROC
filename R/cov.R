@@ -48,16 +48,20 @@ cov.list <- function(x, ...) {
   cov_roc_list(x, ...)
 }
 
-cov_roc_list <- function(rocs, method = "delong", paired = NULL, ...) {
+cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
+                         boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
+                         progress = getOption("pROCProgress", interactive()),
+                         paired = NULL, cl = NULL, ...) {
   chkDots(...)
   rocs <- roc_utils_list_rocs(rocs, paired)
-  method <- roc_utils_list_method(rocs, method)
+  method <- roc_utils_list_method(rocs, if (missing(method)) NULL else method)
   if (all(vapply(rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("cov() of ROC curves with AUC == 1 is always 0 and can be misleading.")
   }
-  S <- delong.cov(rocs)$S
-  if (rocs[[1]]$percent) {
-    S <- S * (100^2)
+  calcs <- roc_utils_list_calcs(rocs, method, boot.n, boot.stratified, progress, cl)
+  S <- calcs$S
+  if (boot.return && method == "bootstrap") {
+    attr(S, "resampled.values") <- calcs$resampled.values
   }
   S
 }
