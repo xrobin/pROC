@@ -167,12 +167,12 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     boot.n <- roc_utils_check_boot_n(boot.n)
   }
   calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
-  tested <- roc_test_contrasts(contrast, calcs$theta, calcs$S)
+  tested <- roc_test_contrasts(contrast, calcs$theta, calcs$W, calcs$absW)
 
   if (nrow(contrast) == 1) {
     # One contrast: L theta / sqrt(L S L') is standard normal
     d <- tested$d
-    sig <- sqrt(tested$v)
+    sig <- tested$sd
     stat <- delong.test(list(d = d, sig = sig))
     # named as in roc.test.roc
     htest$statistic <- if (method == "delong" && x$paired) c("Z" = stat) else c("D" = stat)
@@ -186,18 +186,18 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   } else {
     # Several contrasts, Eq. 5: (L theta)' (L S L')^-1 (L theta) is chi-square
     # with the rank of L S L' as degrees of freedom. 'tested' holds
-    # uncorrelated combinations of the contrasts: the sum of their d^2 / v
+    # uncorrelated combinations of the contrasts: the sum of their (d / sd)^2
     if (alternative != "two.sided") {
       stop("Only two-sided tests are available with several contrasts.")
     }
-    if (anyNA(tested$v)) {
+    if (anyNA(tested$sd)) {
       # A single case or control: the variance is undefined
       stat <- df <- NA_real_
     } else {
       # Contrasts without variance: no degree of freedom, and as for two
       # curves (delong.test) no difference if they are 0, infinite otherwise
-      df <- sum(tested$v > 0)
-      stat <- if (any(tested$v == 0 & tested$d != 0)) Inf else sum((tested$d^2 / tested$v)[tested$v > 0])
+      df <- sum(tested$sd > 0)
+      stat <- if (any(tested$sd == 0 & tested$d != 0)) Inf else sum(((tested$d / tested$sd)^2)[tested$sd > 0])
     }
     htest$statistic <- c("X-squared" = stat)
     htest$parameter <- c("df" = df)
@@ -211,35 +211,54 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   return(htest)
 }
 
-# The contrasts (rows of L) of the AUCs theta, d = L theta, and their variance
-# v = L S L' under the covariance matrix S. Several contrasts are replaced by
-# uncorrelated combinations of them (the eigenvectors U of L S L'), so that
-# Eq. 5 of DeLong et al. (1988) is sum(d^2 / v) over the combinations with a
-# variance, whose number is the rank of L S L'.
-# Contrasts are rarely exact in floating point (1/3), so that a d or a v that
-# should be 0, for curves that rank the observations identically, comes out
-# as a rounding residue: d and v are set to 0 when they are within the
-# rounding error of their own computation, a few ulp of the sum of the
-# absolute values of their terms.
-roc_test_contrasts <- function(L, theta, S) {
-  if (anyNA(S)) {
-    return(list(d = drop(L %*% theta), v = rep(NA_real_, nrow(L))))
+# The contrasts (rows of L) of the AUCs theta, d = L theta, and their
+# standard deviations sd, with W a factor of the covariance matrix of theta
+# (S = W'W, so that L S L' = A'A with A = W L').
+# Several contrasts are replaced by uncorrelated combinations of them (the
+# right singular vectors of A), so that Eq. 5 of DeLong et al. (1988) is
+# sum((d / sd)^2) over the combinations with a variance, whose number is the
+# rank of L S L'. A is decomposed rather than L S L' because the variance of
+# the difference between two nearly identical curves is lost to cancellation
+# in S.
+# Contrasts are rarely exact in floating point (1/3), so that a d or an sd
+# that should be 0, for curves that rank the observations identically, comes
+# out as a rounding residue. They are set to 0 when they are within the
+# rounding error of their computation: 'tol' times the value their terms
+# would give without cancellation (absW: W before centring). The decomposition adds its own error:
+# relative to the largest sd for an sd, and for the d of a combination
+# without variance the error of its singular vector, the inverse of the
+# relative gap to the smallest sd.
+roc_test_contrasts <- function(L, theta, W, absW) {
+  if (anyNA(W)) {
+    return(list(d = as.vector(L %*% theta), sd = rep(NA_real_, nrow(L))))
   }
-  U <- diag(nrow(L))
-  if (nrow(L) > 1) {
-    # Rows on a common scale, by an exact power of 2
-    scale <- apply(abs(L), 1, max)
-    L <- L * 2^-ceiling(log2(ifelse(scale == 0, 1, scale)))
-    U <- eigen(L %*% S %*% t(L), symmetric = TRUE)$vectors
+  # Rows on a common scale, by an exact power of 2 (in two steps, which
+  # cannot overflow)
+  scale <- unname(apply(abs(L), 1, max))
+  exponent <- -ceiling(log2(ifelse(scale == 0, 1, scale)))
+  half <- exponent %/% 2
+  L <- L * 2^half * 2^(exponent - half)
+  A <- W %*% t(L)
+  absA <- absW %*% t(abs(L))
+  absd <- drop(abs(L) %*% abs(theta))
+  tol <- 8 * sum(dim(L)) * .Machine$double.eps
+  if (nrow(L) == 1) {
+    d <- as.vector(L %*% theta)
+    sd <- sqrt(sum(A^2))
+    d[abs(d) <= tol * absd] <- 0
+    sd[sd <= tol * sqrt(sum(absA^2))] <- 0
+    # on the scale of the contrast
+    return(list(d = d / 2^half / 2^(exponent - half), sd = sd / 2^half / 2^(exponent - half)))
   }
-  A <- t(U) %*% L
-  absA <- t(abs(U)) %*% abs(L)
-  d <- drop(A %*% theta)
-  v <- rowSums((A %*% S) * A)
-  tol <- 8 * length(L) * .Machine$double.eps
-  d[abs(d) <= tol * drop(absA %*% abs(theta))] <- 0
-  v[v <= tol * rowSums((absA %*% abs(S)) * absA)] <- 0
-  list(d = d, v = v)
+  decomposition <- svd(A, nu = 0, nv = ncol(A))
+  U <- decomposition$v
+  sd <- c(decomposition$d, rep(0, ncol(A) - length(decomposition$d)))
+  d <- drop(crossprod(U, L %*% theta))
+  # ... and the error of the decomposition, relative to the largest sd
+  sd[sd <= tol * (sqrt(colSums((absA %*% abs(U))^2)) + max(sd))] <- 0
+  gap <- if (any(sd > 0)) max(sd) / min(sd[sd > 0]) else 0
+  d[abs(d) <= tol * drop(crossprod(abs(U), absd)) * ifelse(sd == 0, 1 + gap, 1)] <- 0
+  list(d = d, sd = sd)
 }
 
 # The name of the (partial) AUC of the curve 'name' in the estimates of roc.test

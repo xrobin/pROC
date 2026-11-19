@@ -1274,10 +1274,18 @@ roc_utils_list_method <- function(rocs, smoothing.args, method) {
   method
 }
 
+# A factor W of the covariance matrix of the columns of x: cov(x) = W'W.
+# Fewer than two rows give NaN, where cov() gives NA.
+# Without centring, the size of the values that W is the difference of: the
+# rounding error of W is relative to it (roc_test_contrasts).
+roc_utils_cov_factor <- function(x, centre = TRUE) {
+  (if (centre) sweep(x, 2, colMeans(x)) else abs(x)) / sqrt(nrow(x) - 1)
+}
+
 # (Partial) AUCs (theta) of a list of curves ('x' is the value of
-# roc_utils_list_rocs) and their covariance matrix S, on the scale of the
-# curves. With the bootstrap, S is the covariance matrix of the resampled
-# AUCs, returned as resampled.values.
+# roc_utils_list_rocs), their covariance matrix S and a factor W of it
+# (S = W'W), on the scale of the curves. With the bootstrap, S is the
+# covariance matrix of the resampled AUCs, returned as resampled.values.
 roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, cl) {
   if (method == "delong") {
     if (x$paired) {
@@ -1287,11 +1295,16 @@ roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, c
       each <- lapply(x$rocs, function(roc) delong.cov(list(roc)))
       S <- diag(vapply(each, function(calcs) calcs$S[[1, 1]], numeric(1)))
       rownames(S) <- colnames(S) <- names(x$rocs)
-      calcs <- list(theta = vapply(each, `[[`, numeric(1), "theta"), S = S)
+      rows <- vapply(each, function(calcs) nrow(calcs$W), integer(1))
+      W <- absW <- matrix(0, sum(rows), length(each))
+      cells <- cbind(seq_len(sum(rows)), rep(seq_along(each), rows))
+      W[cells] <- unlist(lapply(each, `[[`, "W"))
+      absW[cells] <- unlist(lapply(each, `[[`, "absW"))
+      calcs <- list(theta = vapply(each, `[[`, numeric(1), "theta"), S = S, W = W, absW = absW)
     }
     # the placements are on the 0-1 scale
     scale <- if (x$rocs[[1]]$percent) 100 else 1
-    return(list(theta = calcs$theta * scale, S = calcs$S * scale^2))
+    return(list(theta = calcs$theta * scale, S = calcs$S * scale^2, W = calcs$W * scale, absW = calcs$absW * scale))
   }
   resampled.values <- bootstrap.list(x$rocs, x$smoothing.args, x$paired, boot.n, boot.stratified,
     progress = roc_utils_normalise_progress(progress), cl = cl
@@ -1300,6 +1313,7 @@ roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, c
   rownames(S) <- colnames(S) <- names(x$rocs)
   list(
     theta = vapply(x$curves, function(curve) as.numeric(curve$auc), numeric(1)),
-    S = S, resampled.values = resampled.values
+    S = S, W = roc_utils_cov_factor(t(resampled.values)),
+    absW = roc_utils_cov_factor(t(resampled.values), centre = FALSE), resampled.values = resampled.values
   )
 }

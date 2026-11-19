@@ -92,14 +92,18 @@ delong.paired.calculations <- function(roc1, roc2) {
 }
 
 # AUCs (theta) of k paired ROC curves and their covariance matrix S,
-# DeLong et al. (1988) p. 840: S = S10 / m + S01 / n
+# DeLong et al. (1988) p. 840: S = S10 / m + S01 / n.
+# W is a factor of S, S = W'W: the centred placements of each observation.
+# absW holds the size of the placements before centring.
 delong.cov <- function(rocs) {
   V <- lapply(rocs, delongPlacements)
   X <- do.call(cbind, lapply(V, `[[`, "X")) # V10, m x k
   Y <- do.call(cbind, lapply(V, `[[`, "Y")) # V01, n x k
   list(
     theta = vapply(V, `[[`, numeric(1), "theta"),
-    S = stats::cov(X) / nrow(X) + stats::cov(Y) / nrow(Y)
+    S = stats::cov(X) / nrow(X) + stats::cov(Y) / nrow(Y),
+    W = rbind(roc_utils_cov_factor(X) / sqrt(nrow(X)), roc_utils_cov_factor(Y) / sqrt(nrow(Y))),
+    absW = rbind(roc_utils_cov_factor(X, centre = FALSE) / sqrt(nrow(X)), roc_utils_cov_factor(Y, centre = FALSE) / sqrt(nrow(Y)))
   )
 }
 
