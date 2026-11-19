@@ -226,7 +226,6 @@ test_that("cov with a list of curves works", {
   expect_equal(unname(cov(list(r.s100b.percent, r.ndka.percent, r.wfns.percent))), unname(S) * 100^2)
   expect_error(cov(list(r.s100b.partial, r.ndka.partial), method = "delong"), "not supported for partial AUC")
   expect_error(cov(list(smooth(r.s100b), smooth(r.ndka)), method = "delong"), "not supported for smoothed ROCs")
-  expect_error(cov(rocs, paired = FALSE), "'paired = FALSE' is not supported")
   expect_error(cov(rocs, method = "obuchowski"), "available for a list of ROC curves")
   expect_no_warning(expect_equal(cov(rocs, method = "delong", paired = TRUE), S))
   expect_warning(cov(list(r.s100b.percent, r.ndka)), "Different AUC specifications")
@@ -283,4 +282,20 @@ test_that("bootstrap cov with a list of smoothed curves works", {
   S <- cov(smoothed, boot.n = 10, progress = FALSE)
   set.seed(42)
   expect_equal(S[1, 2], cov(smoothed[[1]], smoothed[[2]], boot.n = 10, progress = FALSE))
+})
+
+test_that("cov with a list of unpaired curves has no covariance", {
+  rocs <- list(s100b = r.s100b, ndka = roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE), wfns = roc(aSAH$outcome[-(1:2)], aSAH$wfns[-(1:2)], quiet = TRUE))
+  expect_message(S <- cov(rocs), "ROC curves are unpaired.")
+  variances <- diag(vapply(rocs, var, numeric(1)))
+  dimnames(variances) <- list(names(rocs), names(rocs))
+  expect_equal(S, variances)
+  # Paired curves treated as unpaired
+  paired <- list(r.s100b, r.ndka, r.wfns)
+  expect_message(S <- cov(paired, paired = FALSE), "ROC curves are unpaired.")
+  expect_equal(S, diag(diag(cov(paired))))
+  set.seed(42)
+  expect_message(S <- cov(paired, paired = FALSE, method = "bootstrap", boot.n = 10, progress = FALSE), "ROC curves are unpaired.")
+  expect_equal(S[row(S) != col(S)], rep(0, 6))
+  expect_error(cov(rocs, paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
 })

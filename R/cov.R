@@ -39,7 +39,7 @@ cov.smooth.roc <- function(roc1, roc2, ...) {
   cov.roc(roc1, roc2, ...)
 }
 
-# Covariance matrix of the AUCs of a list of paired ROC curves. Other lists go
+# Covariance matrix of the AUCs of a list of ROC curves. Other lists go
 # to stats::cov.
 cov.list <- function(x, ...) {
   if (length(x) == 0 || !all(vapply(x, inherits, logical(1), c("roc", "smooth.roc", "auc")))) {
@@ -60,6 +60,10 @@ cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
   }
   calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
   S <- calcs$S
+  if (!x$paired) {
+    message("ROC curves are unpaired.")
+    S[row(S) != col(S)] <- 0
+  }
   if (boot.return && method == "bootstrap") {
     attr(S, "resampled.values") <- calcs$resampled.values
   }

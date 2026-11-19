@@ -1162,12 +1162,13 @@ roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitiv
 # Validates a list of curves for roc.test.list and cov.list. Returns:
 # - rocs: the empirical curves, carrying the AUC specifications;
 # - smoothing.args: the smoothing.args of the smoothed curves, NULL for the others;
-# - curves: the curves as they are tested, smoothed again if they were.
+# - curves: the curves as they are tested, smoothed again if they were;
+# - paired: whether the curves are tested as paired. As for two curves
+#   (roc_utils_paired), 'paired = NULL' detects it with are.paired(), TRUE
+#   requires it and FALSE treats the curves as unpaired. Curves of which only
+#   some are paired are unpaired.
 # 'what' completes the error for a smoothing that cannot be replayed.
 roc_utils_list_rocs <- function(rocs, paired, what) {
-  if (!is.null(paired) && !paired) {
-    stop("'paired = FALSE' is not supported for a list of ROC curves: the curves must be paired.")
-  }
   if (length(rocs) < 2) {
     stop("At least 2 ROC curves are required.")
   }
@@ -1201,15 +1202,26 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
       curves[[i]]$call <- smooth.call
     }
   }
-  for (roc in rocs[-1]) {
-    if (!are.paired(rocs[[1]], roc)) {
-      stop("A list of ROC curves must be paired.")
+  if (is.null(paired) || paired) {
+    pairs <- unlist(lapply(seq_along(rocs)[-1], function(j) {
+      vapply(seq_len(j - 1), function(i) are.paired(rocs[[i]], rocs[[j]]), logical(1))
+    }))
+    if (!is.null(paired) && !all(pairs)) {
+      stop("'paired = TRUE' cannot be applied to unpaired ROC curves.")
     }
-    if (!identical(unname(rocs[[1]]$response), unname(roc$response))) {
-      stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
+    if (any(pairs) && !all(pairs)) {
+      warning("Only some of the ROC curves are paired: they are all treated as unpaired.")
+    }
+    paired <- all(pairs)
+  }
+  if (paired) {
+    for (roc in rocs[-1]) {
+      if (!identical(unname(rocs[[1]]$response), unname(roc$response))) {
+        stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
+      }
     }
   }
-  list(rocs = rocs, smoothing.args = smoothing.args, curves = curves)
+  list(rocs = rocs, smoothing.args = smoothing.args, curves = curves, paired = paired)
 }
 
 # The method of roc.test.list and cov.list ('method' is NULL if missing), as
@@ -1249,22 +1261,30 @@ roc_utils_list_method <- function(rocs, smoothing.args, method) {
   method
 }
 
-# (Partial) AUCs (theta) of a list of paired curves ('x' is the value of
+# (Partial) AUCs (theta) of a list of curves ('x' is the value of
 # roc_utils_list_rocs) and their covariance matrix S, on the scale of the
 # curves. With the bootstrap, S is the covariance matrix of the resampled
 # AUCs, returned as resampled.values.
 roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, cl) {
   if (method == "delong") {
-    calcs <- delong.cov(x$rocs)
+    if (x$paired) {
+      calcs <- delong.cov(x$rocs)
+    } else {
+      # Unpaired curves are independent: only their variances
+      each <- lapply(x$rocs, function(roc) delong.cov(list(roc)))
+      S <- diag(vapply(each, function(calcs) calcs$S[[1, 1]], numeric(1)))
+      rownames(S) <- colnames(S) <- names(x$rocs)
+      calcs <- list(theta = vapply(each, `[[`, numeric(1), "theta"), S = S)
+    }
     # the placements are on the 0-1 scale
     scale <- if (x$rocs[[1]]$percent) 100 else 1
     return(list(theta = calcs$theta * scale, S = calcs$S * scale^2))
   }
-  resampled.values <- bootstrap.list(x$rocs, x$smoothing.args, boot.n, boot.stratified,
+  resampled.values <- bootstrap.list(x$rocs, x$smoothing.args, x$paired, boot.n, boot.stratified,
     progress = roc_utils_normalise_progress(progress), cl = cl
   )
   S <- stats::cov(t(resampled.values))
-  dimnames(S) <- list(names(x$rocs), names(x$rocs))
+  rownames(S) <- colnames(S) <- names(x$rocs)
   list(
     theta = vapply(x$curves, function(curve) as.numeric(curve$auc), numeric(1)),
     S = S, resampled.values = resampled.values
