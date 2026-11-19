@@ -35,9 +35,11 @@ cov(...)
   }
   \item{x}{a list of two or more paired ROC curves, as
     \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
-    observations. Partial AUCs and smoothed curves are not supported, and
-    only \code{method="delong"} and paired curves are available. Any other
-    list is passed to
+    observations. Smoothed curves are not supported, and only
+    \code{method="delong"} and \code{"bootstrap"} and paired curves are
+    available; \code{boot.n}, \code{boot.stratified}, \code{boot.return},
+    \code{progress} and \code{cl} apply as for two curves. Any other list
+    is passed to
     \code{\link[stats:cor]{cov}} in the \pkg{stats} package.
   }
   \item{method}{the method to use, either \dQuote{delong},
@@ -178,8 +180,8 @@ cov(...)
   If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
   \code{resampled.values} is set with the resampled (bootstrapped)
   values. It contains a matrix with 2 rows representing the two ROC
-  curves, and one column per bootstrap replicate (replicates that produced
-  \code{NA} values are removed).
+  curves (one row per curve of a list), and one column per bootstrap
+  replicate (replicates that produced \code{NA} values are removed).
 }
 
 \section{Errors}{

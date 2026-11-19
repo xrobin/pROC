@@ -1211,16 +1211,26 @@ roc_utils_list_rocs <- function(rocs, paired) {
   rocs
 }
 
-# Checks the method of roc.test.list and cov.list, and the AUC specifications
+# The method of roc.test.list and cov.list ('method' is NULL if missing), as
+# roc.test.roc and cov.roc choose it. Also checks the AUC specifications.
 roc_utils_list_method <- function(rocs, method) {
-  if (!identical(method, "delong")) {
-    stop("Only method = \"delong\" is available for a list of ROC curves.")
-  }
-  if (any(vapply(rocs, has.partial.auc, logical(1)))) {
-    stop("DeLong's method is not supported for partial AUC.")
-  }
-  if (length(unique(vapply(rocs, `[[`, character(1), "direction"))) > 1) {
-    warning("DeLong's method should not be applied to ROC curves with a different direction.")
+  partial <- any(vapply(rocs, has.partial.auc, logical(1)))
+  same.direction <- length(unique(vapply(rocs, `[[`, character(1), "direction"))) == 1
+  if (is.null(method)) {
+    # partial AUC and different directions: go for bootstrap
+    method <- if (partial || !same.direction) "bootstrap" else "delong"
+  } else {
+    method <- tryCatch(match.arg(method, c("delong", "bootstrap")), error = function(e) {
+      stop("Only method = \"delong\" and \"bootstrap\" are available for a list of ROC curves.", call. = FALSE)
+    })
+    if (method == "delong") {
+      if (partial) {
+        stop("DeLong's method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+      }
+      if (!same.direction) {
+        warning("DeLong's method should not be applied to ROC curves with a different direction.")
+      }
+    }
   }
   # check that the same region was requested in auc. Otherwise, issue a warning
   specs <- lapply(rocs, function(roc) attributes(roc$auc)[names(attributes(roc$auc)) != "roc"])
@@ -1228,4 +1238,25 @@ roc_utils_list_method <- function(rocs, method) {
     warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
   }
   method
+}
+
+# (Partial) AUCs (theta) of a list of paired curves and their covariance
+# matrix S, on the scale of the curves. With the bootstrap, S is the
+# covariance matrix of the resampled AUCs, returned as resampled.values.
+roc_utils_list_calcs <- function(rocs, method, boot.n, boot.stratified, progress, cl) {
+  if (method == "delong") {
+    calcs <- delong.cov(rocs)
+    # the placements are on the 0-1 scale
+    scale <- if (rocs[[1]]$percent) 100 else 1
+    return(list(theta = calcs$theta * scale, S = calcs$S * scale^2))
+  }
+  resampled.values <- bootstrap.list(rocs, boot.n, boot.stratified,
+    progress = roc_utils_normalise_progress(progress), cl = cl
+  )
+  S <- stats::cov(t(resampled.values))
+  dimnames(S) <- list(names(rocs), names(rocs))
+  list(
+    theta = vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1)),
+    S = S, resampled.values = resampled.values
+  )
 }

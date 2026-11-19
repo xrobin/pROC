@@ -22,7 +22,7 @@
   or smoothed ROC), or either three vectors (response, predictor1, predictor2)
   or a response vector and a matrix or data.frame with two columns
   (predictors). A list of two or more paired ROC curves is compared
-  with DeLong's test.
+  with the DeLong or bootstrap method.
 }
 \usage{
 # roc.test(...)
@@ -34,9 +34,10 @@ ties.method="random", progress = getOption("pROCProgress", interactive()),
 parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
-\S3method{roc.test}{list}(rocs, contrast=NULL, method="delong",
-alternative = c("two.sided", "less", "greater"), paired=NULL,
-conf.level=0.95, ...)
+\S3method{roc.test}{list}(rocs, contrast=NULL, method=c("delong", "bootstrap"),
+alternative = c("two.sided", "less", "greater"), paired=NULL, boot.n=2000,
+boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
+conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
 na.rm=TRUE, method=NULL, paired=TRUE, ...)
@@ -49,8 +50,9 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   }
   \item{rocs}{a list of two or more paired ROC curves, as
     \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
-    observations. Partial AUCs and smoothed curves are not supported, and
-    only \code{method="delong"} and paired curves are available.
+    observations. Smoothed curves are not supported, and only
+    \code{method="delong"} and \code{"bootstrap"} and paired curves are
+    available.
   }
   \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
     vector with one coefficient per curve in \code{rocs}, or a matrix
@@ -270,7 +272,10 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   For a list of \var{k} paired ROC curves, with \eqn{\theta} the vector
   of their AUCs, \var{S} its covariance matrix (see
   \code{\link[=cov.roc]{cov}}) and \var{L} the \code{contrast},
-  DeLong \emph{et al.} (1988, p. 841) is applied. With one contrast,
+  DeLong \emph{et al.} (1988, p. 841) is applied. With
+  \code{method="bootstrap"}, \var{S} is the covariance matrix of the
+  (partial) AUCs of the \code{boot.n} bootstrap replicates, so that the
+  test of two curves is the bootstrap test above. With one contrast,
   \deqn{
     Z=\frac{L\theta}{\sqrt{LSL'}}
   }{
@@ -379,7 +384,9 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     curves, and \code{method="ml"}), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
-    For a list of curves, Z with one contrast and X-squared with several.
+    For a list of curves, Z (\code{method="delong"}) or D
+    (\code{method="bootstrap"}) with one contrast, and X-squared with
+    several.
   }
   \item{conf.int}{the confidence interval of the difference or contrast tested
     (not returned with \code{method="venkatraman"} or with several contrasts). Has an attribute \code{conf.level} specifying the level of the test.}
@@ -404,7 +411,7 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
     value of \code{boot.n}. For a list of curves with several
-    contrasts: the degrees of freedom.
+    contrasts: also the degrees of freedom.
   }
   \item{rocs, contrast}{for a list of curves: the ROC curves that were
     compared, and the matrix of contrasts that was tested.}
@@ -496,6 +503,11 @@ roc.test(rocs)
 roc.test(rocs, contrast = c(1, -0.5, -0.5))
 # Several contrasts, one per row
 roc.test(rocs, contrast = rbind(c(1, -1, 0), c(1, 0, -1)))
+# Partial AUCs are bootstrapped
+paucs <- lapply(rocs, auc, partial.auc = c(1, 0.8))
+\dontrun{
+roc.test(paucs)}\dontshow{
+roc.test(paucs, boot.n = 10)}
 
 # Bootstrap
 \dontrun{

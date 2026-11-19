@@ -119,16 +119,19 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   return(testres)
 }
 
-# DeLong's test for k paired ROC curves: DeLong et al. (1988) p. 841
-roc.test.list <- function(rocs, contrast = NULL, method = "delong",
+# Test of contrasts of the (partial) AUCs of k paired ROC curves: DeLong et
+# al. (1988) p. 841, with the DeLong or the bootstrap covariance matrix
+roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap"),
                           alternative = c("two.sided", "less", "greater"),
-                          paired = NULL, conf.level = 0.95, ...) {
+                          paired = NULL, boot.n = 2000, boot.stratified = TRUE,
+                          progress = getOption("pROCProgress", interactive()),
+                          conf.level = 0.95, cl = NULL, ...) {
   chkDots(...)
   alternative <- match.arg(alternative)
   roc_test_check_conf_level(conf.level)
   data.name <- deparse1(substitute(rocs))
   rocs <- roc_utils_list_rocs(rocs, paired)
-  method <- roc_utils_list_method(rocs, method)
+  method <- roc_utils_list_method(rocs, if (missing(method)) NULL else method)
   if (all(vapply(rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("roc.test() of ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
   }
@@ -146,16 +149,20 @@ roc.test.list <- function(rocs, contrast = NULL, method = "delong",
 
   estimate <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
   roc.names <- if (is.null(names(rocs))) rep("", k) else names(rocs)
-  names(estimate) <- paste("AUC of", ifelse(roc.names == "", paste0("roc", seq_len(k)), roc.names))
+  roc.names <- ifelse(roc.names == "", paste0("roc", seq_len(k)), roc.names)
+  names(estimate) <- mapply(roc_test_auc_name, lapply(rocs, `[[`, "auc"), roc.names)
   htest <- list(
     alternative = alternative,
     data.name = data.name,
     estimate = estimate,
-    method = sprintf("DeLong's test for %d correlated ROC curves", k)
+    method = sprintf("%s test for %d correlated ROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k)
   )
   class(htest) <- "htest"
 
-  calcs <- delong.cov(rocs)
+  if (method == "bootstrap") {
+    boot.n <- roc_utils_check_boot_n(boot.n)
+  }
+  calcs <- roc_utils_list_calcs(rocs, method, boot.n, boot.stratified, progress, cl)
   tested <- roc_test_contrasts(contrast, calcs$theta, calcs$S)
 
   if (nrow(contrast) == 1) {
@@ -163,13 +170,10 @@ roc.test.list <- function(rocs, contrast = NULL, method = "delong",
     d <- tested$d
     sig <- sqrt(tested$v)
     stat <- delong.test(list(d = d, sig = sig))
-    htest$statistic <- c("Z" = stat)
+    # named as in roc.test.roc
+    htest$statistic <- if (method == "delong") c("Z" = stat) else c("D" = stat)
     htest$null.value <- c("contrast of AUCs" = 0)
     htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
-    if (rocs[[1]]$percent) {
-      # the placements are on the 0-1 scale, the estimates on 0-100
-      htest$conf.int <- htest$conf.int * 100
-    }
     htest$p.value <- switch(alternative,
       two.sided = 2 * pnorm(-abs(stat)),
       greater = pnorm(-stat),
@@ -194,6 +198,9 @@ roc.test.list <- function(rocs, contrast = NULL, method = "delong",
     htest$statistic <- c("X-squared" = stat)
     htest$parameter <- c("df" = df)
     htest$p.value <- pchisq(stat, df, lower.tail = FALSE)
+  }
+  if (method == "bootstrap") {
+    htest$parameter <- c(htest$parameter, "boot.n" = boot.n, "boot.stratified" = boot.stratified)
   }
   htest$contrast <- contrast
   htest$rocs <- rocs
@@ -229,6 +236,20 @@ roc_test_contrasts <- function(L, theta, S) {
   d[abs(d) <= tol * drop(absA %*% abs(theta))] <- 0
   v[v <= tol * rowSums((absA %*% abs(S)) * absA)] <- 0
   list(d = d, v = v)
+}
+
+# The name of the (partial) AUC of the curve 'name' in the estimates of roc.test
+roc_test_auc_name <- function(auc, name, smooth = FALSE) {
+  smoothed <- if (smooth) "Smoothed " else ""
+  if (identical(attr(auc, "partial.auc"), FALSE)) {
+    return(paste0(smoothed, "AUC of ", name))
+  }
+  nest <- paste0(
+    if (attr(auc, "partial.auc.correct")) "Corrected " else "", smoothed,
+    "pAUC (", attr(auc, "partial.auc")[1], "-", attr(auc, "partial.auc")[2], " ", attr(auc, "partial.auc.focus"),
+    ") of ", name
+  )
+  sub("Corrected Smoothed", "Corrected smoothed", nest) # no upper on smoothed if corrected.
 }
 
 roc.test.roc <- function(roc1, roc2,
@@ -381,28 +402,7 @@ roc.test.roc <- function(roc1, roc2,
 
   # Prepare the return value htest
   estimate <- c(curve1$auc, curve2$auc)
-  if (identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    nest <- paste(ifelse(smooth1, "Smoothed ", ""), "AUC of roc1", sep = "")
-  } else {
-    nest <- paste(ifelse(attr(roc1$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth1, "Smoothed ", ""),
-      "pAUC (", attr(roc1$auc, "partial.auc")[1], "-", attr(roc1$auc, "partial.auc")[2], " ", attr(roc1$auc, "partial.auc.focus"),
-      ") of roc1",
-      sep = ""
-    )
-  }
-  if (identical(attr(roc2$auc, "partial.auc"), FALSE)) {
-    nest <- c(nest, paste(ifelse(smooth2, "Smoothed ", ""), "AUC of roc2", sep = ""))
-  } else {
-    nest <- c(nest, paste(ifelse(attr(roc2$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth2, "Smoothed ", ""),
-      "pAUC (", attr(roc2$auc, "partial.auc")[1], "-", attr(roc2$auc, "partial.auc")[2], " ", attr(roc2$auc, "partial.auc.focus"),
-      ") of roc2",
-      sep = ""
-    ))
-  }
-  nest <- sub("Corrected Smoothed", "Corrected smoothed", nest) # no upper on smoothed if corrected.
-  names(estimate) <- nest
+  names(estimate) <- c(roc_test_auc_name(roc1$auc, "roc1", smooth1), roc_test_auc_name(roc2$auc, "roc2", smooth2))
   null.value <- 0
   names(null.value) <- "difference in AUC"
   htest <- list(
