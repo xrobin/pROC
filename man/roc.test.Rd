@@ -21,7 +21,7 @@
   Several syntaxes are available: two object of class roc (which can be AUC
   or smoothed ROC), or either three vectors (response, predictor1, predictor2)
   or a response vector and a matrix or data.frame with two columns
-  (predictors). A list of two or more paired ROC curves is compared
+  (predictors). A list of two or more ROC curves is compared
   with the DeLong or bootstrap method.
 }
 \usage{
@@ -48,11 +48,11 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed).
   }
-  \item{rocs}{a list of two or more paired ROC curves, as
+  \item{rocs}{a list of two or more ROC curves, as
     \dQuote{\link{roc}}, \dQuote{\link{auc}} or
-    \dQuote{\link{smooth.roc}} objects, built on the same
-    observations. Only \code{method="delong"} and \code{"bootstrap"} and
-    paired curves are available.
+    \dQuote{\link{smooth.roc}} objects. Paired curves must be built on
+    the same observations. Only \code{method="delong"} and
+    \code{"bootstrap"} are available.
   }
   \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
     vector with one coefficient per curve in \code{rocs}, or a matrix
@@ -101,7 +101,9 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
     \code{TRUE} requires curves that can be paired (see Details), and
-    \code{FALSE} treats the curves as unpaired.
+    \code{FALSE} treats the curves as unpaired. The curves of a list are
+    paired if they all are; if only some are, they are all tested as
+    unpaired.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -269,13 +271,16 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   is compared to the normal distribution (Dorfman and Alf, 1969, p. 494;
   Pesce and Metz, 2007, p. 822).
 
-  For a list of \var{k} paired ROC curves, with \eqn{\theta} the vector
+  For a list of \var{k} ROC curves, with \eqn{\theta} the vector
   of their AUCs, \var{S} its covariance matrix (see
   \code{\link[=cov.roc]{cov}}) and \var{L} the \code{contrast},
   DeLong \emph{et al.} (1988, p. 841) is applied. With
   \code{method="bootstrap"}, \var{S} is the covariance matrix of the
   (partial) AUCs of the \code{boot.n} bootstrap replicates, so that the
-  test of two curves is the bootstrap test above. With one contrast,
+  test of two curves is the bootstrap test above. Unpaired curves are
+  independent: with \code{method="delong"} \var{S} only holds their
+  variances, and with \code{method="bootstrap"} each curve is resampled
+  separately. With one contrast,
   \deqn{
     Z=\frac{L\theta}{\sqrt{LSL'}}
   }{
@@ -384,9 +389,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     curves, and \code{method="ml"}), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
-    For a list of curves, Z (\code{method="delong"}) or D
-    (\code{method="bootstrap"}) with one contrast, and X-squared with
-    several.
+    For a list of curves, Z or D as above with one contrast, and
+    X-squared with several.
   }
   \item{conf.int}{the confidence interval of the difference or contrast tested
     (not returned with \code{method="venkatraman"} or with several contrasts). Has an attribute \code{conf.level} specifying the level of the test.}

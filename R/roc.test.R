@@ -119,8 +119,8 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   return(testres)
 }
 
-# Test of contrasts of the (partial) AUCs of k paired ROC curves: DeLong et
-# al. (1988) p. 841, with the DeLong or the bootstrap covariance matrix
+# Test of contrasts of the (partial) AUCs of k ROC curves: DeLong et al.
+# (1988) p. 841, with the DeLong or the bootstrap covariance matrix
 roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap"),
                           alternative = c("two.sided", "less", "greater"),
                           paired = NULL, boot.n = 2000, boot.stratified = TRUE,
@@ -156,7 +156,10 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     alternative = alternative,
     data.name = data.name,
     estimate = estimate,
-    method = sprintf("%s test for %d correlated ROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k)
+    method = sprintf(
+      "%s test for %d %sROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k,
+      if (x$paired) "correlated " else ""
+    )
   )
   class(htest) <- "htest"
 
@@ -172,7 +175,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     sig <- sqrt(tested$v)
     stat <- delong.test(list(d = d, sig = sig))
     # named as in roc.test.roc
-    htest$statistic <- if (method == "delong") c("Z" = stat) else c("D" = stat)
+    htest$statistic <- if (method == "delong" && x$paired) c("Z" = stat) else c("D" = stat)
     htest$null.value <- c("contrast of AUCs" = 0)
     htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
     htest$p.value <- switch(alternative,

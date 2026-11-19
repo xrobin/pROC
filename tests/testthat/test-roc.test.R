@@ -891,8 +891,7 @@ test_that("roc.test with a list of curves refuses what it does not support", {
   numeric.density <- smooth(r.s100b, method = "density", density.controls = density, density.cases = density)
   expect_error(roc.test(list(numeric.density, smooth(r.ndka))), "smoothed with numeric density")
   unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
-  expect_error(roc.test(list(r.s100b, unpaired, r.wfns)), "must be paired")
-  expect_error(roc.test(rocs, paired = FALSE), "'paired = FALSE' is not supported")
+  expect_error(roc.test(list(r.s100b, unpaired, r.wfns), paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
   expect_error(roc.test(rocs, method = "venkatraman"), "available for a list of ROC curves")
   expect_error(roc.test(rocs, contrast = matrix(numeric(0), ncol = 3)), "'contrast' must be")
   expect_error(roc.test(rocs, contrast = c(1, Inf, 0)), "'contrast' must be")
@@ -1002,4 +1001,50 @@ test_that("roc.test with a list of smoothed curves uses the bootstrap", {
   expect_equal(ht$rocs$a$sensitivities, smoothed$a$sensitivities)
   # Smoothed and empirical curves
   expect_warning(roc.test(list(smoothed$a, r.ndka), boot.n = 10, progress = FALSE), "Different smoothing parameters")
+})
+
+test_that("roc.test with a list of unpaired curves works", {
+  u.ndka <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  u.wfns <- roc(aSAH$outcome[-(1:2)], aSAH$wfns[-(1:2)], quiet = TRUE)
+  rocs <- list(r.s100b, u.ndka, u.wfns)
+  expect_no_warning(ht <- roc.test(rocs))
+  expect_identical(ht$method, "DeLong's test for 3 ROC curves")
+  # Eq. 5 with independent curves
+  theta <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
+  S <- diag(vapply(rocs, var, numeric(1)))
+  L <- rbind(c(1, -1, 0), c(0, 1, -1))
+  expect_equal(ht$statistic, c("X-squared" = drop(theta %*% t(L) %*% solve(L %*% S %*% t(L)) %*% L %*% theta)))
+  expect_equal(ht$parameter, c(df = 2))
+  # 'paired' as for two curves
+  paired <- list(r.s100b, r.ndka, r.wfns)
+  expect_no_warning(ht <- roc.test(paired, paired = FALSE))
+  expect_identical(ht$method, "DeLong's test for 3 ROC curves")
+  expect_identical(roc.test(paired)$method, "DeLong's test for 3 correlated ROC curves")
+  # Only some curves are paired
+  mixed <- list(r.s100b, r.ndka, u.wfns)
+  expect_warning(ht <- roc.test(mixed), "Only some of the ROC curves are paired")
+  expect_identical(ht$method, "DeLong's test for 3 ROC curves")
+  expect_no_warning(expect_equal(roc.test(mixed, paired = FALSE)$statistic, ht$statistic))
+  expect_error(roc.test(mixed, paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
+})
+
+test_that("roc.test with a list of two unpaired curves is the two-curve test", {
+  u.ndka <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  fields <- c("statistic", "parameter", "p.value", "conf.int")
+  expect_equal(roc.test(list(r.s100b, u.ndka))[fields], roc.test(r.s100b, u.ndka)[fields])
+  expect_equal(roc.test(list(r.s100b, r.ndka), paired = FALSE)[fields], roc.test(r.s100b, r.ndka, paired = FALSE)[fields])
+  cases <- list(
+    list(r.s100b, u.ndka), list(r.s100b.partial, auc(u.ndka, partial.auc = c(1, 0.9))),
+    list(smooth(r.s100b), smooth(u.ndka)), list(r.s100b.percent, r.ndka.percent)
+  )
+  for (rocs in cases) {
+    for (stratified in c(TRUE, FALSE)) {
+      set.seed(42)
+      two <- roc.test(rocs[[1]], rocs[[2]], method = "bootstrap", paired = FALSE, boot.n = 10, boot.stratified = stratified, progress = FALSE)
+      set.seed(42)
+      ht <- roc.test(rocs, method = "bootstrap", paired = FALSE, boot.n = 10, boot.stratified = stratified, progress = FALSE)
+      expect_equal(ht[fields], two[fields])
+      expect_identical(ht$method, "Bootstrap test for 2 ROC curves")
+    }
+  }
 })

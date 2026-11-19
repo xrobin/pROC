@@ -8,12 +8,11 @@
 \alias{cov.list}
 
 \title{
-  Covariance of paired ROC curves
+  Covariance of ROC curves
 }
 \description{
   This function computes the covariance between the AUC of two correlated (or paired) ROC
-  curves, or the covariance matrix of the AUCs of a list of paired ROC
-  curves.
+  curves, or the covariance matrix of the AUCs of a list of ROC curves.
 }
 \usage{
 cov(...)
@@ -33,11 +32,11 @@ cov(...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
   }
-  \item{x}{a list of two or more paired ROC curves, as
+  \item{x}{a list of two or more ROC curves, as
     \dQuote{\link{roc}}, \dQuote{\link{auc}} or
-    \dQuote{\link{smooth.roc}} objects, built on the same
-    observations. Only \code{method="delong"} and \code{"bootstrap"} and
-    paired curves are available; \code{boot.n}, \code{boot.stratified}, \code{boot.return},
+    \dQuote{\link{smooth.roc}} objects. Paired curves must be built on
+    the same observations. Only \code{method="delong"} and
+    \code{"bootstrap"} are available; \code{paired}, \code{boot.n}, \code{boot.stratified}, \code{boot.return},
     \code{progress} and \code{cl} apply as for two curves. Any other list
     is passed to
     \code{\link[stats:cor]{cov}} in the \pkg{stats} package.
@@ -88,7 +87,8 @@ cov(...)
   \item{paired}{\code{NULL} (default) to detect pairing with
     \code{\link{are.paired}}, \code{TRUE} to require curves that can be
     paired, \code{FALSE} to treat the curves as unpaired, as in
-    \code{\link{roc.test}}.
+    \code{\link{roc.test}}. The curves of a list are paired if they all
+    are.
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
@@ -238,7 +238,8 @@ cov(...)
   The covariance can only be computed on paired data: it is \code{0} for
   unpaired ROC curves. If \code{paired} is not provided, a message tells
   whether the curves were detected as paired, as in
-  \code{\link{roc.test}}.
+  \code{\link{roc.test}}. For a list of unpaired curves, the matrix only
+  holds the variances.
 }
 
 \references{
