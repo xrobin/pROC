@@ -1171,3 +1171,61 @@ roc_utils_logit_ci <- function(auc, sd, conf.level) {
   half <- qnorm(1 - (1 - conf.level) / 2) * sd / (auc * (1 - auc))
   c(plogis(qlogis(auc) - half), auc, plogis(qlogis(auc) + half))
 }
+
+# Validates a list of curves for roc.test.list and cov.list. Returns them as
+# roc objects carrying their AUC.
+roc_utils_list_rocs <- function(rocs, paired) {
+  if (!is.null(paired) && !paired) {
+    stop("'paired = FALSE' is not supported for a list of ROC curves: the curves must be paired.")
+  }
+  if (length(rocs) < 2) {
+    stop("At least 2 ROC curves are required.")
+  }
+  rocs <- lapply(rocs, function(roc) {
+    if (methods::is(roc, "auc")) {
+      # take the roc but keep the auc specifications
+      auc <- roc
+      roc <- attr(auc, "roc")
+      attr(auc, "roc") <- NULL
+      roc$auc <- auc
+    }
+    if (methods::is(roc, "smooth.roc")) {
+      stop("Smoothed ROCs are not supported in a list of ROC curves.")
+    }
+    if (!methods::is(roc, "roc")) {
+      stop("All the elements of the list must be 'roc' or 'auc' objects.")
+    }
+    if (is.null(roc$auc)) {
+      roc$auc <- auc(roc)
+    }
+    roc
+  })
+  for (roc in rocs[-1]) {
+    if (!are.paired(rocs[[1]], roc)) {
+      stop("A list of ROC curves must be paired.")
+    }
+    if (!identical(unname(rocs[[1]]$response), unname(roc$response))) {
+      stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
+    }
+  }
+  rocs
+}
+
+# Checks the method of roc.test.list and cov.list, and the AUC specifications
+roc_utils_list_method <- function(rocs, method) {
+  if (!identical(method, "delong")) {
+    stop("Only method = \"delong\" is available for a list of ROC curves.")
+  }
+  if (any(vapply(rocs, has.partial.auc, logical(1)))) {
+    stop("DeLong's method is not supported for partial AUC.")
+  }
+  if (length(unique(vapply(rocs, `[[`, character(1), "direction"))) > 1) {
+    warning("DeLong's method should not be applied to ROC curves with a different direction.")
+  }
+  # check that the same region was requested in auc. Otherwise, issue a warning
+  specs <- lapply(rocs, function(roc) attributes(roc$auc)[names(attributes(roc$auc)) != "roc"])
+  if (!all(vapply(specs[-1], identical, logical(1), specs[[1]]))) {
+    warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
+  }
+  method
+}

@@ -119,6 +119,118 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   return(testres)
 }
 
+# DeLong's test for k paired ROC curves: DeLong et al. (1988) p. 841
+roc.test.list <- function(rocs, contrast = NULL, method = "delong",
+                          alternative = c("two.sided", "less", "greater"),
+                          paired = NULL, conf.level = 0.95, ...) {
+  chkDots(...)
+  alternative <- match.arg(alternative)
+  roc_test_check_conf_level(conf.level)
+  data.name <- deparse1(substitute(rocs))
+  rocs <- roc_utils_list_rocs(rocs, paired)
+  method <- roc_utils_list_method(rocs, method)
+  if (all(vapply(rocs, roc_utils_is_perfect_curve, logical(1)))) {
+    warning("roc.test() of ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
+  }
+  k <- length(rocs)
+
+  if (is.null(contrast)) {
+    # the k - 1 successive differences: all the AUCs are equal
+    contrast <- cbind(diag(k - 1), 0) - cbind(0, diag(k - 1))
+  } else if (!is.matrix(contrast)) {
+    contrast <- matrix(contrast, nrow = 1)
+  }
+  if (!is.numeric(contrast) || ncol(contrast) != k || nrow(contrast) == 0 || !all(is.finite(contrast))) {
+    stop("'contrast' must be a numeric vector with one coefficient per ROC curve, or a matrix with one such row per contrast.")
+  }
+
+  estimate <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
+  roc.names <- if (is.null(names(rocs))) rep("", k) else names(rocs)
+  names(estimate) <- paste("AUC of", ifelse(roc.names == "", paste0("roc", seq_len(k)), roc.names))
+  htest <- list(
+    alternative = alternative,
+    data.name = data.name,
+    estimate = estimate,
+    method = sprintf("DeLong's test for %d correlated ROC curves", k)
+  )
+  class(htest) <- "htest"
+
+  calcs <- delong.cov(rocs)
+  tested <- roc_test_contrasts(contrast, calcs$theta, calcs$S)
+
+  if (nrow(contrast) == 1) {
+    # One contrast: L theta / sqrt(L S L') is standard normal
+    d <- tested$d
+    sig <- sqrt(tested$v)
+    stat <- delong.test(list(d = d, sig = sig))
+    htest$statistic <- c("Z" = stat)
+    htest$null.value <- c("contrast of AUCs" = 0)
+    htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
+    if (rocs[[1]]$percent) {
+      # the placements are on the 0-1 scale, the estimates on 0-100
+      htest$conf.int <- htest$conf.int * 100
+    }
+    htest$p.value <- switch(alternative,
+      two.sided = 2 * pnorm(-abs(stat)),
+      greater = pnorm(-stat),
+      less = pnorm(stat)
+    )
+  } else {
+    # Several contrasts, Eq. 5: (L theta)' (L S L')^-1 (L theta) is chi-square
+    # with the rank of L S L' as degrees of freedom. 'tested' holds
+    # uncorrelated combinations of the contrasts: the sum of their d^2 / v
+    if (alternative != "two.sided") {
+      stop("Only two-sided tests are available with several contrasts.")
+    }
+    if (anyNA(tested$v)) {
+      # A single case or control: the variance is undefined
+      stat <- df <- NA_real_
+    } else {
+      # Contrasts without variance: no degree of freedom, and as for two
+      # curves (delong.test) no difference if they are 0, infinite otherwise
+      df <- sum(tested$v > 0)
+      stat <- if (any(tested$v == 0 & tested$d != 0)) Inf else sum((tested$d^2 / tested$v)[tested$v > 0])
+    }
+    htest$statistic <- c("X-squared" = stat)
+    htest$parameter <- c("df" = df)
+    htest$p.value <- pchisq(stat, df, lower.tail = FALSE)
+  }
+  htest$contrast <- contrast
+  htest$rocs <- rocs
+  return(htest)
+}
+
+# The contrasts (rows of L) of the AUCs theta, d = L theta, and their variance
+# v = L S L' under the covariance matrix S. Several contrasts are replaced by
+# uncorrelated combinations of them (the eigenvectors U of L S L'), so that
+# Eq. 5 of DeLong et al. (1988) is sum(d^2 / v) over the combinations with a
+# variance, whose number is the rank of L S L'.
+# Contrasts are rarely exact in floating point (1/3), so that a d or a v that
+# should be 0, for curves that rank the observations identically, comes out
+# as a rounding residue: d and v are set to 0 when they are within the
+# rounding error of their own computation, a few ulp of the sum of the
+# absolute values of their terms.
+roc_test_contrasts <- function(L, theta, S) {
+  if (anyNA(S)) {
+    return(list(d = drop(L %*% theta), v = rep(NA_real_, nrow(L))))
+  }
+  U <- diag(nrow(L))
+  if (nrow(L) > 1) {
+    # Rows on a common scale, by an exact power of 2
+    scale <- apply(abs(L), 1, max)
+    L <- L * 2^-ceiling(log2(ifelse(scale == 0, 1, scale)))
+    U <- eigen(L %*% S %*% t(L), symmetric = TRUE)$vectors
+  }
+  A <- t(U) %*% L
+  absA <- t(abs(U)) %*% abs(L)
+  d <- drop(A %*% theta)
+  v <- rowSums((A %*% S) * A)
+  tol <- 8 * length(L) * .Machine$double.eps
+  d[abs(d) <= tol * drop(absA %*% abs(theta))] <- 0
+  v[v <= tol * rowSums((absA %*% abs(S)) * absA)] <- 0
+  list(d = d, v = v)
+}
+
 roc.test.roc <- function(roc1, roc2,
                          method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity", "ml"),
                          sensitivity = NULL, specificity = NULL,
