@@ -872,6 +872,40 @@ test_that("roc.test with a list of curves handles degenerate cases", {
   expect_equal(roc.test(rocs, contrast = rbind(c(1, -1, 0), c(0, 1, -1)) * c(1e-7, 1))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
   expect_equal(roc.test(rocs, contrast = rbind(c(0, 0, 0), c(1e5, -1e5, 0), c(1 / 3, 0, -1 / 3)))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
   expect_equal(roc.test(rocs[3:1])$statistic, ht$statistic)
+  for (scale in c(1e-200, 1e200)) {
+    expect_equal(roc.test(rocs, contrast = scale * c(1, -1, 0))$statistic, roc.test(rocs, contrast = c(1, -1, 0))$statistic)
+  }
+  # Coefficients of very different sizes: curve 2 ranks as curve 1
+  two <- roc.test(r.ndka, r.wfns)
+  ht <- roc.test(c(same[1:2], list(r.ndka, r.wfns)), contrast = c(1, -1, 1e-10, -1e-10))
+  # the small terms keep about 6 digits, depending on the order of the sums (BLAS)
+  expect_equal(ht[c("statistic", "p.value")], two[c("statistic", "p.value")], tolerance = 1e-4)
+  # Curves without variance next to others: the rank does not depend on their order
+  outcome <- aSAH$outcome == "Poor"
+  perfect1 <- roc(aSAH$outcome, as.numeric(outcome), direction = "<", quiet = TRUE)
+  perfect2 <- roc(aSAH$outcome, 10 * outcome + aSAH$s100b, direction = "<", quiet = TRUE)
+  ht <- roc.test(list(r.s100b, r.ndka, r.wfns, perfect1, perfect2))
+  expect_equal(ht$parameter, c(df = 3))
+  expect_equal(roc.test(list(r.s100b, perfect1, perfect2, r.ndka, r.wfns))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
+  flat <- roc(aSAH$outcome, rep(1, nrow(aSAH)), direction = "<", quiet = TRUE)
+  expect_identical(unname(roc.test(list(r.s100b, perfect1, flat, r.ndka, r.wfns))$statistic), Inf)
+  # Nearly identical curves keep their small variance, with redundant contrasts too
+  set.seed(42)
+  n <- 3000
+  y <- rep(0:1, each = n)
+  a <- rnorm(2 * n) + y
+  o <- order(a)
+  i <- which(y[o][-1] != y[o][-(2 * n)])[1]
+  swapped <- a
+  swapped[o[c(i, i + 1)]] <- a[o[c(i + 1, i)]]
+  near <- lapply(list(a, swapped, rnorm(2 * n) + y), function(x) roc(y, x, direction = "<", quiet = TRUE))
+  # the difference between their AUCs, 1 / n^2, keeps about 9 digits
+  expect_equal(unname(roc.test(near, contrast = c(1, -1, 0))$statistic)^2, 0.5, tolerance = 1e-5)
+  ht <- roc.test(near)
+  for (contrast in list(rbind(c(1, -1, 0), c(1, 0, -1), c(0, 1, -1)), diag(3) - 1 / 3)) {
+    expect_equal(roc.test(near, contrast = contrast)[c("statistic", "parameter")], ht[c("statistic", "parameter")], tolerance = 1e-5)
+    expect_equal(roc.test(near[c(3, 1, 2)], contrast = contrast)$statistic, ht$statistic, tolerance = 1e-5)
+  }
   # A single case: no variance
   one <- lapply(list(c(1, 2, 3, 4), c(1, 3, 2, 4), c(2, 1, 3, 4)), function(x) roc(c(0, 0, 0, 1), x, quiet = TRUE))
   expect_warning(expect_identical(roc.test(one)$p.value, NA_real_), "AUC == 1")

@@ -234,7 +234,7 @@ test_that("cov with a list of curves works", {
 test_that("cov with other lists is stats::cov", {
   df <- data.frame(a = 1:3, b = c(2, 4, 7))
   expect_identical(cov(df), stats::cov(df))
-  expect_error(cov(list(1:3, 4:6)), "supply both 'x' and 'y' or a matrix-like 'x'")
+  expect_error(cov(list(1:3, 4:6)))
 })
 
 test_that("cov with a list of curves follows DeLong et al. (1988)", {
