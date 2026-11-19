@@ -130,9 +130,10 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   alternative <- match.arg(alternative)
   roc_test_check_conf_level(conf.level)
   data.name <- deparse1(substitute(rocs))
-  rocs <- roc_utils_list_rocs(rocs, paired)
-  method <- roc_utils_list_method(rocs, if (missing(method)) NULL else method)
-  if (all(vapply(rocs, roc_utils_is_perfect_curve, logical(1)))) {
+  x <- roc_utils_list_rocs(rocs, paired, "the statistic on")
+  method <- roc_utils_list_method(x$rocs, x$smoothing.args, if (missing(method)) NULL else method)
+  rocs <- x$curves
+  if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("roc.test() of ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
   }
   k <- length(rocs)
@@ -150,7 +151,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   estimate <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
   roc.names <- if (is.null(names(rocs))) rep("", k) else names(rocs)
   roc.names <- ifelse(roc.names == "", paste0("roc", seq_len(k)), roc.names)
-  names(estimate) <- mapply(roc_test_auc_name, lapply(rocs, `[[`, "auc"), roc.names)
+  names(estimate) <- mapply(roc_test_auc_name, lapply(rocs, `[[`, "auc"), roc.names, !vapply(x$smoothing.args, is.null, logical(1)))
   htest <- list(
     alternative = alternative,
     data.name = data.name,
@@ -162,7 +163,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   if (method == "bootstrap") {
     boot.n <- roc_utils_check_boot_n(boot.n)
   }
-  calcs <- roc_utils_list_calcs(rocs, method, boot.n, boot.stratified, progress, cl)
+  calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
   tested <- roc_test_contrasts(contrast, calcs$theta, calcs$S)
 
   if (nrow(contrast) == 1) {

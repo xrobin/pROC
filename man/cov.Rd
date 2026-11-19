@@ -34,10 +34,10 @@ cov(...)
 	the original ROC curve are paired).
   }
   \item{x}{a list of two or more paired ROC curves, as
-    \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
-    observations. Smoothed curves are not supported, and only
-    \code{method="delong"} and \code{"bootstrap"} and paired curves are
-    available; \code{boot.n}, \code{boot.stratified}, \code{boot.return},
+    \dQuote{\link{roc}}, \dQuote{\link{auc}} or
+    \dQuote{\link{smooth.roc}} objects, built on the same
+    observations. Only \code{method="delong"} and \code{"bootstrap"} and
+    paired curves are available; \code{boot.n}, \code{boot.stratified}, \code{boot.return},
     \code{progress} and \code{cl} apply as for two curves. Any other list
     is passed to
     \code{\link[stats:cor]{cov}} in the \pkg{stats} package.

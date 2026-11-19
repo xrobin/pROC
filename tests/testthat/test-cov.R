@@ -225,7 +225,7 @@ test_that("cov with a list of curves works", {
   expect_equal(unname(cov(list(auc(r.s100b), r.ndka, auc(r.wfns)))), unname(S))
   expect_equal(unname(cov(list(r.s100b.percent, r.ndka.percent, r.wfns.percent))), unname(S) * 100^2)
   expect_error(cov(list(r.s100b.partial, r.ndka.partial), method = "delong"), "not supported for partial AUC")
-  expect_error(cov(list(r.s100b, smooth(r.ndka))), "Smoothed ROCs are not supported")
+  expect_error(cov(list(smooth(r.s100b), smooth(r.ndka)), method = "delong"), "not supported for smoothed ROCs")
   expect_error(cov(rocs, paired = FALSE), "'paired = FALSE' is not supported")
   expect_error(cov(rocs, method = "obuchowski"), "available for a list of ROC curves")
   expect_no_warning(expect_equal(cov(rocs, method = "delong", paired = TRUE), S))
@@ -275,4 +275,12 @@ test_that("bootstrap cov with a list of curves works", {
   S.percent <- cov(list(r.s100b.percent, r.ndka.percent), method = "bootstrap", boot.n = 20, progress = FALSE)
   set.seed(42)
   expect_equal(S.percent, cov(list(r.s100b, r.ndka), method = "bootstrap", boot.n = 20, progress = FALSE) * 100^2)
+})
+
+test_that("bootstrap cov with a list of smoothed curves works", {
+  smoothed <- list(smooth(r.s100b), smooth(r.ndka), smooth(r.wfns.num))
+  set.seed(42)
+  S <- cov(smoothed, boot.n = 10, progress = FALSE)
+  set.seed(42)
+  expect_equal(S[1, 2], cov(smoothed[[1]], smoothed[[2]], boot.n = 10, progress = FALSE))
 })

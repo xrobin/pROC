@@ -881,12 +881,15 @@ test_that("roc.test with a list of curves handles degenerate cases", {
 test_that("roc.test with a list of curves refuses what it does not support", {
   rocs <- list(r.s100b, r.ndka, r.wfns)
   expect_error(roc.test(list(r.s100b)), "At least 2 ROC curves")
-  expect_error(roc.test(list(r.s100b, 1)), "must be 'roc' or 'auc' objects")
+  expect_error(roc.test(list(r.s100b, 1)), "must be 'roc', 'smooth.roc' or 'auc' objects")
   expect_error(roc.test(rocs, contrast = 1:2), "'contrast' must be")
   expect_error(roc.test(rocs, contrast = c("a", "b", "c")), "'contrast' must be")
   expect_error(roc.test(rocs, alternative = "less"), "Only two-sided tests")
   expect_error(roc.test(list(r.s100b.partial, r.ndka.partial, r.wfns.partial), method = "delong"), "not supported for partial AUC")
-  expect_error(roc.test(list(r.s100b, smooth(r.ndka), r.wfns)), "Smoothed ROCs are not supported")
+  expect_error(roc.test(list(smooth(r.s100b), smooth(r.ndka)), method = "delong"), "not supported for smoothed ROCs")
+  density <- seq(0, 1, length.out = 512)
+  numeric.density <- smooth(r.s100b, method = "density", density.controls = density, density.cases = density)
+  expect_error(roc.test(list(numeric.density, smooth(r.ndka))), "smoothed with numeric density")
   unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
   expect_error(roc.test(list(r.s100b, unpaired, r.wfns)), "must be paired")
   expect_error(roc.test(rocs, paired = FALSE), "'paired = FALSE' is not supported")
@@ -972,4 +975,31 @@ test_that("bootstrap roc.test with a list of curves handles contrasts without va
   mirror <- roc(aSAH$outcome, -aSAH$s100b, direction = "<", quiet = TRUE)
   ht <- roc.test(list(r.s100b, mirror), contrast = c(1, 1), method = "bootstrap", boot.n = 20, progress = FALSE)
   expect_identical(ht[c("statistic", "p.value")], list(statistic = c(D = Inf), p.value = 0))
+})
+
+test_that("roc.test with a list of smoothed curves uses the bootstrap", {
+  smoothed <- list(a = smooth(r.s100b), b = smooth(r.ndka), c = smooth(r.wfns.num))
+  # The two-curve test, for full and partial AUCs
+  for (rocs in list(smoothed[1:2], lapply(smoothed[1:2], auc, partial.auc = c(1, 0.9), partial.auc.correct = TRUE))) {
+    set.seed(42)
+    two <- roc.test(rocs[[1]], rocs[[2]], boot.n = 10, progress = FALSE)
+    set.seed(42)
+    ht <- roc.test(unname(rocs), boot.n = 10, progress = FALSE)
+    for (field in c("statistic", "parameter", "p.value", "conf.int", "estimate")) {
+      expect_equal(ht[[field]], two[[field]])
+    }
+  }
+  set.seed(42)
+  ht <- roc.test(smoothed, boot.n = 10, progress = FALSE)
+  expect_identical(ht$method, "Bootstrap test for 3 correlated ROC curves")
+  expect_equal(ht$estimate, c(
+    "Smoothed AUC of a" = as.numeric(smoothed$a$auc), "Smoothed AUC of b" = as.numeric(smoothed$b$auc),
+    "Smoothed AUC of c" = as.numeric(smoothed$c$auc)
+  ))
+  # The curves are returned smoothed
+  expect_s3_class(ht$rocs$a, "smooth.roc")
+  expect_identical(ht$rocs$a$call, smoothed$a$call)
+  expect_equal(ht$rocs$a$sensitivities, smoothed$a$sensitivities)
+  # Smoothed and empirical curves
+  expect_warning(roc.test(list(smoothed$a, r.ndka), boot.n = 10, progress = FALSE), "Different smoothing parameters")
 })

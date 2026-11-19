@@ -53,12 +53,12 @@ cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
                          progress = getOption("pROCProgress", interactive()),
                          paired = NULL, cl = NULL, ...) {
   chkDots(...)
-  rocs <- roc_utils_list_rocs(rocs, paired)
-  method <- roc_utils_list_method(rocs, if (missing(method)) NULL else method)
-  if (all(vapply(rocs, roc_utils_is_perfect_curve, logical(1)))) {
+  x <- roc_utils_list_rocs(rocs, paired, "the covariance of")
+  method <- roc_utils_list_method(x$rocs, x$smoothing.args, if (missing(method)) NULL else method)
+  if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("cov() of ROC curves with AUC == 1 is always 0 and can be misleading.")
   }
-  calcs <- roc_utils_list_calcs(rocs, method, boot.n, boot.stratified, progress, cl)
+  calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
   S <- calcs$S
   if (boot.return && method == "bootstrap") {
     attr(S, "resampled.values") <- calcs$resampled.values
