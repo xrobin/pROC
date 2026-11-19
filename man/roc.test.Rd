@@ -49,10 +49,10 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 	\dQuote{\link{smooth.roc}} objects (types can be mixed).
   }
   \item{rocs}{a list of two or more paired ROC curves, as
-    \dQuote{\link{roc}} or \dQuote{\link{auc}} objects, built on the same
-    observations. Smoothed curves are not supported, and only
-    \code{method="delong"} and \code{"bootstrap"} and paired curves are
-    available.
+    \dQuote{\link{roc}}, \dQuote{\link{auc}} or
+    \dQuote{\link{smooth.roc}} objects, built on the same
+    observations. Only \code{method="delong"} and \code{"bootstrap"} and
+    paired curves are available.
   }
   \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
     vector with one coefficient per curve in \code{rocs}, or a matrix

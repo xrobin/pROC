@@ -38,9 +38,9 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
 
 # AUCs of a list of paired curves in each replicate (roc.test.list, cov.list):
 # one row per curve and one column per replicate
-bootstrap.list <- function(rocs, boot.n, boot.stratified, progress = FALSE, cl = NULL) {
+bootstrap.list <- function(rocs, smoothing.args, boot.n, boot.stratified, progress = FALSE, cl = NULL) {
   resampled.values <- bootstrap.replicates(boot.n, bootstrap.list.replicate,
-    rocs = rocs, stratified = boot.stratified,
+    rocs = rocs, smoothing.args = smoothing.args, stratified = boot.stratified,
     FUN.VALUE = rep(NA_real_, length(rocs)), progress = progress, cl = cl
   )
   roc_utils_drop_na_replicates(resampled.values, margin = 2L)
@@ -552,14 +552,15 @@ bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
   )
 }
 
-# The AUC of each curve of a list of paired curves, or NAs if the resampled
-# curves could not be built
-bootstrap.list.replicate <- function(n, rocs, stratified) {
+# The AUC of each curve of a list of paired curves, or NA for the resampled
+# curves that could not be built. 'smoothing.args' holds the smoothing.args
+# of each smoothed curve, NULL for an empirical curve.
+bootstrap.list.replicate <- function(n, rocs, smoothing.args, stratified) {
   # Paired curves must see the same patients.
   idx <- roc_utils_resample_idx(rocs[[1]], stratified)
-  vapply(unname(rocs), function(roc) {
-    boot.roc <- bootstrap.resampled.curve(roc, stratified, NULL, idx)
-    if (is.null(boot.roc)) NA_real_ else bootstrap.auc(boot.roc, bootstrap.auc.args(roc$auc))
+  vapply(seq_along(rocs), function(i) {
+    boot.roc <- bootstrap.resampled.curve(rocs[[i]], stratified, smoothing.args[[i]], idx)
+    if (is.null(boot.roc)) NA_real_ else bootstrap.auc(boot.roc, bootstrap.auc.args(rocs[[i]]$auc))
   }, numeric(1))
 }
 
