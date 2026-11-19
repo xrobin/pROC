@@ -287,6 +287,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     to \code{\link{na.omit}} stores the row numbers.
   }
   \item{original.predictor, original.response}{the response and predictor vectors as passed in argument.}
+  \item{response.given}{\code{FALSE} for a curve built with
+    \code{controls} and \code{cases}, whose \code{response} was made
+    up; absent otherwise.}
   \item{levels}{the levels of the response as defined in argument.}
   \item{controls}{the predictor values for the control observations
     (numeric, or ordered with the same levels as \code{predictor}).}

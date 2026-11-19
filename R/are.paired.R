@@ -33,6 +33,14 @@ are.paired.roc <- function(roc1, roc2,
                            return.paired.rocs = FALSE,
                            reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
                            ...) {
+  roc_utils_can_pair(roc1, roc2, return.paired.rocs, reuse.auc, reuse.ci, reuse.smooth, given.only = TRUE)
+}
+
+# Whether two curves can be paired: same levels and same response. With
+# given.only (are.paired), the response must have been given: curves built
+# from 'controls' and 'cases' of the same sizes can be paired, but nothing
+# tells that they hold the same patients.
+roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.ci, reuse.smooth, given.only) {
   # check return.paired.rocs
   if (!is.logical(return.paired.rocs) || length(return.paired.rocs) != 1) {
     stop("'return.paired.rocs' must be either TRUE or FALSE.")
@@ -53,6 +61,9 @@ are.paired.roc <- function(roc1, roc2,
     oroc2 <- roc2
     roc2 <- attr(roc2, "roc")
   }
+  if (given.only && (isFALSE(roc1$response.given) || isFALSE(roc2$response.given))) {
+    return(FALSE)
+  }
   # Check if the levels are the same. Otherwise it is not paired.
   # Compare them as character: levels given explicitly are stored as given
   # (numeric, factor...) while the default levels are character
@@ -63,7 +74,13 @@ are.paired.roc <- function(roc1, roc2,
   # formula gives the row names, as model.response() does), but not the
   # na.action attribute: two curves that lost different observations must be
   # paired on the observations they share, below.
-  if (identical(unname(roc1$response), unname(roc2$response))) {
+  # Without a given response there is no na.action: if such a curve lost
+  # observations, compare the positions of the missing values.
+  lost <- (isFALSE(roc1$response.given) && anyNA(roc1$original.predictor)) ||
+    (isFALSE(roc2$response.given) && anyNA(roc2$original.predictor))
+  same.missing <- !lost ||
+    identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
+  if (identical(unname(roc1$response), unname(roc2$response)) && same.missing) {
     retval <- TRUE
     if (return.paired.rocs) {
       # Return the smoothed curves if the input was smoothed
@@ -84,7 +101,7 @@ are.paired.roc <- function(roc1, roc2,
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
       # Print the data as the input curves, not as the expressions above
-      for (field in c("call", "predictor.name", "response.name")) {
+      for (field in c("call", "predictor.name", "response.name", "response.given")) {
         roc1.paired[[field]] <- roc1[[field]]
         roc2.paired[[field]] <- roc2[[field]]
       }
@@ -135,17 +152,34 @@ are.paired.roc <- function(roc1, roc2,
   }
 }
 
-# The pairing decision of roc.test, cov and power.roc.test: paired = NULL
-# detects it with are.paired(), TRUE requires it, FALSE treats the curves as
-# unpaired. Returns are.paired()'s result (TRUE with the re-paired curves in
-# attributes "roc1" and "roc2"), or FALSE.
+# The pairing decision of roc.test, cov and power.roc.test:
+# - paired = TRUE requires curves that can be paired (roc_utils_can_pair);
+# - paired = FALSE treats the curves as unpaired;
+# - paired = NULL detects it with are.paired() and tells the decision, with a
+#   warning for the curves that can be paired but have no given response.
+# Returns TRUE with the re-paired curves in attributes "roc1" and "roc2", or
+# FALSE.
 roc_utils_paired <- function(roc1, roc2, paired) {
   if (!is.null(paired) && !paired) {
     return(FALSE)
   }
-  rocs.are.paired <- are.paired(roc1, roc2, return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE)
-  if (!is.null(paired) && !rocs.are.paired) {
-    stop(simpleError("'paired = TRUE' cannot be applied to unpaired ROC curves.", sys.call(-1)))
+  can.pair <- roc_utils_can_pair(roc1, roc2,
+    return.paired.rocs = TRUE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
+    given.only = FALSE
+  )
+  if (!is.null(paired)) {
+    if (!can.pair) {
+      stop(simpleError("'paired = TRUE' cannot be applied to unpaired ROC curves.", sys.call(-1)))
+    }
+    return(can.pair)
   }
-  rocs.are.paired
+  if (can.pair && !are.paired(roc1, roc2)) {
+    warning(simpleWarning(paste(
+      "ROC curves built from 'controls' and 'cases' are not paired automatically.",
+      "Use 'paired = TRUE' if they hold the same patients in the same order, or 'paired = FALSE' if they do not."
+    ), sys.call(-1)))
+    return(FALSE)
+  }
+  message(sprintf("Setting paired: %s", isTRUE(can.pair)))
+  can.pair
 }

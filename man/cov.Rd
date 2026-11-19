@@ -74,8 +74,9 @@ cov(...)
   \item{parallel}{DEPRECATED. A value other than \code{FALSE} will produce a warning.
     The argument will be removed in a future version.}
   \item{paired}{\code{NULL} (default) to detect pairing with
-    \code{\link{are.paired}}, \code{TRUE} to require it, \code{FALSE} to
-    treat the curves as unpaired, as in \code{\link{roc.test}}.
+    \code{\link{are.paired}}, \code{TRUE} to require curves that can be
+    paired, \code{FALSE} to treat the curves as unpaired, as in
+    \code{\link{roc.test}}.
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
@@ -219,11 +220,10 @@ cov(...)
 }
 
 \section{Messages}{
-  The covariance can only be computed on paired data. This
-  assumption is enforced by \code{\link{are.paired}}. If the ROC curves
-  are not paired, the covariance is \code{0} and the message \dQuote{ROC
-  curves are unpaired.} is printed. If your ROC curves are paired, make
-  sure they fit \code{\link{are.paired}} criteria.
+  The covariance can only be computed on paired data: it is \code{0} for
+  unpaired ROC curves. If \code{paired} is not provided, a message tells
+  whether the curves were detected as paired, as in
+  \code{\link{roc.test}}.
 }
 
 \references{

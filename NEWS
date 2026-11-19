@@ -6,6 +6,7 @@
     - The unpaired DeLong test of 'roc.test' no longer  returns a 'parameter'
     - 'power.roc.test' takes an 'auc' object as its curve: pass 'as.numeric(auc)' for an expected AUC
     - Curves smoothed with 'method = "binormal"' hold the fit as 'binormal' (a, b) instead of the 'lm' 'model'
+    - 'are.paired', 'roc.test', 'cov' and 'power.roc.test' no longer pair curves built from 'controls' and 'cases' automatically (pass 'paired = TRUE')
   * Bumped dependencies to R >= 4.0.0, and ggplot2 >= 4.0.0
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations

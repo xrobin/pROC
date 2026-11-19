@@ -589,7 +589,8 @@ solve_zalpha <- function(nd, zbeta, v0, va, delta) {
 # kappa: ratio of controls to cases at which the variances are computed
 # (defaults to the observed one)
 covvar <- function(roc1, roc2, method, kappa = NULL, ...) {
-  cov12 <- cov(roc1, roc2, boot.return = TRUE, method = method, ...)
+  # the curves were paired by power.roc.test.roc
+  cov12 <- cov(roc1, roc2, boot.return = TRUE, method = method, paired = TRUE, ...)
   bootstrapped <- !is.null(attr(cov12, "resampled.values"))
   if (bootstrapped) {
     var1 <- var(attr(cov12, "resampled.values")[1, ])
