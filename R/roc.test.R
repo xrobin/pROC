@@ -28,22 +28,24 @@ roc.test.formula <- function(formula, data, ..., subset, na.action) {
     data.missing = data.missing,
     call = call
   )
-  if (length(roc.data$predictor.names) != 2) {
-    stop("Invalid formula: exactly 2 predictors are required in a formula of type response~predictor1+predictor2.")
+  if (!length(roc.data$predictor.names) %in% 1:2) {
+    stop("Invalid formula: 1 or 2 predictors are required in a formula of type response~predictor1+predictor2.")
   }
   response <- roc.data$response
   predictors <- roc.data$predictors
+  if (length(predictors) == 1 && is.null(dim(predictors[[1]]))) {
+    predictors <- predictors[[1]]
+  }
 
   testres <- roc.test.default(response, predictors, ...)
   testres$call <- call
   # data.names for pretty print()ing
-  if (data.missing) {
-    testres$data.names <- sprintf("%s and %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
-    testres$data.name <- testres$data.names # the standard htest element
-  } else {
-    testres$data.names <- sprintf("%s and %s in %s by %s (%s, %s)", roc.data$predictor.names[1], roc.data$predictor.names[2], deparse1(substitute(data)), roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2])
-    testres$data.name <- testres$data.names # the standard htest element
-  }
+  testres$data.names <- sprintf(
+    "%s%s by %s (%s, %s)", paste(roc.data$predictor.names, collapse = " and "),
+    if (data.missing) "" else paste(" in", deparse1(substitute(data))),
+    roc.data$response.name, testres$roc1$levels[1], testres$roc1$levels[2]
+  )
+  testres$data.name <- testres$data.names # the standard htest element
 
   return(testres)
 }
@@ -70,6 +72,17 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
       stop("Wrong dimension for predictor1 as a matrix or a data.frame.")
     }
   } else {
+    if (missing(predictor2)) {
+      # A single predictor: test of one curve
+      roc1 <- roc(response, predictor1, ...)
+      if (!roc_utils_is_curve(roc1)) {
+        stop("Cannot test the ROC curve: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
+      }
+      test <- roc.test.roc(roc1, method = method, paired = if (!missing(paired)) paired, ...)
+      test$data.names <- sprintf("%s by %s (%s, %s)", deparse1(substitute(predictor1)), deparse1(substitute(response)), roc1$levels[1], roc1$levels[2])
+      test$data.name <- test$data.names # the standard htest element
+      return(test)
+    }
     if (is.null(predictor2)) {
       stop("Missing argument predictor2 with predictor1 as a vector.")
     }
@@ -97,7 +110,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
 
 roc.test.auc <- function(roc1, roc2, ...) {
   # First save the names
-  data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
+  data.names <- roc_test_data_names(substitute(roc1), if (!missing(roc2)) substitute(roc2))
   # Change roc1 from an auc to a roc object but keep the auc specifications
   auc1 <- roc1
   attr(auc1, "roc") <- NULL
@@ -114,7 +127,7 @@ roc.test.auc <- function(roc1, roc2, ...) {
 roc.test.smooth.roc <- function(roc1, roc2, ...) {
   testres <- roc.test.roc(roc1, roc2, ...)
   testres$call <- match.call()
-  testres$data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
+  testres$data.names <- roc_test_data_names(substitute(roc1), if (!missing(roc2)) substitute(roc2))
   testres$data.name <- testres$data.names # the standard htest element
   return(testres)
 }
@@ -133,7 +146,24 @@ roc.test.roc <- function(roc1, roc2,
                          cl = NULL,
                          ...) {
   alternative <- match.arg(alternative)
-  data.names <- paste(deparse1(substitute(roc1)), "and", deparse1(substitute(roc2)))
+  data.names <- roc_test_data_names(substitute(roc1), if (!missing(roc2)) substitute(roc2))
+  if (missing(roc2)) {
+    if (isTRUE(paired)) {
+      stop("'roc2' is missing for paired test")
+    }
+    if (!missing(method) && !is.null(method)) {
+      method <- match.arg(method)
+      if (!method %in% c("delong", "bootstrap")) {
+        stop(sprintf("method=\"%s\" requires two ROC curves.", method))
+      }
+    }
+    return(roc_test_one_curve(roc1,
+      method = if (!missing(method)) method, alternative = alternative,
+      reuse.auc = reuse.auc, boot.n = boot.n, boot.stratified = boot.stratified,
+      progress = progress, parallel = parallel, conf.level = conf.level, cl = cl,
+      data.names = data.names, ...
+    ))
+  }
   # If roc2 is an auc, take the roc but keep the auc specifications
   if (methods::is(roc2, "auc")) {
     auc2 <- roc2
@@ -254,28 +284,10 @@ roc.test.roc <- function(roc1, roc2,
   } else {
     estimate <- c(estimate, roc2$auc)
   }
-  if (identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    nest <- paste(ifelse(smooth1, "Smoothed ", ""), "AUC of roc1", sep = "")
-  } else {
-    nest <- paste(ifelse(attr(roc1$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth1, "Smoothed ", ""),
-      "pAUC (", attr(roc1$auc, "partial.auc")[1], "-", attr(roc1$auc, "partial.auc")[2], " ", attr(roc1$auc, "partial.auc.focus"),
-      ") of roc1",
-      sep = ""
-    )
-  }
-  if (identical(attr(roc2$auc, "partial.auc"), FALSE)) {
-    nest <- c(nest, paste(ifelse(smooth2, "Smoothed ", ""), "AUC of roc2", sep = ""))
-  } else {
-    nest <- c(nest, paste(ifelse(attr(roc2$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth2, "Smoothed ", ""),
-      "pAUC (", attr(roc2$auc, "partial.auc")[1], "-", attr(roc2$auc, "partial.auc")[2], " ", attr(roc2$auc, "partial.auc.focus"),
-      ") of roc2",
-      sep = ""
-    ))
-  }
-  nest <- sub("Corrected Smoothed", "Corrected smoothed", nest) # no upper on smoothed if corrected.
-  names(estimate) <- nest
+  names(estimate) <- paste(
+    c(roc_test_auc_name(roc1$auc, smooth1), roc_test_auc_name(roc2$auc, smooth2)),
+    c("of roc1", "of roc2")
+  )
   null.value <- 0
   names(null.value) <- "difference in AUC"
   htest <- list(
@@ -439,4 +451,83 @@ roc_test_ci_normal <- function(d, sig, conf.level, alternative) {
   )
   attr(conf.int, "conf.level") <- conf.level
   conf.int
+}
+
+# The data names of the curves tested, from their expressions
+roc_test_data_names <- function(expr1, expr2 = NULL) {
+  paste(c(deparse1(expr1), if (!is.null(expr2)) deparse1(expr2)), collapse = " and ")
+}
+
+# The name of the estimate, such as "Corrected smoothed pAUC (1-0.9 specificity)"
+roc_test_auc_name <- function(auc, smooth) {
+  name <- paste0(if (smooth) "Smoothed ", "AUC")
+  if (!identical(attr(auc, "partial.auc"), FALSE)) {
+    name <- sprintf(
+      "%spAUC (%s-%s %s)", if (smooth) "Smoothed " else "",
+      attr(auc, "partial.auc")[1], attr(auc, "partial.auc")[2], attr(auc, "partial.auc.focus")
+    )
+    if (attr(auc, "partial.auc.correct")) {
+      name <- paste("Corrected", sub("Smoothed", "smoothed", name)) # no upper on smoothed if corrected.
+    }
+  }
+  name
+}
+
+# Test of one curve against the absence of discrimination: the (partial) AUC
+# of the diagonal. Z test of DeLong et al. (1988, p. 841) with the contrast
+# L = (1), on the variance of var(), DeLong or bootstrap.
+roc_test_one_curve <- function(roc1, method, alternative, reuse.auc,
+                               boot.n, boot.stratified, progress, parallel,
+                               conf.level, cl, data.names, ...) {
+  roc_test_check_conf_level(conf.level)
+  smooth <- methods::is(roc1, "smooth.roc")
+  if (is.null(roc1$auc) | !reuse.auc) {
+    if (smooth) {
+      # Named: smooth = TRUE in ... (from roc.test.default) would match it
+      roc1$auc <- auc(smooth.roc = roc1, ...)
+    } else {
+      roc1$auc <- auc(roc1, ...)
+    }
+  }
+  if (is.null(method)) {
+    method <- if (has.partial.auc(roc1) || smooth) "bootstrap" else "delong"
+  }
+
+  estimate <- as.numeric(roc1$auc)
+  # A corrected partial AUC is 0.5 on the diagonal, as the full AUC
+  corrected <- isTRUE(attr(roc1$auc, "partial.auc.correct"))
+  null.value <- roc_utils_min_partial_auc(
+    if (corrected) FALSE else attr(roc1$auc, "partial.auc"), roc1$percent
+  )
+  names(estimate) <- names(null.value) <- roc_test_auc_name(roc1$auc, smooth)
+  if (method == "bootstrap") {
+    boot.n <- roc_utils_check_boot_n(boot.n)
+  }
+  sig <- sqrt(var(roc1,
+    method = method, boot.n = boot.n, boot.stratified = boot.stratified,
+    progress = progress, parallel = parallel, cl = cl
+  ))
+  stat <- (estimate - null.value) / sig
+
+  htest <- list(
+    statistic = stats::setNames(stat, if (method == "delong") "Z" else "D"),
+    p.value = unname(switch(alternative,
+      two.sided = 2 * pnorm(-abs(stat)),
+      greater = pnorm(-stat),
+      less = pnorm(stat)
+    )),
+    conf.int = roc_test_ci_normal(unname(estimate), sig, conf.level, alternative),
+    estimate = estimate,
+    null.value = null.value,
+    alternative = alternative,
+    method = if (method == "delong") "DeLong's test for one ROC curve" else "Bootstrap test for one ROC curve",
+    data.names = data.names,
+    data.name = data.names, # the standard htest element
+    roc1 = roc1
+  )
+  if (method == "bootstrap") {
+    htest$parameter <- c(boot.n = boot.n, boot.stratified = boot.stratified)
+  }
+  class(htest) <- "htest"
+  htest
 }
