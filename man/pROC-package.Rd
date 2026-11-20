@@ -78,7 +78,7 @@
     \code{\link{ci.sp}} \tab Compute the CI of specificities at given sensitivities \cr
     \code{\link{ci.thresholds}} \tab Compute the CI of specificity and sensitivity of thresholds \cr
     \code{\link{coords}} \tab Coordinates of the ROC curve \cr
-    \code{\link[=cov.roc]{cov}} \tab Covariance between two AUCs\cr
+    \code{\link[=cov.roc]{cov}} \tab Covariance between AUCs\cr
     \code{\link{ggroc}} \tab Plot a ROC curve with \pkg{ggplot2}\cr
     \code{\link{has.partial.auc}} \tab Determine if the ROC curve has a partial AUC\cr
     \code{\link{lines.roc}} \tab Add a ROC line to a ROC plot \cr
@@ -87,7 +87,7 @@
     \code{\link[=plot.roc]{plot}} \tab Plot a ROC curve \cr
     \code{\link{power.roc.test}} \tab Sample size and power computation \cr
     \code{\link[=print.roc]{print}} \tab Print a ROC curve object \cr
-    \code{\link{roc.test}} \tab Compare two ROC curves \cr
+    \code{\link{roc.test}} \tab Compare ROC curves \cr
     \code{\link[=smooth.roc]{smooth}} \tab Smooth a ROC curve \cr
     \code{\link[=var.roc]{var}} \tab Variance of the AUC
   }

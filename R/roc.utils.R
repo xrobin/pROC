@@ -1158,3 +1158,138 @@ roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitiv
   }
   sprintf(pattern, threshold, specificity, sensitivity)
 }
+
+# Validates a list of curves for roc.test.list and cov.list. Returns:
+# - rocs: the empirical curves, carrying the AUC specifications;
+# - smoothing.args: the smoothing.args of the smoothed curves, NULL for the others;
+# - curves: the curves as they are tested, smoothed again if they were;
+# - paired: whether the curves are tested as paired (roc_utils_paired_list).
+# 'what' completes the error for a smoothing that cannot be replayed.
+roc_utils_list_rocs <- function(rocs, paired, what) {
+  if (length(rocs) < 2) {
+    stop("At least 2 ROC curves are required.")
+  }
+  curves <- rocs
+  smoothing.args <- vector("list", length(rocs))
+  for (i in seq_along(rocs)) {
+    roc <- rocs[[i]]
+    if (methods::is(roc, "auc")) {
+      # take the roc but keep the auc specifications
+      auc <- roc
+      roc <- attr(auc, "roc")
+      attr(auc, "roc") <- NULL
+      roc$auc <- auc
+    }
+    smoothed <- methods::is(roc, "smooth.roc")
+    if (smoothed) {
+      roc_utils_stop_if_numeric_density(roc, what)
+      smoothing.args[[i]] <- roc$smoothing.args
+      smooth.call <- roc$call
+      roc <- roc_utils_unsmooth(roc)
+    }
+    if (!methods::is(roc, "roc")) {
+      stop("All the elements of the list must be 'roc', 'smooth.roc' or 'auc' objects.")
+    }
+    if (is.null(roc$auc)) {
+      roc$auc <- if (smoothed) auc(smooth.roc = roc_utils_resmooth(roc, smoothing.args[[i]])) else auc(roc)
+    }
+    rocs[[i]] <- curves[[i]] <- roc
+    if (smoothed) {
+      curves[[i]] <- roc_utils_resmooth(roc, smoothing.args[[i]], reuse.auc = TRUE)
+      curves[[i]]$call <- smooth.call
+    }
+  }
+  paired <- roc_utils_paired_list(rocs, paired)
+  if (paired) {
+    for (roc in rocs[-1]) {
+      if (!roc_utils_same_observations(rocs[[1]], roc)) {
+        stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors, or use 'paired = FALSE'.")
+      }
+    }
+  }
+  list(rocs = rocs, smoothing.args = smoothing.args, curves = curves, paired = paired)
+}
+
+# The method of roc.test.list and cov.list ('method' is NULL if missing), as
+# roc.test.roc and cov.roc choose it. Also checks the AUC specifications.
+roc_utils_list_method <- function(rocs, smoothing.args, method) {
+  partial <- any(vapply(rocs, has.partial.auc, logical(1)))
+  smoothed <- !all(vapply(smoothing.args, is.null, logical(1)))
+  same.direction <- length(unique(vapply(rocs, `[[`, character(1), "direction"))) == 1
+  if (is.null(method)) {
+    # partial AUC, smoothing and different directions: go for bootstrap
+    method <- if (partial || smoothed || !same.direction) "bootstrap" else "delong"
+  } else {
+    method <- tryCatch(match.arg(method, c("delong", "bootstrap")), error = function(e) {
+      stop("Only method = \"delong\" and \"bootstrap\" are available for a list of ROC curves.", call. = FALSE)
+    })
+    if (method == "delong") {
+      if (partial) {
+        stop("DeLong's method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+      }
+      if (smoothed) {
+        stop("DeLong's method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
+      }
+      if (!same.direction) {
+        warning("DeLong's method should not be applied to ROC curves with a different direction.")
+      }
+    }
+  }
+  # check that the same region was requested in auc. Otherwise, issue a warning
+  specs <- lapply(rocs, function(roc) attributes(roc$auc)[names(attributes(roc$auc)) != "roc"])
+  if (!all(vapply(specs[-1], identical, logical(1), specs[[1]]))) {
+    warning("Different AUC specifications in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
+  }
+  # check that the same smoothing params were requested. Otherwise, issue a warning
+  if (!all(vapply(smoothing.args[-1], identical, logical(1), smoothing.args[[1]]))) {
+    warning("Different smoothing parameters in the ROC curves. Enforcing the inconsistency, but unexpected results may be produced.")
+  }
+  method
+}
+
+# A factor W of the covariance matrix of the columns of x: cov(x) = W'W.
+# Fewer than two rows give NA, as cov().
+# Without centring, the size of the values that W is the difference of: the
+# rounding error of W is relative to it (roc_test_contrasts).
+roc_utils_cov_factor <- function(x, centre = TRUE) {
+  if (nrow(x) < 2) {
+    return(matrix(NA_real_, 1, ncol(x)))
+  }
+  (if (centre) sweep(x, 2, colMeans(x)) else abs(x)) / sqrt(nrow(x) - 1)
+}
+
+# (Partial) AUCs (theta) of a list of curves ('x' is the value of
+# roc_utils_list_rocs), their covariance matrix S and a factor W of it
+# (S = W'W), on the scale of the curves. With the bootstrap, S is the
+# covariance matrix of the resampled AUCs, returned as resampled.values.
+roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, cl) {
+  if (method == "delong") {
+    if (x$paired) {
+      calcs <- delong.cov(x$rocs)
+    } else {
+      # Unpaired curves are independent: only their variances
+      each <- lapply(x$rocs, function(roc) delong.cov(list(roc)))
+      S <- diag(vapply(each, function(calcs) calcs$S[[1, 1]], numeric(1)))
+      rownames(S) <- colnames(S) <- names(x$rocs)
+      rows <- vapply(each, function(calcs) nrow(calcs$W), integer(1))
+      W <- absW <- matrix(0, sum(rows), length(each))
+      cells <- cbind(seq_len(sum(rows)), rep(seq_along(each), rows))
+      W[cells] <- unlist(lapply(each, `[[`, "W"))
+      absW[cells] <- unlist(lapply(each, `[[`, "absW"))
+      calcs <- list(theta = vapply(each, `[[`, numeric(1), "theta"), S = S, W = W, absW = absW)
+    }
+    # the placements are on the 0-1 scale
+    scale <- if (x$rocs[[1]]$percent) 100 else 1
+    return(list(theta = calcs$theta * scale, S = calcs$S * scale^2, W = calcs$W * scale, absW = calcs$absW * scale))
+  }
+  resampled.values <- bootstrap.list(x$rocs, x$smoothing.args, x$paired, boot.n, boot.stratified,
+    progress = roc_utils_normalise_progress(progress), cl = cl
+  )
+  S <- stats::cov(t(resampled.values))
+  rownames(S) <- colnames(S) <- names(x$rocs)
+  list(
+    theta = vapply(x$curves, function(curve) as.numeric(curve$auc), numeric(1)),
+    S = S, W = roc_utils_cov_factor(t(resampled.values)),
+    absW = roc_utils_cov_factor(t(resampled.values), centre = FALSE), resampled.values = resampled.values
+  )
+}

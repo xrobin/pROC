@@ -5,13 +5,14 @@
 \alias{cov.auc}
 \alias{cov.smooth.roc}
 \alias{cov.roc}
+\alias{cov.list}
 
 \title{
-  Covariance of two paired ROC curves
+  Covariance of ROC curves
 }
 \description{
   This function computes the covariance between the AUC of two correlated (or paired) ROC
-  curves. 
+  curves, or the covariance matrix of the AUCs of a list of ROC curves.
 }
 \usage{
 cov(...)
@@ -22,6 +23,7 @@ cov(...)
   reuse.auc=TRUE, boot.n=2000, boot.stratified=TRUE, boot.return=FALSE,
   progress = getOption("pROCProgress", interactive()), parallel=FALSE,
   paired = NULL, cl = NULL, ...)
+\S3method{cov}{list}(x, ...)
 }
 
 \arguments{
@@ -29,6 +31,15 @@ cov(...)
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed as long as
 	the original ROC curve are paired).
+  }
+  \item{x}{a list of two or more ROC curves, as
+    \dQuote{\link{roc}}, \dQuote{\link{auc}} or
+    \dQuote{\link{smooth.roc}} objects. Paired curves must be built on
+    the same observations. Only \code{method="delong"} and
+    \code{"bootstrap"} are available; \code{paired}, \code{boot.n}, \code{boot.stratified}, \code{boot.return},
+    \code{progress} and \code{cl} apply as for two curves. Any other list
+    is passed to
+    \code{\link[stats:cor]{cov}} in the \pkg{stats} package.
   }
   \item{method}{the method to use, either \dQuote{delong},
     \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
@@ -76,12 +87,14 @@ cov(...)
   \item{paired}{\code{NULL} (default) to detect pairing with
     \code{\link{are.paired}}, \code{TRUE} to require curves that can be
     paired, \code{FALSE} to treat the curves as unpaired, as in
-    \code{\link{roc.test}}.
+    \code{\link{roc.test}}. The curves of a list are paired if they all
+    are.
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
-    \code{\link{auc}} (if \code{reuse.auc=FALSE}).
+    \code{\link{auc}} (if \code{reuse.auc=FALSE}). With a list of
+    curves, the arguments listed for \code{x}.
   }
 }
 
@@ -93,9 +106,9 @@ cov(...)
   \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
-  Paired curves with different missing values are re-paired as in
+  Two paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the covariance refers to the re-paired
-  curves.
+  curves. The curves of a list are not re-paired.
 
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
@@ -162,11 +175,14 @@ cov(...)
 \value{
   The numeric value of the covariance.
 
+  For a list of curves, the covariance matrix of their AUCs (DeLong
+  \emph{et al.}, 1988, p. 840), with the variances on the diagonal.
+
   If \code{boot.return=TRUE} and \code{method="bootstrap"}, an attribute
   \code{resampled.values} is set with the resampled (bootstrapped)
   values. It contains a matrix with 2 rows representing the two ROC
-  curves, and one column per bootstrap replicate (replicates that produced
-  \code{NA} values are removed).
+  curves (one row per curve of a list), and one column per bootstrap
+  replicate (replicates that produced \code{NA} values are removed).
 }
 
 \section{Errors}{
@@ -223,7 +239,8 @@ cov(...)
   The covariance can only be computed on paired data: it is \code{0} for
   unpaired ROC curves. If \code{paired} is not provided, a message tells
   whether the curves were detected as paired, as in
-  \code{\link{roc.test}}.
+  \code{\link{roc.test}}. For a list of unpaired curves, the matrix only
+  holds the variances.
 }
 
 \references{
@@ -266,6 +283,9 @@ cov(roc1, roc2, method = "obuchowski")
 
 # From an AUC, without smoothing
 cov(auc(roc1), roc2)
+
+# Covariance matrix of more than two paired curves
+cov(list(s100b = roc1, wfns = roc2, ndka = roc(aSAH$outcome, aSAH$ndka)))
 
 # Bootstrap
 \dontrun{
