@@ -204,9 +204,10 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   by \code{roc.test.default} and \code{roc.test.formula} share their
   response and are paired.
 
-  Paired curves with different missing values are re-paired as in
+  Two paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the test and the \code{estimate} refer to
-  the re-paired curves, returned as \code{roc1} and \code{roc2}.
+  the re-paired curves, returned as \code{roc1} and \code{roc2}. The
+  curves of a list are not re-paired.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.

@@ -1216,7 +1216,7 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
   if (paired) {
     for (roc in rocs[-1]) {
       if (!roc_utils_same_observations(rocs[[1]], roc)) {
-        stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
+        stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors, or use 'paired = FALSE'.")
       }
     }
   }
@@ -1261,10 +1261,13 @@ roc_utils_list_method <- function(rocs, smoothing.args, method) {
 }
 
 # A factor W of the covariance matrix of the columns of x: cov(x) = W'W.
-# Fewer than two rows give NaN, where cov() gives NA.
+# Fewer than two rows give NA, as cov().
 # Without centring, the size of the values that W is the difference of: the
 # rounding error of W is relative to it (roc_test_contrasts).
 roc_utils_cov_factor <- function(x, centre = TRUE) {
+  if (nrow(x) < 2) {
+    return(matrix(NA_real_, 1, ncol(x)))
+  }
   (if (centre) sweep(x, 2, colMeans(x)) else abs(x)) / sqrt(nrow(x) - 1)
 }
 

@@ -872,6 +872,20 @@ test_that("roc.test with a list of curves handles degenerate cases", {
   expect_equal(roc.test(rocs, contrast = rbind(c(1, -1, 0), c(0, 1, -1)) * c(1e-7, 1))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
   expect_equal(roc.test(rocs, contrast = rbind(c(0, 0, 0), c(1e5, -1e5, 0), c(1 / 3, 0, -1 / 3)))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
   expect_equal(roc.test(rocs[3:1])$statistic, ht$statistic)
+  # nor do rows of zeros, wherever they are
+  full <- rbind(c(1, -0.5, -0.5), c(-0.5, 1, -0.5), c(-0.5, -0.5, 1))
+  one <- rbind(c(1, -1, 0), c(0.5, -0.5, 0), c(3, -3, 0))
+  ht.one <- roc.test(rocs, contrast = c(1, -1, 0))
+  for (position in 0:3) {
+    zero.row <- function(contrast) rbind(contrast[seq_len(position), , drop = FALSE], 0, contrast[seq_len(3) > position, , drop = FALSE])
+    expect_equal(roc.test(rocs, contrast = zero.row(full))[c("statistic", "parameter")], ht[c("statistic", "parameter")])
+    several <- roc.test(rocs, contrast = zero.row(one))
+    expect_equal(unname(several$statistic), unname(ht.one$statistic)^2)
+    expect_equal(several$parameter, c(df = 1))
+  }
+  # The confidence interval is on the scale of the contrast
+  expect_equal(as.numeric(roc.test(rocs, contrast = c(2, -2, 0))$conf.int), 2 * as.numeric(ht.one$conf.int))
+  expect_equal(as.numeric(roc.test(rocs, contrast = c(0.001, -0.001, 0))$conf.int), 0.001 * as.numeric(ht.one$conf.int))
   for (scale in c(1e-200, 1e200)) {
     expect_equal(roc.test(rocs, contrast = scale * c(1, -1, 0))$statistic, roc.test(rocs, contrast = c(1, -1, 0))$statistic)
   }
@@ -910,6 +924,17 @@ test_that("roc.test with a list of curves handles degenerate cases", {
   one <- lapply(list(c(1, 2, 3, 4), c(1, 3, 2, 4), c(2, 1, 3, 4)), function(x) roc(c(0, 0, 0, 1), x, quiet = TRUE))
   expect_warning(expect_identical(roc.test(one)$p.value, NA_real_), "AUC == 1")
   expect_warning(expect_identical(roc.test(one, contrast = c(1, -1, 0))$p.value, NA_real_), "AUC == 1")
+  # ... unless no contrast uses that curve
+  unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  ht <- roc.test(list(r.s100b, unpaired, one[[1]]), contrast = c(1, -1, 0), paired = FALSE)
+  expect_equal(ht[c("statistic", "p.value", "conf.int")], roc.test(r.s100b, unpaired, paired = FALSE)[c("statistic", "p.value", "conf.int")])
+  # No bootstrap replicate: no variance either
+  for (rocs in list(list(r.s100b, r.ndka), list(r.s100b, r.ndka, r.wfns))) {
+    ht <- roc.test(rocs, method = "bootstrap", boot.n = 0, paired = TRUE, progress = FALSE)
+    expect_identical(unname(ht$statistic), NA_real_)
+    expect_identical(ht$p.value, NA_real_)
+    expect_true(all(is.na(cov(rocs, method = "bootstrap", boot.n = 0, paired = TRUE, progress = FALSE))))
+  }
 })
 
 test_that("roc.test with a list of curves refuses what it does not support", {
@@ -1123,4 +1148,21 @@ test_that("roc.test and cov with a list of curves pair them as two curves", {
   missing <- lapply(list(d$s100b, d$ndka, as.numeric(d$wfns)), function(x) roc(controls = x[good], cases = x[!good], quiet = TRUE))
   expect_error(roc.test(missing, paired = TRUE), "different missing values")
   expect_silent(roc.test(missing, paired = FALSE))
+  # ... in the same rows: the same observations, with or without a given response
+  d$ndka[which(good)[40]] <- aSAH$ndka[which(good)[40]]
+  d$ndka[which(good)[3]] <- NA
+  o <- order(!good)
+  given <- roc(as.numeric(!good)[o], d$s100b[o], levels = c(0, 1), direction = "<", quiet = TRUE)
+  same.rows <- list(given, roc(controls = d$ndka[good], cases = d$ndka[!good], direction = "<", quiet = TRUE))
+  ht <- roc.test(same.rows, paired = TRUE)
+  expect_identical(ht$method, "DeLong's test for 2 correlated ROC curves")
+  expect_equal(ht$p.value, roc.test(same.rows[[1]], same.rows[[2]], paired = TRUE)$p.value)
+  # A response missing in different rows: not the same observations either
+  y3 <- y4 <- as.numeric(!good)
+  y3[which(good)[3]] <- NA
+  y4[which(good)[4]] <- NA
+  shifted <- list(roc(y3, aSAH$s100b, levels = c(0, 1), direction = "<", quiet = TRUE), roc(y4, aSAH$ndka, levels = c(0, 1), direction = "<", quiet = TRUE))
+  unpairable <- "'paired = TRUE' cannot be applied to unpaired ROC curves."
+  expect_error(roc.test(shifted, paired = TRUE), unpairable, fixed = TRUE)
+  expect_error(roc.test(shifted[[1]], shifted[[2]], paired = TRUE), unpairable, fixed = TRUE)
 })
