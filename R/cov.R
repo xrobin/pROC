@@ -61,7 +61,6 @@ cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
   calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
   S <- calcs$S
   if (!x$paired) {
-    message("ROC curves are unpaired.")
     S[row(S) != col(S)] <- 0
   }
   if (boot.return && method == "bootstrap") {

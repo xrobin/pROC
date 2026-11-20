@@ -286,16 +286,16 @@ test_that("bootstrap cov with a list of smoothed curves works", {
 
 test_that("cov with a list of unpaired curves has no covariance", {
   rocs <- list(s100b = r.s100b, ndka = roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE), wfns = roc(aSAH$outcome[-(1:2)], aSAH$wfns[-(1:2)], quiet = TRUE))
-  expect_message(S <- cov(rocs), "ROC curves are unpaired.")
+  expect_message(S <- cov(rocs), "Setting paired: FALSE", fixed = TRUE)
   variances <- diag(vapply(rocs, var, numeric(1)))
   dimnames(variances) <- list(names(rocs), names(rocs))
   expect_equal(S, variances)
   # Paired curves treated as unpaired
   paired <- list(r.s100b, r.ndka, r.wfns)
-  expect_message(S <- cov(paired, paired = FALSE), "ROC curves are unpaired.")
+  expect_silent(S <- cov(paired, paired = FALSE))
   expect_equal(S, diag(diag(cov(paired))))
   set.seed(42)
-  expect_message(S <- cov(paired, paired = FALSE, method = "bootstrap", boot.n = 10, progress = FALSE), "ROC curves are unpaired.")
+  expect_silent(S <- cov(paired, paired = FALSE, method = "bootstrap", boot.n = 10, progress = FALSE))
   expect_equal(S[row(S) != col(S)], rep(0, 6))
   expect_error(cov(rocs, paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
 })
