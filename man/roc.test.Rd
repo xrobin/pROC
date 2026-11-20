@@ -8,7 +8,7 @@
 \alias{roc.test.smooth.roc}
 
 \title{
-  Compare two ROC curves
+  Compare two ROC curves, or test one
 }
 \description{
   This function compares two correlated (or paired) or uncorrelated (unpaired)
@@ -17,6 +17,8 @@
   curves are perfectly superposed. The sensitivity and specificity methods
   test if the sensitivity (respectively specificity) of the ROC curves are
   different at the given level of specificity (respectively sensitivity).
+  With a single ROC curve, its (partial) AUC is tested against the
+  absence of discrimination.
   Several syntaxes are available: two object of class roc (which can be AUC
   or smoothed ROC), or either three vectors (response, predictor1, predictor2)
   or a response vector and a matrix or data.frame with two columns
@@ -41,6 +43,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{roc1, roc2}{the two ROC curves to compare. Either
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed).
+	If \code{roc2} is omitted, \code{roc1} is tested alone (see the
+	\dQuote{Test of one ROC curve} section).
   }
   \item{response}{a vector or factor, as for the \link{roc} function.
     The default and formula methods, which build the curves, are
@@ -49,9 +53,11 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{predictor1}{a numeric or ordered vector as for the \link{roc} function, or
   a matrix or data.frame with predictors two columns.}
   \item{predictor2}{only if predictor1 was a vector, the second
-    predictor as a numeric vector.
+    predictor as a numeric vector. If omitted, \code{predictor1}
+    is tested alone.
   }
-  \item{formula}{a formula of the type response~predictor1+predictor2.
+  \item{formula}{a formula of the type response~predictor1+predictor2,
+    or response~predictor to test one curve.
   	Additional arguments  \code{data}, \code{subset} and \code{na.action}
 	 are supported, see \code{\link{model.frame}} for more details.
   }
@@ -191,6 +197,31 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   be performed and an error is issued.
 }
 
+\section{Test of one ROC curve}{
+  With a single curve, the null hypothesis is the absence of
+  discrimination: an AUC of 0.5 (50 with \code{percent=TRUE}), or for a
+  partial AUC the area under the diagonal in the same region (0.5 if
+  \code{partial.auc.correct=TRUE}). The statistic
+  \deqn{Z=\frac{AUC-AUC_0}{s}}{Z=(AUC-AUC0)/s}
+  is compared to the normal distribution, where \var{s} is the standard
+  deviation of the AUC given by \code{\link[=var.roc]{var}} with the
+  same \code{method}: \dQuote{delong} (DeLong \emph{et al.}, 1988), or
+  \dQuote{bootstrap}, the default for partial AUC and smoothed curves,
+  where the statistic is named \var{D}. The other methods require two
+  curves.
+
+  The confidence interval is \eqn{AUC \pm z s}{AUC +/- z s}, so that it
+  agrees with the p-value. It is not the interval of
+  \code{\link{ci.auc}}, which is computed on the logit scale
+  (\code{method="delong"}) or from the percentiles of the bootstrap.
+
+  With \code{direction="auto"}, \code{\link{roc}} selects the direction
+  from the data, and a one-sided test is not valid: set the
+  \code{direction} explicitly for a one-sided test.
+
+  An AUC of 0 or 1 has a null variance: the statistic is infinite.
+}
+
 \section{AUC specification}{
   For a partial AUC, pass an \code{auc} object from \code{\link{auc}}
   instead of a curve. With a curve, the \dQuote{auc} field of the curve is
@@ -228,8 +259,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 
   With \code{method="delong"}, the processing is done as described in
   DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
-  of Sun and Xu (2014). Only comparison of
-  two ROC curves is implemented. For unpaired ROC curves, the statistic
+  of Sun and Xu (2014). No more than
+  two ROC curves can be compared. For unpaired ROC curves, the statistic
   \deqn{
     D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
@@ -298,9 +329,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 \section{Errors}{
   An error will also occur if you give a \code{predictor2} when
   \code{predictor1} is a \code{\link{matrix}} or a
-  \code{\link{data.frame}}, if \code{predictor1} has more than two
-  columns, or if you do not give a \code{predictor2} when
-  \code{predictor1} is a vector.
+  \code{\link{data.frame}}, or if \code{predictor1} does not have two
+  columns.
   
   If one of the ROC curves was smoothed with numeric
   \code{density.controls} and \code{density.cases}, an error is issued.
@@ -323,11 +353,12 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   A list of class "htest" with following content:
   \item{p.value}{the p-value of the test.}
   \item{statistic}{the value of the Z (\code{method="delong"}, paired
-    curves), D (\code{method="delong"} with unpaired curves,
+    curves or one curve), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
   }
-  \item{conf.int}{the confidence interval of the difference tested
+  \item{conf.int}{the confidence interval of the difference tested,
+    or of the AUC of one curve
     (not returned with \code{method="venkatraman"}). Has an attribute \code{conf.level} specifying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{a character string describing the test, such as
@@ -337,15 +368,17 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     \code{method="bootstrap"} with unpaired curves).
   }
   \item{null.value}{the expected value of the statistic under the null
-    hypothesis, that is 0.}
-  \item{estimate}{the AUC of the two ROC curves (with paired curves,
+    hypothesis, that is 0 for a difference (see the \dQuote{Test of one
+    ROC curve} section for one curve).}
+  \item{estimate}{the AUC of the ROC curves (with paired curves,
     the curves rebuilt on the observations complete in both, see
     Details), or the specificities (\code{method="sensitivity"}) or
     sensitivities (\code{method="specificity"}) of the two curves at
     the given value. Not returned with \code{method="venkatraman"}.}
   \item{data.name}{the names of the data that was used.}
   \item{roc1, roc2}{the two ROC curves that were compared (with paired
-    curves, rebuilt on the observations complete in both, see Details).}
+    curves, rebuilt on the observations complete in both, see Details).
+    Only \code{roc1} for one curve.}
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
@@ -417,6 +450,9 @@ roc.test(roc1, roc2, alternative = "less")
 
 # From an AUC, without smoothing
 roc.test(auc(roc1), roc2)
+
+# One curve: is the AUC different from 0.5?
+roc.test(roc1)
 
 # Force an unpaired test
 roc.test(roc1, roc2, paired = FALSE)

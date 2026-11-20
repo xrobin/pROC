@@ -153,10 +153,13 @@ auto-detects the direction (unless `quiet = TRUE`).
 
 ## Can I test if a single ROC curve is significantly different from 0.5?
 
+Yes, with `roc.test(roc1)`: without a second curve, it tests the (partial) AUC
+against the absence of discrimination, with the DeLong or bootstrap variance.
+
 The AUC is the probability that a randomly chosen case has a higher value than a
 randomly chosen control (counting ties as 1/2). The [Wilcoxon Rank Sum
 Test](https://www.rdocumentation.org/packages/stats/topics/wilcox.test) (also
-known as the Mann-Whitney U test) is the usual test for this: its statistic `W`
+known as the Mann-Whitney U test) is the usual alternative: its statistic `W`
 divided by the number of case-control pairs is the AUC (Hanley and McNeil, 1982).
 Note that its null hypothesis is that cases and controls have the same
 distribution. That implies an AUC of 0.5, but not the reverse: with different
