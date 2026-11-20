@@ -27,6 +27,7 @@
   * Added a ggplot2 screenshot gallery vignette
   * DeLong and bootstrap 'roc.test' now all return a 'conf.int' of the difference (issue #73)
   * 'roc.test' with a single ROC curve tests its (partial) AUC against the absence of discrimination (issue #39)
+    - 'power.roc.test' with a single ROC curve gives the power of this test, also for a partial AUC: results change
   * 'size' is deprecated in 'ggroc' and the ggplot2 line and polygon layers in favour of 'linewidth'
 
 1.19.1 (2026-08-27)
