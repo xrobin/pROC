@@ -233,7 +233,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     theta <- as.numeric(auc)
     Vtheta <- var_theta_obuchowski(theta, kappa)
 
-    ncases <- solve.nd(
+    ncases <- solve_nd(
       zalpha = qnorm(1 - sig.level),
       zbeta = qnorm(power),
       v0 = 0.0792 * (1 + 1 / kappa),
@@ -257,7 +257,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     theta <- as.numeric(auc)
     Vtheta <- var_theta_obuchowski(theta, kappa)
 
-    zbeta <- solve.zbeta(
+    zbeta <- solve_zbeta(
       nd = ncases,
       zalpha = qnorm(1 - sig.level),
       v0 = 0.0792 * (1 + 1 / kappa),
@@ -281,7 +281,7 @@ power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, 
     theta <- as.numeric(auc)
     Vtheta <- var_theta_obuchowski(theta, kappa)
 
-    zalpha <- solve.zalpha(
+    zalpha <- solve_zalpha(
       nd = ncases,
       zbeta = qnorm(power),
       v0 = 0.0792 * (1 + 1 / kappa),
@@ -444,7 +444,7 @@ ncases.obuchowski <- function(roc1, roc2, zalpha, zbeta, method, kappa, ...) {
   covvar <- covvar(roc1, roc2, method, kappa = kappa, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  nd <- solve.nd(
+  nd <- solve_nd(
     zalpha = zalpha,
     zbeta = zbeta,
     v0 = v0, va = va,
@@ -470,7 +470,7 @@ ncases.obuchowski.params <- function(parslist, zalpha, zbeta, kappa) {
   covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  nd <- solve.nd(
+  nd <- solve_nd(
     zalpha = zalpha,
     zbeta = zbeta,
     v0 = v0, va = va,
@@ -486,7 +486,7 @@ zalpha.obuchowski <- function(roc1, roc2, zbeta, method, ...) {
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  zalpha <- solve.zalpha(
+  zalpha <- solve_zalpha(
     nd = ncases,
     zbeta = zbeta,
     v0 = v0, va = va,
@@ -500,7 +500,7 @@ zalpha.obuchowski.params <- function(parslist, zbeta, ncases, kappa) {
   covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  zalpha <- solve.zalpha(
+  zalpha <- solve_zalpha(
     nd = ncases,
     zbeta = zbeta,
     v0 = v0, va = va,
@@ -516,7 +516,7 @@ zbeta.obuchowski <- function(roc1, roc2, zalpha, method, ...) {
   covvar <- covvar(roc1, roc2, method, ...)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  zbeta <- solve.zbeta(
+  zbeta <- solve_zbeta(
     nd = ncases,
     zalpha = zalpha,
     v0 = v0, va = va,
@@ -531,7 +531,7 @@ zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
   a <- va
-  zbeta <- solve.zbeta(
+  zbeta <- solve_zbeta(
     nd = ncases,
     zalpha = zalpha,
     v0 = v0, va = va,
@@ -540,7 +540,7 @@ zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
   return(zbeta)
 }
 
-solve.zbeta <- function(nd, zalpha, v0, va, delta) {
+solve_zbeta <- function(nd, zalpha, v0, va, delta) {
   # Solve for z_\beta in Obuchowski formula:
   # See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
   # or formula 2 in Obuchowski et al 2004 (1 ROC curve)
@@ -556,7 +556,7 @@ solve.zbeta <- function(nd, zalpha, v0, va, delta) {
   return((sqrt(nd * delta^2) - zalpha * sqrt(v0)) / sqrt(va))
 }
 
-solve.nd <- function(zalpha, zbeta, v0, va, delta) {
+solve_nd <- function(zalpha, zbeta, v0, va, delta) {
   # Solve for number of diseased (abnormal) patients in Obuchowski formula:
   # See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
   # or formula 2 in Obuchowski et al 2004 (1 ROC curve)
@@ -569,7 +569,7 @@ solve.nd <- function(zalpha, zbeta, v0, va, delta) {
   return((zalpha * sqrt(v0) + zbeta * sqrt(va))^2 / delta^2)
 }
 
-solve.zalpha <- function(nd, zbeta, v0, va, delta) {
+solve_zalpha <- function(nd, zbeta, v0, va, delta) {
   # Solve for z_\alpha in Obuchowski formula:
   # See formula 2 in Obuchowsk & McClish 1997  (2 ROC curves)
   # or formula 2 in Obuchowski et al 2004 (1 ROC curve)
