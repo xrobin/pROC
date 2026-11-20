@@ -1163,10 +1163,7 @@ roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitiv
 # - rocs: the empirical curves, carrying the AUC specifications;
 # - smoothing.args: the smoothing.args of the smoothed curves, NULL for the others;
 # - curves: the curves as they are tested, smoothed again if they were;
-# - paired: whether the curves are tested as paired. As for two curves
-#   (roc_utils_paired), 'paired = NULL' detects it with are.paired(), TRUE
-#   requires it and FALSE treats the curves as unpaired. Curves of which only
-#   some are paired are unpaired.
+# - paired: whether the curves are tested as paired (roc_utils_paired_list).
 # 'what' completes the error for a smoothing that cannot be replayed.
 roc_utils_list_rocs <- function(rocs, paired, what) {
   if (length(rocs) < 2) {
@@ -1202,21 +1199,10 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
       curves[[i]]$call <- smooth.call
     }
   }
-  if (is.null(paired) || paired) {
-    pairs <- unlist(lapply(seq_along(rocs)[-1], function(j) {
-      vapply(seq_len(j - 1), function(i) are.paired(rocs[[i]], rocs[[j]]), logical(1))
-    }))
-    if (!is.null(paired) && !all(pairs)) {
-      stop("'paired = TRUE' cannot be applied to unpaired ROC curves.")
-    }
-    if (any(pairs) && !all(pairs)) {
-      warning("Only some of the ROC curves are paired: they are all treated as unpaired.")
-    }
-    paired <- all(pairs)
-  }
+  paired <- roc_utils_paired_list(rocs, paired)
   if (paired) {
     for (roc in rocs[-1]) {
-      if (!identical(unname(rocs[[1]]$response), unname(roc$response))) {
+      if (!roc_utils_same_observations(rocs[[1]], roc)) {
         stop("The ROC curves have different missing values. Build them on the observations complete in all the predictors.")
       }
     }

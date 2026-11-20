@@ -1082,3 +1082,45 @@ test_that("roc.test with a list of two unpaired curves is the two-curve test", {
     }
   }
 })
+
+test_that("roc.test and cov with a list of curves pair them as two curves", {
+  good <- aSAH$outcome == "Good"
+  rocs <- list(r.s100b, r.ndka, r.wfns.num)
+  cc <- lapply(list(aSAH$s100b, aSAH$ndka, as.numeric(aSAH$wfns)), function(x) roc(controls = x[good], cases = x[!good], quiet = TRUE))
+  unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  paired.method <- "DeLong's test for 3 correlated ROC curves"
+  unpaired.method <- "DeLong's test for 3 ROC curves"
+  # The detection is told
+  expect_message(ht <- roc.test(rocs), "Setting paired: TRUE", fixed = TRUE)
+  expect_identical(ht$method, paired.method)
+  expect_message(cov(rocs), "Setting paired: TRUE", fixed = TRUE)
+  different <- list(r.s100b, unpaired, roc(aSAH$outcome[-(1:2)], aSAH$wfns[-(1:2)], quiet = TRUE))
+  expect_message(t <- roc.test(different), "Setting paired: FALSE", fixed = TRUE)
+  expect_identical(t$method, unpaired.method)
+  # Explicit choices are silent
+  expect_silent(expect_identical(roc.test(rocs, paired = TRUE)$method, paired.method))
+  expect_silent(expect_identical(roc.test(rocs, paired = FALSE)$method, unpaired.method))
+  expect_silent(cov(rocs, paired = TRUE))
+  # Curves built from controls and cases are not paired automatically
+  msg <- "ROC curves built from 'controls' and 'cases' are not paired automatically."
+  expect_warning(t <- roc.test(cc), msg, fixed = TRUE)
+  expect_identical(t$method, unpaired.method)
+  expect_warning(S <- cov(cc), msg, fixed = TRUE)
+  expect_equal(S[row(S) != col(S)], rep(0, 6))
+  expect_silent(t <- roc.test(cc, paired = TRUE))
+  expect_equal(t[c("statistic", "parameter", "p.value")], ht[c("statistic", "parameter", "p.value")])
+  expect_silent(expect_equal(cov(cc, paired = TRUE), cov(rocs, paired = TRUE)))
+  expect_silent(expect_identical(roc.test(cc, paired = FALSE)$method, unpaired.method))
+  # ... nor with curves built from a response
+  some <- "Only some of the ROC curves are paired"
+  expect_warning(t <- roc.test(list(r.s100b, cc[[2]], cc[[3]])), some, fixed = TRUE)
+  expect_identical(t$method, unpaired.method)
+  expect_error(roc.test(list(r.s100b, cc[[2]], cc[[3]]), paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
+  # Missing values in different rows: not the same observations
+  d <- aSAH
+  d$s100b[which(good)[3]] <- NA
+  d$ndka[which(good)[40]] <- NA
+  missing <- lapply(list(d$s100b, d$ndka, as.numeric(d$wfns)), function(x) roc(controls = x[good], cases = x[!good], quiet = TRUE))
+  expect_error(roc.test(missing, paired = TRUE), "different missing values")
+  expect_silent(roc.test(missing, paired = FALSE))
+})
