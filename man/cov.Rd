@@ -93,7 +93,8 @@ cov(...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{cov.roc} when calling \code{cov},
     \code{cov.auc} or \code{cov.smooth.roc}. Arguments for
-    \code{\link{auc}} (if \code{reuse.auc=FALSE}).
+    \code{\link{auc}} (if \code{reuse.auc=FALSE}). With a list of
+    curves, the arguments listed for \code{x}.
   }
 }
 
@@ -105,9 +106,9 @@ cov(...)
   \dQuote{bootstrap} and \dQuote{obuchowski} (see \dQuote{Computational
   details} section below).
 
-  Paired curves with different missing values are re-paired as in
+  Two paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the covariance refers to the re-paired
-  curves.
+  curves. The curves of a list are not re-paired.
 
   The default is to use \dQuote{delong} method except with
   partial AUC and smoothed curves where \dQuote{bootstrap} is employed.

@@ -224,11 +224,18 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
 # that should be 0, for curves that rank the observations identically, comes
 # out as a rounding residue. They are set to 0 when they are within the
 # rounding error of their computation: 'tol' times the value their terms
-# would give without cancellation (absW: W before centring). The decomposition adds its own error:
-# relative to the largest sd for an sd, and for the d of a combination
-# without variance the error of its singular vector, the inverse of the
-# relative gap to the smallest sd.
+# would give without cancellation (absW: W before centring), plus the error
+# of the decomposition, relative to the largest sd or d.
 roc_test_contrasts <- function(L, theta, W, absW) {
+  # Only the curves that a contrast uses: the others cannot make it NA
+  used <- colSums(L != 0) > 0
+  if (!any(used)) {
+    return(list(d = rep(0, nrow(L)), sd = rep(0, nrow(L))))
+  }
+  L <- L[, used, drop = FALSE]
+  theta <- theta[used]
+  W <- W[, used, drop = FALSE]
+  absW <- absW[, used, drop = FALSE]
   if (anyNA(W)) {
     return(list(d = as.vector(L %*% theta), sd = rep(NA_real_, nrow(L))))
   }
@@ -254,10 +261,9 @@ roc_test_contrasts <- function(L, theta, W, absW) {
   U <- decomposition$v
   sd <- c(decomposition$d, rep(0, ncol(A) - length(decomposition$d)))
   d <- drop(crossprod(U, L %*% theta))
-  # ... and the error of the decomposition, relative to the largest sd
+  # ... and the error of the decomposition, relative to the largest sd and d
   sd[sd <= tol * (sqrt(colSums((absA %*% abs(U))^2)) + max(sd))] <- 0
-  gap <- if (any(sd > 0)) max(sd) / min(sd[sd > 0]) else 0
-  d[abs(d) <= tol * drop(crossprod(abs(U), absd)) * ifelse(sd == 0, 1 + gap, 1)] <- 0
+  d[abs(d) <= tol * (drop(crossprod(abs(U), absd)) + max(absd))] <- 0
   list(d = d, sd = sd)
 }
 

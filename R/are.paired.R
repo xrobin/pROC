@@ -154,7 +154,14 @@ roc_utils_same_observations <- function(roc1, roc2) {
     (isFALSE(roc2$response.given) && anyNA(roc2$original.predictor))
   same.missing <- !lost ||
     identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
-  identical(unname(roc1$response), unname(roc2$response)) && same.missing
+  if (identical(unname(roc1$response), unname(roc2$response)) && same.missing) {
+    return(TRUE)
+  }
+  # Only one curve has a given response, with its na.action: the same rows of
+  # the same data were dropped
+  identical(as.vector(roc1$response), as.vector(roc2$response)) &&
+    identical(unname(roc1$original.response), unname(roc2$original.response)) &&
+    identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
 }
 
 roc_utils_not_paired_automatically <- paste(
