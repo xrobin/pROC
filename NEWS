@@ -7,6 +7,7 @@
     - 'power.roc.test' takes an 'auc' object as its curve: pass 'as.numeric(auc)' for an expected AUC
     - Binormal smoothed curves hold 'binormal' (a, b) instead of the 'lm' 'model'
     - 'are.paired', 'roc.test', 'cov' and 'power.roc.test' no longer pair curves built from 'controls' and 'cases' automatically (pass 'paired = TRUE')
+    - 'power.roc.test' with a single ROC curve gives the power of 'roc.test'
   * Bumped dependencies to R >= 4.0.0, and ggplot2 >= 4.0.0
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations

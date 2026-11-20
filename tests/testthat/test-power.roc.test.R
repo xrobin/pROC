@@ -11,7 +11,21 @@ test_that("power.roc.test basic function", {
   expect_equal(res$ncases, length(r.s100b$cases))
   expect_equal(res$ncontrols, length(r.s100b$controls))
   expect_equal(res$sig.level, 0.05)
-  expect_equal(res$power, 0.9904833, tolerance = 0.000001)
+  expect_equal(res$power, 0.9941118, tolerance = 0.000001)
+  # The power of roc.test(r.s100b)
+  z <- unname(roc.test(r.s100b)$statistic)
+  expect_equal(res$power, pnorm(z - qnorm(0.975)))
+  expect_equal(power.roc.test(r.s100b, alternative = "one.sided")$power, pnorm(z - qnorm(0.95)))
+  # An AUC below 0.5
+  r.reversed <- roc(aSAH$outcome, aSAH$s100b, direction = ">", quiet = TRUE)
+  expect_equal(power.roc.test(r.reversed)$power, res$power)
+  # Each parameter is solved from the others
+  expect_equal(power.roc.test(r.s100b, power = res$power)$ncases, res$ncases)
+  expect_equal(power.roc.test(r.s100b, power = res$power, sig.level = NULL)$sig.level, 0.05)
+  # Obuchowski et al. (2004) on request
+  expect_equal(power.roc.test(r.s100b, method = "obuchowski")$power, 0.9904833, tolerance = 0.000001)
+  # As t.test(x, paired = TRUE)
+  expect_error(power.roc.test(r.s100b, paired = TRUE), "'roc2' is missing for paired test", fixed = TRUE)
 })
 
 test_that("power.roc.test with percent works", {
@@ -20,7 +34,7 @@ test_that("power.roc.test with percent works", {
   expect_equal(res$ncases, length(r.s100b$cases))
   expect_equal(res$ncontrols, length(r.s100b$controls))
   expect_equal(res$sig.level, 0.05)
-  expect_equal(res$power, 0.9904833, tolerance = 0.000001)
+  expect_equal(res$power, 0.9941118, tolerance = 0.000001)
 })
 
 test_that("power.roc.test with given auc function", {
@@ -274,13 +288,21 @@ test_that("power.roc.test returns correct results from litterature", {
 test_that("kappa works with a single ROC curve", {
   # kappa from data
   res <- power.roc.test(r.s100b, sig.level = 0.05, power = 0.9)
-  expect_equal(res$ncases, 23.5598674)
-  expect_equal(res$ncontrols, 41.3734257)
+  expect_equal(res$ncases, 21.4767358)
+  expect_equal(res$ncontrols, 37.7152434)
   expect_equal(res$ncases / res$ncontrols, length(r.s100b$cases) / length(r.s100b$controls))
   # set kappa
   res <- power.roc.test(r.s100b, sig.level = 0.05, power = 0.9, kappa = 1)
+  expect_equal(res$ncases, 24.9481547)
+  expect_equal(res$ncontrols, 24.9481547)
+  res <- power.roc.test(r.s100b, sig.level = 0.05, power = 0.9, kappa = 1, method = "obuchowski")
   expect_equal(res$ncases, 29.5697422)
   expect_equal(res$ncontrols, 29.5697422)
+  # The bootstrap variance cannot be computed for another kappa
+  expect_warning(
+    power.roc.test(r.s100b, power = 0.9, kappa = 1, method = "bootstrap", boot.n = 10),
+    "'kappa' cannot be taken into account in the variance"
+  )
 })
 
 
@@ -398,17 +420,24 @@ test_that("power.roc.test with binormal parameters requires all four FPR bounds"
   expect_error(power.roc.test(c(base, list(FPR11 = 0.2, FPR12 = 0, FPR21 = 0)), power = 0.8), "FPR22")
 })
 
-test_that("power.roc.test refuses a partial AUC with one ROC curve", {
-  expect_error(power.roc.test(r.s100b.partial), "only available for the full AUC")
-  expect_error(power.roc.test(r.s100b.partial, power = 0.9), "only available for the full AUC")
-  expect_error(power.roc.test(r.s100b.percent.partial1), "only available for the full AUC")
-  expect_error(
-    power.roc.test(r.s100b, reuse.auc = FALSE, partial.auc = c(1, 0.8)),
-    "only available for the full AUC"
-  )
-  # The auc object of a partial AUC, as a curve or as the 'auc' of the numeric method
-  expect_error(power.roc.test(r.s100b.partial$auc), "only available for the full AUC")
-  expect_error(power.roc.test(r.s100b.partial$auc, power = 0.9), "only available for the full AUC")
+test_that("power.roc.test bootstraps a partial AUC with one ROC curve", {
+  for (curve in list(r.s100b.partial, r.s100b.percent.partial1, r.s100b.partial$auc)) {
+    res <- power.roc.test(curve, boot.n = 10)
+    expect_true(res$power >= 0 && res$power <= 1)
+  }
+  expect_true(power.roc.test(r.s100b.partial, power = 0.9, boot.n = 10)$ncases >= 0)
+  # The power of roc.test, against the area under the diagonal
+  for (curve in list(r.s100b.partial, r.s100b.partial2, r.s100b.percent.partial1)) {
+    set.seed(42)
+    z <- unname(roc.test(curve, boot.n = 10)$statistic)
+    set.seed(42)
+    expect_equal(power.roc.test(curve, boot.n = 10)$power, pnorm(abs(z) - qnorm(0.975)))
+  }
+  expect_true(power.roc.test(r.s100b, reuse.auc = FALSE, partial.auc = c(1, 0.8), boot.n = 10)$power <= 1)
+  # Obuchowski et al. (2004) is for the full AUC
+  expect_error(power.roc.test(r.s100b.partial, method = "obuchowski"), "only available for the full AUC")
+  expect_error(power.roc.test(r.s100b.partial$auc, power = 0.9, method = "obuchowski"), "only available for the full AUC")
+  # The auc object of a partial AUC as the 'auc' of the numeric method
   expect_error(power.roc.test(ncases = 41, ncontrols = 72, auc = r.s100b.partial$auc), "only available for the full AUC")
   expect_error(power.roc.test(power = 0.9, auc = r.s100b.percent.partial1$auc), "only available for the full AUC")
   expect_error(power.roc.test(power = 0.9, auc = auc(r.s100b, partial.auc = c(1, 0.8))), "only available for the full AUC")
@@ -423,7 +452,7 @@ test_that("power.roc.test refuses a partial AUC with one ROC curve", {
     power.roc.test(auc = as.numeric(r.s100b$auc), power = 0.9)$ncases
   )
   expect_equal(
-    power.roc.test(r.s100b, power = 0.9)$ncases,
+    power.roc.test(r.s100b, power = 0.9, method = "obuchowski")$ncases,
     power.roc.test(auc = as.numeric(r.s100b$auc), power = 0.9, kappa = 72 / 41)$ncases
   )
 })

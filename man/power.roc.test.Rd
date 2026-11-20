@@ -73,7 +73,9 @@ alternative = c("two.sided", "one.sided"), ...)
   \item{kappa}{
     expected balance between control and case observations. Must be
     positive. Only for sample size determination, that is to determine
-    \code{ncontrols} and \code{ncases}.
+    \code{ncontrols} and \code{ncases}. The bootstrap variance cannot be
+    computed for another balance than that of the curves: that one is
+    used, with a warning.
   }
   \item{alternative}{whether a one or two-sided test is performed.}
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
@@ -85,9 +87,10 @@ alternative = c("two.sided", "one.sided"), ...)
   \item{method}{the method to compute \link[=var.roc]{variance} and
     \link[=cov.roc]{covariance}, either \dQuote{delong},
     \dQuote{bootstrap} or \dQuote{obuchowski}. The first letter is
-    sufficient. Only for Two ROC curves power calculation. See
+    sufficient. See
     \code{\link{var}} and \code{\link{cov}} documentations for more
-    details. 
+    details, and the \dQuote{One ROC curve power calculation} section
+    for \dQuote{obuchowski} with one curve.
   }
   \item{paired}{\code{NULL} (default) to detect pairing with
     \code{\link{are.paired}}, \code{TRUE} to require curves that can be
@@ -107,18 +110,26 @@ alternative = c("two.sided", "one.sided"), ...)
   curve power calculation is performed. The function expects either
   \code{power}, \code{sig.level} or \code{auc}, or both \code{ncontrols}
   and \code{ncases} to be missing, so that the parameter is determined
-  from the others with the formula by Obuchowski \emph{et al.}, 2004 (formulas
-  2 and 3, p. 1123).
+  from the others.
 
-  For the sample size, \code{ncases} is computed directly from formulas
-  2 and 3 and ncontrols is deduced with \code{kappa} (defaults to the
-  ratio of controls to cases).
+  With a \code{roc} object from the \code{\link{roc}} function or an
+  \code{auc} object from the \code{\link{auc}} function, the power is
+  that of the test of one curve of \code{\link{roc.test}}: the
+  \code{\link[=var.roc]{variance}} of the (partial) AUC estimated from
+  the curve is used for both the significance and the power terms, as in
+  Jung (2024) for two curves. DeLong's method is used by default for the
+  full AUC and the bootstrap for partial AUCs. The AUC and the numbers
+  of cases and controls are those of the curve.
+
+  Without a ROC curve, or with \code{method="obuchowski"}, the formula
+  by Obuchowski \emph{et al.}, 2004 (formulas 2 and 3, p. 1123) is used.
+  It uses only the AUC and the number of patients, for the full AUC.
   AUC is optimized by \code{\link{uniroot}} while \code{sig.level}
   and \code{power} are solved as quadratic equations.
 
-  \code{power.roc.test} can also be passed a \code{roc} object from the \code{\link{roc}}
-  function or an \code{auc} object from the \code{\link{auc}} function, but the empirical ROC will not be used, only the number of
-  patients and the AUC. Only the full AUC is supported.
+  For the sample size, \code{ncontrols} is deduced from \code{ncases}
+  with \code{kappa} (defaults to the ratio of controls to cases of the
+  curve, and to 1 without a curve).
 }
 
 \section{Two paired ROC curves power calculation}{
@@ -222,10 +233,13 @@ roc2 <- roc(aSAH$outcome, aSAH$wfns)
 
 #### One ROC curve ####
 
-# Power
+# Power of roc.test(roc1)
 power.roc.test(roc1)
+
+# With the formula of Obuchowski et al. (2004)
+power.roc.test(roc1, method = "obuchowski")
 # Same as:
-power.roc.test(ncases = 41, ncontrols = 72, auc = 0.73)
+power.roc.test(ncases = 41, ncontrols = 72, auc = as.numeric(roc1$auc))
 
 # Sample size
 power.roc.test(roc1, power = 0.95)
