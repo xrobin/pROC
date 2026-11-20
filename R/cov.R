@@ -80,7 +80,6 @@ cov.roc <- function(roc1, roc2,
   # then determine whether the rocs are paired or not
   rocs.are.paired <- roc_utils_paired(roc1, roc2, paired)
   if (!rocs.are.paired) {
-    message("ROC curves are unpaired.")
     return(0)
   }
   # use the curves without the observations missing in either of them

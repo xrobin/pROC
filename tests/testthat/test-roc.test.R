@@ -690,31 +690,101 @@ test_that("one-sided paired DeLong tests return a one-sided conf.int", {
 })
 
 test_that("roc.test, cov and power.roc.test take the same 'paired' argument", {
-  # Independent samples, given as controls and cases of equal sizes: detected
-  # as paired (matched by position)
+  # Curves built from controls and cases of equal sizes can be paired (matched
+  # by position), but nothing tells that they hold the same patients
   set.seed(1)
   r1 <- roc(controls = rnorm(10), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
   r2 <- roc(controls = rnorm(10), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
-  expect_message(expect_identical(cov(r1, r2, paired = FALSE), 0), "ROC curves are unpaired.")
+  expect_false(are.paired(r1, r2))
+  # Explicit choices are silent
+  expect_silent(expect_identical(cov(r1, r2, paired = FALSE), 0))
   expect_error(power.roc.test(r1, r2, paired = FALSE), "cannot be applied to unpaired ROC curves yet")
-  expect_no_warning(t <- roc.test(r1, r2, paired = FALSE))
+  expect_silent(t <- roc.test(r1, r2, paired = FALSE))
   expect_equal(t$p.value, 0.3185433, tolerance = 1e-6)
-  # The defaults are unchanged
-  expect_equal(roc.test(r1, r2)$p.value, 0.3395865, tolerance = 1e-6)
-  expect_equal(cov(r1, r2), -0.0005869489, tolerance = 1e-6)
-  expect_equal(power.roc.test(r1, r2)$power, power.roc.test(r1, r2, paired = TRUE)$power)
-  # The same patients split by class: paired, as with the formula interface
+  expect_silent(t <- roc.test(r1, r2, paired = TRUE))
+  expect_equal(t$p.value, 0.3395865, tolerance = 1e-6)
+  expect_silent(expect_equal(cov(r1, r2, paired = TRUE), -0.0005869489, tolerance = 1e-6))
+  expect_silent(power.roc.test(r1, r2, paired = TRUE))
+  # Not paired automatically, with a warning
+  msg <- "ROC curves built from 'controls' and 'cases' are not paired automatically."
+  expect_warning(t <- roc.test(r1, r2), msg, fixed = TRUE)
+  expect_equal(t$p.value, 0.3185433, tolerance = 1e-6)
+  expect_warning(expect_identical(cov(r1, r2), 0), msg, fixed = TRUE)
+  expect_warning(expect_error(power.roc.test(r1, r2), "cannot be applied to unpaired ROC curves yet"), msg, fixed = TRUE)
+  expect_warning(expect_identical(cov(smooth(r1), auc(r2)), 0), msg, fixed = TRUE)
+  # The same patients split by class, as with the formula interface
   good <- aSAH$outcome == "Good"
   s1 <- roc(controls = aSAH$s100b[good], cases = aSAH$s100b[!good], quiet = TRUE)
   s2 <- roc(controls = aSAH$ndka[good], cases = aSAH$ndka[!good], quiet = TRUE)
-  expect_equal(roc.test(s1, s2)$p.value, 0.1642952, tolerance = 1e-6)
-  expect_equal(roc.test(s1, s2)$p.value, roc.test(outcome ~ s100b + ndka, aSAH)$p.value)
-  expect_equal(cov(s1, s2), -0.0007561649, tolerance = 1e-6)
-  expect_equal(cov(s1, s2), cov(r.s100b, r.ndka))
+  expect_equal(roc.test(s1, s2, paired = TRUE)$p.value, roc.test(outcome ~ s100b + ndka, aSAH, quiet = TRUE)$p.value)
+  expect_equal(cov(s1, s2, paired = TRUE), cov(r.s100b, r.ndka, paired = TRUE))
+  # ... on the observations present in both, as for curves built from a response
+  d <- aSAH
+  d$s100b[which(good)[3]] <- NA
+  d$ndka[which(good)[40]] <- NA
+  d$ndka[which(!good)[5]] <- NA
+  d$s100b[which(!good)[7]] <- NA
+  n1 <- roc(controls = d$s100b[good], cases = d$s100b[!good], quiet = TRUE)
+  n2 <- roc(controls = d$ndka[good], cases = d$ndka[!good], quiet = TRUE)
+  formula.test <- roc.test(outcome ~ s100b + ndka, d, quiet = TRUE)
+  t <- roc.test(n1, n2, paired = TRUE)
+  expect_equal(t$p.value, formula.test$p.value)
+  expect_equal(t$estimate, formula.test$estimate)
+  expect_equal(cov(n1, n2, paired = TRUE), cov(roc(d$outcome, d$s100b, quiet = TRUE), roc(d$outcome, d$ndka, quiet = TRUE), paired = TRUE))
+  expect_warning(roc.test(t$roc1, t$roc2), msg, fixed = TRUE)
+  # The curves keep track of how they were built
+  # (against a curve without the mark, which pairs with anything of its size)
+  old2 <- s2
+  old2$response.given <- NULL
+  for (curve in list(s1, smooth(s1), roc(controls = aSAH$s100b[good], cases = aSAH$s100b[!good], smooth = TRUE, quiet = TRUE), auc(s1))) {
+    expect_false(are.paired(curve, old2))
+    expect_false(are.paired(old2, curve))
+  }
+  p1 <- roc(controls = aSAH$s100b[good], cases = aSAH$s100b[!good], percent = TRUE, quiet = TRUE)
+  p2 <- roc(controls = aSAH$ndka[good], cases = aSAH$ndka[!good], percent = TRUE, quiet = TRUE)
+  expect_warning(expect_error(power.roc.test(p1, p2), "cannot be applied to unpaired ROC curves yet"), msg, fixed = TRUE)
+  expect_silent(power.roc.test(p1, p2, paired = TRUE))
+  # Curves saved by earlier versions have no mark
+  old1 <- s1
+  old1$response.given <- NULL
+  expect_message(t <- roc.test(old1, old2), "Setting paired: TRUE", fixed = TRUE)
+  # A curve without the mark that lost observations for another reason
+  k <- roc(controls = aSAH$s100b[good], cases = aSAH$s100b[!good], quiet = TRUE)
+  y <- c(rep(0, sum(good)), rep(1, sum(!good)))
+  m <- roc(c(y, 2), c(named = 5, aSAH$ndka[good], aSAH$ndka[!good])[c(2:114, 1)], levels = c(0, 1), direction = "<", quiet = TRUE)
+  t <- roc.test(k, m, paired = TRUE)
+  expect_equal(t$p.value, roc.test(s1, s2, paired = TRUE)$p.value)
+  expect_identical(t$roc1, k)
+  # A curve with a given response and one without
+  expect_message(expect_identical(cov(s1, r.ndka), 0), "Setting paired: FALSE", fixed = TRUE)
   # paired = TRUE on curves that cannot be paired
   r3 <- roc(controls = rnorm(12), cases = rnorm(15, 1), direction = "<", quiet = TRUE)
   msg <- "'paired = TRUE' cannot be applied to unpaired ROC curves."
   expect_error(roc.test(r1, r3, paired = TRUE), msg, fixed = TRUE)
   expect_error(cov(r1, r3, paired = TRUE), msg, fixed = TRUE)
   expect_error(power.roc.test(r1, r3, paired = TRUE), msg, fixed = TRUE)
+})
+
+test_that("roc.test, cov and power.roc.test tell the detected pairing", {
+  unpaired <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  expect_message(t <- roc.test(r.s100b, r.ndka), "Setting paired: TRUE", fixed = TRUE)
+  expect_identical(t$method, "DeLong's test for two correlated ROC curves")
+  expect_message(t <- roc.test(r.s100b, unpaired), "Setting paired: FALSE", fixed = TRUE)
+  expect_identical(t$method, "DeLong's test for two ROC curves")
+  expect_message(cov(r.s100b, r.ndka), "Setting paired: TRUE", fixed = TRUE)
+  expect_message(expect_identical(cov(r.s100b, unpaired), 0), "Setting paired: FALSE", fixed = TRUE)
+  expect_message(power.roc.test(r.s100b, r.ndka), "Setting paired: TRUE", fixed = TRUE)
+  # Not with an explicit choice, nor with curves built from one response
+  expect_silent(roc.test(r.s100b, r.ndka, paired = TRUE))
+  expect_silent(roc.test(r.s100b, r.ndka, paired = FALSE))
+  expect_silent(cov(r.s100b, r.ndka, paired = TRUE))
+  expect_silent(power.roc.test(r.s100b, r.ndka, paired = TRUE))
+  expect_silent(roc.test(aSAH$outcome, aSAH$s100b, aSAH$ndka, quiet = TRUE))
+  expect_silent(t <- roc.test(outcome ~ s100b + ndka, aSAH, quiet = TRUE, paired = FALSE))
+  expect_identical(t$method, "DeLong's test for two ROC curves")
+  predictors <- aSAH[c("s100b", "ndka")]
+  expect_silent(t <- roc.test(aSAH$outcome, predictors, quiet = TRUE, paired = FALSE))
+  expect_identical(t$method, "DeLong's test for two ROC curves")
+  expect_message(t <- roc.test(aSAH$outcome, predictors, quiet = TRUE, paired = NULL), "Setting paired: TRUE", fixed = TRUE)
+  expect_identical(t$method, "DeLong's test for two correlated ROC curves")
 })

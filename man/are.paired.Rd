@@ -9,7 +9,7 @@
   Are two ROC curves paired?
 }
 \description{
-  This function determines if two ROC curves can be paired.
+  This function detects if two ROC curves are paired.
 }
 \usage{
 are.paired(...)
@@ -51,9 +51,10 @@ are.paired(...)
   function will strip all \code{NA}s in both curves and check for
   identity again.
 
-  It can raise false positives if the responses are identical but correspond
-  to different patients, as with any two curves built with \code{controls}
-  and \code{cases} of equal sizes.
+  This only shows that the curves can be paired. It raises false
+  positives if the responses are identical but correspond to different
+  patients. Curves built with \code{controls} and \code{cases} have no
+  \code{response} to compare and are never detected as paired.
 }
 
 \value{
