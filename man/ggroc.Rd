@@ -12,6 +12,7 @@
   This function plots a ROC curve with ggplot2.
 }
 \usage{
+ggroc(data, ...)
 \S3method{ggroc}{roc}(data, legacy.axes = FALSE, ...)
 \S3method{ggroc}{smooth.roc}(data, legacy.axes = FALSE, ...)
 \S3method{ggroc}{list}(data, aes = c("colour", "alpha", "linetype", "linewidth", "group"),
