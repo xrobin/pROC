@@ -392,15 +392,6 @@ roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, 
   return(local.maximas)
 }
 
-detect.env.true <- function(x) {
-  value <- Sys.getenv(x)
-  if (value == "T" || value == "True" || value == "TRUE" || value == "true") {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
 # sort roc curve. Make sure specificities are increasing.
 sort_roc <- function(roc) {
   if (is.unsorted(roc$specificities, na.rm = TRUE)) {
@@ -485,10 +476,6 @@ roc_utils_match_coords_input_args <- function(x, threshold = TRUE) {
 # ... with an auc
 roc_utils_min_partial_auc_auc <- function(auc) {
   roc_utils_min_partial_auc(attr(auc, "partial.auc"), attr(auc, "percent"))
-}
-
-roc_utils_max_partial_auc_auc <- function(roc) {
-  roc_utils_max_partial_auc(attr(auc, "partial.auc"), attr(auc, "percent"))
 }
 
 # ... with partial.auc/percent
