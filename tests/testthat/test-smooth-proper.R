@@ -265,10 +265,17 @@ test_that("a single category is not smoothable", {
   )
 })
 
-test_that("a single interior point gives a proper curve through it", {
+test_that("a single interior point gives the symmetric proper curve through it", {
   r <- roc(controls = c(1, 1, 1, 2, 2), cases = c(1, 2, 2, 2, 2), quiet = TRUE)
-  s <- smooth(r, method = "proper")
+  # the curve through it is arbitrary: the symmetric one is returned
+  expect_warning(s <- smooth(r, method = "proper"), "A proper curve through a single point is arbitrary: the symmetric one (c = 0) is returned.", fixed = TRUE)
+  expect_identical(s$proper$c, 0)
   expect_true(all(diff(proper_slopes(s)) <= 0))
+  # through the point (FPF 2/5, TPF 4/5), with the AUC of Eq. 36 at c = 0
+  expect_equal(pROC:::proper_binormal_fpf(s$proper$cutpoints, s$proper$da, 0), 2 / 5)
+  expect_equal(pROC:::proper_binormal_tpf(s$proper$cutpoints, s$proper$da, 0), 4 / 5)
+  expect_equal(s$proper$da, qnorm(4 / 5) - qnorm(2 / 5))
+  expect_equal(as.numeric(auc(s)), pnorm(s$proper$da / sqrt(2)), tolerance = 1e-5)
   # the fit has the likelihood of the saturated model (the data are the
   # categories' observed proportions)
   k <- s$proper$categories$controls
@@ -279,7 +286,32 @@ test_that("a single interior point gives a proper curve through it", {
 test_that("bootstrap CI of a proper fit", {
   skip_slow()
   s <- proper.s100b
-  ci <- ci.auc(s, boot.n = 10)
+  ci <- ci.auc(s, method = "bootstrap", boot.n = 10)
   expect_is(ci, "ci.auc")
   expect_true(ci[1] <= ci[2] && ci[2] <= ci[3])
+})
+
+test_that("the fit is the chance line when no proper curve is better", {
+  # Empirical AUC below 0.5: the search stalls next to the chance line,
+  # where the log-likelihood has a cusp
+  r <- roc(controls = c(2, 4, 6, 8), cases = c(1, 3, 5, 7), direction = "<", quiet = TRUE)
+  s <- smooth(r, method = "proper")
+  expect_identical(s$proper[c("da", "c")], list(da = 0, c = 0))
+  k <- s$proper$categories$controls
+  l <- s$proper$categories$cases
+  p <- (k + l) / sum(k, l)
+  expect_equal(s$proper$logLik, sum(k * log(p)) + sum(l * log(p)))
+  expect_equal(pROC:::proper_binormal_loglik(s$proper$cutpoints, 0, 0, k, l), s$proper$logLik)
+  expect_equal(s$sensitivities, 1 - s$specificities)
+  expect_equal(as.numeric(auc(s)), 0.5)
+  # a curve above the chance line is not replaced
+  expect_gt(proper.s100b$proper$da, 0)
+})
+
+test_that("the starts of large data do not overflow", {
+  # 60000 x 60000 pairs of controls and cases exceed .Machine$integer.max
+  k <- c(20000L, 15000L, 12000L, 8000L, 5000L)
+  l <- rev(k)
+  expect_no_warning(starts <- pROC:::proper_binormal_isopleth_starts(k, l))
+  expect_true(all(is.finite(unlist(starts))))
 })
