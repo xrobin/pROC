@@ -16,6 +16,7 @@
   \code{\link{plot.ci.thresholds}}.
 }
 \usage{
+geom_errorbar_ci(data, ...)
 \S3method{geom_errorbar_ci}{ci.se}(data, mapping = NULL, ...)
 \S3method{geom_errorbar_ci}{ci.sp}(data, mapping = NULL, ...)
 \S3method{geom_errorbar_ci}{ci.thresholds}(data, mapping = NULL, ...)

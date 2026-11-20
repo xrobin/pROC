@@ -14,6 +14,7 @@
   \code{\link{plot.roc}(max.auc.polygon = TRUE)}.
 }
 \usage{
+geom_polygon_max_auc(data, ...)
 \S3method{geom_polygon_max_auc}{auc}(data, fill = NULL, colour = NA, mapping = NULL, ...)
 \S3method{geom_polygon_max_auc}{roc}(data, ...)
 \S3method{geom_polygon_max_auc}{smooth.roc}(data, ...)

@@ -13,6 +13,7 @@
   band, matching \code{\link{plot.ci}(type = "shape")}.
 }
 \usage{
+geom_polygon_ci(data, ...)
 \S3method{geom_polygon_ci}{ci.se}(data, fill = NULL, colour = NA, mapping = NULL, ...)
 \S3method{geom_polygon_ci}{ci.sp}(data, fill = NULL, colour = NA, mapping = NULL, ...)
 \S3method{geom_polygon_ci}{list}(data, ...)

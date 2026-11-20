@@ -12,6 +12,7 @@
   \code{\link{plot.roc}(identity = TRUE)}.
 }
 \usage{
+geom_roc_identity(data, ...)
 \S3method{geom_roc_identity}{roc}(data, colour = NULL, mapping = NULL, ...)
 \S3method{geom_roc_identity}{smooth.roc}(data, colour = NULL, mapping = NULL, ...)
 }

@@ -14,6 +14,7 @@
   Add an AUC (or partial AUC) label, matching \code{\link{plot.roc}(print.auc = TRUE)}.
 }
 \usage{
+geom_text_auc(data, ...)
 \S3method{geom_text_auc}{auc}(data, ci = NULL, x = NULL, y = NULL, pattern = NULL,
       hjust = 0, vjust = 1, mapping = NULL, ...)
 \S3method{geom_text_auc}{roc}(data, ci = NULL, ...)

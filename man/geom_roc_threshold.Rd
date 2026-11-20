@@ -14,6 +14,7 @@
   \code{\link{plot.roc}(print.thres = ...)}.
 }
 \usage{
+geom_roc_threshold(data, ...)
 \S3method{geom_roc_threshold}{roc}(data, thresholds = "best", pattern = NULL,
       hjust = -0.05, vjust = 1.25, size = 2,
       best.method = c("youden", "closest.topleft"), best.weights = c(1, 0.5),
