@@ -54,6 +54,40 @@ test_that("the weighted AUC is the weighted proportion of concordant pairs", {
   expect_equal(co$tn + co$fp, sum(w[controls]))
 })
 
+test_that("weights are used with percent, direction '>', ordered predictors and levels", {
+  manual.auc <- function(response, predictor, weights) {
+    cases <- which(response == "Poor")
+    controls <- which(response == "Good")
+    concordant <- outer(predictor[cases], predictor[controls], ">") + outer(predictor[cases], predictor[controls], "==") / 2
+    sum(concordant * outer(weights[cases], weights[controls])) / (sum(weights[cases]) * sum(weights[controls]))
+  }
+  expected <- manual.auc(aSAH$outcome, aSAH$s100b, w)
+  expect_equal(as.numeric(roc(aSAH$outcome, aSAH$s100b, weights = w, percent = TRUE, quiet = TRUE)$auc), 100 * expected)
+  expect_equal(as.numeric(roc(aSAH$outcome, -aSAH$s100b, weights = w, direction = ">", quiet = TRUE)$auc), expected)
+  expect_equal(as.numeric(roc(aSAH$outcome, aSAH$s100b, weights = w, levels = c("Poor", "Good"), direction = ">", quiet = TRUE)$auc), expected)
+  expect_equal(
+    as.numeric(roc(aSAH$outcome, aSAH$wfns, weights = w, quiet = TRUE)$auc),
+    manual.auc(aSAH$outcome, as.integer(aSAH$wfns), w)
+  )
+  # more than 2 response levels
+  expect_equal(
+    as.numeric(roc(aSAH$gos6, aSAH$s100b, weights = w, levels = c(5, 1), quiet = TRUE)$auc),
+    as.numeric(roc(aSAH$gos6[aSAH$gos6 %in% c(1, 5)], aSAH$s100b[aSAH$gos6 %in% c(1, 5)], weights = w[aSAH$gos6 %in% c(1, 5)], levels = c(5, 1), quiet = TRUE)$auc)
+  )
+  # the shortcuts pass them on
+  expect_equal(as.numeric(auc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)), expected)
+})
+
+test_that("integer, very large and very small weights build a curve", {
+  r <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
+  expect_identical(roc(aSAH$outcome, aSAH$s100b, weights = rep(30000000L, nrow(aSAH)), quiet = TRUE)$sensitivities, r$sensitivities)
+  tiny <- rep(1, nrow(aSAH))
+  tiny[7] <- 1e-17
+  r.tiny <- roc(aSAH$outcome, aSAH$ndka, weights = tiny, quiet = TRUE)
+  expect_equal(as.numeric(r.tiny$auc), as.numeric(roc(aSAH$outcome[-7], aSAH$ndka[-7], quiet = TRUE)$auc))
+  expect_error(roc(aSAH$outcome, aSAH$s100b, weights = rep(1e307, nrow(aSAH)), quiet = TRUE), "finite sum")
+})
+
 test_that("the weighted curve starts and ends exactly", {
   r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, percent = TRUE, quiet = TRUE)
   expect_identical(range(r.w$sensitivities), c(0, 100))
@@ -93,6 +127,7 @@ test_that("invalid weights are refused", {
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = -w, quiet = TRUE), "non-negative")
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = as.character(w), quiet = TRUE), "numeric")
   expect_error(roc(controls = 1:3, cases = 2:4, weights = rep(1, 6), quiet = TRUE), "response")
+  expect_error(roc(density.controls = dnorm(-3:3), density.cases = dnorm(-3:3, 1), weights = rep(1, 7)), "response")
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = as.numeric(aSAH$outcome == "Good"), quiet = TRUE), "No case observation")
 })
 
@@ -115,6 +150,20 @@ test_that("the bootstrap works with case weights", {
   expect_identical(dim(ci.sp(r.w, sensitivities = c(0.5, 0.9), boot.n = 10, progress = FALSE)), c(2L, 3L))
   expect_identical(dim(ci.coords(r.w, x = 0.2, ret = "tp", boot.n = 10, progress = FALSE)$tp), c(1L, 3L))
 
+  # the replicates are the weighted AUCs of the resamples
+  set.seed(42)
+  boot.var <- var(r.w, boot.n = 10, boot.stratified = FALSE, progress = FALSE)
+  set.seed(42)
+  expected.var <- var(replicate(10, {
+    idx <- sample.int(nrow(aSAH), replace = TRUE)
+    as.numeric(roc(aSAH$outcome[idx], aSAH$s100b[idx], weights = w[idx], levels = c("Good", "Poor"), direction = "<")$auc)
+  }))
+  expect_equal(boot.var, expected.var)
+  # ordered predictor
+  r.wo <- roc(aSAH$outcome, aSAH$wfns, weights = w, quiet = TRUE)
+  expect_identical(dim(ci.thresholds(r.wo, thresholds = c("2", "4"), boot.n = 10, progress = FALSE)$sensitivity), c(2L, 3L))
+  expect_false(is.unsorted(ci.auc(r.wo, boot.n = 10, progress = FALSE)))
+
   # two curves
   expect_true(are.paired(r.w, r.w2))
   expect_message(test <- roc.test(r.w, r.w2, boot.n = 10, progress = FALSE), "paired: TRUE")
@@ -123,6 +172,10 @@ test_that("the bootstrap works with case weights", {
   # the same resamples for both curves
   expect_identical(unname(roc.test(r.w, r.w, boot.n = 10, progress = FALSE, paired = TRUE)$statistic), 0)
   expect_match(roc.test(r.w, r.w2, paired = FALSE, boot.n = 10, progress = FALSE)$method, "Bootstrap")
+  # the default method removes the missing values with their weights
+  ndka.missing <- replace(aSAH$ndka, 3, NA)
+  test.na <- roc.test(aSAH$outcome, aSAH$s100b, ndka.missing, weights = w, boot.n = 10, progress = FALSE, quiet = TRUE)
+  expect_identical(test.na$roc2$weights, w[-3])
   expect_match(roc.test(r.w, r.w2, method = "specificity", specificity = 0.9, paired = TRUE, boot.n = 10, progress = FALSE)$method, "Specificity")
 })
 

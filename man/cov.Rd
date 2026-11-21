@@ -98,7 +98,8 @@ cov(...)
   curves.
 
   The default is to use \dQuote{delong} method except with
-  partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
+  partial AUC, smoothed curves and curves with case weights where
+  \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported.
 

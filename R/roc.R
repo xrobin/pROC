@@ -155,6 +155,9 @@ roc.default <- function(response, predictor,
   # Check arguments
   direction <- match.arg(direction)
   weights.controls <- weights.cases <- NULL
+  if (!is.null(weights) && (missing(response) || is.null(response) || missing(predictor) || is.null(predictor))) {
+    stop("'weights' need a 'response' and a 'predictor'.")
+  }
   # Response / Predictor
   # FALSE for curves built from 'controls' and 'cases', absent otherwise
   response.given <- NULL
@@ -210,8 +213,10 @@ roc.default <- function(response, predictor,
       if (!is.numeric(weights) || length(weights) != length(response)) {
         stop("'weights' must be a numeric vector of the same length as 'response'.")
       }
-      if (any(weights < 0 | is.infinite(weights), na.rm = TRUE)) {
-        stop("'weights' must be finite and non-negative.")
+      # as double: integer sums overflow
+      weights <- as.numeric(weights)
+      if (any(weights < 0, na.rm = TRUE) || is.infinite(sum(weights, na.rm = TRUE))) {
+        stop("'weights' must be non-negative, with a finite sum.")
       }
       if (smooth) {
         roc_utils_stop_if_weighted(list(weights = weights), "Smoothing")
@@ -367,9 +372,6 @@ roc.default <- function(response, predictor,
     return(smooth.roc)
   } else {
     stop("No valid data provided.")
-  }
-  if (!is.null(weights) && is.null(weights.controls)) {
-    stop("'weights' need a 'response' and a 'predictor'.")
   }
 
   if (direction == "auto") {

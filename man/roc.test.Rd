@@ -34,7 +34,7 @@ parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
-na.rm=TRUE, method=NULL, paired=TRUE, ...)
+na.rm=TRUE, method=NULL, paired=TRUE, ..., weights=NULL)
 }
 
 \arguments{
@@ -60,6 +60,7 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
   }
+  \item{weights}{case weights, see \code{\link{roc}}.}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
     two curves are built (only when \code{predictor1} and
@@ -153,7 +154,7 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   compares the the ROC curves themselves.
 
   Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
-  curves and curves with different \code{direction}, where \code{bootstrap}
+  curves, curves with case weights and curves with different \code{direction}, where \code{bootstrap}
   is used. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported in pROC and result in an error.
   It is spurious to use \dQuote{delong} for \code{\link{roc}} with different

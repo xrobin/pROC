@@ -148,7 +148,8 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     counts as its weight in the sensitivities and specificities, and in
     everything derived from them (AUC, \code{\link{coords}}, plots).
     With a \code{formula}, \code{weights} is evaluated in \code{data}
-    as in \code{\link{model.frame}}.
+    as in \code{\link{model.frame}}; with a \code{data.frame} it is a
+    vector, not the name of a column.
     Observations with a weight of 0 are not in the curve, and those with
     a missing weight are handled by \code{na.rm}. Only with
     \code{response} and \code{predictor}. See the \dQuote{Case weights}
@@ -255,11 +256,16 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \code{\link{var}}, \code{\link{cov}} and \code{\link{roc.test}}),
   where each observation is resampled together with its weight. This
   treats the weights as known properties of independent observations
-  (such as importance or inverse probability weights). It is not
-  appropriate for frequency weights (an observation with a weight of 3
-  is resampled as one observation, not three: replicate the rows
-  instead), for weights estimated from the same data, or for complex
-  survey designs.
+  (such as importance weights). It is not appropriate for frequency
+  weights (an observation with a weight of 3 is resampled as one
+  observation, not three: replicate the rows instead), for weights
+  estimated from the same data, or for complex survey designs.
+
+  With \code{direction="auto"}, the weighted medians are compared.
+  With weights that are not whole numbers, the ties of
+  \code{\link{coords}} (\dQuote{best}, \dQuote{local maximas} and the
+  matching of an input value to a point of the curve) are decided in
+  floating point.
 
   The DeLong, Obuchowski and Venkatraman methods, smoothing,
   \code{\link{power.roc.test}} and \code{\link{multiclass.roc}} are
