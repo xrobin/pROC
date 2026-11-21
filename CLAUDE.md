@@ -93,6 +93,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
   - A degenerate bootstrap replicate becomes NA, reported by the existing NA warning.
 - **P2:** no `grepl()` on condition messages, and no blanket `suppressWarnings()`, in code or tests.
 - **P3:** no floating-point tolerance as a fix; make values exact at the source, e.g. compute on integer counts.
+  - Known limit, not a bug to report again: the ties of `coords` ("best", "local maximas", an input value matching a point of the curve) are exact only on integer counts, i.e. unweighted curves or whole-number case weights, with the default `best.weights`. With fractional case weights, other `best.weights` or smoothed curves they are decided in floating point, so a tie can break differently, e.g. when all the weights are rescaled. It is documented in `coords.Rd` and `roc.Rd`.
 - **P4:** fix in one layer; helpers over copies.
 - **P5:** test hygiene, as in "Tests" and "Bootstrap tests" above.
 - **P6:** classes from packages pROC doesn't depend on (e.g. bit64's integer64) are out of scope.
