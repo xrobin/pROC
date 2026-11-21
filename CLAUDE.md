@@ -138,6 +138,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 
 ### Commits
 - **One commit holds code, tests, Rd and NEWS together.** Fold in-PR fix-ups into the commit that introduced the problem.
+  - Exception: don't amend and force-push a commit that was already pushed with an issue or PR number in its message, as every push adds a reference to that issue's history. Add a follow-up commit without the number instead.
 - **Commit messages: the subject line alone,** unless a body adds context the subject and the diff don't already show (e.g. the P7 source).
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
 
