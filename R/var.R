@@ -74,6 +74,9 @@ var.roc <- function(roc,
     } else if (inherits(roc, "smooth.roc")) {
       # smoothing: bootstrap
       method <- "bootstrap"
+    } else if (!is.null(roc$weights)) {
+      # case weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -102,6 +105,7 @@ var.roc <- function(roc,
     V <- delongPlacements(roc)
     var <- var(V$Y) / n + var(V$X) / m
   } else if (method == "obuchowski") {
+    roc_utils_stop_if_weighted(roc, "The Obuchowski method")
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   } else {
     var <- var_roc_bootstrap(roc, boot.n, boot.stratified, progress = progress, cl = cl, ...)

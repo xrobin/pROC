@@ -126,6 +126,7 @@ delong.paired.calculations <- function(roc1, roc2) {
 # Calls delongPlacementsCpp safely
 # Ensures that the theta value calculated is correct
 delongPlacements <- function(roc) {
+  roc_utils_stop_if_weighted(roc, "The DeLong method")
   if (roc_utils_is_ordered_roc(roc)) {
     roc$cases <- as.numeric(roc$cases)
     roc$controls <- as.numeric(roc$controls)

@@ -21,11 +21,11 @@ roc <- function(...) {
   UseMethod("roc")
 }
 
-roc.formula <- function(formula, data, ..., subset, na.action) {
+roc.formula <- function(formula, data, ..., subset, na.action, weights) {
   data.missing <- missing(data)
   roc.data <- roc_utils_extract_formula(formula, data, ...,
     data.missing = data.missing,
-    call = match.call()
+    call = match.call(), allow.weights = TRUE
   )
   response <- roc.data$response
   predictors <- roc.data$predictors
@@ -35,7 +35,7 @@ roc.formula <- function(formula, data, ..., subset, na.action) {
   }
 
   if (ncol(predictors) == 1) {
-    roc <- roc.default(response, predictors[, 1], ...)
+    roc <- roc.default(response, predictors[, 1], weights = roc.data$weights, ...)
     if (!roc_utils_is_curve(roc)) {
       return(roc) # NA or NaN: nothing to decorate
     }
@@ -43,7 +43,7 @@ roc.formula <- function(formula, data, ..., subset, na.action) {
   } else if (ncol(predictors) > 1) {
     roclist <- lapply(roc.data$predictor.names, function(predictor, formula, m.data, call, ...) {
       # Get one ROC
-      roc <- roc.default(response, m.data[[predictor]], ...)
+      roc <- roc.default(response, m.data[[predictor]], weights = roc.data$weights, ...)
       if (!roc_utils_is_curve(roc)) {
         return(roc) # NA or NaN: nothing to decorate
       }
@@ -148,10 +148,13 @@ roc.default <- function(response, predictor,
                         ci.method = NULL,
                         # capture density for smooth.roc here (do not pass to graphical functions)
                         density = NULL,
+                        # case weights
+                        weights = NULL,
                         # further arguments passed to plot, auc, ci, smooth.
                         ...) {
   # Check arguments
   direction <- match.arg(direction)
+  weights.controls <- weights.cases <- NULL
   # Response / Predictor
   # FALSE for curves built from 'controls' and 'cases', absent otherwise
   response.given <- NULL
@@ -167,6 +170,7 @@ roc.default <- function(response, predictor,
 
     original.predictor <- predictor # store a copy of the original predictor (before removing NA)
     original.response <- response # store a copy of the original response (before removing NAs / unused levels)
+    original.weights <- weights
 
     # A data.frame (e.g. one selected column) would fail in as.factor() for the levels
     if (is.list(response)) {
@@ -202,9 +206,23 @@ roc.default <- function(response, predictor,
     if (length(predictor) != length(response)) {
       stop("Response and predictor must be vectors of the same length.")
     }
+    if (!is.null(weights)) {
+      if (!is.numeric(weights) || length(weights) != length(response)) {
+        stop("'weights' must be a numeric vector of the same length as 'response'.")
+      }
+      if (any(weights < 0 | is.infinite(weights), na.rm = TRUE)) {
+        stop("'weights' must be finite and non-negative.")
+      }
+      if (smooth) {
+        roc_utils_stop_if_weighted(list(weights = weights), "Smoothing")
+      }
+    }
     # remove NAs if requested
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor)
+      if (!is.null(weights)) {
+        nas <- nas | is.na(weights)
+      }
       if (any(nas)) {
         na.action <- grep(TRUE, nas)
         class(na.action) <- "omit"
@@ -212,13 +230,16 @@ roc.default <- function(response, predictor,
         attr(response, "na.action") <- na.action
         predictor <- predictor[!nas]
         attr(predictor, "na.action") <- na.action
+        weights <- weights[!nas]
       }
     } else if (any(is.na(predictor[response %in% levels[1]])) ||
       any(is.na(predictor[response %in% levels[2]])) ||
-      any(is.na(response))) { # Unable to compute anything if there is any NA in the response or in the predictor data we want to consider !
+      any(is.na(response)) || anyNA(weights)) { # Unable to compute anything if there is any NA in the response or in the predictor data we want to consider !
       return(NA)
     }
-    splitted <- split(predictor, response)
+    # An observation with a weight of 0 is not in the curve
+    in.curve <- if (is.null(weights)) TRUE else weights > 0
+    splitted <- split(predictor[in.curve], response[in.curve])
     controls <- splitted[[as.character(levels[1])]]
     if (length(controls) == 0) {
       stop("No control observation.")
@@ -229,13 +250,19 @@ roc.default <- function(response, predictor,
     }
 
     # Remove patients not in levels
-    patients.in.levels <- response %in% levels
+    patients.in.levels <- response %in% levels & in.curve
     if (!all(patients.in.levels)) {
       na.action <- attr(response, "na.action") # dropped by [
       response <- response[patients.in.levels]
       attr(response, "na.action") <- na.action
       predictor <- predictor[patients.in.levels]
       attr(predictor, "na.action") <- na.action
+      weights <- weights[patients.in.levels]
+    }
+    if (!is.null(weights)) {
+      splitted <- split(weights, response)
+      weights.controls <- splitted[[as.character(levels[1])]]
+      weights.cases <- splitted[[as.character(levels[2])]]
     }
 
     # Check infinities
@@ -341,9 +368,12 @@ roc.default <- function(response, predictor,
   } else {
     stop("No valid data provided.")
   }
+  if (!is.null(weights) && is.null(weights.controls)) {
+    stop("'weights' need a 'response' and a 'predictor'.")
+  }
 
   if (direction == "auto") {
-    direction <- roc_utils_auto_direction(controls, cases)
+    direction <- roc_utils_auto_direction(controls, cases, weights.controls, weights.cases)
     ifelse(quiet, invisible, message)(sprintf("Setting direction: controls %s cases", direction))
   }
 
@@ -368,7 +398,8 @@ roc.default <- function(response, predictor,
     percent = percent,
     direction = direction,
     smooth = smooth, density.cases = density.cases, density.controls = density.controls, smooth.method = smooth.method, smooth.n = smooth.n,
-    auc, ...
+    auc, ...,
+    weights.controls = weights.controls, weights.cases = weights.cases
   )
 
   roc$call <- match.call()
@@ -391,6 +422,8 @@ roc.default <- function(response, predictor,
   roc$predictor <- predictor
   roc$response <- response
   roc$levels <- levels
+  roc$weights <- weights
+  roc$original.weights <- if (!is.null(weights)) original.weights
 
   if (auc) {
     attr(roc$auc, "roc") <- roc
@@ -410,7 +443,8 @@ roc.default <- function(response, predictor,
 }
 
 # Creates a ROC object from controls, cases, ... without argument checking. Not to be exposed to the end user
-roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.method, smooth.n, auc, ...) {
+roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.method, smooth.n, auc, ...,
+                            weights.controls = NULL, weights.cases = NULL) {
   # create the roc object
   roc <- list()
   class(roc) <- "roc"
@@ -418,7 +452,10 @@ roc_cc_nochecks <- function(controls, cases, percent, direction, smooth, smooth.
 
   # compute SE / SP
   thresholds <- roc_utils_thresholds(roc_utils_combine_predictor(controls, cases), direction)
-  perfs <- roc_utils_perfs_all(thresholds = thresholds, controls = controls, cases = cases, direction = direction, scale = ifelse(percent, 100, 1))
+  perfs <- roc_utils_perfs_all(
+    thresholds = thresholds, controls = controls, cases = cases, direction = direction, scale = ifelse(percent, 100, 1),
+    weights.controls = weights.controls, weights.cases = weights.cases
+  )
 
   se <- perfs$se
   sp <- perfs$sp

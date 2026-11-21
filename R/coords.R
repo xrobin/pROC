@@ -307,7 +307,11 @@ coords.roc <- function(roc,
         warning("No coordinates found, returning NULL. This is possibly caused by a too small partial AUC interval.")
         return(NULL)
       }
-      lm.idx <- roc_utils_max_thresholds_idx(thres, sp = sp, se = se, ncontrols = length(roc$controls), ncases = length(roc$cases), scale = ifelse(roc$percent, 100, 1))
+      lm.idx <- roc_utils_max_thresholds_idx(thres,
+        sp = sp, se = se,
+        ncontrols = roc_utils_class_sizes(roc)[["controls"]], ncases = roc_utils_class_sizes(roc)[["cases"]],
+        scale = ifelse(roc$percent, 100, 1), exact = roc_utils_has_counts(roc)
+      )
       res <- roc_utils_coords_basic(thres[lm.idx], sp[lm.idx], se[lm.idx])
     } else { # x == "best"
       # cheat: allow the user to pass "topleft"

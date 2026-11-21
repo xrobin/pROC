@@ -37,6 +37,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
                                reuse.auc = TRUE, method = c("delong", "bootstrap", "obuchowski"),
                                paired = NULL,
                                ...) {
+  roc_utils_stop_if_weighted(roc1, "power.roc.test")
   # Basic sanity checks
   if (!is.null(power) && (!roc_utils_is_single_number(power) || power < 0 || power > 1)) {
     stop("'power' must be a single number ranging from 0 to 1")
@@ -76,6 +77,7 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       roc2$auc <- auc2
     }
     if ("roc" %in% class(roc2)) {
+      roc_utils_stop_if_weighted(roc2, "power.roc.test")
       # check that the AUC of roc2 was computed, or do it now
       if (is.null(roc2$auc) | !reuse.auc) {
         roc2$auc <- auc(roc2, ...)

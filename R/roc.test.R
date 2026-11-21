@@ -210,6 +210,9 @@ roc.test.roc <- function(roc1, roc2,
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
+    } else if (!is.null(roc1$weights) || !is.null(roc2$weights)) {
+      # case weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -228,6 +231,8 @@ roc.test.roc <- function(roc1, roc2,
       }
 
     } else if (method == "venkatraman") {
+      roc_utils_stop_if_weighted(roc1, "Venkatraman's test")
+      roc_utils_stop_if_weighted(roc2, "Venkatraman's test")
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
       }
