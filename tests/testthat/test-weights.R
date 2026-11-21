@@ -200,18 +200,39 @@ test_that("the bootstrap works with case weights", {
   expect_match(roc.test(r.w, r.w2, method = "specificity", specificity = 0.9, paired = TRUE, boot.n = 10, progress = FALSE)$method, "Specificity")
 })
 
-test_that("curves with different missing or null weights are paired on their common observations", {
-  k2 <- k
-  k2[c(1, 3)] <- c(NA, 0)
-  r.w <- roc(aSAH$outcome, aSAH$s100b, weights = k, quiet = TRUE)
-  r.w2 <- roc(aSAH$outcome, aSAH$ndka, weights = k2, quiet = TRUE)
-  paired <- are.paired(r.w, r.w2, return.paired.rocs = TRUE)
+test_that("pairing requires identical weights", {
+  r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)
+  r.w2 <- roc(aSAH$outcome, aSAH$ndka, weights = rev(w), quiet = TRUE)
+  for (other in list(r.w2, r.ndka)) {
+    expect_identical(are.paired(r.w, other), FALSE)
+    expect_identical(are.paired(other, r.w, return.paired.rocs = TRUE), FALSE)
+    expect_warning(test <- roc.test(r.w, other, boot.n = 10, progress = FALSE), "different case weights")
+    expect_match(test$method, "two ROC curves")
+    expect_warning(expect_identical(cov(r.w, other, boot.n = 10, progress = FALSE), 0), "different case weights")
+    expect_error(roc.test(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
+    expect_error(cov(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
+    # asked for: no warning
+    expect_warning(roc.test(r.w, other, paired = FALSE, boot.n = 10, progress = FALSE), NA)
+  }
+  # the same weights as integer or double
+  expect_true(are.paired(
+    roc(aSAH$outcome, aSAH$s100b, weights = k, quiet = TRUE),
+    roc(aSAH$outcome, aSAH$ndka, weights = as.integer(k), quiet = TRUE)
+  ))
+})
+
+test_that("curves with the same weights are paired on their common observations", {
+  k.missing <- replace(k, 1, NA)
+  ndka.missing <- replace(aSAH$ndka, 4, NA)
+  r.k <- roc(aSAH$outcome, aSAH$s100b, weights = k.missing, quiet = TRUE)
+  r.k2 <- roc(aSAH$outcome, ndka.missing, weights = k.missing, quiet = TRUE)
+  paired <- are.paired(r.k, r.k2, return.paired.rocs = TRUE)
   expect_true(paired)
-  keep <- k > 0 & !is.na(k2) & k2 > 0
+  keep <- !is.na(k.missing) & k.missing > 0 & !is.na(ndka.missing)
   expect_identical(attr(paired, "roc1")$predictor, aSAH$s100b[keep])
   expect_identical(attr(paired, "roc2")$predictor, aSAH$ndka[keep])
   expect_identical(attr(paired, "roc1")$weights, k[keep])
-  expect_identical(attr(paired, "roc2")$weights, k2[keep])
+  expect_identical(attr(paired, "roc2")$weights, k[keep])
 })
 
 test_that("what has no weighted version is refused", {
@@ -222,10 +243,13 @@ test_that("what has no weighted version is refused", {
   expect_error(var(r.w, method = "obuchowski"), refused)
   expect_error(smooth(r.w), refused)
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = w, smooth = TRUE, quiet = TRUE), refused)
-  expect_error(roc.test(r.w, r.ndka, method = "delong", paired = TRUE), refused)
-  expect_error(roc.test(r.ndka, r.w, method = "venkatraman", paired = TRUE), refused)
-  expect_error(cov(r.w, r.ndka, method = "delong", paired = TRUE), refused)
-  expect_error(cov(r.ndka, r.w, method = "obuchowski", paired = TRUE), refused)
+  r.w2 <- roc(aSAH$outcome, aSAH$ndka, weights = w, quiet = TRUE)
+  expect_error(roc.test(r.w, r.w2, method = "delong", paired = TRUE), refused)
+  expect_error(roc.test(r.w, r.ndka, method = "delong", paired = FALSE), refused)
+  expect_error(roc.test(r.w2, r.w, method = "venkatraman", paired = TRUE), refused)
+  expect_error(roc.test(r.ndka, r.w, method = "venkatraman", paired = FALSE), refused)
+  expect_error(cov(r.w, r.w2, method = "delong", paired = TRUE), refused)
+  expect_error(cov(r.w2, r.w, method = "obuchowski", paired = TRUE), refused)
   expect_error(power.roc.test(r.w), refused)
   expect_error(power.roc.test(r.ndka, r.w), refused)
   expect_error(multiclass.roc(aSAH$gos6, aSAH$s100b, weights = w), "not implemented")

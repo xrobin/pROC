@@ -48,9 +48,9 @@ are.paired(...)
   In practice, the paired status is granted if the \code{response} and \code{levels} vector
   of both ROC curves are \link{identical}. If the \code{response}s are different, this can be
   due to missing values differing between the curves. In this case, the
-  function will strip all \code{NA}s in both curves (and the
-  observations with a missing or null case weight in either curve) and
-  check for identity again.
+  function will strip all \code{NA}s in both curves and check for
+  identity again. Curves with different case weights (see
+  \code{\link{roc}}) are not paired.
 
   This only shows that the curves can be paired. It raises false
   positives if the responses are identical but correspond to different

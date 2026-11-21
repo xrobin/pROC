@@ -258,8 +258,8 @@ weights = NULL)
   and tests are computed with the bootstrap (see \code{\link{ci}},
   \code{\link{var}}, \code{\link{cov}} and \code{\link{roc.test}}),
   where each observation is resampled together with its weight. This
-  treats the weights as known properties of independent observations
-  (such as importance weights). It is not appropriate for frequency
+  treats the weights as importance weights, known properties of
+  independent observations. It is not appropriate for frequency
   weights (an observation with a weight of 3 is resampled as one
   observation, not three: replicate the rows instead), for weights
   estimated from the same data, or for complex survey designs.
