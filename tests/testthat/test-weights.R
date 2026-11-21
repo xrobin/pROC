@@ -122,6 +122,25 @@ test_that("weights work with a formula, missing values and subset", {
   expect_error(auc(outcome ~ s100b, aSAH, weights = w), "weights are not supported")
 })
 
+test_that("weights are a column of a data.frame", {
+  aSAH.w <- aSAH
+  aSAH.w$w <- w
+  female <- aSAH.w[aSAH.w$gender == "Female", ]
+  expected <- roc(female$outcome, female$s100b, weights = female$w, quiet = TRUE)
+  expect_identical(roc(female, outcome, s100b, weights = w, quiet = TRUE)$sensitivities, expected$sensitivities)
+  expect_identical(roc(female, "outcome", "s100b", weights = "w", quiet = TRUE)$sensitivities, expected$sensitivities)
+  expect_identical(roc_(female, "outcome", "s100b", weights = "w", quiet = TRUE)$sensitivities, expected$sensitivities)
+  expect_identical(
+    roc(female, outcome, s100b, weights = w, ret = "coords", quiet = TRUE)$sensitivity,
+    coords(expected)$sensitivity
+  )
+  # not a vector from the calling environment
+  expect_error(roc_(aSAH, "outcome", "s100b", weights = "w", quiet = TRUE), "Column 'w' not present")
+  expect_error(roc_(aSAH, "outcome", "s100b", weights = w, quiet = TRUE), "not present")
+  expect_warning(expect_error(roc(aSAH, outcome, s100b, weights = w, quiet = TRUE), "Column 'w' not present"), "non-standard evaluation")
+  expect_null(roc(aSAH, outcome, s100b, weights = NULL, quiet = TRUE)$weights)
+})
+
 test_that("invalid weights are refused", {
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = w[-1], quiet = TRUE), "same length")
   expect_error(roc(aSAH$outcome, aSAH$s100b, weights = -w, quiet = TRUE), "non-negative")

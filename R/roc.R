@@ -62,7 +62,7 @@ roc.formula <- function(formula, data, ..., subset, na.action, weights) {
 
 roc.data.frame <- function(data, response, predictor,
                            ret = c("roc", "coords", "all_coords"),
-                           ...) {
+                           ..., weights = NULL) {
   ret <- match.arg(ret)
 
   if (is.character(substitute(response))) {
@@ -77,12 +77,20 @@ roc.data.frame <- function(data, response, predictor,
     predictor_name <- deparse(substitute(predictor))
   }
 
-  if (any(!c(response_name, predictor_name) %in% colnames(data))) {
+  if (is.null(substitute(weights))) {
+    weights_name <- NULL
+  } else if (is.character(substitute(weights))) {
+    weights_name <- weights
+  } else {
+    weights_name <- deparse(substitute(weights))
+  }
+
+  if (any(!c(response_name, predictor_name, weights_name) %in% colnames(data))) {
     # Some column is not in data. This could be a genuine error or the user not aware or NSE and wants to use roc_ instead
     warning("This method uses non-standard evaluation (NSE). Did you want to use the `roc_` function instead?")
   }
 
-  r <- roc_(data, response_name, predictor_name, ret = ret, ...)
+  r <- roc_(data, response_name, predictor_name, ret = ret, ..., weights = weights_name)
 
   if (ret == "roc" && roc_utils_is_curve(r)) {
     r <- roc_utils_set_call_names(r, match.call())
@@ -92,7 +100,7 @@ roc.data.frame <- function(data, response, predictor,
 
 roc_ <- function(data, response, predictor,
                  ret = c("roc", "coords", "all_coords"),
-                 ...) {
+                 ..., weights = NULL) {
   ret <- match.arg(ret)
 
   # Ensure the data contains the columns we need
@@ -110,7 +118,14 @@ roc_ <- function(data, response, predictor,
     stop(sprintf("Column '%s' not present in data %s", predictor, data_name))
   }
 
-  r <- roc(data[[response]], data[[predictor]], ...)
+  if (!is.null(weights)) {
+    if (!is.character(weights) || length(weights) != 1 || !weights %in% colnames(data)) {
+      stop(sprintf("Column '%s' not present in data %s", paste(format(weights), collapse = " "), data_name))
+    }
+    weights <- data[[weights]]
+  }
+
+  r <- roc(data[[response]], data[[predictor]], ..., weights = weights)
 
   if (!roc_utils_is_curve(r)) {
     return(r) # NA or NaN: no curve, no coordinates

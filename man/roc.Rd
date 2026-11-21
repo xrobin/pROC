@@ -20,14 +20,15 @@
 roc(...)
 \S3method{roc}{formula}(formula, data, ..., subset, na.action, weights)
 \S3method{roc}{data.frame}(data, response, predictor,
-ret = c("roc", "coords", "all_coords"), ...)
+ret = c("roc", "coords", "all_coords"), ..., weights = NULL)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
 direction=c("auto", "<", ">"), algorithm = 2, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
 smooth.n=512, ci.method=NULL, density=NULL, weights=NULL, ...)
-roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
+roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...,
+weights = NULL)
 }
 
 \arguments{
@@ -148,8 +149,10 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
     counts as its weight in the sensitivities and specificities, and in
     everything derived from them (AUC, \code{\link{coords}}, plots).
     With a \code{formula}, \code{weights} is evaluated in \code{data}
-    as in \code{\link{model.frame}}; with a \code{data.frame} it is a
-    vector, not the name of a column.
+    as in \code{\link{model.frame}}. If the first argument was a
+    \code{\link{data.frame}}, \code{weights} should be the name of the
+    column in \code{data} containing the weights, quoted or not as
+    \code{response}.
     Observations with a weight of 0 are not in the curve, and those with
     a missing weight are handled by \code{na.rm}. Only with
     \code{response} and \code{predictor}. See the \dQuote{Case weights}
