@@ -48,14 +48,14 @@ roc.test.formula <- function(formula, data, ..., subset, na.action) {
   return(testres)
 }
 
-roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, paired = TRUE, ...) {
+roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, paired = TRUE, ..., weights = NULL) {
   if (is.matrix(predictor1) | is.data.frame(predictor1)) {
     if (!is.null(predictor2)) {
       stop("Predictor2 must not be specified if predictor1 is a matrix or a data.frame.")
     }
     if (dim(predictor1)[2] == 2 & length(response) == dim(predictor1)[1]) {
-      roc1 <- roc(response, predictor1[, 1], ...)
-      roc2 <- roc(response, predictor1[, 2], ...)
+      roc1 <- roc(response, predictor1[, 1], ..., weights = weights)
+      roc2 <- roc(response, predictor1[, 2], ..., weights = weights)
       if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
         stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
       }
@@ -76,12 +76,16 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     # Need to remove NAs
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor1) | is.na(predictor2)
+      if (!is.null(weights) && length(weights) != length(response)) {
+        stop("'weights' must be a numeric vector of the same length as 'response'.")
+      }
+      weights <- weights[!nas]
       response <- response[!nas]
       predictor1 <- predictor1[!nas]
       predictor2 <- predictor2[!nas]
     }
-    roc1 <- roc(response, predictor1, ...)
-    roc2 <- roc(response, predictor2, ...)
+    roc1 <- roc(response, predictor1, ..., weights = weights)
+    roc2 <- roc(response, predictor2, ..., weights = weights)
     if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
       stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
     }
@@ -210,6 +214,9 @@ roc.test.roc <- function(roc1, roc2,
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
+    } else if (!is.null(roc1$weights) || !is.null(roc2$weights)) {
+      # case weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -228,6 +235,8 @@ roc.test.roc <- function(roc1, roc2,
       }
 
     } else if (method == "venkatraman") {
+      roc_utils_stop_if_weighted(roc1, "Venkatraman's test")
+      roc_utils_stop_if_weighted(roc2, "Venkatraman's test")
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Partial AUC is not supported for Venkatraman's test.")
       }

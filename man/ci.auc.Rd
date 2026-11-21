@@ -103,7 +103,8 @@ method = NULL)
   function is called to build the ROC curve first.
 
   The default is to use the \dQuote{delong} method, except for comparison of
-  partial AUC and smoothed curves, where \code{bootstrap} is used. Using
+  partial AUC, smoothed curves and curves with case weights, where
+  \code{bootstrap} is used. Using
   \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
   partial AUC it is an error, and smoothed curves are always bootstrapped
   (with a warning if \code{method="delong"}).

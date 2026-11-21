@@ -339,16 +339,23 @@ roc_utils_resample <- function(roc, stratified, idx = roc_utils_resample_idx(roc
       rep(roc$levels[1], length(controls)),
       rep(roc$levels[2], length(cases))
     )
+    # An observation is resampled with its weight
+    weights <- roc_utils_class_weights(roc)
+    weights <- c(weights$controls[idx$controls], weights$cases[idx$cases])
   } else {
     predictor <- roc$predictor[idx$observations]
     response <- roc$response[idx$observations]
+    weights <- roc$weights[idx$observations]
     # Subset rather than split(): a class missing from the resample must give
     # an empty vector of the predictor's type (split() gives NULL), so that
     # ordered predictors can still be combined and the replicate dropped
     controls <- predictor[response %in% roc$levels[1]]
     cases <- predictor[response %in% roc$levels[2]]
   }
-  list(controls = controls, cases = cases, predictor = predictor, response = response)
+  list(
+    controls = controls, cases = cases, predictor = predictor, response = response,
+    weights = weights, levels = roc$levels
+  )
 }
 
 # The ROC curve of a resample (roc_utils_resample()), with every field
@@ -359,17 +366,20 @@ roc_utils_resampled_roc <- function(roc, resampled) {
     roc_utils_combine_predictor(resampled$controls, resampled$cases),
     roc$direction
   )
+  weights <- roc_utils_class_weights(resampled)
   perfs <- roc_utils_perfs_all(
     thresholds = thresholds,
     controls = resampled$controls,
     cases = resampled$cases,
     direction = roc$direction,
-    scale = ifelse(roc$percent, 100, 1)
+    scale = ifelse(roc$percent, 100, 1),
+    weights.controls = weights$controls, weights.cases = weights$cases
   )
   roc$controls <- resampled$controls
   roc$cases <- resampled$cases
   roc$predictor <- resampled$predictor
   roc$response <- resampled$response
+  roc$weights <- resampled$weights
   roc$thresholds <- thresholds
   roc$sensitivities <- perfs$se
   roc$specificities <- perfs$sp
@@ -484,7 +494,8 @@ bootstrap.sp <- function(curve, se) {
 # SE and SP at given thresholds (ci.thresholds): on the resampled
 # observations, without building the whole curve
 bootstrap.thresholds <- function(resampled, thresholds, direction) {
-  roc_utils_perfs_each(thresholds, resampled$controls, resampled$cases, direction)
+  weights <- roc_utils_class_weights(resampled)
+  roc_utils_perfs_each(thresholds, resampled$controls, resampled$cases, direction, weights$controls, weights$cases)
 }
 
 # Coordinates (ci.coords). 'window' is the partial AUC range of a smoothed
@@ -504,7 +515,7 @@ bootstrap.coords <- function(curve, x, input, ret, best.method, best.weights,
   if (is.numeric(x) && input %in% c("tn", "fp", "tp", "fn")) {
     # A count above the class size of this resample: NA, as coords() gives for an NA x
     empirical <- if (methods::is(curve, "smooth.roc")) attr(curve, "roc") else curve
-    x[x > length(if (input %in% c("tn", "fp")) empirical$controls else empirical$cases)] <- NA
+    x[x > roc_utils_class_sizes(empirical)[[if (input %in% c("tn", "fp")) "controls" else "cases"]]] <- NA
   }
   res <- coords(curve,
     x = x, input = input, ret = ret,

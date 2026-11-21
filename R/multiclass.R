@@ -194,6 +194,11 @@ multiclass.roc.default <- function(response, predictor,
     stop("CI of a multiclass ROC curve not implemented")
   }
 
+  weights.given <- function(..., weights = NULL) !is.null(weights)
+  if (weights.given(...)) {
+    stop("Case weights of a multiclass ROC curve not implemented")
+  }
+
   # We need at least two levels in response
   if (length(unique(response[!is.na(response)])) < 2) {
     stop("'response' must have at least two levels")
