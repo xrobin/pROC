@@ -60,7 +60,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ..., weights=NULL)
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
   }
-  \item{weights}{case weights, see \code{\link{roc}}.}
+  \item{weights}{case weights, see \code{\link{roc}} (default method
+    only).}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
     two curves are built (only when \code{predictor1} and

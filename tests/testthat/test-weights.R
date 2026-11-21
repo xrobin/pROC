@@ -176,6 +176,8 @@ test_that("the bootstrap works with case weights", {
   ndka.missing <- replace(aSAH$ndka, 3, NA)
   test.na <- roc.test(aSAH$outcome, aSAH$s100b, ndka.missing, weights = w, boot.n = 10, progress = FALSE, quiet = TRUE)
   expect_identical(test.na$roc2$weights, w[-3])
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, ndka.missing, weights = w[-1], boot.n = 10, progress = FALSE, quiet = TRUE), "same length")
+  expect_error(roc.test(aSAH$outcome, aSAH$s100b, aSAH$ndka, weights = w[1:50], boot.n = 10, progress = FALSE, quiet = TRUE), "same length")
   expect_match(roc.test(r.w, r.w2, method = "specificity", specificity = 0.9, paired = TRUE, boot.n = 10, progress = FALSE)$method, "Specificity")
 })
 

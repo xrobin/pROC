@@ -76,6 +76,9 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     # Need to remove NAs
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor1) | is.na(predictor2)
+      if (!is.null(weights) && length(weights) != length(response)) {
+        stop("'weights' must be a numeric vector of the same length as 'response'.")
+      }
       weights <- weights[!nas]
       response <- response[!nas]
       predictor1 <- predictor1[!nas]
