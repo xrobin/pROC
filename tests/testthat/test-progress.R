@@ -60,7 +60,7 @@ test_that("every bootstrap entry point accepts progress", {
 
 test_that("smoothed bootstraps accept progress too", {
   s <- smooth(r.ndka)
-  expect_match(progress_output(ci.auc(s, boot.n = B, progress = TRUE)), "100%")
+  expect_match(progress_output(ci.auc(s, method = "bootstrap", boot.n = B, progress = TRUE)), "100%")
   expect_match(progress_output(ci.se(s, boot.n = B, progress = TRUE)), "100%")
 })
 

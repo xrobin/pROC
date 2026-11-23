@@ -13,10 +13,11 @@
 
 # Validation of the proper binormal fit
 
-This report checks `smooth(method = "proper")` (issue
-\#152) against the published results of the “proper” binormal model
-(PBM). It is maintainer-only: knit it from the package root with the
-version of pROC to check installed, and mvtnorm:
+This report checks `smooth(method = "proper")` (issue \#152), and the
+standard error of its AUC by the delta method (`var(method = "ml")`),
+against the published results of the “proper” binormal model (PBM). It
+is maintainer-only: knit it from the package root with the version of
+pROC to check installed, and mvtnorm:
 
 ``` r
 rmarkdown::render("tools/proper_binormal_validation.Rmd")
@@ -36,6 +37,8 @@ Sources:
   curves. *Acad Radiol* 14:814–829.
 - **Owen**: Owen DB (1956) Tables for computing bivariate normal
   probabilities. *Ann Math Stat* 27:1075–1090.
+- **Pepe**: Pepe MS (2003) *The Statistical Evaluation of Medical Tests
+  for Classification and Prediction*. Oxford University Press.
 
 ``` r
 library(pROC)
@@ -64,9 +67,9 @@ ls.auc <- function(r) {
 }
 c(pROC = as.character(packageVersion("pROC")), mvtnorm = as.character(packageVersion("mvtnorm")), R = R.version.string)
 #>                           pROC                        mvtnorm 
-#>                    "1.19.9999"                        "1.2.4" 
+#>                    "1.19.9999"                        "1.4.2" 
 #>                              R 
-#> "R version 4.3.3 (2024-02-29)"
+#> "R version 4.6.1 (2026-06-24)"
 ```
 
 ## AUC (M&P Eq. 36)
@@ -124,10 +127,11 @@ $y = -[(bx - a)^2 - x^2] / 2$, the decision variable of the PBM (M&P Eq.
 
 For each of the 9 population curves of Table 1, 2000 datasets of 50
 negative and 50 positive cases are fitted with `method = "proper"`, and,
-for comparison, with the least-squares binormal fit (`method = "binormal"` of
-pROC 1.19, `ls.auc()` above) and the empirical AUC. Data with perfect performance (see
-below) give the limit AUC = 1, which is kept in the means as an
-estimate, as PROPROC returns it; `perfect` counts them.
+for comparison, with the least-squares binormal fit
+(`method = "binormal"` of pROC 1.19, `ls.auc()` above) and the empirical
+AUC. Data with perfect performance (see below) give the limit AUC = 1,
+which is kept in the means as an estimate, as PROPROC returns it;
+`perfect` counts them.
 
 ``` r
 sim.pbm <- function(n, da, c) {
@@ -144,7 +148,9 @@ fit.auc <- function(d) {
     # perfect performance: the limit AUC = 1, without a log-likelihood
     perfect = !is.null(s) && is.na(s$proper$logLik),
     lm = ls.auc(r),
-    empirical = as.numeric(auc(r))
+    empirical = as.numeric(auc(r)),
+    # the delta method; 0 at perfect performance (var() warns)
+    se = if (is.null(s)) NA_real_ else if (is.na(s$proper$logLik)) 0 else sqrt(var(s))
   )
 }
 # P&M Tables 2-4 (pp. 826-827), 50 positive and 50 negative cases: mean AUC
@@ -184,6 +190,44 @@ knitr::kable(summary.continuous, digits = c(2, 0, 4, 4, 3, 4, 3, 0, 0, 1))
 | 0.95 | high      | 0.9576 | 0.0004 |     0.957 | 0.0187 |        0.018 |       1 |        0 | 1.5 |
 | 0.95 | medium    | 0.9515 | 0.0005 |     0.951 | 0.0213 |        0.021 |       0 |        0 | 1.0 |
 | 0.95 | symmetric | 0.9512 | 0.0004 |     0.951 | 0.0195 |        0.019 |       0 |        0 | 0.4 |
+
+### Standard error (delta method)
+
+`var()` and `ci.auc()` of the fit use the delta method on Eq. 36, with
+the inverse of the expected information, leaving out the eigenvector of
+the smallest eigenvalue if it is less than $10^{-6}$ times the next one
+(P&M p. 821). P&M Tables 2–4 give the mean of the estimated SEs (“SE^”)
+next to the empirical SD of the AUC estimates (50 + 50 cases):
+
+``` r
+published.se <- c(0.050, 0.051, 0.052, 0.033, 0.037, 0.037, 0.018, 0.021, 0.020)
+se.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
+  res <- continuous[[i]][!is.na(continuous[[i]][, "proper"]), , drop = FALSE]
+  data.frame(
+    auc = table1$auc[i], shape = table1$shape[i],
+    sd = sd(res[, "proper"]), published.sd = published$sd[i],
+    mean.se = mean(res[, "se"]), published.se = published.se[i], median.se = median(res[, "se"]),
+    # the 95% CI of ci.auc(): normal on the logit scale (Pepe p. 107)
+    coverage = mean(mapply(function(auc, se) {
+      ci <- pROC:::roc_utils_logit_ci(auc, se, 0.95)
+      ci[1] <= table1$auc[i] && table1$auc[i] <= ci[3]
+    }, res[, "proper"], res[, "se"]))
+  )
+}))
+knitr::kable(se.continuous, digits = c(2, 0, 4, 3, 4, 3, 4, 3))
+```
+
+|  auc | shape     |     sd | published.sd | mean.se | published.se | median.se | coverage |
+|-----:|:----------|-------:|-------------:|--------:|-------------:|----------:|---------:|
+| 0.60 | high      | 0.0483 |        0.049 |  0.0488 |        0.050 |    0.0458 |    0.950 |
+| 0.60 | medium    | 0.0511 |        0.050 |  0.0504 |        0.051 |    0.0520 |    0.950 |
+| 0.60 | symmetric | 0.0514 |        0.051 |  0.0510 |        0.052 |    0.0531 |    0.951 |
+| 0.85 | high      | 0.0336 |        0.034 |  0.0328 |        0.033 |    0.0325 |    0.946 |
+| 0.85 | medium    | 0.0380 |        0.038 |  0.0363 |        0.037 |    0.0365 |    0.948 |
+| 0.85 | symmetric | 0.0375 |        0.038 |  0.0367 |        0.037 |    0.0369 |    0.951 |
+| 0.95 | high      | 0.0187 |        0.018 |  0.0171 |        0.018 |    0.0173 |    0.957 |
+| 0.95 | medium    | 0.0213 |        0.021 |  0.0198 |        0.021 |    0.0199 |    0.950 |
+| 0.95 | symmetric | 0.0195 |        0.019 |  0.0197 |        0.020 |    0.0197 |    0.965 |
 
 ### Bias, and comparison with the least-squares fit
 
@@ -380,13 +424,13 @@ c(
 #>         da.below.0.01 
 #>                    10
 summary(proproc$ll.diff)
-#>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.       NA's 
-#> -0.0021358  0.0000000  0.0000000 -0.0000091  0.0000000  0.0000000          1
+#>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.        NAs 
+#> -2.136e-03 -2.036e-08  0.000e+00 -9.124e-06  0.000e+00  9.630e-09          1
 summary(abs(proproc$auc.diff))
 #>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-#> 0.000e+00 1.000e-08 5.000e-08 1.864e-04 1.200e-07 4.395e-02
+#> 0.000e+00 5.000e-09 4.500e-08 1.864e-04 1.190e-07 4.395e-02
 mean(proproc$auc.diff)
-#> [1] -0.000186341
+#> [1] -0.0001863328
 ```
 
 Eq. 36 (pROC’s AUC) at PROPROC’s own estimates, against PROPROC’s AUC:
@@ -441,6 +485,11 @@ into at most 10 or 20, which P&M found “biases the estimates in a
 complicated, almost unpredictable, way” (p. 817). What remains is a
 detail of the data generation that P&M do not give, or chance. The SDs
 agree with the published ones within 4%.
+
+**Standard error.** The mean SEs of the delta method are within 0.0012
+of P&M’s (rounded to 3 decimals), and within 9% of the empirical SDs.
+The coverage of the 95% CI (normal on the logit scale, Pepe p. 107)
+ranges from 0.946 to 0.965.
 
 **Bias.** The proper fit overestimates the AUC by up to 0.018, most at
 low AUC and high skew, like the published fits. P&M (pp. 825–826)

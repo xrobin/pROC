@@ -1086,7 +1086,7 @@ roc_utils_smooth_roc <- function(roc, smooth.method, smooth.n, ...,
 }
 
 # roc() for the default and formula methods of ci and ci.auc. Their ... also
-# holds the method of ci.auc ("delong" or "bootstrap"), which roc(smooth = TRUE)
+# holds the method of ci.auc ("delong", "bootstrap" or "ml"), which roc(smooth = TRUE)
 # would pass to smooth.roc as a second 'method' (BUG-166): capture it here.
 roc_utils_roc_ci <- function(response, predictor, ..., method) {
   roc.default(response, predictor, ...)
@@ -1157,4 +1157,30 @@ roc_utils_threshold_labels <- function(pattern, threshold, specificity, sensitiv
     }
   }
   sprintf(pattern, threshold, specificity, sensitivity)
+}
+
+# The ML method (var_roc_ml) applies to the full AUC ('auc', that of the
+# curve by default) of curves smoothed with method = "binormal" or "proper"
+# by pROC 1.20 or later, which keep the fit (smooth_roc_binormal_params:
+# curves of pROC 1.19 hold a least-squares model instead)
+roc_utils_has_ml <- function(roc, auc = roc$auc) {
+  inherits(roc, "smooth.roc") && !isTRUE(has.partial.auc.auc(auc)) && (!is.null(roc$binormal) || !is.null(roc$proper))
+}
+
+roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
+  if (!roc_utils_has_ml(roc, auc)) {
+    stop("The ML method is only supported for the full AUC of curves smoothed with method=\"binormal\" or \"proper\". Use method=\"bootstrap\" instead.")
+  }
+}
+
+# CI of an AUC with standard error sd, as (lower, AUC, upper): a normal
+# interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
+roc_utils_logit_ci <- function(auc, sd, conf.level) {
+  # sd == 0 (AUC of 0 or 1, or all values tied): no interval; the logit interval would be NaN.
+  # conf.level == 0: no interval either, and plogis(qlogis(auc)) can be 1 ulp off auc
+  if (sd == 0 || conf.level == 0) {
+    return(rep(auc, 3))
+  }
+  half <- qnorm(1 - (1 - conf.level) / 2) * sd / (auc * (1 - auc))
+  c(plogis(qlogis(auc) - half), auc, plogis(qlogis(auc) + half))
 }
