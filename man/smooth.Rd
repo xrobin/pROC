@@ -267,6 +267,11 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   likelihood is maximal only in the limit of an AUC of 1. As PROPROC,
   the curve is then this limit, \eqn{d_a = 0} and \eqn{c = 1}, with an
   AUC of 1, and a warning is issued.
+
+  A curve with a single point above the chance line (such as that of a
+  binary predictor) gives two rates for the three parameters of a proper
+  curve through it: the curve and its AUC are arbitrary. The symmetric
+  curve (\eqn{c = 0}{c = 0}) through the point is returned, with a warning.
 }
 
 \section{Errors}{

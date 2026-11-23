@@ -33,8 +33,8 @@ bootstrap.cases <- list(
   ci.auc.continuous  = quote(ci.auc(r.s100b, method = "bootstrap", boot.n = bootstrap.B)),
   ci.auc.partial     = quote(ci.auc(r.s100b.partial, method = "bootstrap", boot.n = bootstrap.B)),
   ci.auc.conflevel   = quote(ci.auc(r.s100b, method = "bootstrap", boot.n = bootstrap.B, conf.level = 0.90)),
-  ci.auc.smooth      = quote(ci.auc(smooth(r.ndka), boot.n = bootstrap.B)),
-  ci.auc.smooth.ns   = quote(ci.auc(smooth(r.ndka), boot.n = bootstrap.B, boot.stratified = FALSE)),
+  ci.auc.smooth      = quote(ci.auc(smooth(r.ndka), method = "bootstrap", boot.n = bootstrap.B)),
+  ci.auc.smooth.ns   = quote(ci.auc(smooth(r.ndka), method = "bootstrap", boot.n = bootstrap.B, boot.stratified = FALSE)),
 
   ## ---- ci.se / ci.sp --------------------------------------------------
   ci.se.strat        = quote(ci.se(r.s100b, specificities = c(0.1, 0.5, 0.9), boot.n = bootstrap.B)),
@@ -61,7 +61,7 @@ bootstrap.cases <- list(
   ## ---- var / cov ------------------------------------------------------
   var.boot           = quote(var(r.s100b, method = "bootstrap", boot.n = bootstrap.B)),
   var.boot.ns        = quote(var(r.s100b, method = "bootstrap", boot.n = bootstrap.B, boot.stratified = FALSE)),
-  var.boot.smooth    = quote(var(smooth(r.ndka), boot.n = bootstrap.B)),
+  var.boot.smooth    = quote(var(smooth(r.ndka), method = "bootstrap", boot.n = bootstrap.B)),
   cov.boot           = quote(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = bootstrap.B)),
   cov.boot.ns        = quote(cov(r.s100b, r.ndka, method = "bootstrap", boot.n = bootstrap.B, boot.stratified = FALSE)),
 

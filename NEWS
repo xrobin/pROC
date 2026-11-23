@@ -1,22 +1,26 @@
 1.19.9999 (development)
-  * 131 bugs fixed and 77 documentation and test problems corrected (https://xavier.robin.info/en/blog/2026/11/02/130-bugs-fixed-in-proc-1.20 and pr #148)
+  * 132 bugs fixed and 77 documentation and test problems corrected (https://xavier.robin.info/en/blog/2026/11/02/130-bugs-fixed-in-proc-1.20 and pr #148)
   * Breaking changes:
     - 'geom_polygon_auc' has no 'legacy.axes' argument
     - The formula methods of 'plot.roc' and 'lines.roc' take 'subset' and 'na.action' after '...'
     - The unpaired DeLong test of 'roc.test' no longer  returns a 'parameter'
     - 'power.roc.test' takes an 'auc' object as its curve: pass 'as.numeric(auc)' for an expected AUC
-    - Curves smoothed with 'method = "binormal"' hold the fit as 'binormal' (a, b) instead of the 'lm' 'model'
+    - Binormal smoothed curves hold 'binormal' (a, b) instead of the 'lm' 'model'
     - 'are.paired', 'roc.test', 'cov' and 'power.roc.test' no longer pair curves built from 'controls' and 'cases' automatically (pass 'paired = TRUE')
   * Bumped dependencies to R >= 4.0.0, and ggplot2 >= 4.0.0
   * Added case weights with the 'weights' argument of 'roc' (issue #96)
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations
   * Documented the justification of the stratified bootstrap (issue #131)
-  * Added maximum-likelihood fitting of "proper" binormal ROC curves with 'smooth(method = "proper")' (issue #152)
-  * 'smooth(method = "binormal")' fits the binormal model by maximum likelihood instead of least squares: smoothed curves, their AUC and their coordinates change
-  * More accurate AUC of 'logcondens' smoothed curves
-  * The "obuchowski" methods of 'var', 'cov' and 'power.roc.test' use the maximum-likelihood binormal parameters, as in Obuchowski and McClish (1997)
-  * The DeLong CI of the AUC is computed on the logit scale
+  * Smoothing:
+    - 'smooth(method = "binormal")' fits by maximum likelihood
+    - Added proper binormal curves with 'smooth(method = "proper")' (issue #152)
+    - More accurate AUC of 'logcondens' smoothed curves
+  * Variance, CIs and tests:
+    - Added the "ml" method to 'var', 'ci.auc' and unpaired 'roc.test' for binormal and proper smoothed curves
+    - The "obuchowski" methods of 'var', 'cov' and 'power.roc.test' use the maximum-likelihood binormal parameters
+    - The DeLong CI of the AUC is computed on the logit scale
+    - DeLong and bootstrap 'roc.test' return a 'conf.int' of the difference (issue #73)
   * Ordered predictors are no longer converted to numeric (issue #63, https://xavier.robin.info/en/blog/2026/10/06/breaking-changes-for-ordered-predictors-in-upcoming-proc-1.20.0). Thresholds are the levels plus an Inf sentinel; pass those labels (not numbers) to coords(), ci.thresholds(), ci.coords() and plot.roc(print.thres).
   * Added ggplot2 layers for 'ggroc' plots: 'geom_polygon_auc', 'geom_polygon_max_auc', 'geom_roc_identity', 'geom_text_auc', 'geom_roc_threshold', 'geom_polygon_ci', and 'geom_errorbar_ci' (issue #129)
   * All-in-one calls are superseded by modular calls, described in the new '?all_in_one_calls' help page (issues #70 and #149):
@@ -26,7 +30,6 @@
   * 'ggroc' now sets Specificity/Sensitivity axis labels like 'plot.roc'
   * 'ggroc' now uses 'coord_fixed()' like 'plot.roc(asp = 1)'. Add another coordinate system (for example 'coord_cartesian()') to replace it.
   * Added a ggplot2 screenshot gallery vignette
-  * DeLong and bootstrap 'roc.test' now all return a 'conf.int' of the difference (issue #73)
   * 'size' is deprecated in 'ggroc' and the ggplot2 line and polygon layers in favour of 'linewidth'
 
 1.19.1 (2026-08-27)

@@ -124,7 +124,7 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 roc.test.roc <- function(roc1, roc2,
-                         method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity"),
+                         method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity", "ml"),
                          sensitivity = NULL, specificity = NULL,
                          alternative = c("two.sided", "less", "greater"),
                          paired = NULL,
@@ -153,6 +153,8 @@ roc.test.roc <- function(roc1, roc2,
   roc_utils_warn_deprecated_parallel(parallel)
 
   # store which objects are smoothed, and how
+  input1 <- roc1
+  input2 <- roc2
   smoothing.args <- list()
   smooth1 <- methods::is(roc1, "smooth.roc")
   if (smooth1) {
@@ -208,8 +210,10 @@ roc.test.roc <- function(roc1, roc2,
     if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
+    } else if (!paired && roc_utils_has_ml(input1, roc1$auc) && roc_utils_has_ml(input2, roc2$auc)) {
+      method <- "ml"
     } else if (smooth1 || smooth2) {
-      # smoothing in one or both: bootstrap
+      # other smoothings in one or both, or paired: bootstrap
       method <- "bootstrap"
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
@@ -249,20 +253,31 @@ roc.test.roc <- function(roc1, roc2,
       if (alternative != "two.sided") {
         stop("Only two-sided tests are available for Venkatraman.")
       }
+    } else if (method == "ml") {
+      roc_utils_stop_if_no_ml(input1, roc1$auc)
+      roc_utils_stop_if_no_ml(input2, roc2$auc)
+      if (paired) {
+        stop("The ML method is not supported for paired ROC curves. Use method=\"bootstrap\" instead.")
+      }
     }
   }
 
-  # Prepare the return value htest
+  # The curves as tested: the smoothed ones fitted again (to the paired
+  # observations), with the AUC specification of the test
+  curve1 <- roc1
   if (smooth1) {
-    estimate <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)$auc
-  } else {
-    estimate <- roc1$auc
+    curve1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
+    # do.call() put the whole curve in the call: print the call of the input curve
+    curve1$call <- smooth.call1
   }
+  curve2 <- roc2
   if (smooth2) {
-    estimate <- c(estimate, roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)$auc)
-  } else {
-    estimate <- c(estimate, roc2$auc)
+    curve2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
+    curve2$call <- smooth.call2
   }
+
+  # Prepare the return value htest
+  estimate <- c(curve1$auc, curve2$auc)
   if (identical(attr(roc1$auc, "partial.auc"), FALSE)) {
     nest <- paste(ifelse(smooth1, "Smoothed ", ""), "AUC of roc1", sep = "")
   } else {
@@ -313,15 +328,22 @@ roc.test.roc <- function(roc1, roc2,
       # the placements are on the 0-1 scale, the estimates on 0-100
       htest$conf.int <- htest$conf.int * 100
     }
-
-    if (alternative == "two.sided") {
-      pval <- 2 * pnorm(-abs(stat))
-    } else if (alternative == "greater") {
-      pval <- pnorm(-stat)
-    } else {
-      pval <- pnorm(stat)
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
+  } else if (method == "ml") {
+    roc_test_check_conf_level(conf.level)
+    # The AUCs of independent samples: z = (AUC1 - AUC2) / sqrt(var1 + var2)
+    # (the test of D&A p. 494 for two independent estimates)
+    variances <- vapply(list(curve1, curve2), function(curve) var_roc_ml(curve) * ifelse(curve$percent, 100^2, 1), numeric(1))
+    variance <- variances[[1]] + variances[[2]]
+    d <- estimate[[1]] - estimate[[2]]
+    stat <- c(Z = d / sqrt(variance))
+    if (d == 0 && variance == 0) {
+      stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.test
     }
-    htest$p.value <- pval
+    htest$statistic <- stat
+    htest$conf.int <- roc_test_ci_normal(d, sqrt(variance), conf.level, alternative)
+    htest$method <- "Wald test for two binormal ROC curves"
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else if (method == "venkatraman") {
     boot.n <- roc_utils_check_boot_n(boot.n)
     if (paired) {
@@ -398,32 +420,26 @@ roc.test.roc <- function(roc1, roc2,
     names(parameter) <- c("boot.n", "boot.stratified")
     htest$parameter <- parameter
 
-    if (alternative == "two.sided") {
-      pval <- 2 * pnorm(-abs(stat))
-    } else if (alternative == "greater") {
-      pval <- pnorm(-stat)
-    } else {
-      pval <- pnorm(stat)
-    }
-    htest$p.value <- pval
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   }
 
-  htest$roc1 <- roc1
-  htest$roc2 <- roc2
+  htest$roc1 <- curve1
+  htest$roc2 <- curve2
   # Remove name from p value
   htest$p.value <- unname(htest$p.value)
-  # Restore smoothing if necessary
-  if (smooth1) {
-    htest$roc1 <- roc_utils_resmooth(roc1, smoothing.args$roc1, reuse.auc = TRUE)
-    # do.call() put the whole curve in the call: print the call of the input curve
-    htest$roc1$call <- smooth.call1
-  }
-  if (smooth2) {
-    htest$roc2 <- roc_utils_resmooth(roc2, smoothing.args$roc2, reuse.auc = TRUE)
-    # do.call() put the whole curve in the call: print the call of the input curve
-    htest$roc2$call <- smooth.call2
-  }
   return(htest)
+}
+
+# p-value of a statistic with a standard normal distribution under the null
+# hypothesis, for the alternative of roc.test
+roc_test_normal_pvalue <- function(stat, alternative) {
+  if (alternative == "two.sided") {
+    2 * pnorm(-abs(stat))
+  } else if (alternative == "greater") {
+    pnorm(-stat)
+  } else {
+    pnorm(stat)
+  }
 }
 
 # Checks conf.level for the tests that return a CI
