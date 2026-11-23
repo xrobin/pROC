@@ -39,6 +39,36 @@ cov.smooth.roc <- function(roc1, roc2, ...) {
   cov.roc(roc1, roc2, ...)
 }
 
+# Covariance matrix of the AUCs of a list of ROC curves. Other lists go
+# to stats::cov.
+cov.list <- function(x, ...) {
+  if (length(x) == 0 || !all(vapply(x, inherits, logical(1), c("roc", "smooth.roc", "auc")))) {
+    return(stats::cov(x, ...))
+  }
+  cov_roc_list(x, ...)
+}
+
+cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
+                         boot.n = 2000, boot.stratified = TRUE, boot.return = FALSE,
+                         progress = getOption("pROCProgress", interactive()),
+                         paired = NULL, cl = NULL, ...) {
+  chkDots(...)
+  x <- roc_utils_list_rocs(rocs, paired, "the covariance of")
+  method <- roc_utils_list_method(x, if (missing(method)) NULL else method, c("delong", "bootstrap"))
+  if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
+    warning("cov() of ROC curves with AUC == 1 is always 0 and can be misleading.")
+  }
+  calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
+  S <- calcs$S
+  if (!x$paired) {
+    S[row(S) != col(S)] <- 0
+  }
+  if (boot.return && method == "bootstrap") {
+    attr(S, "resampled.values") <- calcs$resampled.values
+  }
+  S
+}
+
 cov.roc <- function(roc1, roc2,
                     method = c("delong", "bootstrap", "obuchowski"),
                     reuse.auc = TRUE,
@@ -159,16 +189,7 @@ cov.roc <- function(roc1, roc2,
   }
 
   if (method == "delong") {
-    n <- length(roc1$controls)
-    m <- length(roc1$cases)
-
-    V1 <- delongPlacements(roc1)
-    var1 <- var(V1$Y) / n + var(V1$X) / m
-
-    V2 <- delongPlacements(roc2)
-    var2 <- var(V2$Y) / n + var(V2$X) / m
-
-    cov <- cov(V2$X, V1$X) / m + cov(V2$Y, V1$Y) / n
+    cov <- delong.cov(list(roc1, roc2))$S[1, 2]
 
     if (roc1$percent) {
       cov <- cov * (100^2)

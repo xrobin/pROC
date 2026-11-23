@@ -142,6 +142,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
   - Exception: don't amend and force-push a commit that was already pushed with an issue or PR number in its message, as every push adds a reference to that issue's history. Add a follow-up commit without the number instead.
 - **Commit messages: the subject line alone,** unless a body adds context the subject and the diff don't already show (e.g. the P7 source).
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
+- **No issue or PR number in a commit message** (`#12`, `issue #12`). GitHub adds a reference to the issue's timeline each time such a commit is pushed, again for each amended or rebased copy, and these cannot be removed. Cloud sessions push work in progress and rewrite it later, so one commit can leave many. Link the issue once, from the PR description. NEWS entries keep their `(issue #12)`.
 
 ### Working with the maintainer
 - **Every analysis of a bug starts by describing the bug:**

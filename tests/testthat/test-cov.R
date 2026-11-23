@@ -212,3 +212,90 @@ test_that("cov compares the smoothing arguments of the curves", {
   s1.col <- roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, col = "red", quiet = TRUE)
   expect_warning(cov(s1.col, s2, boot.n = 5), msg)
 })
+
+
+test_that("cov with a list of curves works", {
+  rocs <- list(s100b = r.s100b, ndka = r.ndka, wfns = r.wfns)
+  S <- cov(rocs)
+  expect_identical(dimnames(S), list(names(rocs), names(rocs)))
+  expect_equal(diag(S), vapply(rocs, var, numeric(1)))
+  expect_equal(S["s100b", "ndka"], cov(r.s100b, r.ndka))
+  expect_equal(S["wfns", "s100b"], cov(r.wfns, r.s100b))
+  expect_equal(S["ndka", "wfns"], cov(r.ndka, r.wfns))
+  expect_equal(unname(cov(list(auc(r.s100b), r.ndka, auc(r.wfns)))), unname(S))
+  expect_equal(unname(cov(list(r.s100b.percent, r.ndka.percent, r.wfns.percent))), unname(S) * 100^2)
+  expect_error(cov(list(r.s100b.partial, r.ndka.partial), method = "delong"), "not supported for partial AUC")
+  expect_error(cov(list(smooth(r.s100b), smooth(r.ndka)), method = "delong"), "not supported for smoothed ROCs")
+  expect_error(cov(rocs, method = "obuchowski"), "available for a list of ROC curves")
+  expect_no_warning(expect_equal(cov(rocs, method = "delong", paired = TRUE), S))
+  expect_warning(cov(list(r.s100b.percent, r.ndka)), "Different AUC specifications")
+})
+
+test_that("cov with other lists is stats::cov", {
+  df <- data.frame(a = 1:3, b = c(2, 4, 7))
+  expect_identical(cov(df), stats::cov(df))
+  expect_error(cov(list(1:3, 4:6)))
+})
+
+test_that("cov with a list of curves follows DeLong et al. (1988)", {
+  rocs <- list(r.s100b, r.ndka, r.wfns.num)
+  m <- length(r.s100b$cases)
+  n <- length(r.s100b$controls)
+  # The kernel (p. 839) and the X and Y components (p. 840)
+  psi <- function(x, y) (y < x) + (y == x) / 2
+  V10 <- sapply(rocs, function(r) rowMeans(outer(r$cases, r$controls, psi)))
+  V01 <- sapply(rocs, function(r) colMeans(outer(r$cases, r$controls, psi)))
+  theta <- colMeans(V10)
+  # S10 and S01 as computed in the example (p. 842)
+  S10 <- (crossprod(V10) - m * tcrossprod(theta)) / (m - 1)
+  S01 <- (crossprod(V01) - n * tcrossprod(theta)) / (n - 1)
+  expect_equal(cov(rocs), S10 / m + S01 / n)
+  # Eq. 5 (p. 841)
+  L <- rbind(c(1, -1, 0), c(1, 0, -1))
+  X2 <- theta %*% t(L) %*% solve(L %*% (S10 / m + S01 / n) %*% t(L)) %*% L %*% theta
+  expect_equal(unname(roc.test(rocs, contrast = L)$statistic), drop(X2))
+})
+
+test_that("bootstrap cov with a list of curves works", {
+  rocs <- list(s100b = r.s100b.partial, ndka = r.ndka.partial, wfns = r.wfns.partial)
+  set.seed(42)
+  S <- cov(rocs, boot.n = 20, boot.return = TRUE, progress = FALSE)
+  expect_identical(dimnames(S), list(names(rocs), names(rocs)))
+  resampled <- attr(S, "resampled.values")
+  expect_identical(dim(resampled), c(3L, 20L))
+  expect_equal(unname(S[1:3, 1:3]), stats::cov(t(resampled)))
+  # The two-curve covariance and variance
+  set.seed(42)
+  expect_equal(S["s100b", "ndka"], cov(r.s100b.partial, r.ndka.partial, boot.n = 20, progress = FALSE))
+  set.seed(42)
+  expect_equal(S["wfns", "wfns"], var(r.wfns.partial, boot.n = 20, progress = FALSE))
+  # Percent
+  set.seed(42)
+  S.percent <- cov(list(r.s100b.percent, r.ndka.percent), method = "bootstrap", boot.n = 20, progress = FALSE)
+  set.seed(42)
+  expect_equal(S.percent, cov(list(r.s100b, r.ndka), method = "bootstrap", boot.n = 20, progress = FALSE) * 100^2)
+})
+
+test_that("bootstrap cov with a list of smoothed curves works", {
+  smoothed <- list(smooth(r.s100b), smooth(r.ndka), smooth(r.wfns.num))
+  set.seed(42)
+  S <- cov(smoothed, boot.n = 10, progress = FALSE)
+  set.seed(42)
+  expect_equal(S[1, 2], cov(smoothed[[1]], smoothed[[2]], boot.n = 10, progress = FALSE))
+})
+
+test_that("cov with a list of unpaired curves has no covariance", {
+  rocs <- list(s100b = r.s100b, ndka = roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE), wfns = roc(aSAH$outcome[-(1:2)], aSAH$wfns[-(1:2)], quiet = TRUE))
+  expect_message(S <- cov(rocs), "Setting paired: FALSE", fixed = TRUE)
+  variances <- diag(vapply(rocs, var, numeric(1)))
+  dimnames(variances) <- list(names(rocs), names(rocs))
+  expect_equal(S, variances)
+  # Paired curves treated as unpaired
+  paired <- list(r.s100b, r.ndka, r.wfns)
+  expect_silent(S <- cov(paired, paired = FALSE))
+  expect_equal(S, diag(diag(cov(paired))))
+  set.seed(42)
+  expect_silent(S <- cov(paired, paired = FALSE, method = "bootstrap", boot.n = 10, progress = FALSE))
+  expect_equal(S[row(S) != col(S)], rep(0, 6))
+  expect_error(cov(rocs, paired = TRUE), "'paired = TRUE' cannot be applied to unpaired ROC curves.", fixed = TRUE)
+})
