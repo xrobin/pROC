@@ -120,8 +120,8 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
 }
 
 # Test of contrasts of the (partial) AUCs of k ROC curves: DeLong et al.
-# (1988) p. 841, with the DeLong or the bootstrap covariance matrix
-roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap"),
+# (1988) p. 841, with the DeLong, bootstrap or ML covariance matrix
+roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap", "ml"),
                           alternative = c("two.sided", "less", "greater"),
                           paired = NULL, boot.n = 2000, boot.stratified = TRUE,
                           progress = getOption("pROCProgress", interactive()),
@@ -131,7 +131,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
   roc_test_check_conf_level(conf.level)
   data.name <- deparse1(substitute(rocs))
   x <- roc_utils_list_rocs(rocs, paired, "the statistic on")
-  method <- roc_utils_list_method(x$rocs, x$smoothing.args, if (missing(method)) NULL else method)
+  method <- roc_utils_list_method(x, if (missing(method)) NULL else method, c("delong", "bootstrap", "ml"))
   rocs <- x$curves
   if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("roc.test() of ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
@@ -156,10 +156,14 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     alternative = alternative,
     data.name = data.name,
     estimate = estimate,
-    method = sprintf(
-      "%s test for %d %sROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k,
-      if (x$paired) "correlated " else ""
-    )
+    method = if (method == "ml") {
+      sprintf("Wald test for %d binormal ROC curves", k)
+    } else {
+      sprintf(
+        "%s test for %d %sROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k,
+        if (x$paired) "correlated " else ""
+      )
+    }
   )
   class(htest) <- "htest"
 
@@ -175,14 +179,10 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     sig <- tested$sd
     stat <- delong.test(list(d = d, sig = sig))
     # named as in roc.test.roc
-    htest$statistic <- if (method == "delong" && x$paired) c("Z" = stat) else c("D" = stat)
+    htest$statistic <- if (method == "ml" || (method == "delong" && x$paired)) c("Z" = stat) else c("D" = stat)
     htest$null.value <- c("contrast of AUCs" = 0)
     htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
-    htest$p.value <- switch(alternative,
-      two.sided = 2 * pnorm(-abs(stat)),
-      greater = pnorm(-stat),
-      less = pnorm(stat)
-    )
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else {
     # Several contrasts, Eq. 5: (L theta)' (L S L')^-1 (L theta) is chi-square
     # with the rank of L S L' as degrees of freedom. 'tested' holds

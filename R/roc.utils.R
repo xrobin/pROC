@@ -1174,6 +1174,7 @@ roc_utils_logit_ci <- function(auc, sd, conf.level) {
 
 # Validates a list of curves for roc.test.list and cov.list. Returns:
 # - rocs: the empirical curves, carrying the AUC specifications;
+# - has.ml: whether the curves as given have an ML variance (roc_utils_has_ml);
 # - smoothing.args: the smoothing.args of the smoothed curves, NULL for the others;
 # - curves: the curves as they are tested, smoothed again if they were;
 # - paired: whether the curves are tested as paired (roc_utils_paired_list).
@@ -1184,6 +1185,7 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
   }
   curves <- rocs
   smoothing.args <- vector("list", length(rocs))
+  has.ml <- logical(length(rocs))
   for (i in seq_along(rocs)) {
     roc <- rocs[[i]]
     if (methods::is(roc, "auc")) {
@@ -1194,6 +1196,7 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
       roc$auc <- auc
     }
     smoothed <- methods::is(roc, "smooth.roc")
+    has.ml[i] <- roc_utils_has_ml(roc)
     if (smoothed) {
       roc_utils_stop_if_numeric_density(roc, what)
       smoothing.args[[i]] <- roc$smoothing.args
@@ -1220,22 +1223,46 @@ roc_utils_list_rocs <- function(rocs, paired, what) {
       }
     }
   }
-  list(rocs = rocs, smoothing.args = smoothing.args, curves = curves, paired = paired)
+  list(rocs = rocs, has.ml = has.ml, smoothing.args = smoothing.args, curves = curves, paired = paired)
 }
 
-# The method of roc.test.list and cov.list ('method' is NULL if missing), as
-# roc.test.roc and cov.roc choose it. Also checks the AUC specifications.
-roc_utils_list_method <- function(rocs, smoothing.args, method) {
+# The method of roc.test.list and cov.list ('method' is NULL if missing) among
+# 'methods', as roc.test.roc and cov.roc choose it. 'x' is the value of
+# roc_utils_list_rocs. Also checks the AUC specifications.
+roc_utils_list_method <- function(x, method, methods) {
+  rocs <- x$rocs
+  smoothing.args <- x$smoothing.args
   partial <- any(vapply(rocs, has.partial.auc, logical(1)))
   smoothed <- !all(vapply(smoothing.args, is.null, logical(1)))
   same.direction <- length(unique(vapply(rocs, `[[`, character(1), "direction"))) == 1
   if (is.null(method)) {
-    # partial AUC, smoothing and different directions: go for bootstrap
-    method <- if (partial || smoothed || !same.direction) "bootstrap" else "delong"
+    if (partial) {
+      # partial auc: go for bootstrap
+      method <- "bootstrap"
+    } else if ("ml" %in% methods && !x$paired && all(x$has.ml)) {
+      method <- "ml"
+    } else if (smoothed || !same.direction) {
+      # other smoothings, or paired, and different directions: bootstrap
+      method <- "bootstrap"
+    } else {
+      method <- "delong"
+    }
   } else {
-    method <- tryCatch(match.arg(method, c("delong", "bootstrap")), error = function(e) {
-      stop("Only method = \"delong\" and \"bootstrap\" are available for a list of ROC curves.", call. = FALSE)
+    method <- tryCatch(match.arg(method, methods), error = function(e) {
+      available <- paste0("\"", methods, "\"")
+      stop(sprintf(
+        "Only method = %s and %s are available for a list of ROC curves.",
+        paste(available[-length(available)], collapse = ", "), available[length(available)]
+      ), call. = FALSE)
     })
+    if (method == "ml") {
+      if (!all(x$has.ml)) {
+        roc_utils_stop_if_no_ml(NULL) # the error of the two-curve test
+      }
+      if (x$paired) {
+        stop("The ML method is not supported for paired ROC curves. Use method=\"bootstrap\" instead.")
+      }
+    }
     if (method == "delong") {
       if (partial) {
         stop("DeLong's method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
@@ -1276,6 +1303,14 @@ roc_utils_cov_factor <- function(x, centre = TRUE) {
 # (S = W'W), on the scale of the curves. With the bootstrap, S is the
 # covariance matrix of the resampled AUCs, returned as resampled.values.
 roc_utils_list_calcs <- function(x, method, boot.n, boot.stratified, progress, cl) {
+  if (method == "ml") {
+    # Unpaired curves are independent: only their variances
+    variances <- vapply(x$curves, function(curve) var_roc_ml(curve) * ifelse(curve$percent, 100^2, 1), numeric(1))
+    return(list(
+      theta = vapply(x$curves, function(curve) as.numeric(curve$auc), numeric(1)),
+      W = diag(sqrt(variances)), absW = diag(sqrt(variances))
+    ))
+  }
   if (method == "delong") {
     if (x$paired) {
       calcs <- delong.cov(x$rocs)

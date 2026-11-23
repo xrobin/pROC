@@ -966,7 +966,7 @@ test_that("roc.test with a list of curves takes the explicit defaults and names"
   rocs <- list(r.s100b, r.ndka, r.wfns)
   expect_no_warning(ht <- roc.test(rocs, method = "delong", paired = TRUE))
   expect_equal(ht$statistic, roc.test(rocs)$statistic)
-  expect_equal(roc.test(rocs, method = c("delong", "bootstrap"))$statistic, ht$statistic)
+  expect_equal(roc.test(rocs, method = c("delong", "bootstrap", "ml"))$statistic, ht$statistic)
   expect_equal(roc.test(rocs, method = "d")$statistic, ht$statistic)
   # Names of the contrast rows do not reach the statistic
   ht <- roc.test(rocs, contrast = rbind(s100b.vs.rest = c(1, -0.5, -0.5)))
@@ -1021,6 +1021,11 @@ test_that("roc.test with a list of curves uses the bootstrap for partial AUC", {
   reversed <- roc(aSAH$outcome, -aSAH$ndka, direction = ">", quiet = TRUE)
   expect_no_warning(ht <- roc.test(list(r.s100b, reversed, r.wfns), boot.n = 20, progress = FALSE))
   expect_identical(ht$method, "Bootstrap test for 3 correlated ROC curves")
+  # Names of corrected partial AUCs, as the two-curve test
+  corrected <- lapply(list(r.s100b, r.ndka), auc, partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
+  corrected.names <- paste("Corrected pAUC (1-0.9 specificity) of", c("roc1", "roc2"))
+  expect_named(roc.test(corrected, boot.n = 10, progress = FALSE)$estimate, corrected.names)
+  expect_named(roc.test(corrected[[1]], corrected[[2]], boot.n = 10, progress = FALSE)$estimate, corrected.names)
 })
 
 test_that("bootstrap roc.test with a list of curves handles contrasts without variance", {
@@ -1165,4 +1170,55 @@ test_that("roc.test and cov with a list of curves pair them as two curves", {
   unpairable <- "'paired = TRUE' cannot be applied to unpaired ROC curves."
   expect_error(roc.test(shifted, paired = TRUE), unpairable, fixed = TRUE)
   expect_error(roc.test(shifted[[1]], shifted[[2]], paired = TRUE), unpairable, fixed = TRUE)
+})
+
+test_that("roc.test with a list of unpaired binormal curves uses the ml method", {
+  u.ndka <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
+  u.wfns <- roc(aSAH$outcome[-(1:2)], as.numeric(aSAH$wfns)[-(1:2)], quiet = TRUE)
+  fields <- c("statistic", "parameter", "p.value", "conf.int", "estimate")
+  methods <- c("binormal", if (requireNamespace("mvtnorm", quietly = TRUE)) "proper")
+  for (method in methods) {
+    smoothed <- list(smooth(r.s100b, method = method), smooth(u.ndka, method = method), smooth(u.wfns, method = method))
+    # The two-curve test
+    # boot.n: a bootstrap chosen by mistake fails quickly
+    two <- roc.test(smoothed[[1]], smoothed[[2]], paired = FALSE, boot.n = 10, progress = FALSE)
+    expect_identical(two$method, "Wald test for two binormal ROC curves")
+    ht <- roc.test(smoothed[1:2], paired = FALSE, boot.n = 10, progress = FALSE)
+    expect_identical(ht$method, "Wald test for 2 binormal ROC curves")
+    expect_named(ht$statistic, "Z")
+    expect_equal(unname(ht[fields]), unname(two[fields]))
+    expect_equal(roc.test(smoothed[1:2], paired = FALSE, method = "ml", alternative = "less")$p.value, roc.test(smoothed[[1]], smoothed[[2]], paired = FALSE, method = "ml", alternative = "less")$p.value)
+    # Eq. 5 with independent curves
+    ht <- roc.test(smoothed, paired = FALSE, boot.n = 10, progress = FALSE)
+    expect_identical(ht$method, "Wald test for 3 binormal ROC curves")
+    theta <- vapply(smoothed, function(curve) as.numeric(curve$auc), numeric(1))
+    S <- diag(vapply(smoothed, var, numeric(1), method = "ml"))
+    L <- rbind(c(1, -1, 0), c(0, 1, -1))
+    expect_equal(ht$statistic, c("X-squared" = drop(theta %*% t(L) %*% solve(L %*% S %*% t(L)) %*% L %*% theta)))
+    expect_equal(ht$parameter, c(df = 2))
+  }
+  # Percent
+  percent <- lapply(list(r.s100b.percent, roc(aSAH$outcome[-1], aSAH$ndka[-1], percent = TRUE, quiet = TRUE)), smooth)
+  expect_equal(unname(roc.test(percent, paired = FALSE, method = "ml")[fields]), unname(roc.test(percent[[1]], percent[[2]], paired = FALSE, method = "ml")[fields]))
+  # Not for paired curves, other curves, partial AUCs or cov
+  paired <- list(smooth(r.s100b), smooth(r.ndka), smooth(r.wfns.num))
+  expect_identical(roc.test(paired, paired = TRUE, boot.n = 10, progress = FALSE)$method, "Bootstrap test for 3 correlated ROC curves")
+  expect_error(roc.test(paired, paired = TRUE, method = "ml"), "not supported for paired ROC curves")
+  expect_error(roc.test(list(r.s100b, u.ndka), paired = FALSE, method = "ml"), "ML method is only supported")
+  mixed <- list(smooth(r.s100b), smooth(u.ndka), smooth(u.wfns, method = "density"))
+  expect_warning(ht <- roc.test(mixed, paired = FALSE, boot.n = 10, progress = FALSE), "Different smoothing parameters")
+  expect_identical(ht$method, "Bootstrap test for 3 ROC curves")
+  expect_error(roc.test(mixed, paired = FALSE, method = "ml"), "ML method is only supported")
+  # Curves smoothed by pROC 1.19 hold no fit: as the two-curve test
+  old <- lapply(list(smooth(r.s100b), smooth(u.ndka)), function(curve) {
+    curve$binormal <- NULL
+    curve
+  })
+  expect_identical(roc.test(old, paired = FALSE, boot.n = 10, progress = FALSE)$method, "Bootstrap test for 2 ROC curves")
+  expect_identical(roc.test(old[[1]], old[[2]], paired = FALSE, boot.n = 10, progress = FALSE)$method, "Bootstrap test for two ROC curves")
+  expect_error(roc.test(old, paired = FALSE, method = "ml"), "ML method is only supported")
+  partial <- lapply(list(smooth(r.s100b), smooth(u.ndka)), auc, partial.auc = c(1, 0.9))
+  expect_identical(roc.test(partial, paired = FALSE, boot.n = 10, progress = FALSE)$method, "Bootstrap test for 2 ROC curves")
+  expect_error(roc.test(partial, paired = FALSE, method = "ml"), "ML method is only supported")
+  expect_error(cov(list(smooth(r.s100b), smooth(u.ndka)), paired = FALSE, method = "ml"), "available for a list of ROC curves")
 })

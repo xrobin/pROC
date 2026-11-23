@@ -54,7 +54,7 @@ cov_roc_list <- function(rocs, method = c("delong", "bootstrap"),
                          paired = NULL, cl = NULL, ...) {
   chkDots(...)
   x <- roc_utils_list_rocs(rocs, paired, "the covariance of")
-  method <- roc_utils_list_method(x$rocs, x$smoothing.args, if (missing(method)) NULL else method)
+  method <- roc_utils_list_method(x, if (missing(method)) NULL else method, c("delong", "bootstrap"))
   if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
     warning("cov() of ROC curves with AUC == 1 is always 0 and can be misleading.")
   }

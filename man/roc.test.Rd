@@ -34,7 +34,7 @@ ties.method="random", progress = getOption("pROCProgress", interactive()),
 parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
-\S3method{roc.test}{list}(rocs, contrast=NULL, method=c("delong", "bootstrap"),
+\S3method{roc.test}{list}(rocs, contrast=NULL, method=c("delong", "bootstrap", "ml"),
 alternative = c("two.sided", "less", "greater"), paired=NULL, boot.n=2000,
 boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
 conf.level=0.95, cl = NULL, ...)
@@ -51,8 +51,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{rocs}{a list of two or more ROC curves, as
     \dQuote{\link{roc}}, \dQuote{\link{auc}} or
     \dQuote{\link{smooth.roc}} objects. Paired curves must be built on
-    the same observations. Only \code{method="delong"} and
-    \code{"bootstrap"} are available.
+    the same observations. Only \code{method="delong"},
+    \code{"bootstrap"} and \code{"ml"} are available.
   }
   \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
     vector with one coefficient per curve in \code{rocs}, or a matrix
@@ -279,9 +279,9 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \code{method="bootstrap"}, \var{S} is the covariance matrix of the
   (partial) AUCs of the \code{boot.n} bootstrap replicates, so that the
   test of two curves is the bootstrap test above. Unpaired curves are
-  independent: with \code{method="delong"} \var{S} only holds their
-  variances, and with \code{method="bootstrap"} each curve is resampled
-  separately. With one contrast,
+  independent: with \code{method="delong"} and \code{"ml"} \var{S}
+  only holds their variances, and with \code{method="bootstrap"} each
+  curve is resampled separately. With one contrast,
   \deqn{
     Z=\frac{L\theta}{\sqrt{LSL'}}
   }{
