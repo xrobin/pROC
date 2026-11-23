@@ -2,14 +2,14 @@ geom_polygon_ci <- function(data, ...) {
   UseMethod("geom_polygon_ci")
 }
 
-geom_polygon_ci.ci.se <- function(data, fill = "gainsboro", colour = NA, ...) {
+geom_polygon_ci.ci.se <- function(data, fill = NULL, colour = NA, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill
   }
-  if (is.null(extras$colour)) {
+  if (is.null(extras$colour) && is.null(mapping$colour)) {
     extras$colour <- colour
   }
   roc <- attr(data, "roc")
@@ -28,28 +28,30 @@ geom_polygon_ci.ci.se <- function(data, fill = "gainsboro", colour = NA, ...) {
   df <- ggroc_add_one_or_hundred(df, percent)
   new_ggroc_layer(
     behind = TRUE,
-    make_layers = function(plot) {
-      aes <- ggroc_xy_aes(plot)
-      list(do.call(
+    make_layers = function(plot, named = FALSE) {
+      fill <- ggroc_curve_colour(plot, named, extras, mapping, "fill")
+      aes <- ggroc_add_mapping(ggroc_xy_aes(plot, fill$mapping), mapping)
+      layer <- do.call(
         ggplot2::geom_polygon,
         c(
           list(mapping = aes, data = df),
-          extras,
+          fill$extras,
           list(inherit.aes = FALSE)
         )
-      ))
+      )
+      list(ggroc_theme_defaults(layer, fill$defaults))
     }
   )
 }
 
-geom_polygon_ci.ci.sp <- function(data, fill = "gainsboro", colour = NA, ...) {
+geom_polygon_ci.ci.sp <- function(data, fill = NULL, colour = NA, mapping = NULL, ...) {
   load.ggplot2()
   extras <- size.to.linewidth(list(...))
   names(extras) <- sub("color", "colour", names(extras))
   if (is.null(extras$fill)) {
     extras$fill <- fill
   }
-  if (is.null(extras$colour)) {
+  if (is.null(extras$colour) && is.null(mapping$colour)) {
     extras$colour <- colour
   }
   roc <- attr(data, "roc")
@@ -68,16 +70,18 @@ geom_polygon_ci.ci.sp <- function(data, fill = "gainsboro", colour = NA, ...) {
   df <- ggroc_add_one_or_hundred(df, percent)
   new_ggroc_layer(
     behind = TRUE,
-    make_layers = function(plot) {
-      aes <- ggroc_xy_aes(plot)
-      list(do.call(
+    make_layers = function(plot, named = FALSE) {
+      fill <- ggroc_curve_colour(plot, named, extras, mapping, "fill")
+      aes <- ggroc_add_mapping(ggroc_xy_aes(plot, fill$mapping), mapping)
+      layer <- do.call(
         ggplot2::geom_polygon,
         c(
           list(mapping = aes, data = df),
-          extras,
+          fill$extras,
           list(inherit.aes = FALSE)
         )
-      ))
+      )
+      list(ggroc_theme_defaults(layer, fill$defaults))
     }
   )
 }

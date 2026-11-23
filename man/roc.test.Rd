@@ -34,7 +34,7 @@ parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
-na.rm=TRUE, method=NULL, ...)
+na.rm=TRUE, method=NULL, paired=TRUE, ...)
 }
 
 \arguments{
@@ -83,8 +83,8 @@ na.rm=TRUE, method=NULL, ...)
   }
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
-    If \code{TRUE} but the paired status cannot be assessed by \code{\link{are.paired}}
-    will produce an error.
+    \code{TRUE} requires curves that can be paired (see Details), and
+    \code{FALSE} treats the curves as unpaired.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -172,15 +172,17 @@ na.rm=TRUE, method=NULL, ...)
   smaller than the AUC of roc2. For \code{method="venkatraman"}, only
   \dQuote{two.sided} test is available.
   
-  If the \code{paired} argument is not provided, the \code{\link{are.paired}} function is
-  employed to detect the paired status of the ROC curves. It will test if the original \code{response} is
-  identical between the two ROC curves (this is always the case if the call is made with 
-  \code{roc.test.default}). This detection can give false positives: two curves built with
-  \code{controls} and \code{cases} with the same numbers of controls and of
-  cases are always detected as paired, and matched by position. Use
-  \code{paired=FALSE} for independent samples.
-  If you know the ROC curves are paired you can pass \code{paired=TRUE}. However this is
-  useless as it will be tested anyway.
+  If the \code{paired} argument is not provided, the
+  \code{\link{are.paired}} function is employed to detect the paired
+  status of the ROC curves, and a message tells the result. The detection
+  only shows that the curves can be paired: use \code{paired=FALSE} for
+  independent samples that have the same \code{response}, for which a
+  paired test is not valid. Curves built with \code{controls} and
+  \code{cases} are not paired automatically: with the same numbers of
+  controls and cases as given (missing values included), a warning is
+  given and \code{paired=TRUE} pairs them by position. The curves built
+  by \code{roc.test.default} and \code{roc.test.formula} share their
+  response and are paired.
 
   Paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the test and the \code{estimate} refer to

@@ -170,7 +170,7 @@ test_that("Advanced screenshot 6 works correctly", {
   test_advanced_screenshot_6 <- function() {
     plot(r.s100b.percent, main = "Statistical comparison", col = "#1c61b6")
     lines(r.ndka.percent, col = "#008600")
-    testobj <- roc.test(r.s100b.percent, r.ndka.percent)
+    testobj <- roc.test(r.s100b.percent, r.ndka.percent, paired = TRUE)
     text(50, 50, labels = paste("p-value =", format.pval(testobj$p.value)), adj = c(0, .5))
     legend("bottomright", legend = c("S100B", "NDKA"), col = c("#1c61b6", "#008600"), lwd = 2)
   }

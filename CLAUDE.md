@@ -125,7 +125,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
   - a new argument needs documenting.
 - **Never restate a fix in the Rd.** The commit message records fixes.
 - **Don't quote error messages in the Rd,** don't state what a definition already implies, and don't repeat the same paragraph across pages.
-- **NEWS is short.** It tells users whether an upgrade affects them; details belong in the commit message, the Rd or the linked issue. See the 1.20 cleanup (53dc566a) for the target style.
+- **NEWS is short.** It tells users whether an upgrade affects them; details belong in the PR or the linked issue, the Rd, or the commit message if needed. See the 1.20 cleanup (53dc566a) for the target style.
   - Only user-visible changes, one short line each: what changed, not why or how. No rationale, workaround, example, or "also fixes" clause. Example: "DeLong and bootstrap 'roc.test' now all return a 'conf.int' of the difference (issue #73)".
   - At most one entry per feature, PR or issue, however many methods or commits it spans: the CIs of DeLong and bootstrap `roc.test` share the line above. If the PR or issue already has an entry, extend that one.
   - Read the current NEWS section before writing: extend an existing entry rather than add one, and never repeat a change that another entry (including the bug-hunt summary) already covers.
@@ -138,7 +138,7 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 
 ### Commits
 - **One commit holds code, tests, Rd and NEWS together.** Fold in-PR fix-ups into the commit that introduced the problem.
-- **Full commit messages:** reprex, before/after output, and the sources.
+- **Commit messages: the subject line alone,** unless a body adds context the subject and the diff don't already show (e.g. the P7 source).
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
 
 ### Working with the maintainer

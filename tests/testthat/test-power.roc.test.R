@@ -447,7 +447,7 @@ test_that("Obuchowski variance and covariance use the binormal A and B parameter
     tolerance = 0.05
   )
   expect_equal(
-    cov(rp, rp, method = "obuchowski") / (pROC:::cov_params_obuchowski(1, 0.5, 1, 0.5, 1, 1, 1, 0.2, 0, 0.2, 0) / 60),
+    cov(rp, rp, method = "obuchowski", paired = TRUE) / (pROC:::cov_params_obuchowski(1, 0.5, 1, 0.5, 1, 1, 1, 0.2, 0, 0.2, 0) / 60),
     1,
     tolerance = 0.05
   )
@@ -579,9 +579,9 @@ test_that("power.roc.test with DeLong reproduces Jung (2024)", {
   # two-sided alpha = 0.05, for the test of Eqs. 3-5. Large samples estimate
   # the variance of the AUC difference.
   r <- binormal.rocs(20000, 0.60, 0.75, 0.3)
-  expect_equal(2 * power.roc.test(r[[1]], r[[2]], power = 0.8)$ncases, 139, tolerance = 0.05)
+  expect_equal(2 * power.roc.test(r[[1]], r[[2]], power = 0.8, paired = TRUE)$ncases, 139, tolerance = 0.05)
   r <- binormal.rocs(20000, 0.70, 0.85, 0.6)
-  expect_equal(2 * power.roc.test(r[[1]], r[[2]], power = 0.8)$ncases, 69, tolerance = 0.05)
+  expect_equal(2 * power.roc.test(r[[1]], r[[2]], power = 0.8, paired = TRUE)$ncases, 69, tolerance = 0.05)
 })
 
 test_that("power.roc.test with DeLong does not depend on the order of the curves", {
@@ -596,9 +596,9 @@ test_that("power.roc.test with DeLong does not depend on the order of the curves
 test_that("power.roc.test with DeLong is finite when the better, correlated curve is roc1", {
   # 1.19.1 gave NaN ("NaNs produced"): its null variance was negative
   r <- binormal.rocs(100, 0.95, 0.80, 0.9)
-  expect_no_warning(res <- power.roc.test(r[[1]], r[[2]], power = 0.8))
+  expect_no_warning(res <- power.roc.test(r[[1]], r[[2]], power = 0.8, paired = TRUE))
   expect_true(is.finite(res$ncases))
-  expect_no_warning(res <- power.roc.test(r[[1]], r[[2]]))
+  expect_no_warning(res <- power.roc.test(r[[1]], r[[2]], paired = TRUE))
   expect_true(is.finite(res$power))
 })
 

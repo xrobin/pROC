@@ -90,8 +90,9 @@ alternative = c("two.sided", "one.sided"), ...)
     details. 
   }
   \item{paired}{\code{NULL} (default) to detect pairing with
-    \code{\link{are.paired}}, \code{TRUE} to require it, \code{FALSE} to
-    treat the curves as unpaired, as in \code{\link{roc.test}}.
+    \code{\link{are.paired}}, \code{TRUE} to require curves that can be
+    paired, \code{FALSE} to treat the curves as unpaired, as in
+    \code{\link{roc.test}}.
   }
   \item{\dots}{further arguments passed to or from other methods,
     especially \code{\link{auc}} (with \code{reuse.auc=FALSE} or no AUC in

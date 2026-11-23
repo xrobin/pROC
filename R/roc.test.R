@@ -48,7 +48,7 @@ roc.test.formula <- function(formula, data, ..., subset, na.action) {
   return(testres)
 }
 
-roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, ...) {
+roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, paired = TRUE, ...) {
   if (is.matrix(predictor1) | is.data.frame(predictor1)) {
     if (!is.null(predictor2)) {
       stop("Predictor2 must not be specified if predictor1 is a matrix or a data.frame.")
@@ -88,7 +88,8 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     call <- match.call()
     data.names <- sprintf("%s and %s by %s (%s, %s)", deparse1(call$predictor1), deparse1(call$predictor2), deparse1(call$response), roc1$levels[1], roc1$levels[2])
   }
-  test <- roc.test.roc(roc1, roc2, method = method, ...)
+  # The two curves share their response: they are paired by construction
+  test <- roc.test.roc(roc1, roc2, method = method, paired = paired, ...)
   test$data.names <- data.names
   test$data.name <- test$data.names # the standard htest element
   return(test)

@@ -16,9 +16,10 @@
   \code{\link{plot.ci.thresholds}}.
 }
 \usage{
-\S3method{geom_errorbar_ci}{ci.se}(data, ...)
-\S3method{geom_errorbar_ci}{ci.sp}(data, ...)
-\S3method{geom_errorbar_ci}{ci.thresholds}(data, ...)
+geom_errorbar_ci(data, ...)
+\S3method{geom_errorbar_ci}{ci.se}(data, mapping = NULL, ...)
+\S3method{geom_errorbar_ci}{ci.sp}(data, mapping = NULL, ...)
+\S3method{geom_errorbar_ci}{ci.thresholds}(data, mapping = NULL, ...)
 \S3method{geom_errorbar_ci}{list}(data, ...)
 }
 
@@ -28,7 +29,13 @@
     Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
     per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
+  \item{mapping}{additional aesthetic mappings, created with
+    \code{\link[ggplot2:aes]{aes}()}: see \sQuote{Lists and facets} in
+    \code{\link{ggroc}}.
+  }
   \item{\dots}{additional aesthetics for \code{\link[ggplot2:geom_errorbar]{geom_errorbar}}.
+    The default \code{colour} is that of the curve: see
+    \sQuote{Colours of the layers} in \code{\link{ggroc}}.
   }
 }
 

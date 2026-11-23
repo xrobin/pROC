@@ -72,26 +72,22 @@ test_that("geom_text_auc labels of a list follow the elements", {
   expect_equal(d$label, paste(1:2, sprintf("%.2f", c(r.s100b$auc, r.wfns$auc))))
 })
 
-test_that("geom_text_auc labels take the colour of their curve", {
+test_that("geom_text_auc labels are in the theme's ink unless a colour is given or mapped", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   rocs <- list(s100b = r.s100b, wfns = r.wfns, ndka = r.ndka)
   colour_of <- function(p, i) unique(ggplot2::layer_data(p, i)$colour)
-  # The colour mapped to the curves, with the scale of the plot
-  for (p in list(ggroc(rocs) + geom_text_auc(rocs),
-                 ggroc(rocs) + geom_text_auc(rocs) + ggplot2::scale_colour_brewer(palette = "Dark2"))) {
+  # The theme's ink, as geom_roc_threshold: over a polygon of the curve's
+  # colour, the curve's colour would lack contrast
+  expect_equal(colour_of(ggroc(r.s100b, colour = "red") + geom_text_auc(r.s100b), 2), "black")
+  expect_equal(colour_of(ggroc(rocs) + geom_text_auc(rocs), 2), "black")
+  # The colour of the curves, mapped through the scale of the plot
+  for (p in list(ggroc(rocs) + geom_text_auc(rocs, mapping = ggplot2::aes(colour = name)),
+                 ggroc(rocs) + geom_text_auc(rocs, mapping = ggplot2::aes(colour = name)) +
+                   ggplot2::scale_colour_brewer(palette = "Dark2"))) {
     line_colours <- tapply(ggplot2::layer_data(p, 1)$colour, ggplot2::layer_data(p, 1)$group, unique)
     expect_equal(ggplot2::layer_data(p, 2)$colour, unname(as.vector(line_colours)))
   }
-  # The text adds no glyph to the legend
-  p <- ggroc(rocs) + geom_text_auc(rocs)
-  expect_false(p@layers[[2]]$show.legend)
-  # The fixed colour of the ROC line
-  expect_equal(colour_of(ggroc(r.s100b, colour = "red") + geom_text_auc(r.s100b), 2), "red")
-  expect_equal(colour_of(ggroc(rocs, aes = "linetype", colour = "red") + geom_text_auc(rocs), 2), "red")
-  # Neither: the ggplot2 default
-  expect_equal(colour_of(ggroc(r.s100b) + geom_text_auc(r.s100b), 2), "black")
-  expect_equal(colour_of(ggroc(rocs, aes = "linetype") + geom_text_auc(rocs), 2), "black")
-  # An explicit colour wins
+  # An explicit colour
   expect_equal(colour_of(ggroc(rocs) + geom_text_auc(rocs, colour = "grey30"), 2), "grey30")
 })
 

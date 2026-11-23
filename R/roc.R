@@ -153,6 +153,8 @@ roc.default <- function(response, predictor,
   # Check arguments
   direction <- match.arg(direction)
   # Response / Predictor
+  # FALSE for curves built from 'controls' and 'cases', absent otherwise
+  response.given <- NULL
   if (!missing(response) && !is.null(response) && !missing(predictor) && !is.null(predictor)) {
     # Forbid case/controls
     if ((!missing(cases) && !is.null(cases)) || (!missing(controls) && !is.null(controls))) {
@@ -249,6 +251,9 @@ roc.default <- function(response, predictor,
     if ((!missing(density.cases) && !is.null(density.cases)) || (!missing(density.controls) && !is.null(density.controls))) {
       stop("'density.*' arguments incompatible with 'cases/controls'.")
     }
+    # as passed, with their missing values (original.predictor, below)
+    controls.given <- controls
+    cases.given <- cases
     # remove nas
     if (na.rm) {
       if (any(is.na(controls))) {
@@ -274,7 +279,9 @@ roc.default <- function(response, predictor,
       stop("Cases and controls must both be numeric or both be ordered.")
     }
     predictor <- roc_utils_combine_predictor(controls, cases)
-    original.predictor <- predictor
+    # With the missing values, so that are.paired() can pair two curves on the
+    # observations they share, as for curves built from a response
+    original.predictor <- roc_utils_combine_predictor(controls.given, cases.given)
 
     # Check infinities
     if (!is.ordered(predictor) && any(is.infinite(predictor))) {
@@ -283,8 +290,10 @@ roc.default <- function(response, predictor,
     }
 
     response <- c(rep(0, length(controls)), rep(1, length(cases)))
-    original.response <- response
+    original.response <- c(rep(0, length(controls.given)), rep(1, length(cases.given)))
     levels <- c(0, 1)
+    # The response is made up: nothing tells which patients the observations are
+    response.given <- FALSE
   } else if (!missing(density.cases) && !is.null(density.cases) && !missing(density.controls) && !is.null(density.controls)) {
     if (!is.numeric(density.cases) || !is.numeric(density.controls)) {
       stop("'density.cases' and 'density.controls' must be numeric values of density (over the y axis).")
@@ -374,7 +383,9 @@ roc.default <- function(response, predictor,
     attr(roc, "roc")$predictor <- predictor
     attr(roc, "roc")$response <- response
     attr(roc, "roc")$levels <- levels
+    attr(roc, "roc")$response.given <- response.given
   }
+  roc$response.given <- response.given
   roc$original.predictor <- original.predictor
   roc$original.response <- original.response
   roc$predictor <- predictor

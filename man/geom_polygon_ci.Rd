@@ -13,8 +13,9 @@
   band, matching \code{\link{plot.ci}(type = "shape")}.
 }
 \usage{
-\S3method{geom_polygon_ci}{ci.se}(data, fill = "gainsboro", colour = NA, ...)
-\S3method{geom_polygon_ci}{ci.sp}(data, fill = "gainsboro", colour = NA, ...)
+geom_polygon_ci(data, ...)
+\S3method{geom_polygon_ci}{ci.se}(data, fill = NULL, colour = NA, mapping = NULL, ...)
+\S3method{geom_polygon_ci}{ci.sp}(data, fill = NULL, colour = NA, mapping = NULL, ...)
 \S3method{geom_polygon_ci}{list}(data, ...)
 }
 
@@ -23,15 +24,20 @@
     Or a list of these, named as in \code{\link{ggroc}}, to draw one layer
     per curve (see \sQuote{Lists and facets} in \code{\link{ggroc}}).
   }
-  \item{fill, colour}{fill and border for the band.
+  \item{fill, colour}{fill and border for the band. If \code{fill} is
+    \code{NULL}, the colour of the curve: see \sQuote{Colours of the
+    layers} in \code{\link{ggroc}}.
+  }
+  \item{mapping}{additional aesthetic mappings, created with
+    \code{\link[ggplot2:aes]{aes}()}: see \sQuote{Lists and facets} in
+    \code{\link{ggroc}}.
   }
   \item{\dots}{additional aesthetics for \code{\link[ggplot2:geom_polygon]{geom_polygon}}.
   }
 }
 
 \details{
-  Inserted behind the ROC curve. The default fill is \code{"gainsboro"},
-  as in \code{\link{plot.ci}}. It follows the parent \code{\link{ggroc}}
+  Inserted behind the ROC curve. It follows the parent \code{\link{ggroc}}
   plot's axes; there is no \code{legacy.axes} argument. Like
   \code{\link{plot.ci}}, a filled band is not available for
   \code{\link{ci.thresholds}}.

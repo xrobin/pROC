@@ -23,6 +23,7 @@ jobs:
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
+          - {os: ubuntu-26.04-arm, r: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -52,6 +53,7 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual", "--compact-vignettes=gs+qpdf")'
+          error-on: '"note"'
 
   R-CMD-check-manual:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -75,9 +77,15 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
+      - name: Install HTML Tidy for the HTML manual check
+        run: sudo apt-get update && sudo apt-get install -y tidy
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          # V8 renders the math of the HTML manual
+          extra-packages: |
+            any::rcmdcheck
+            any::V8
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
@@ -85,6 +93,7 @@ jobs:
           upload-snapshots: true
           build_args: 'character()'
           args: 'c("--as-cran")'
+          error-on: '"note"'
 
   R-CMD-check-depends-only:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -110,6 +119,9 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
+      - name: Install HTML Tidy for the HTML manual check
+        run: sudo apt-get update && sudo apt-get install -y tidy
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           # Keep cache off so "depends-only" checks don't restore Suggests from other runs.
@@ -117,6 +129,7 @@ jobs:
           extra-packages: |
             any::rcmdcheck
             any::testthat
+            any::V8
           dependencies: '"hard"'
           needs: check
 
@@ -125,3 +138,4 @@ jobs:
           upload-snapshots: false
           build_args: 'c("--no-build-vignettes")'
           args: 'c("--as-cran", "--no-vignettes", "--ignore-vignettes")'
+          error-on: '"note"'

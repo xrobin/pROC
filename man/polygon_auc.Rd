@@ -21,11 +21,13 @@
   and \code{\link{auc}} objects.
 }
 \usage{
+polygon_auc(x, ...)
 \S3method{polygon_auc}{auc}(x, col = "gainsboro", lty = par("lty"), density = NULL,
             angle = 45, border = NULL, ...)
 \S3method{polygon_auc}{roc}(x, ...)
 \S3method{polygon_auc}{smooth.roc}(x, ...)
 
+polygon_max_auc(x, ...)
 \S3method{polygon_max_auc}{auc}(x, col = "#EEEEEE", ...)
 \S3method{polygon_max_auc}{roc}(x, ...)
 \S3method{polygon_max_auc}{smooth.roc}(x, ...)

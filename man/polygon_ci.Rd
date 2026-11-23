@@ -15,6 +15,7 @@
   and never loses a custom \code{col}/\code{lwd}.
 }
 \usage{
+polygon_ci(x, ...)
 \S3method{polygon_ci}{ci.se}(x, col = "gainsboro", ...)
 \S3method{polygon_ci}{ci.sp}(x, col = "gainsboro", ...)
 }

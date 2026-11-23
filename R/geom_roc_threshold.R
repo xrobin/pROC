@@ -10,6 +10,7 @@ geom_roc_threshold.roc <- function(data,
                                    size = 2,
                                    best.method = c("youden", "closest.topleft"),
                                    best.weights = c(1, 0.5),
+                                   mapping = NULL,
                                    ...) {
   load.ggplot2()
   extras <- list(...)
@@ -20,33 +21,33 @@ geom_roc_threshold.roc <- function(data,
   co$label <- roc_utils_threshold_labels(pattern, co$threshold, co$specificity, co$sensitivity, percent)
   new_ggroc_layer(
     behind = FALSE,
-    make_layers = function(plot) {
+    make_layers = function(plot, ...) {
       xcol <- ggroc_x_col(plot)
       .data <- rlang::.data
-      point_aes <- ggplot2::aes(
+      point_aes <- ggroc_add_mapping(ggplot2::aes(
         x = .data[[xcol]],
         y = .data[["sensitivity"]]
-      )
-      text_aes <- ggplot2::aes(
+      ), mapping)
+      text_aes <- ggroc_add_mapping(ggplot2::aes(
         x = .data[[xcol]],
         y = .data[["sensitivity"]],
         label = .data[["label"]]
-      )
+      ), mapping)
       list(
         do.call(
           ggplot2::geom_point,
           c(
-            list(data = co, mapping = point_aes, size = size, inherit.aes = FALSE),
+            list(data = co, mapping = point_aes, inherit.aes = FALSE),
+            if (is.null(mapping$size)) list(size = size),
             extras
           )
         ),
         do.call(
           ggplot2::geom_text,
           c(
-            list(
-              data = co, mapping = text_aes,
-              hjust = hjust, vjust = vjust, inherit.aes = FALSE
-            ),
+            list(data = co, mapping = text_aes, inherit.aes = FALSE),
+            if (is.null(mapping$hjust)) list(hjust = hjust),
+            if (is.null(mapping$vjust)) list(vjust = vjust),
             extras
           )
         )
