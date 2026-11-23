@@ -221,6 +221,38 @@ test_that("pairing requires identical weights", {
   ))
 })
 
+test_that("lists of weighted curves are compared with the bootstrap", {
+  r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)
+  r.w2 <- roc(aSAH$outcome, aSAH$ndka, weights = w, quiet = TRUE)
+  r.w3 <- roc(aSAH$outcome, aSAH$wfns, weights = w, quiet = TRUE)
+  # as two curves
+  set.seed(42)
+  expect_message(test.two <- roc.test(r.w, r.w2, boot.n = 10, progress = FALSE), "paired: TRUE")
+  set.seed(42)
+  expect_message(test.list <- roc.test(list(r.w, r.w2), boot.n = 10, progress = FALSE), "paired: TRUE")
+  expect_equal(unname(test.list$statistic), unname(test.two$statistic))
+  expect_equal(test.list$p.value, test.two$p.value)
+  # the weighted AUCs and their variances
+  expect_message(test <- roc.test(list(r.w, r.w2, r.w3), boot.n = 10, progress = FALSE), "paired: TRUE")
+  expect_match(test$method, "Bootstrap")
+  expect_identical(unname(test$estimate), c(as.numeric(r.w$auc), as.numeric(r.w2$auc), as.numeric(r.w3$auc)))
+  set.seed(42)
+  expect_message(covs <- cov(list(r.w, r.w2, r.w3), boot.n = 10, progress = FALSE), "paired: TRUE")
+  set.seed(42)
+  expect_equal(covs[1, 1], var(r.w, boot.n = 10, progress = FALSE))
+  expect_error(roc.test(list(r.w, r.w2, r.w3), method = "delong", paired = TRUE), "not supported for ROC curves with case weights")
+  expect_error(cov(list(r.w, r.w2, r.w3), method = "delong", paired = TRUE), "not supported for ROC curves with case weights")
+
+  # different weights: not paired
+  r.rev <- roc(aSAH$outcome, aSAH$ndka, weights = rev(w), quiet = TRUE)
+  for (other in list(r.rev, r.ndka)) {
+    expect_warning(test <- roc.test(list(r.w, other, r.w3), boot.n = 10, progress = FALSE), "different case weights")
+    expect_match(test$method, "Bootstrap test for 3 ROC curves")
+    expect_error(roc.test(list(r.w, other, r.w3), paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
+    expect_warning(roc.test(list(r.w, other, r.w3), paired = FALSE, boot.n = 10, progress = FALSE), NA)
+  }
+})
+
 test_that("curves with the same weights are paired on their common observations", {
   k.missing <- replace(k, 1, NA)
   ndka.missing <- replace(aSAH$ndka, 4, NA)

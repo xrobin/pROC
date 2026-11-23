@@ -1344,14 +1344,15 @@ roc_utils_list_method <- function(x, method, methods) {
   partial <- any(vapply(rocs, has.partial.auc, logical(1)))
   smoothed <- !all(vapply(smoothing.args, is.null, logical(1)))
   same.direction <- length(unique(vapply(rocs, `[[`, character(1), "direction"))) == 1
+  weighted <- !all(vapply(lapply(rocs, `[[`, "weights"), is.null, logical(1)))
   if (is.null(method)) {
     if (partial) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if ("ml" %in% methods && !x$paired && all(x$has.ml)) {
       method <- "ml"
-    } else if (smoothed || !same.direction) {
-      # other smoothings, or paired, and different directions: bootstrap
+    } else if (smoothed || !same.direction || weighted) {
+      # other smoothings, or paired, different directions and case weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"
