@@ -241,7 +241,7 @@ na.rm=TRUE, method=NULL, ...)
 
   With \code{method="ml"}, the variances \eqn{V^r}{V^r} and
   \eqn{V^s}{V^s} of the AUC of the two curves are computed as described in
-  \code{\link{var}}, and the statistic
+  \code{\link{var}}, and the Wald statistic
   \deqn{
     Z=\frac{\theta^r - \theta^s}{\sqrt{V^r + V^s}}
   }{

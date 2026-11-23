@@ -37,7 +37,6 @@ test_that("var and ci.auc of binormal and proper fits default to the ML method",
   expect_identical(attr(ci, "method"), "ml")
   expect_identical(ci, ci(s.s100b))
   expect_identical(ci, ci.auc(s.s100b, method = "ml"))
-  # Wald interval around the AUC
   # normal interval on the logit scale (Pepe 2003, p. 107)
   logit_ci <- function(auc, se, z) plogis(qlogis(auc) + c(-1, 0, 1) * z * se / (auc * (1 - auc)))
   expect_equal(as.numeric(ci), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.975)))
@@ -99,7 +98,7 @@ test_that("unpaired roc.test of binormal fits defaults to the ML method", {
   s1 <- smooth(roc(aSAH$outcome[male], aSAH$s100b[male], quiet = TRUE))
   s2 <- smooth(roc(aSAH$outcome[!male], aSAH$s100b[!male], quiet = TRUE))
   t <- roc.test(s1, s2)
-  expect_identical(t$method, "Maximum-likelihood test for two binormal ROC curves")
+  expect_identical(t$method, "Wald test for two binormal ROC curves")
   z <- (as.numeric(auc(s1)) - as.numeric(auc(s2))) / sqrt(var(s1) + var(s2))
   expect_identical(t$statistic, c(Z = z))
   expect_equal(t$p.value, 2 * pnorm(-abs(z)))
@@ -139,7 +138,7 @@ test_that("paired roc.test refuses the ML method", {
   )
   expect_identical(roc.test(s.s100b, s.ndka, boot.n = 2, progress = "none")$method, "Bootstrap test for two correlated ROC curves")
   # unless the user says the curves are unpaired
-  expect_identical(roc.test(s.s100b, s.ndka, paired = FALSE)$method, "Maximum-likelihood test for two binormal ROC curves")
+  expect_identical(roc.test(s.s100b, s.ndka, paired = FALSE)$method, "Wald test for two binormal ROC curves")
 })
 
 # Probabilities of the categories of the proper binormal model at theta = c(da, c, cut-points)
@@ -219,7 +218,7 @@ test_that("unpaired roc.test of proper fits defaults to the ML method", {
   s1 <- smooth(roc(aSAH$outcome[male], aSAH$wfns[male], quiet = TRUE), method = "proper")
   s2 <- smooth(roc(aSAH$outcome[!male], aSAH$wfns[!male], quiet = TRUE), method = "proper")
   t <- roc.test(s1, s2)
-  expect_identical(t$method, "Maximum-likelihood test for two binormal ROC curves")
+  expect_identical(t$method, "Wald test for two binormal ROC curves")
   expect_identical(t$statistic, c(Z = (as.numeric(auc(s1)) - as.numeric(auc(s2))) / sqrt(var(s1) + var(s2))))
 })
 

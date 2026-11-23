@@ -332,7 +332,7 @@ roc.test.roc <- function(roc1, roc2,
     }
     htest$statistic <- stat
     htest$conf.int <- roc_test_ci_normal(d, sqrt(variance), conf.level, alternative)
-    htest$method <- "Maximum-likelihood test for two binormal ROC curves"
+    htest$method <- "Wald test for two binormal ROC curves"
     htest$p.value <- roc_test_normal_pvalue(stat, alternative)
   } else if (method == "venkatraman") {
     boot.n <- roc_utils_check_boot_n(boot.n)
