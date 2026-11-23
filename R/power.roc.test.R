@@ -530,7 +530,7 @@ zbeta.obuchowski.params <- function(parslist, zalpha, ncases, kappa) {
   covvar <- covvar_params_obuchowski(parslist, kappa)
   v0 <- var0.delta.covvar(covvar)
   va <- var_delta_covvar(covvar)
-  zbeta <- solve.zbeta(
+  zbeta <- solve_zbeta(
     nd = ncases,
     zalpha = zalpha,
     v0 = v0, va = va,
