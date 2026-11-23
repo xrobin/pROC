@@ -36,6 +36,16 @@ bootstrap.cov <- function(roc1, roc2, boot.n, boot.stratified, boot.return, smoo
   return(cov)
 }
 
+# AUCs of a list of curves in each replicate (roc.test.list, cov.list): one
+# row per curve and one column per replicate
+bootstrap.list <- function(rocs, smoothing.args, paired, boot.n, boot.stratified, progress = FALSE, cl = NULL) {
+  resampled.values <- bootstrap.replicates(boot.n, bootstrap.list.replicate,
+    rocs = rocs, smoothing.args = smoothing.args, paired = paired, stratified = boot.stratified,
+    FUN.VALUE = rep(NA_real_, length(rocs)), progress = progress, cl = cl
+  )
+  roc_utils_drop_na_replicates(resampled.values, margin = 2L)
+}
+
 # Bootstrap test, used by roc.test.roc
 bootstrap.test <- function(roc1, roc2, test, x, paired, boot.n, boot.stratified, smoothing.args,
                            progress = FALSE, cl = NULL) {
@@ -540,6 +550,24 @@ bootstrap.test.replicate <- function(n, roc1, roc2, stratified, test, x, paired,
     se = c(bootstrap.sp(boot.roc1, x)[1], bootstrap.sp(boot.roc2, x)[1]),
     c(bootstrap.auc(boot.roc1, bootstrap.auc.args(roc1$auc)), bootstrap.auc(boot.roc2, bootstrap.auc.args(roc2$auc)))
   )
+}
+
+# The AUC of each curve of a list of curves, or NA for the resampled curves
+# that could not be built. 'smoothing.args' holds the smoothing.args of each
+# smoothed curve, NULL for an empirical curve.
+bootstrap.list.replicate <- function(n, rocs, smoothing.args, paired, stratified) {
+  # Draw every index before building anything, so that the random stream
+  # does not depend on which replicates fail. Paired curves must see the
+  # same patients.
+  idx <- if (paired) {
+    rep(list(roc_utils_resample_idx(rocs[[1]], stratified)), length(rocs))
+  } else {
+    lapply(rocs, roc_utils_resample_idx, stratified)
+  }
+  vapply(seq_along(rocs), function(i) {
+    boot.roc <- bootstrap.resampled.curve(rocs[[i]], stratified, smoothing.args[[i]], idx[[i]])
+    if (is.null(boot.roc)) NA_real_ else bootstrap.auc(boot.roc, bootstrap.auc.args(rocs[[i]]$auc))
+  }, numeric(1))
 }
 
 ##########  AUC of one ROC curve (ci.auc)  ##########

@@ -119,6 +119,168 @@ roc.test.smooth.roc <- function(roc1, roc2, ...) {
   return(testres)
 }
 
+# Test of contrasts of the (partial) AUCs of k ROC curves: DeLong et al.
+# (1988) p. 841, with the DeLong, bootstrap or ML covariance matrix
+roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap", "ml"),
+                          alternative = c("two.sided", "less", "greater"),
+                          paired = NULL, boot.n = 2000, boot.stratified = TRUE,
+                          progress = getOption("pROCProgress", interactive()),
+                          conf.level = 0.95, cl = NULL, ...) {
+  chkDots(...)
+  alternative <- match.arg(alternative)
+  roc_test_check_conf_level(conf.level)
+  data.name <- deparse1(substitute(rocs))
+  x <- roc_utils_list_rocs(rocs, paired, "the statistic on")
+  method <- roc_utils_list_method(x, if (missing(method)) NULL else method, c("delong", "bootstrap", "ml"))
+  rocs <- x$curves
+  if (all(vapply(x$rocs, roc_utils_is_perfect_curve, logical(1)))) {
+    warning("roc.test() of ROC curves with AUC == 1 has always p.value = 1 and can be misleading.")
+  }
+  k <- length(rocs)
+
+  if (is.null(contrast)) {
+    # the k - 1 successive differences: all the AUCs are equal
+    contrast <- cbind(diag(k - 1), 0) - cbind(0, diag(k - 1))
+  } else if (!is.matrix(contrast)) {
+    contrast <- matrix(contrast, nrow = 1)
+  }
+  if (!is.numeric(contrast) || ncol(contrast) != k || nrow(contrast) == 0 || !all(is.finite(contrast))) {
+    stop("'contrast' must be a numeric vector with one coefficient per ROC curve, or a matrix with one such row per contrast.")
+  }
+
+  estimate <- vapply(rocs, function(roc) as.numeric(roc$auc), numeric(1))
+  roc.names <- if (is.null(names(rocs))) rep("", k) else names(rocs)
+  roc.names <- ifelse(roc.names == "", paste0("roc", seq_len(k)), roc.names)
+  names(estimate) <- mapply(roc_test_auc_name, lapply(rocs, `[[`, "auc"), roc.names, !vapply(x$smoothing.args, is.null, logical(1)))
+  htest <- list(
+    alternative = alternative,
+    data.name = data.name,
+    estimate = estimate,
+    method = if (method == "ml") {
+      sprintf("Wald test for %d binormal ROC curves", k)
+    } else {
+      sprintf(
+        "%s test for %d %sROC curves", if (method == "delong") "DeLong's" else "Bootstrap", k,
+        if (x$paired) "correlated " else ""
+      )
+    }
+  )
+  class(htest) <- "htest"
+
+  if (method == "bootstrap") {
+    boot.n <- roc_utils_check_boot_n(boot.n)
+  }
+  calcs <- roc_utils_list_calcs(x, method, boot.n, boot.stratified, progress, cl)
+  tested <- roc_test_contrasts(contrast, calcs$theta, calcs$W, calcs$absW)
+
+  if (nrow(contrast) == 1) {
+    # One contrast: L theta / sqrt(L S L') is standard normal
+    d <- tested$d
+    sig <- tested$sd
+    stat <- delong.test(list(d = d, sig = sig))
+    # named as in roc.test.roc
+    htest$statistic <- if (method == "ml" || (method == "delong" && x$paired)) c("Z" = stat) else c("D" = stat)
+    htest$null.value <- c("contrast of AUCs" = 0)
+    htest$conf.int <- roc_test_ci_normal(d, sig, conf.level, alternative)
+    htest$p.value <- roc_test_normal_pvalue(stat, alternative)
+  } else {
+    # Several contrasts, Eq. 5: (L theta)' (L S L')^-1 (L theta) is chi-square
+    # with the rank of L S L' as degrees of freedom. 'tested' holds
+    # uncorrelated combinations of the contrasts: the sum of their (d / sd)^2
+    if (alternative != "two.sided") {
+      stop("Only two-sided tests are available with several contrasts.")
+    }
+    if (anyNA(tested$sd)) {
+      # A single case or control: the variance is undefined
+      stat <- df <- NA_real_
+    } else {
+      # Contrasts without variance: no degree of freedom, and as for two
+      # curves (delong.test) no difference if they are 0, infinite otherwise
+      df <- sum(tested$sd > 0)
+      stat <- if (any(tested$sd == 0 & tested$d != 0)) Inf else sum(((tested$d / tested$sd)^2)[tested$sd > 0])
+    }
+    htest$statistic <- c("X-squared" = stat)
+    htest$parameter <- c("df" = df)
+    htest$p.value <- pchisq(stat, df, lower.tail = FALSE)
+  }
+  if (method == "bootstrap") {
+    htest$parameter <- c(htest$parameter, "boot.n" = boot.n, "boot.stratified" = boot.stratified)
+  }
+  htest$contrast <- contrast
+  htest$rocs <- rocs
+  return(htest)
+}
+
+# The contrasts (rows of L) of the AUCs theta, d = L theta, and their
+# standard deviations sd, with W a factor of the covariance matrix of theta
+# (S = W'W, so that L S L' = A'A with A = W L').
+# Several contrasts are replaced by uncorrelated combinations of them (the
+# right singular vectors of A), so that Eq. 5 of DeLong et al. (1988) is
+# sum((d / sd)^2) over the combinations with a variance, whose number is the
+# rank of L S L'. A is decomposed rather than L S L' because the variance of
+# the difference between two nearly identical curves is lost to cancellation
+# in S.
+# Contrasts are rarely exact in floating point (1/3), so that a d or an sd
+# that should be 0, for curves that rank the observations identically, comes
+# out as a rounding residue. They are set to 0 when they are within the
+# rounding error of their computation: 'tol' times the value their terms
+# would give without cancellation (absW: W before centring), plus the error
+# of the decomposition, relative to the largest sd or d.
+roc_test_contrasts <- function(L, theta, W, absW) {
+  # Only the curves that a contrast uses: the others cannot make it NA
+  used <- colSums(L != 0) > 0
+  if (!any(used)) {
+    return(list(d = rep(0, nrow(L)), sd = rep(0, nrow(L))))
+  }
+  L <- L[, used, drop = FALSE]
+  theta <- theta[used]
+  W <- W[, used, drop = FALSE]
+  absW <- absW[, used, drop = FALSE]
+  if (anyNA(W)) {
+    return(list(d = as.vector(L %*% theta), sd = rep(NA_real_, nrow(L))))
+  }
+  # Rows on a common scale, by an exact power of 2 (in two steps, which
+  # cannot overflow)
+  scale <- unname(apply(abs(L), 1, max))
+  exponent <- -ceiling(log2(ifelse(scale == 0, 1, scale)))
+  half <- exponent %/% 2
+  L <- L * 2^half * 2^(exponent - half)
+  A <- W %*% t(L)
+  absA <- absW %*% t(abs(L))
+  absd <- drop(abs(L) %*% abs(theta))
+  tol <- 8 * sum(dim(L)) * .Machine$double.eps
+  if (nrow(L) == 1) {
+    d <- as.vector(L %*% theta)
+    sd <- sqrt(sum(A^2))
+    d[abs(d) <= tol * absd] <- 0
+    sd[sd <= tol * sqrt(sum(absA^2))] <- 0
+    # on the scale of the contrast
+    return(list(d = d / 2^half / 2^(exponent - half), sd = sd / 2^half / 2^(exponent - half)))
+  }
+  decomposition <- svd(A, nu = 0, nv = ncol(A))
+  U <- decomposition$v
+  sd <- c(decomposition$d, rep(0, ncol(A) - length(decomposition$d)))
+  d <- drop(crossprod(U, L %*% theta))
+  # ... and the error of the decomposition, relative to the largest sd and d
+  sd[sd <= tol * (sqrt(colSums((absA %*% abs(U))^2)) + max(sd))] <- 0
+  d[abs(d) <= tol * (drop(crossprod(abs(U), absd)) + max(absd))] <- 0
+  list(d = d, sd = sd)
+}
+
+# The name of the (partial) AUC of the curve 'name' in the estimates of roc.test
+roc_test_auc_name <- function(auc, name, smooth = FALSE) {
+  smoothed <- if (smooth) "Smoothed " else ""
+  if (identical(attr(auc, "partial.auc"), FALSE)) {
+    return(paste0(smoothed, "AUC of ", name))
+  }
+  nest <- paste0(
+    if (attr(auc, "partial.auc.correct")) "Corrected " else "", smoothed,
+    "pAUC (", attr(auc, "partial.auc")[1], "-", attr(auc, "partial.auc")[2], " ", attr(auc, "partial.auc.focus"),
+    ") of ", name
+  )
+  sub("Corrected Smoothed", "Corrected smoothed", nest) # no upper on smoothed if corrected.
+}
+
 roc.test.roc <- function(roc1, roc2,
                          method = c("delong", "bootstrap", "venkatraman", "sensitivity", "specificity", "ml"),
                          sensitivity = NULL, specificity = NULL,
@@ -269,28 +431,7 @@ roc.test.roc <- function(roc1, roc2,
 
   # Prepare the return value htest
   estimate <- c(curve1$auc, curve2$auc)
-  if (identical(attr(roc1$auc, "partial.auc"), FALSE)) {
-    nest <- paste(ifelse(smooth1, "Smoothed ", ""), "AUC of roc1", sep = "")
-  } else {
-    nest <- paste(ifelse(attr(roc1$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth1, "Smoothed ", ""),
-      "pAUC (", attr(roc1$auc, "partial.auc")[1], "-", attr(roc1$auc, "partial.auc")[2], " ", attr(roc1$auc, "partial.auc.focus"),
-      ") of roc1",
-      sep = ""
-    )
-  }
-  if (identical(attr(roc2$auc, "partial.auc"), FALSE)) {
-    nest <- c(nest, paste(ifelse(smooth2, "Smoothed ", ""), "AUC of roc2", sep = ""))
-  } else {
-    nest <- c(nest, paste(ifelse(attr(roc2$auc, "partial.auc.correct"), "Corrected ", ""),
-      ifelse(smooth2, "Smoothed ", ""),
-      "pAUC (", attr(roc2$auc, "partial.auc")[1], "-", attr(roc2$auc, "partial.auc")[2], " ", attr(roc2$auc, "partial.auc.focus"),
-      ") of roc2",
-      sep = ""
-    ))
-  }
-  nest <- sub("Corrected Smoothed", "Corrected smoothed", nest) # no upper on smoothed if corrected.
-  names(estimate) <- nest
+  names(estimate) <- c(roc_test_auc_name(roc1$auc, "roc1", smooth1), roc_test_auc_name(roc2$auc, "roc2", smooth2))
   null.value <- 0
   names(null.value) <- "difference in AUC"
   htest <- list(

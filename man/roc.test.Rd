@@ -6,21 +6,20 @@
 \alias{roc.test.formula}
 \alias{roc.test.auc}
 \alias{roc.test.smooth.roc}
+\alias{roc.test.list}
 
 \title{
-  Compare two ROC curves
+  Compare ROC curves
 }
 \description{
-  This function compares two correlated (or paired) or uncorrelated (unpaired)
-  ROC curves. Delong, bootstrap and ML methods test for a difference in the
-  (partial) AUC of the ROC curves. The Venkatraman method tests if the two
-  curves are perfectly superposed. The sensitivity and specificity methods
-  test if the sensitivity (respectively specificity) of the ROC curves are
-  different at the given level of specificity (respectively sensitivity).
-  Several syntaxes are available: two object of class roc (which can be AUC
-  or smoothed ROC), or either three vectors (response, predictor1, predictor2)
-  or a response vector and a matrix or data.frame with two columns
-  (predictors).
+  This function compares two ROC curves, or a list of two or more ROC
+  curves, correlated (paired) or uncorrelated (unpaired). The DeLong,
+  bootstrap and ML methods test for a difference in the (partial) AUC of
+  the curves, or for contrasts of the AUCs of a list of curves. The
+  Venkatraman method tests if two curves are perfectly superposed. The
+  sensitivity and specificity methods test if the sensitivity
+  (respectively specificity) of two ROC curves are different at the given
+  level of specificity (respectively sensitivity).
 }
 \usage{
 # roc.test(...)
@@ -32,6 +31,10 @@ ties.method="random", progress = getOption("pROCProgress", interactive()),
 parallel=FALSE, conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{auc}(roc1, roc2, ...)
 \S3method{roc.test}{smooth.roc}(roc1, roc2, ...)
+\S3method{roc.test}{list}(rocs, contrast=NULL, method=c("delong", "bootstrap", "ml"),
+alternative = c("two.sided", "less", "greater"), paired=NULL, boot.n=2000,
+boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
+conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
 na.rm=TRUE, method=NULL, paired=TRUE, ...)
@@ -41,6 +44,16 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{roc1, roc2}{the two ROC curves to compare. Either
 	\dQuote{\link{roc}}, \dQuote{\link{auc}} or
 	\dQuote{\link{smooth.roc}} objects (types can be mixed).
+  }
+  \item{rocs}{a list of two or more ROC curves, as
+    \dQuote{\link{roc}}, \dQuote{\link{auc}} or
+    \dQuote{\link{smooth.roc}} objects. Paired curves must be built on
+    the same observations.
+  }
+  \item{contrast}{the contrasts of the AUCs to test against 0: a numeric
+    vector with one coefficient per curve in \code{rocs}, or a matrix
+    with one such row per contrast. If \code{NULL} (default), the
+    equality of all the AUCs is tested.
   }
   \item{response}{a vector or factor, as for the \link{roc} function.
     The default and formula methods, which build the curves, are
@@ -79,12 +92,14 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{alternative}{specifies the alternative hypothesis. Either of
     \dQuote{two.sided}, \dQuote{less} or \dQuote{greater}. The first letter is
     sufficient. Default: \dQuote{two.sided}. Only \dQuote{two.sided} is available
-    with \code{method="venkatraman"}.
+    with \code{method="venkatraman"} and with several contrasts.
   }
   \item{paired}{a logical indicating whether you want a paired roc.test.
     If \code{NULL}, the paired status will be auto-detected by \code{\link{are.paired}}.
     \code{TRUE} requires curves that can be paired (see Details), and
-    \code{FALSE} treats the curves as unpaired.
+    \code{FALSE} treats the curves as unpaired. The curves of a list are
+    paired if they all are; if only some are, they are all tested as
+    unpaired.
   }
   \item{reuse.auc}{if \code{TRUE} (default) and the \dQuote{roc} objects
     contain an \dQuote{auc} field, re-use these specifications for the
@@ -137,41 +152,43 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{\dots}{further arguments passed to or from other methods,
     especially arguments for \code{\link{roc}} and \code{roc.test.roc}
     when calling \code{roc.test.default} or \code{roc.test.formula}.
-    Arguments for \code{\link{auc}} if applicable.
+    Arguments for \code{\link{auc}} if applicable. Not used with a list
+    of curves.
   }
 }
 
 \details{
-  This function compares two ROC curves. It is typically called with the two \link{roc} objects to
-  compare. \code{roc.test.default} is provided as a convenience
-  method and creates two \link{roc} objects before calling
-  \code{roc.test.roc}.
+  The curves are given as \dQuote{\link{roc}}, \dQuote{\link{auc}} or
+  \dQuote{\link{smooth.roc}} objects: two of them, or a list of two or
+  more.
 
-  Four methods are available: \dQuote{delong}, \dQuote{bootstrap}, \dQuote{ml} and \dQuote{venkatraman} (see
-  \dQuote{Computational details} section below). \dQuote{delong},
-  \dQuote{bootstrap} and \dQuote{ml} are tests over the AUC whereas \dQuote{venkatraman}
-  compares the the ROC curves themselves.
+  The \dQuote{delong}, \dQuote{bootstrap} and \dQuote{ml} methods test
+  the AUC, \dQuote{venkatraman} the ROC curves themselves, and
+  \dQuote{sensitivity} and \dQuote{specificity} one point of the curves
+  (see the \dQuote{Computation details} section below). Only the first
+  three are available for a list of curves.
 
-  Default is to use \dQuote{delong} method except for comparison of partial AUC, smoothed
-  curves and curves with different \code{direction}, where \code{bootstrap}
-  is used. Unpaired curves both smoothed with \code{method="binormal"} or
-  \code{"proper"} are compared with \dQuote{ml}, unless a partial AUC is
-  specified. Using \dQuote{delong} for partial AUC and smoothed ROCs is not
-  supported in pROC and result in an error, as is \dQuote{ml} for
-  anything else than the full AUC of two unpaired binormal or proper
-  smoothed curves.
-  It is spurious to use \dQuote{delong} for \code{\link{roc}} with different
-  \code{direction} (a warning is issued but the spurious comparison is
-  enforced). \dQuote{venkatraman}'s test cannot be employed to compare smoothed
-  ROC curves, or curves with partial AUC specifications. In addition,
-  and comparison of ROC curves with different
-  \code{direction} should be used with care (a warning is produced as well).
+  If \code{method} is not provided, it is the first that applies of:
+  \enumerate{
+    \item \dQuote{bootstrap} for a partial AUC;
+    \item \dQuote{ml} for unpaired curves all smoothed with
+    \code{method="binormal"} or \code{"proper"};
+    \item \dQuote{bootstrap} for other smoothed curves, and for curves
+    with different \code{direction};
+    \item \dQuote{delong}.
+  }
+  \dQuote{delong} and \dQuote{venkatraman} do not support partial AUCs
+  nor smoothed curves, and \dQuote{ml} only supports the full AUC of
+  unpaired binormal or proper smoothed curves. \dQuote{delong} and
+  \dQuote{venkatraman} ignore the \code{direction} of the curves: with
+  different directions the comparison is spurious (a warning is issued
+  but the comparison is enforced).
 
   If \code{alternative="two.sided"}, a two-sided test for difference in AUC is performed. If
   \code{alternative="less"}, the alternative is that the AUC of roc1 is
-  smaller than the AUC of roc2. For \code{method="venkatraman"}, only
-  \dQuote{two.sided} test is available.
-  
+  smaller than the AUC of roc2, or that the \code{contrast} is smaller
+  than 0.
+
   If the \code{paired} argument is not provided, the
   \code{\link{are.paired}} function is employed to detect the paired
   status of the ROC curves, and a message tells the result. The detection
@@ -184,9 +201,10 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   by \code{roc.test.default} and \code{roc.test.formula} share their
   response and are paired.
 
-  Paired curves with different missing values are re-paired as in
+  Two paired curves with different missing values are re-paired as in
   \code{\link{are.paired}}; the test and the \code{estimate} refer to
-  the re-paired curves, returned as \code{roc1} and \code{roc2}.
+  the re-paired curves, returned as \code{roc1} and \code{roc2}. The
+  curves of a list are not re-paired.
 
   For \link[=smooth.roc]{smoothed ROC curves}, smoothing is performed again at each
   bootstrap replicate with the parameters originally provided.
@@ -232,8 +250,7 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 
   With \code{method="delong"}, the processing is done as described in
   DeLong \emph{et al.} (1988) for paired ROC curves, using the algorithm
-  of Sun and Xu (2014). Only comparison of
-  two ROC curves is implemented. For unpaired ROC curves, the statistic
+  of Sun and Xu (2014). For unpaired ROC curves, the statistic
   \deqn{
     D=\frac{\theta^r - \theta^s}{\sqrt{S^r + S^s}}
   }{
@@ -251,6 +268,35 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   }
   is compared to the normal distribution (Dorfman and Alf, 1969, p. 494;
   Pesce and Metz, 2007, p. 822).
+
+  For a list of \var{k} ROC curves, with \eqn{\theta} the vector
+  of their AUCs, \var{S} its covariance matrix (see
+  \code{\link[=cov.roc]{cov}}) and \var{L} the \code{contrast},
+  DeLong \emph{et al.} (1988, p. 841) is applied. With
+  \code{method="bootstrap"}, \var{S} is the covariance matrix of the
+  (partial) AUCs of the \code{boot.n} bootstrap replicates, so that the
+  test of two curves is the bootstrap test above. Unpaired curves are
+  independent: with \code{method="delong"} and \code{"ml"} \var{S}
+  only holds their variances, and with \code{method="bootstrap"} each
+  curve is resampled separately. With one contrast,
+  \deqn{
+    Z=\frac{L\theta}{\sqrt{LSL'}}
+  }{
+    Z=L\theta / sqrt(LSL')
+  }
+  is compared to the normal distribution, and \code{conf.int} is the
+  confidence interval of \eqn{L\theta}. With several contrasts,
+  \deqn{
+    X^2=(L\theta)'(LSL')^{-1}(L\theta)
+  }{
+    X^2=(L\theta)' (LSL')^-1 (L\theta)
+  }
+  is compared to the chi-square distribution with the rank of
+  \eqn{LSL'} as degrees of freedom (Equation 5). The default
+  \code{contrast} is the \eqn{k-1} differences between successive
+  curves. A contrast without variance, for instance between curves that
+  rank the observations identically, gives a statistic of 0 if it is 0
+  and an infinite statistic otherwise, as for two curves.
 
   With \code{method="venkatraman"}, the processing is done as described
   in Venkatraman and Begg (1996) (for paired ROC curves) and Venkatraman
@@ -270,68 +316,26 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 }
 
 \section{Warnings}{
-  If \dQuote{auc} specifications are different in both roc objects, the
-  warning \dQuote{Different AUC specifications in the ROC
-    curves. Enforcing the inconsistency, but unexpected results may be
-    produced.} is issued. Unexpected results may be produced.
+  Curves with different \dQuote{auc} specifications or different
+  smoothing parameters are compared as they are, with a warning.
+  Smoothing arguments are compared as they were given (see
+  \code{smoothing.args} in the Value section of
+  \code{\link[=smooth.roc]{smooth}}): an explicit default value or an
+  abbreviation (such as \code{kernel="e"} for \code{"epanechnikov"})
+  counts as a difference. To smooth curves the same way, call
+  \code{\link[=smooth.roc]{smooth}} on each of them with the same
+  arguments rather than using \code{roc(\dots, smooth=TRUE)}, where the
+  arguments meant for other functions (such as plot) also reach the
+  smoothing.
 
-  If one or both ROC curves are \dQuote{smooth.roc} objects with
-  different smoothing specifications, the warning 
-  \dQuote{Different smoothing parameters in the ROC curves. Enforcing
-    the inconsistency, but unexpected results may be produced.} is issued.
-  This warning is benign if you really want to compare two ROC curves
-  smoothed differently. To smooth both curves the same way, call
-  \code{\link[=smooth.roc]{smooth}} on each curve with the same arguments
-  (for example \code{smooth(roc1)} and \code{smooth(roc2)}) rather than
-  using \code{roc(\dots, smooth=TRUE)}, where the arguments meant for
-  other functions (such as plot) also reach the smoothing.
-  The arguments are compared as they were given (see \code{smoothing.args}
-  in the Value section of \code{\link[=smooth.roc]{smooth}}): an explicit
-  default value or an abbreviation (such as \code{kernel="e"} for
-  \code{"epanechnikov"}) counts as a difference.
+  Bootstrap replicates without an area are ignored, with a warning: those
+  without a case or control observation, which can happen with
+  \code{boot.stratified=FALSE} and a large imbalance between cases and
+  controls, and those without enough points for smoothing.
 
-  Both DeLong and Venkatraman's test ignores the direction of the ROC curve so that if two
-  ROC curves have a different value of
-  \code{direction}, a warning is issued. However, the spurious test is
-  enforced.
-
-  If \code{boot.stratified=FALSE} and the sample has a large imbalance between
-  cases and controls, it could happen that one or more of the replicates
-  contains no case or control observation, or that there are not enough
-  points for smoothing, producing a \code{NA} area.
-  The warning \dQuote{NA value(s) produced during bootstrap were ignored.}
-  will be issued and the observation will be ignored. If you have a large
-  imbalance in your sample, it could be safer to keep
-  \code{boot.stratified=TRUE}.
-  
-  When both ROC curves have an \code{\link{auc}} of 1 (or 100\%), their variances and covariance will always be null,
-  and therefore the p-value will always be 1. This is true for the \dQuote{delong}, \dQuote{bootstrap}, \dQuote{ml} and 
-  \dQuote{venkatraman} methods. This result is misleading, as the variances and covariance are of course not null.
-  A \code{\link{warning}} will be displayed to inform of this condition, and of the misleading output.
-}
-
-\section{Errors}{
-  An error will also occur if you give a \code{predictor2} when
-  \code{predictor1} is a \code{\link{matrix}} or a
-  \code{\link{data.frame}}, if \code{predictor1} has more than two
-  columns, or if you do not give a \code{predictor2} when
-  \code{predictor1} is a vector.
-  
-  If one of the ROC curves was smoothed with numeric
-  \code{density.controls} and \code{density.cases}, an error is issued.
-
-  If \code{method="venkatraman"} and one of the ROC curves is smoothed,
-  an error is issued.
-
-  If \code{method="venkatraman"}, and \code{alternative} is
-  \dQuote{less} or \dQuote{greater}, an error is issued.
-
-  With \code{method="specificity"}, the error \dQuote{Argument
-    'specificity' must be numeric of length 1 for a specificity test.}
-  is given unless the specificity argument is specified as a numeric of
-  length 1. The \dQuote{Argument 'sensitivity' must be numeric of length
-    1 for a sensitivity test.} message is given for
-  \code{method="sensitivity"} under similar conditions.
+  When all the curves have an \code{\link{auc}} of 1 (or 100\%), their
+  variances and covariances are estimated as null and the p-value of
+  a difference is always 1. This result is misleading, and comes with a warning.
 }
 
 \value{
@@ -341,9 +345,11 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     curves, and \code{method="ml"}), D (\code{method="delong"} with unpaired curves,
     \code{method="bootstrap"}, \code{"sensitivity"} and
     \code{"specificity"}) or E (\code{method="venkatraman"}) statistics.
+    For a list of curves, Z or D as above with one contrast, and
+    X-squared with several.
   }
-  \item{conf.int}{the confidence interval of the difference tested
-    (not returned with \code{method="venkatraman"}). Has an attribute \code{conf.level} specifying the level of the test.}
+  \item{conf.int}{the confidence interval of the difference or contrast tested
+    (not returned with \code{method="venkatraman"} or with several contrasts). Has an attribute \code{conf.level} specifying the level of the test.}
   \item{alternative}{the alternative hypothesis.}
   \item{method}{a character string describing the test, such as
     \dQuote{DeLong's test for two correlated ROC curves} (if
@@ -352,8 +358,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     \code{method="bootstrap"} with unpaired curves).
   }
   \item{null.value}{the expected value of the statistic under the null
-    hypothesis, that is 0.}
-  \item{estimate}{the AUC of the two ROC curves (with paired curves,
+    hypothesis, that is 0. Not returned with several contrasts.}
+  \item{estimate}{the AUC of the ROC curves (with two paired curves,
     the curves rebuilt on the observations complete in both, see
     Details), or the specificities (\code{method="sensitivity"}) or
     sensitivities (\code{method="specificity"}) of the two curves at
@@ -364,8 +370,11 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{parameter}{for \code{method="bootstrap"}, \code{"sensitivity"}
     and \code{"specificity"}: the values of the \code{boot.n} and
     \code{boot.stratified} arguments. For \code{method="venkatraman"}: the
-    value of \code{boot.n}.
+    value of \code{boot.n}. For a list of curves with several
+    contrasts: also the degrees of freedom.
   }
+  \item{rocs, contrast}{for a list of curves: the ROC curves that were
+    compared, and the matrix of contrasts that was tested.}
 }
 
 \section{Acknowledgements}{
@@ -446,6 +455,19 @@ roc.test(auc(roc1), roc2)
 
 # Force an unpaired test
 roc.test(roc1, roc2, paired = FALSE)
+
+# More than two paired curves: are all the AUCs equal?
+rocs <- list(s100b = roc1, wfns = roc2, ndka = roc(aSAH$outcome, aSAH$ndka))
+roc.test(rocs)
+# One contrast: s100b against the mean of the other two
+roc.test(rocs, contrast = c(1, -0.5, -0.5))
+# Several contrasts, one per row
+roc.test(rocs, contrast = rbind(c(1, -1, 0), c(1, 0, -1)))
+# Partial AUCs are bootstrapped
+paucs <- lapply(rocs, auc, partial.auc = c(1, 0.8))
+\dontrun{
+roc.test(paucs)}\dontshow{
+roc.test(paucs, boot.n = 10)}
 
 # Bootstrap
 \dontrun{

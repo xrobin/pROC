@@ -74,13 +74,7 @@ roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.
   # formula gives the row names, as model.response() does), but not the
   # na.action attribute: two curves that lost different observations must be
   # paired on the observations they share, below.
-  # Without a given response there is no na.action: if such a curve lost
-  # observations, compare the positions of the missing values.
-  lost <- (isFALSE(roc1$response.given) && anyNA(roc1$original.predictor)) ||
-    (isFALSE(roc2$response.given) && anyNA(roc2$original.predictor))
-  same.missing <- !lost ||
-    identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
-  if (identical(unname(roc1$response), unname(roc2$response)) && same.missing) {
+  if (roc_utils_same_observations(roc1, roc2)) {
     retval <- TRUE
     if (return.paired.rocs) {
       # Return the smoothed curves if the input was smoothed
@@ -152,6 +146,29 @@ roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.
   }
 }
 
+# Whether two curves hold the same observations: paired without re-pairing.
+# Without a given response there is no na.action: if such a curve lost
+# observations, compare the positions of the missing values.
+roc_utils_same_observations <- function(roc1, roc2) {
+  lost <- (isFALSE(roc1$response.given) && anyNA(roc1$original.predictor)) ||
+    (isFALSE(roc2$response.given) && anyNA(roc2$original.predictor))
+  same.missing <- !lost ||
+    identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
+  if (identical(unname(roc1$response), unname(roc2$response)) && same.missing) {
+    return(TRUE)
+  }
+  # Only one curve has a given response, with its na.action: the same rows of
+  # the same data were dropped
+  identical(as.vector(roc1$response), as.vector(roc2$response)) &&
+    identical(unname(roc1$original.response), unname(roc2$original.response)) &&
+    identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
+}
+
+roc_utils_not_paired_automatically <- paste(
+  "ROC curves built from 'controls' and 'cases' are not paired automatically.",
+  "Use 'paired = TRUE' if they hold the same patients in the same order, or 'paired = FALSE' if they do not."
+)
+
 # The pairing decision of roc.test, cov and power.roc.test:
 # - paired = TRUE requires curves that can be paired (roc_utils_can_pair);
 # - paired = FALSE treats the curves as unpaired;
@@ -174,12 +191,45 @@ roc_utils_paired <- function(roc1, roc2, paired) {
     return(can.pair)
   }
   if (can.pair && !are.paired(roc1, roc2)) {
-    warning(simpleWarning(paste(
-      "ROC curves built from 'controls' and 'cases' are not paired automatically.",
-      "Use 'paired = TRUE' if they hold the same patients in the same order, or 'paired = FALSE' if they do not."
-    ), sys.call(-1)))
+    warning(simpleWarning(roc_utils_not_paired_automatically, sys.call(-1)))
     return(FALSE)
   }
   message(sprintf("Setting paired: %s", isTRUE(can.pair)))
   can.pair
+}
+
+# The same decision for a list of curves (roc.test.list, cov.list), which are
+# paired if every two of them are. Curves of which only some can be paired
+# are unpaired, with a warning. Returns TRUE or FALSE.
+roc_utils_paired_list <- function(rocs, paired) {
+  if (!is.null(paired) && !paired) {
+    return(FALSE)
+  }
+  every.pair <- function(given.only) {
+    unlist(lapply(seq_along(rocs)[-1], function(j) {
+      vapply(seq_len(j - 1), function(i) {
+        isTRUE(roc_utils_can_pair(rocs[[i]], rocs[[j]],
+          return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
+          given.only = given.only
+        ))
+      }, logical(1))
+    }))
+  }
+  can.pair <- every.pair(given.only = FALSE)
+  if (!is.null(paired)) {
+    if (!all(can.pair)) {
+      stop("'paired = TRUE' cannot be applied to unpaired ROC curves.", call. = FALSE)
+    }
+    return(TRUE)
+  }
+  if (any(can.pair) && !all(can.pair)) {
+    warning("Only some of the ROC curves are paired: they are all treated as unpaired.", call. = FALSE)
+    return(FALSE)
+  }
+  if (all(can.pair) && !all(every.pair(given.only = TRUE))) {
+    warning(roc_utils_not_paired_automatically, call. = FALSE)
+    return(FALSE)
+  }
+  message(sprintf("Setting paired: %s", all(can.pair)))
+  all(can.pair)
 }
