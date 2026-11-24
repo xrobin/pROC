@@ -1263,6 +1263,11 @@ roc_utils_has_ml <- function(roc, auc = roc$auc) {
   inherits(roc, "smooth.roc") && !isTRUE(has.partial.auc.auc(auc)) && (!is.null(roc$binormal) || !is.null(roc$proper))
 }
 
+# The error of DeLong's method for 'what' it does not support
+roc_utils_no_delong <- function(what) {
+  sprintf("DeLong's method is not supported for %s. Use method=\"bootstrap\" instead.", what)
+}
+
 roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
   if (!roc_utils_has_ml(roc, auc)) {
     stop("The ML method is only supported for the full AUC of curves smoothed with method=\"binormal\" or \"proper\". Use method=\"bootstrap\" instead.")
@@ -1375,10 +1380,10 @@ roc_utils_list_method <- function(x, method, methods) {
     }
     if (method == "delong") {
       if (partial) {
-        stop("DeLong's method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("partial AUC"))
       }
       if (smoothed) {
-        stop("DeLong's method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("smoothed ROCs"))
       }
       if (!same.direction) {
         warning("DeLong's method should not be applied to ROC curves with a different direction.")

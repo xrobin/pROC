@@ -146,18 +146,69 @@ power.roc.test.roc <- function(roc1, roc2, sig.level = 0.05, power = NULL, kappa
       stop("'roc2' must be an object of class 'roc'.")
     }
   } else {
+    if (isTRUE(paired)) {
+      stop("'roc2' is missing for paired test")
+    }
     ncontrols <- length(roc1$controls)
     ncases <- length(roc1$cases)
-    if (!is.null(sig.level) && !is.null(power)) {
-      if (is.null(kappa)) {
-        kappa <- ncontrols / ncases
+    if (identical(method, "obuchowski")) {
+      if (!is.null(sig.level) && !is.null(power)) {
+        if (is.null(kappa)) {
+          kappa <- ncontrols / ncases
+        }
+        ncontrols <- ncases <- NULL
       }
-      ncontrols <- ncases <- NULL
+      return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = roc1$auc, sig.level = sig.level, power = power, alternative = alternative, kappa = kappa, ...))
     }
-    auc <- roc1$auc
-    # TODO: implement this with var() and cov() for the given ROC curve
-    return(power.roc.test.numeric(ncontrols = ncontrols, ncases = ncases, auc = auc, sig.level = sig.level, power = power, alternative = alternative, kappa = kappa, ...))
+
+    # Power of roc.test(roc1), which divides the difference with the
+    # absence of discrimination by its standard error estimated from the
+    # data: the variance of the AUC is used in both terms, as with two
+    # curves (Jung, 2024, Eqs. 4-5)
+    alternative <- match.arg(alternative)
+    if (!is.null(sig.level) && alternative == "two.sided") {
+      sig.level <- sig.level / 2
+    }
+    if (is.null(kappa)) {
+      kappa <- ncontrols / ncases
+    }
+    delta <- as.numeric(roc1$auc) - roc_utils_min_partial_auc(attr(roc1$auc, "partial.auc"), FALSE)
+    if (is.null(power)) {
+      if (is.null(sig.level)) {
+        stop("'sig.level' or 'power' must be provided.")
+      }
+      v <- var_per_case(roc1, method, ...)
+      power <- pnorm(solve_zbeta(nd = ncases, zalpha = qnorm(1 - sig.level), v0 = v, va = v, delta = delta))
+    } else if (is.null(sig.level)) {
+      v <- var_per_case(roc1, method, ...)
+      sig.level <- 1 - pnorm(solve_zalpha(nd = ncases, zbeta = qnorm(power), v0 = v, va = v, delta = delta))
+    } else {
+      v <- var_per_case(roc1, method, kappa = kappa, ...)
+      ncases <- solve_nd(zalpha = qnorm(1 - sig.level), zbeta = qnorm(power), v0 = v, va = v, delta = delta)
+      ncontrols <- kappa * ncases
+    }
+    if (alternative == "two.sided") {
+      sig.level <- sig.level * 2
+    }
+    return(structure(list(ncases = ncases, ncontrols = ncontrols, auc = roc1$auc, sig.level = sig.level, power = power, method = "One ROC curve power calculation"), class = "power.htest"))
   }
+}
+
+# n_cases * var(roc), a function of the ratio of controls to cases only
+# kappa: the ratio at which it is computed (defaults to the observed one)
+var_per_case <- function(roc, method, kappa = NULL, ...) {
+  ncases <- length(roc$cases)
+  v <- var(roc, method = method, ...) * ncases
+  if (!is.null(kappa) && kappa != length(roc$controls) / ncases) {
+    if (has.partial.auc(roc) || identical(method, "bootstrap")) {
+      warning("'kappa' cannot be taken into account in the variance with method=\"bootstrap\": the ratio of controls to cases of the ROC curves is used.")
+    } else {
+      # var(X) + var(Y) / kappa (structural components)
+      V <- delongPlacements(roc)
+      v <- var(V$X) + var(V$Y) / kappa
+    }
+  }
+  v
 }
 
 power.roc.test.numeric <- function(auc = NULL, ncontrols = NULL, ncases = NULL, sig.level = 0.05, power = NULL, kappa = 1, alternative = c("two.sided", "one.sided"), ...) {

@@ -136,11 +136,11 @@ test_that("paired venkatraman reproduces Example 4.1 of Venkatraman and Begg (19
 test_that("venkatraman rejects a partial AUC on either curve", {
   set.seed(42)
   expect_warning(
-    expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Partial AUC is not supported"),
+    expect_error(roc.test(r.s100b.partial1, r.ndka, method = "venkatraman", boot.n = 2), "Venkatraman's test is not supported for partial AUC"),
     "Different AUC specifications"
   )
   expect_warning(
-    expect_error(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2), "Partial AUC is not supported"),
+    expect_error(roc.test(r.s100b, r.ndka.partial1, method = "venkatraman", boot.n = 2), "Venkatraman's test is not supported for partial AUC"),
     "Different AUC specifications"
   )
 })

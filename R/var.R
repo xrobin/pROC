@@ -87,9 +87,9 @@ var.roc <- function(roc,
     # delong NA to pAUC: warn + change
     if (method == "delong") {
       if (has.partial.auc(roc)) {
-        stop("DeLong method is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("partial AUC"))
       } else if ("smooth.roc" %in% class(roc)) {
-        stop("DeLong method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("smoothed ROCs"))
       }
     } else if (method == "obuchowski") {
       if ("smooth.roc" %in% class(roc)) {
