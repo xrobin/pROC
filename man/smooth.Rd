@@ -316,9 +316,9 @@ reuse.auc=TRUE, reuse.ci=FALSE, ...)
   predictors can be smoothed only with binormal or proper smoothing.} is
   displayed otherwise.
 
-  \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods,
-  and \code{method="proper"}, require additional packages (\pkg{MASS},
-  \pkg{logcondens} and \pkg{mvtnorm}, respectively). In an interactive session, you will be offered to install
+  \code{fitdistr}, \code{logcondens} and \code{logcondens.smooth} methods
+  require additional packages (\pkg{MASS} and
+  \pkg{logcondens}, respectively). In an interactive session, you will be offered to install
   a missing package; otherwise an error is issued.
 }
 

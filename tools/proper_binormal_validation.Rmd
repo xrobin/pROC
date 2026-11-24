@@ -24,7 +24,7 @@ This report checks `smooth(method = "proper")` (issue
 (`var(method = "ml")`), against the published results of the "proper"
 binormal model (PBM). It
 is maintainer-only: knit it from the package root with the version of pROC
-to check installed, and mvtnorm:
+to check installed:
 
 ```{r, eval = FALSE}
 rmarkdown::render("tools/proper_binormal_validation.Rmd")
@@ -66,7 +66,7 @@ ls.auc <- function(r) {
   co <- coefficients(lm(sp ~ se, df))
   unname(pnorm(co[1] / sqrt(1 + co[2]^2)))
 }
-c(pROC = as.character(packageVersion("pROC")), mvtnorm = as.character(packageVersion("mvtnorm")), R = R.version.string)
+c(pROC = as.character(packageVersion("pROC")), R = R.version.string)
 ```
 
 ## AUC (M&P Eq. 36)
@@ -95,7 +95,7 @@ so the AUC is $1 + \arcsin(\rho) / \pi$ with $\rho = -(1 - c^2) / (1 + c^2)$:
 
 ```{r closed-form}
 cs <- c(-0.99, -0.5, -1e-3, -1e-6, 1e-6, 1e-3, 0.5, 0.99)
-closed <- 1 + asin(-(1 - cs^2) / (1 + cs^2)) / pi
+closed <- 0.5 + 2 * atan(abs(cs)) / pi # arcsin(rho) = 2 atan(|c|) - pi / 2
 max(abs(vapply(cs, pROC:::proper_binormal_auc, numeric(1), da = 0) - closed))
 ```
 

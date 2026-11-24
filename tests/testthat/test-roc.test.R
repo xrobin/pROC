@@ -473,7 +473,6 @@ test_that("roc.test of one binormal curve is a Wald test with the ML variance", 
   expect_error(roc.test(auc(s, partial.auc = c(1, 0.9)), method = "ml"), "The ML method is only supported")
   expect_identical(roc.test(auc(s, partial.auc = c(1, 0.9)), boot.n = 10)$method, "Bootstrap test for one ROC curve")
 
-  skip_if_not_installed("mvtnorm")
   proper <- smooth(r.ndka, method = "proper")
   ht <- roc.test(proper, alternative = "greater")
   expect_identical(ht$method, "Wald test for one binormal ROC curve")
@@ -1305,8 +1304,7 @@ test_that("roc.test with a list of unpaired binormal curves uses the ml method",
   u.ndka <- roc(aSAH$outcome[-1], aSAH$ndka[-1], quiet = TRUE)
   u.wfns <- roc(aSAH$outcome[-(1:2)], as.numeric(aSAH$wfns)[-(1:2)], quiet = TRUE)
   fields <- c("statistic", "parameter", "p.value", "conf.int", "estimate")
-  methods <- c("binormal", if (requireNamespace("mvtnorm", quietly = TRUE)) "proper")
-  for (method in methods) {
+  for (method in c("binormal", "proper")) {
     smoothed <- list(smooth(r.s100b, method = method), smooth(u.ndka, method = method), smooth(u.wfns, method = method))
     # The two-curve test
     # boot.n: a bootstrap chosen by mistake fails quickly

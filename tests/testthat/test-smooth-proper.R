@@ -3,8 +3,6 @@ data(aSAH)
 
 context("smooth binormal proper")
 
-skip_if_not_installed("mvtnorm")
-
 # Degenerate data of issue #152: only one control scores among the cases
 mtcars.glm <- glm(am ~ wt + hp, data = mtcars, family = "binomial")
 r.mtcars <- roc(mtcars$am, predict(mtcars.glm, type = "response"), quiet = TRUE)
@@ -37,13 +35,38 @@ test_that("Eq. 36 has the closed forms at c = 0, at da = 0 and under reflection"
   for (da in c(0, 0.5, 1.7, 4)) {
     expect_identical(pROC:::proper_binormal_auc(da, 0), pnorm(da / sqrt(2)))
   }
-  # da = 0: F(0, 0; rho) = 1/4 + arcsin(rho) / (2 pi) (Owen 1956, p. 1078)
-  for (c in c(-0.9, -0.3, -1e-6, 1e-4, 0.5)) {
-    rho <- -(1 - c^2) / (1 + c^2)
-    expect_equal(pROC:::proper_binormal_auc(0, c), 1 + asin(rho) / pi, tolerance = 1e-8)
+  # da = 0: F(0, 0; rho) = 1/4 + arcsin(rho) / (2 pi) (Owen 1956, p. 1078),
+  # with arcsin(rho) = 2 atan(|c|) - pi / 2
+  for (c in c(-1, -0.9, -0.3, -1e-6, 1e-12, 1e-4, 0.5)) {
+    expect_equal(pROC:::proper_binormal_auc(0, c), 0.5 + 2 * atan(abs(c)) / pi, tolerance = 1e-14)
   }
   # the sign of c only reflects the curve (Pesce & Metz p. 819)
   expect_identical(pROC:::proper_binormal_auc(1.2, -0.4), pROC:::proper_binormal_auc(1.2, 0.4))
+  # a c too small for 1 / c is as c = 0
+  expect_identical(pROC:::proper_binormal_auc(0, 1e-310), 0.5)
+  expect_identical(pROC:::proper_binormal_auc(1.7, 1e-310), pnorm(1.7 / sqrt(2)))
+  # Beyond the range of the parameters, where the central differences of the
+  # variance reach: Eq. 36 is even in da (c != 0), and 1 / c changes the sign
+  # of T (Owen 1956, p. 1076, Eqs. 2.4-2.5)
+  expect_identical(pROC:::proper_binormal_auc(-0.3, 0.4), pROC:::proper_binormal_auc(0.3, 0.4))
+  for (c in c(0.01, 0.4, 1 - 1e-6)) {
+    expect_equal(pROC:::proper_binormal_auc(1.2, 1 / c), 2 - pROC:::proper_binormal_auc(1.2, c), tolerance = 1e-14)
+  }
+})
+
+test_that("Eq. 36 is computed to machine precision", {
+  # da, c, and Eq. 36 from the bivariate normal density with 40 digits
+  # (mpmath), on both sides of |c| = sqrt(2) - 1
+  reference <- rbind(
+    c(1e-8, 1e-8, 0.500000006759991657), c(0.5, 0.001, 0.638163195084118466),
+    c(1, 0.1, 0.760257017761524360), c(1.5, 0.41, 0.875697210971581818),
+    c(1.5, 0.42, 0.877465524173905133), c(2, 0.7, 0.960774945852228879),
+    c(4, 0.9, 0.999395837997844454), c(0.3, 0.999, 0.999688616451496831),
+    c(8, 0.3, 0.999999992291371050)
+  )
+  for (i in seq_len(nrow(reference))) {
+    expect_equal(pROC:::proper_binormal_auc(reference[i, 1], reference[i, 2]), reference[i, 3], tolerance = 1e-14)
+  }
 })
 
 test_that("Eq. 36 is the area under the curve of Eqs. 33-34", {

@@ -160,7 +160,6 @@ proper_auc_gradient <- function(da, c, n) {
 }
 
 test_that("the ML variance of a proper fit uses the inverse expected information", {
-  skip_if_not_installed("mvtnorm")
   s <- smooth(r.wfns, method = "proper")
   fit <- s$proper
   k <- fit$categories$controls
@@ -174,7 +173,6 @@ test_that("the ML variance of a proper fit uses the inverse expected information
 })
 
 test_that("the proper ML variance of a single point leaves out the singular direction, with a warning", {
-  skip_if_not_installed("mvtnorm")
   # two categories, three parameters: the information is singular
   expect_warning(
     s <- smooth(roc(controls = c(1, 1, 1, 2, 2), cases = c(1, 2, 2, 2, 2), quiet = TRUE), method = "proper"),
@@ -196,7 +194,6 @@ test_that("the proper ML variance of a single point leaves out the singular dire
 })
 
 test_that("the proper ML variance of perfect performance is 0", {
-  skip_if_not_installed("mvtnorm")
   expect_warning(s <- smooth(roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE), method = "proper"), "Perfect performance")
   expect_warning(expect_identical(var(s), 0), "var() of a ROC curve with AUC == 1 is always 0 and can be misleading.", fixed = TRUE)
   expect_warning(ci <- ci.auc(s), "ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.", fixed = TRUE)
@@ -204,7 +201,6 @@ test_that("the proper ML variance of perfect performance is 0", {
 })
 
 test_that("unpaired roc.test of two perfect proper fits has Z = 0", {
-  skip_if_not_installed("mvtnorm")
   expect_warning(s1 <- smooth(roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE), method = "proper"), "Perfect performance")
   expect_warning(s2 <- smooth(roc(controls = c(1, 2), cases = c(4, 5, 6, 7), quiet = TRUE), method = "proper"), "Perfect performance")
   expect_warning(t <- roc.test(s1, s2), "roc.test() of two ROC curves with AUC == 1 has always p.value = 1 and can be misleading.", fixed = TRUE)
@@ -213,7 +209,6 @@ test_that("unpaired roc.test of two perfect proper fits has Z = 0", {
 })
 
 test_that("unpaired roc.test of proper fits defaults to the ML method", {
-  skip_if_not_installed("mvtnorm")
   male <- aSAH$gender == "Male"
   s1 <- smooth(roc(aSAH$outcome[male], aSAH$wfns[male], quiet = TRUE), method = "proper")
   s2 <- smooth(roc(aSAH$outcome[!male], aSAH$wfns[!male], quiet = TRUE), method = "proper")
@@ -223,7 +218,6 @@ test_that("unpaired roc.test of proper fits defaults to the ML method", {
 })
 
 test_that("the proper ML variance warns at the chance line", {
-  skip_if_not_installed("mvtnorm")
   # empirical AUC below 0.5: the fit is the chance line
   s <- smooth(roc(controls = c(2, 4, 6, 8), cases = c(1, 3, 5, 7), direction = "<", quiet = TRUE), method = "proper")
   msg <- "The ML variance of a proper curve with AUC == 0.5 is unstable and can be misleading."
@@ -236,7 +230,6 @@ test_that("the proper ML variance warns at the chance line", {
 })
 
 test_that("a single point on or below the chance line gives the chance line, without the single-point warnings", {
-  skip_if_not_installed("mvtnorm")
   # the point (FPF 0.6, TPF 0.4) is below the diagonal: the chance line is the only fit
   r <- roc(controls = rep(0:1, c(20, 30)), cases = rep(0:1, c(30, 20)), direction = "<", quiet = TRUE)
   expect_no_warning(s <- smooth(r, method = "proper"))

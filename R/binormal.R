@@ -306,7 +306,6 @@ smooth_roc_binormal_degenerate <- function(df) {
 # - Metz CE, Pan X (1999) J Math Psychol 43:1-33 (M&P)
 # - Pesce LL, Metz CE (2007) Acad Radiol 14:814-829 (P&M)
 smooth_roc_proper <- function(roc, n) {
-  load.suggested.package("mvtnorm")
   categories <- proper_binormal_categories(roc)
   k <- categories$controls
   l <- categories$cases
@@ -589,20 +588,52 @@ proper_binormal_start <- function(k, l) {
 
 # AUC of the PBM (M&P p. 12, Eq. 36):
 # Phi(da / sqrt(2)) + 2 F(-da / sqrt(2), 0; rho), with rho = -(1 - c^2) / (1 + c^2),
-# F being the bivariate normal distribution function, from mvtnorm (TVPACK:
-# its algorithm for bivariate semi-infinite regions; the default algorithm is
-# randomized). F = 0 at c = 0 (M&P p. 12), where rho = -1.
+# F being the bivariate normal distribution function. F = 0 at c = 0 (M&P
+# p. 12), where rho = -1.
+# With a bound at 0, F is Owen's T function (owen_t; Owen DB (1956) Ann Math
+# Stat 27:1075-1090). With h = da / sqrt(2) > 0, Eqs. 2.1-2.2 (p. 1076) at
+# the bounds -h and 0 give
+# F(-h, 0; rho) = Phi(-h) / 2 - T(-h, a), with
+# a = -rho / sqrt(1 - rho^2) = (1 - c^2) / (2 |c|), and T(-h, a) = T(h, a)
+# (Eq. 2.5), hence
+# AUC = 1 - 2 T(h, a).
+# It also holds at h = 0, where F = 1 / 4 + arcsin(rho) / (2 pi) (p. 1078).
+# a is infinite at c = 0.
 proper_binormal_auc <- function(da, c) {
-  F <- 0
-  if (c != 0) {
-    load.suggested.package("mvtnorm")
-    rho <- -(1 - c^2) / (1 + c^2)
-    F <- mvtnorm::pmvnorm(
-      upper = c(-da / sqrt(2), 0), corr = matrix(c(1, rho, rho, 1), 2),
-      algorithm = mvtnorm::TVPACK()
-    )[1]
+  h <- da / sqrt(2)
+  a <- (1 - c^2) / (2 * abs(c))
+  if (a == Inf) {
+    return(pnorm(h))
   }
-  pnorm(da / sqrt(2)) + 2 * F
+  1 - 2 * owen_t(h, a)
+}
+
+# Owen's T function (Owen 1956, p. 1078, Eq. 3.3),
+# T(h, a) = 1 / (2 pi) int_0^a exp(-h^2 (1 + x^2) / 2) / (1 + x^2) dx
+#         = 1 / (2 pi) int_0^atan(a) exp(-h^2 / (2 cos(t)^2)) dt (x = tan(t)).
+# It is integrated for 0 <= a <= 1 only, where the integrand is smooth over
+# a range of at most pi / 4. Otherwise (p. 1076), T(h, -a) = -T(h, a)
+# (Eq. 2.4), and for a > 1 (Eq. 2.3)
+# T(h, a) = (Phi(h) Q(a h) + Phi(a h) Q(h)) / 2 - T(a h, 1 / a), with
+# Q = 1 - Phi (written with tails, which do not cancel).
+# integrate() gives up when it cannot certify the tolerance: its value is
+# then still used if its own error estimate is small.
+owen_t <- function(h, a) {
+  if (a < 0) {
+    return(-owen_t(h, -a))
+  }
+  if (a > 1) {
+    tails <- pnorm(h) * pnorm(a * h, lower.tail = FALSE) + pnorm(a * h) * pnorm(h, lower.tail = FALSE)
+    return(tails / 2 - owen_t(a * h, 1 / a))
+  }
+  integral <- integrate(
+    function(t) exp(-h^2 / (2 * cos(t)^2)), 0, atan(a),
+    rel.tol = 1e-12, stop.on.error = FALSE
+  )
+  if (integral$abs.error > 1e-10) {
+    stop("The AUC of the proper binormal curve could not be computed (", integral$message, ").")
+  }
+  integral$value / (2 * pi)
 }
 
 # da on the isopleth AUC(da, c) = auc, or 0 if AUC(0, c) >= auc
