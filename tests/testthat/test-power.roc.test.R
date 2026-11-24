@@ -163,7 +163,7 @@ test_that("power.roc.test defaults to bootstrap with partial AUC", {
 test_that("power.roc.test refuses explicit DeLong with partial AUC", {
   expect_error(
     power.roc.test(r.wfns.partial, r.ndka.partial, power = 0.9, method = "delong"),
-    "DeLong method is not supported for partial AUC"
+    "DeLong's method is not supported for partial AUC"
   )
 })
 

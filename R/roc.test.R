@@ -384,21 +384,21 @@ roc.test.roc <- function(roc1, roc2,
     if (method == "delong") {
       # delong NA to pAUC: warn + change
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
-        stop("DeLong's test is not supported for partial AUC. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("partial AUC"))
       }
       if (smooth1 || smooth2) {
-        stop("DeLong's test is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
+        stop(roc_utils_no_delong("smoothed ROCs"))
       }
       if (roc1$direction != roc2$direction) {
-        warning("DeLong's test should not be applied to ROC curves with a different direction.")
+        warning("DeLong's method should not be applied to ROC curves with a different direction.")
       }
 
     } else if (method == "venkatraman") {
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
-        stop("Partial AUC is not supported for Venkatraman's test.")
+        stop("Venkatraman's test is not supported for partial AUC.")
       }
       if (smooth1 || smooth2) {
-        stop("Venkatraman's test is not supported for smoothed ROCs")
+        stop("Venkatraman's test is not supported for smoothed ROCs.")
       }
       if (roc1$direction != roc2$direction) {
         warning("Venkatraman's test should not be applied to ROC curves with different directions.")

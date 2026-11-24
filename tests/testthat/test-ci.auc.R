@@ -159,7 +159,7 @@ test_that("ci.auc of a smoothed curve takes method and bootstraps DeLong with a 
   set.seed(42)
   expected <- as.numeric(ci.auc(s, method = "bootstrap", boot.n = 5, progress = "none"))
   # DeLong is not supported for smoothed curves: same bootstrap CI, with a warning
-  msg <- "DeLong method is not supported for smoothed ROCs. Using bootstrap instead."
+  msg <- "DeLong's method is not supported for smoothed ROCs. Using bootstrap instead."
   set.seed(42)
   expect_warning(ci <- ci.auc(s, method = "delong", boot.n = 5, progress = "none"), msg, fixed = TRUE)
   expect_equal(as.numeric(ci), expected)
