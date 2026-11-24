@@ -109,7 +109,7 @@ var.roc <- function(roc,
     V <- delongPlacements(roc)
     var <- var(V$Y) / n + var(V$X) / m
   } else if (method == "obuchowski") {
-    roc_utils_stop_if_weighted(roc, "The Obuchowski method")
+    roc_utils_stop_if_weighted(roc, "Obuchowski method")
     var <- var_roc_obuchowski(roc) / length(roc$cases)
   } else if (method == "ml") {
     var <- var_roc_ml(roc)

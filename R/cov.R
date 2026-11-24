@@ -173,8 +173,8 @@ cov.roc <- function(roc1, roc2,
         warning("DeLong's method should not be applied to ROC curves with a different direction.")
       }
     } else if (method == "obuchowski") {
-      roc_utils_stop_if_weighted(roc1, "The Obuchowski method")
-      roc_utils_stop_if_weighted(roc2, "The Obuchowski method")
+      roc_utils_stop_if_weighted(roc1, "Obuchowski method")
+      roc_utils_stop_if_weighted(roc2, "Obuchowski method")
       if (smooth1 || smooth2) {
         stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }

@@ -134,9 +134,13 @@ test_that("weights are a column of a data.frame", {
     roc(female, outcome, s100b, weights = w, ret = "coords", quiet = TRUE)$sensitivity,
     coords(expected)$sensitivity
   )
-  # not a vector from the calling environment
+  # the column, not a variable of the same name in the calling environment
+  aSAH.w$k <- w
+  aSAH.w$weights <- w
+  expect_identical(roc(aSAH.w, outcome, s100b, weights = k, quiet = TRUE)$weights, w)
+  expect_identical(roc(aSAH.w, outcome, s100b, weights = weights, quiet = TRUE)$weights, w)
   expect_error(roc_(aSAH, "outcome", "s100b", weights = "w", quiet = TRUE), "Column 'w' not present")
-  expect_error(roc_(aSAH, "outcome", "s100b", weights = w, quiet = TRUE), "not present")
+  expect_error(roc_(aSAH, "outcome", "s100b", weights = w, quiet = TRUE), "name of a column")
   expect_warning(expect_error(roc(aSAH, outcome, s100b, weights = w, quiet = TRUE), "Column 'w' not present"), "non-standard evaluation")
   expect_null(roc(aSAH, outcome, s100b, weights = NULL, quiet = TRUE)$weights)
 })
@@ -215,6 +219,8 @@ test_that("a single weighted curve is tested with the bootstrap", {
   expect_identical(test$method, "Bootstrap test for one ROC curve")
   expect_identical(test$roc1$weights, w)
   expect_identical(unname(test$estimate), as.numeric(r.w$auc))
+  test <- roc.test(aSAH$outcome, replace(aSAH$s100b, 3, NA), weights = w, boot.n = 10, progress = FALSE, quiet = TRUE)
+  expect_identical(test$roc1$weights, w[-3])
 })
 
 test_that("pairing requires identical weights", {
@@ -226,8 +232,8 @@ test_that("pairing requires identical weights", {
     expect_warning(test <- roc.test(r.w, other, boot.n = 10, progress = FALSE), "different case weights")
     expect_match(test$method, "two ROC curves")
     expect_warning(expect_identical(cov(r.w, other, boot.n = 10, progress = FALSE), 0), "different case weights")
-    expect_error(roc.test(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
-    expect_error(cov(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
+    expect_error(roc.test(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "different case weights")
+    expect_error(cov(r.w, other, paired = TRUE, boot.n = 10, progress = FALSE), "different case weights")
     # asked for: no warning
     expect_warning(roc.test(r.w, other, paired = FALSE, boot.n = 10, progress = FALSE), NA)
   }
@@ -265,7 +271,10 @@ test_that("lists of weighted curves are compared with the bootstrap", {
   for (other in list(r.rev, r.ndka)) {
     expect_warning(test <- roc.test(list(r.w, other, r.w3), boot.n = 10, progress = FALSE), "different case weights")
     expect_match(test$method, "Bootstrap test for 3 ROC curves")
-    expect_error(roc.test(list(r.w, other, r.w3), paired = TRUE, boot.n = 10, progress = FALSE), "unpaired ROC curves")
+    expect_error(roc.test(list(r.w, other, r.w3), paired = TRUE, boot.n = 10, progress = FALSE), "different case weights")
+    expect_warning(covs <- cov(list(r.w, other, r.w3), boot.n = 10, progress = FALSE), "different case weights")
+    expect_identical(covs[1, 2], 0)
+    expect_error(cov(list(r.w, other, r.w3), paired = TRUE, boot.n = 10, progress = FALSE), "different case weights")
     expect_warning(roc.test(list(r.w, other, r.w3), paired = FALSE, boot.n = 10, progress = FALSE), NA)
   }
 })
@@ -288,6 +297,8 @@ test_that("what has no weighted version is refused", {
   r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)
   refused <- "not supported for ROC curves with case weights"
   expect_error(ci.auc(r.w, method = "delong"), refused)
+  # also where DeLong's CI is not defined
+  expect_error(ci.auc(roc(c(0, 0, 0, 0, 1), c(1, 2, 3, 4, 3.5), weights = c(1, 2, 1, 2, 1), quiet = TRUE), method = "delong"), refused)
   expect_error(var(r.w, method = "delong"), refused)
   expect_error(var(r.w, method = "obuchowski"), refused)
   expect_error(smooth(r.w), refused)

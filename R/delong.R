@@ -62,7 +62,15 @@ delong.unpaired.calculations <- function(roc1, roc2) {
   return(list("d" = d, "sig" = sqrt(SR + SS)))
 }
 
+# DeLong's placements count observations: no case weights
+delong_stop_if_weighted <- function(roc) {
+  if (!is.null(roc$weights)) {
+    stop(roc_utils_no_delong("ROC curves with case weights"), call. = FALSE)
+  }
+}
+
 ci_auc_delong <- function(roc, conf.level) {
+  delong_stop_if_weighted(roc)
   YR <- roc$controls # = C2, n, YRj
   XR <- roc$cases # = C1, m, XRi
 
@@ -110,7 +118,7 @@ delong.cov <- function(rocs) {
 # Calls delongPlacementsCpp safely
 # Ensures that the theta value calculated is correct
 delongPlacements <- function(roc) {
-  roc_utils_stop_if_weighted(roc, "The DeLong method")
+  delong_stop_if_weighted(roc)
   if (roc_utils_is_ordered_roc(roc)) {
     roc$cases <- as.numeric(roc$cases)
     roc$controls <- as.numeric(roc$controls)

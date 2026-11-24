@@ -119,8 +119,11 @@ roc_ <- function(data, response, predictor,
   }
 
   if (!is.null(weights)) {
-    if (!is.character(weights) || length(weights) != 1 || !weights %in% colnames(data)) {
-      stop(sprintf("Column '%s' not present in data %s", paste(format(weights), collapse = " "), data_name))
+    if (!is.character(weights) || length(weights) != 1) {
+      stop("'weights' must be the name of a column of 'data'.")
+    }
+    if (!weights %in% colnames(data)) {
+      stop(sprintf("Column '%s' not present in data %s", weights, data_name))
     }
     weights <- data[[weights]]
   }

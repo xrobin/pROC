@@ -182,6 +182,8 @@ roc_utils_different_weights <- paste(
   "Use 'paired = FALSE' to compare them as unpaired."
 )
 
+roc_utils_paired_different_weights <- "'paired = TRUE' cannot be applied to ROC curves with different case weights."
+
 roc_utils_not_paired_automatically <- paste(
   "ROC curves built from 'controls' and 'cases' are not paired automatically.",
   "Use 'paired = TRUE' if they hold the same patients in the same order, or 'paired = FALSE' if they do not."
@@ -203,6 +205,9 @@ roc_utils_paired <- function(roc1, roc2, paired) {
     given.only = FALSE
   )
   if (!is.null(paired)) {
+    if (isTRUE(attr(can.pair, "different.weights"))) {
+      stop(simpleError(roc_utils_paired_different_weights, sys.call(-1)))
+    }
     if (!can.pair) {
       stop(simpleError("'paired = TRUE' cannot be applied to unpaired ROC curves.", sys.call(-1)))
     }
@@ -243,6 +248,9 @@ roc_utils_paired_list <- function(rocs, paired) {
   different.weights <- anyNA(can.pair)
   can.pair <- can.pair %in% 1L
   if (!is.null(paired)) {
+    if (different.weights) {
+      stop(roc_utils_paired_different_weights, call. = FALSE)
+    }
     if (!all(can.pair)) {
       stop("'paired = TRUE' cannot be applied to unpaired ROC curves.", call. = FALSE)
     }
