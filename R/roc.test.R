@@ -74,7 +74,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
   } else {
     if (missing(predictor2)) {
       # A single predictor: test of one curve
-      roc1 <- roc(response, predictor1, ...)
+      roc1 <- roc(response, predictor1, ..., weights = weights)
       if (!roc_utils_is_curve(roc1)) {
         stop("Cannot test the ROC curve: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
       }
@@ -340,7 +340,7 @@ roc.test.roc <- function(roc1, roc2,
       # As var()
       method <- if (roc_utils_has_ml(roc1)) {
         "ml"
-      } else if (has.partial.auc(roc1) || smooth) {
+      } else if (has.partial.auc(roc1) || smooth || !is.null(roc1$weights)) {
         "bootstrap"
       } else {
         "delong"

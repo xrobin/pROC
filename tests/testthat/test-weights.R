@@ -200,6 +200,23 @@ test_that("the bootstrap works with case weights", {
   expect_match(roc.test(r.w, r.w2, method = "specificity", specificity = 0.9, paired = TRUE, boot.n = 10, progress = FALSE)$method, "Specificity")
 })
 
+test_that("a single weighted curve is tested with the bootstrap", {
+  r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)
+  test <- roc.test(r.w, boot.n = 10, progress = FALSE)
+  expect_identical(test$method, "Bootstrap test for one ROC curve")
+  expect_identical(unname(test$estimate), as.numeric(r.w$auc))
+  set.seed(42)
+  statistic <- roc.test(r.w, boot.n = 10, progress = FALSE)$statistic
+  set.seed(42)
+  expect_equal(unname(statistic), (as.numeric(r.w$auc) - 0.5) / sqrt(var(r.w, boot.n = 10, progress = FALSE)))
+  expect_error(roc.test(r.w, method = "delong"), "not supported for ROC curves with case weights")
+  # the default method passes the weights on
+  test <- roc.test(aSAH$outcome, aSAH$s100b, weights = w, boot.n = 10, progress = FALSE, quiet = TRUE)
+  expect_identical(test$method, "Bootstrap test for one ROC curve")
+  expect_identical(test$roc1$weights, w)
+  expect_identical(unname(test$estimate), as.numeric(r.w$auc))
+})
+
 test_that("pairing requires identical weights", {
   r.w <- roc(aSAH$outcome, aSAH$s100b, weights = w, quiet = TRUE)
   r.w2 <- roc(aSAH$outcome, aSAH$ndka, weights = rev(w), quiet = TRUE)
