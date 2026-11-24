@@ -373,9 +373,138 @@ test_that("roc.test errors on curves built from numeric densities", {
   expect_error(roc.test(d1, d2, boot.n = 2), "smoothed with numeric density.controls and density.cases")
 })
 
-test_that("roc.test.default with predictor2 = NULL gives the missing predictor2 error", {
+test_that("roc.test of one curve tests the AUC against 0.5", {
+  ht <- roc.test(r.ndka)
+  expect_s3_class(ht, "htest")
+  expect_identical(ht$method, "DeLong's test for one ROC curve")
+  expect_equal(ht$statistic, c(Z = 1.982004), tolerance = 1e-6)
+  expect_equal(unname(ht$statistic), (as.numeric(r.ndka$auc) - 0.5) / sqrt(var(r.ndka)))
+  expect_equal(ht$p.value, 0.04747875, tolerance = 1e-6)
+  expect_equal(as.numeric(ht$conf.int), c(0.5012450, 0.7226710), tolerance = 1e-6)
+  expect_identical(ht$null.value, c(AUC = 0.5))
+  expect_equal(ht$estimate, c(AUC = 0.6119580), tolerance = 1e-6)
+  expect_identical(ht$data.name, "r.ndka")
+  expect_null(ht$roc2)
+  # The standard deviation and the interval of the AUC are those of a
+  # contrast on this curve alone in a list, which is tested against 0
+  listed <- roc.test(list(r.ndka, r.s100b), contrast = c(1, 0))
+  expect_equal(unname(ht$estimate - 0.5) / unname(ht$statistic), unname(listed$estimate[1] / listed$statistic))
+  expect_equal(ht$conf.int, listed$conf.int)
+
+  # One-sided, with a one-sided interval
+  tg <- roc.test(r.ndka, alternative = "greater")
+  expect_equal(tg$p.value, ht$p.value / 2)
+  expect_equal(as.numeric(tg$conf.int), c(0.5190447, Inf), tolerance = 1e-6)
+  expect_equal(roc.test(r.ndka, alternative = "less")$p.value, 1 - tg$p.value)
+
+  # Percent: same test on the 0-100 scale
+  tp <- roc.test(r.ndka.percent)
+  expect_equal(tp$statistic, ht$statistic)
+  expect_equal(tp$p.value, ht$p.value)
+  expect_identical(tp$null.value, c(AUC = 50))
+  expect_equal(as.numeric(tp$conf.int), as.numeric(ht$conf.int) * 100)
+
+  # All the entry points
+  ta <- roc.test(auc(r.ndka))
+  expect_equal(ta$p.value, ht$p.value)
+  expect_identical(ta$data.name, "auc(r.ndka)")
+  td <- roc.test(aSAH$outcome, aSAH$ndka, quiet = TRUE)
+  expect_equal(td$p.value, ht$p.value)
+  expect_identical(td$data.name, "aSAH$ndka by aSAH$outcome (Good, Poor)")
+  # An explicit NULL (a misspelled column) is not a one-curve test
   expect_error(roc.test(aSAH$outcome, aSAH$s100b, NULL), "Missing argument predictor2")
   expect_error(roc.test(aSAH$outcome, aSAH$s100b, predictor2 = NULL), "Missing argument predictor2")
+  tf <- roc.test(outcome ~ ndka, aSAH, quiet = TRUE)
+  expect_equal(tf$p.value, ht$p.value)
+  expect_identical(tf$data.name, "ndka in aSAH by outcome (Good, Poor)")
+  expect_error(roc.test(outcome ~ ndka + s100b + wfns, aSAH, quiet = TRUE), "1 or 2 predictors are required")
+  expect_error(roc.test(outcome ~ cbind(ndka, s100b), aSAH, quiet = TRUE), "Wrong dimension for predictor1")
+  # smooth = TRUE through the default method, with the AUC recomputed
+  ts <- roc.test(aSAH$outcome, aSAH$ndka, smooth = TRUE, reuse.auc = FALSE, quiet = TRUE)
+  expect_identical(ts$null.value, c("Smoothed AUC" = 0.5))
+})
+
+test_that("roc.test of one curve bootstraps partial AUC and smoothed curves", {
+  ht <- roc.test(r.ndka.partial, boot.n = 10)
+  expect_identical(ht$method, "Bootstrap test for one ROC curve")
+  expect_identical(ht$parameter, c(boot.n = 10, boot.stratified = 1))
+  expect_identical(names(ht$statistic), "D")
+  # The area under the diagonal between specificities 1 and 0.9
+  expect_equal(ht$null.value, c("pAUC (1-0.9 specificity)" = 0.005))
+  expect_equal(ht$estimate, c("pAUC (1-0.9 specificity)" = as.numeric(r.ndka.partial$auc)))
+  expect_equal(mean(ht$conf.int), as.numeric(r.ndka.partial$auc))
+
+  corrected <- auc(r.ndka.percent, partial.auc = c(100, 90), partial.auc.correct = TRUE)
+  ht <- roc.test(corrected, boot.n = 10)
+  expect_equal(ht$null.value, c("Corrected pAUC (100-90 specificity)" = 50))
+
+  ht <- roc.test(auc(r.ndka.percent, partial.auc = c(100, 90)), boot.n = 10)
+  expect_equal(ht$null.value, c("pAUC (100-90 specificity)" = 0.5))
+
+  ht <- roc.test(r.s100b.partial2, boot.n = 10)
+  expect_equal(ht$null.value, c("pAUC (0.99-0.9 sensitivity)" = 0.09 * 0.055))
+
+  ht <- roc.test(smooth(r.ndka), method = "bootstrap", boot.n = 10)
+  expect_identical(ht$method, "Bootstrap test for one ROC curve")
+  expect_identical(ht$null.value, c("Smoothed AUC" = 0.5))
+  expect_s3_class(ht$roc1, "smooth.roc")
+  # Smoothings without a maximum-likelihood fit are bootstrapped
+  expect_identical(roc.test(smooth(r.ndka, method = "density"), boot.n = 10)$method, "Bootstrap test for one ROC curve")
+})
+
+test_that("roc.test of one binormal curve is a Wald test with the ML variance", {
+  s <- smooth(r.ndka)
+  ht <- roc.test(s)
+  expect_identical(ht$method, "Wald test for one binormal ROC curve")
+  expect_equal(ht$statistic, c(Z = 1.8820466), tolerance = 1e-6)
+  expect_equal(unname(ht$statistic), (as.numeric(s$auc) - 0.5) / sqrt(var(s)))
+  expect_equal(ht$p.value, 0.05982969, tolerance = 1e-6)
+  expect_equal(as.numeric(ht$conf.int), c(0.4957329, 0.7104062), tolerance = 1e-6)
+  expect_identical(ht$null.value, c("Smoothed AUC" = 0.5))
+  expect_null(ht$parameter)
+  expect_equal(roc.test(s, method = "ml")$p.value, ht$p.value)
+  # As a contrast on this curve alone in a list, tested against 0
+  listed <- roc.test(list(s, smooth(r.s100b)), contrast = c(1, 0), paired = FALSE)
+  expect_equal(ht$conf.int, listed$conf.int)
+  expect_equal(roc.test(smooth(r.ndka.percent))$statistic, ht$statistic)
+  # Only for the full AUC of curves with a maximum-likelihood fit
+  expect_error(roc.test(r.ndka, method = "ml"), "The ML method is only supported")
+  expect_error(roc.test(smooth(r.ndka, method = "density"), method = "ml"), "The ML method is only supported")
+  expect_error(roc.test(auc(s, partial.auc = c(1, 0.9)), method = "ml"), "The ML method is only supported")
+  expect_identical(roc.test(auc(s, partial.auc = c(1, 0.9)), boot.n = 10)$method, "Bootstrap test for one ROC curve")
+
+  skip_if_not_installed("mvtnorm")
+  proper <- smooth(r.ndka, method = "proper")
+  ht <- roc.test(proper, alternative = "greater")
+  expect_identical(ht$method, "Wald test for one binormal ROC curve")
+  expect_equal(unname(ht$statistic), (as.numeric(proper$auc) - 0.5) / sqrt(var(proper)))
+})
+
+test_that("roc.test of one curve refuses the methods that need two curves", {
+  for (method in c("venkatraman", "sensitivity", "specificity")) {
+    expect_error(roc.test(r.ndka, method = method), "requires two ROC curves")
+  }
+  # The errors of the two-curve test
+  expect_error(roc.test(r.ndka.partial, method = "delong"), "DeLong's method is not supported for partial AUC", fixed = TRUE)
+  expect_error(roc.test(smooth(r.ndka), method = "delong"), "DeLong's method is not supported for smoothed ROCs", fixed = TRUE)
+  x <- seq(-4, 6, length.out = 64)
+  numeric.density <- roc(density.controls = dnorm(x), density.cases = dnorm(x, 1))
+  expect_error(roc.test(numeric.density, boot.n = 2), "Cannot compute the statistic on ROC curves smoothed with numeric density", fixed = TRUE)
+  expect_error(roc.test(r.ndka, conf.level = 2), "conf.level must be between 0 and 1")
+  # A list is a comparison
+  expect_error(roc.test(list(r.ndka)), "Use roc.test(roc) to test a single curve", fixed = TRUE)
+  # As t.test(x, paired = TRUE)
+  expect_error(roc.test(r.ndka, paired = TRUE), "'roc2' is missing for paired test", fixed = TRUE)
+  expect_error(roc.test(aSAH$outcome, aSAH$ndka, paired = TRUE, quiet = TRUE), "'roc2' is missing for paired test", fixed = TRUE)
+  expect_error(roc.test(outcome ~ ndka, aSAH, paired = TRUE, quiet = TRUE), "'roc2' is missing for paired test", fixed = TRUE)
+  expect_s3_class(roc.test(r.ndka, paired = FALSE), "htest")
+})
+
+test_that("roc.test of one perfect curve has a null variance", {
+  perfect <- roc(c(0, 0, 1, 1), c(1, 2, 3, 4), quiet = TRUE)
+  expect_warning(ht <- roc.test(perfect), "AUC == 1 is always 0")
+  expect_identical(ht$statistic, c(Z = Inf))
+  expect_identical(ht$p.value, 0)
 })
 
 test_that("roc.test selects the bootstrap when only roc2 has a partial AUC", {
