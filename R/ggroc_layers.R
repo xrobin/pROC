@@ -199,14 +199,15 @@ ggroc_auc_label <- function(auc, ci = NULL, pattern = NULL) {
   partial.auc <- attr(auc, "partial.auc")
   has.ci <- !is.null(ci) && methods::is(ci, "ci.auc")
   if (is.null(pattern)) {
-    pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
-    pattern <- paste0(pattern, ifelse(percent, "%.1f%%", "%.3f"))
-    if (has.ci) {
-      pattern <- paste0(
-        pattern, " (",
-        ifelse(percent, "%.1f%%", "%.3f"), "\u2013",
-        ifelse(percent, "%.1f%%", "%.3f"), ")"
-      )
+    number <- ifelse(percent, "%.1f%%", "%.3f")
+    pattern <- paste0(ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: "), number)
+    # A one-sided CI shows its bound only, in ASCII: pdf() has no glyph for >=
+    if (has.ci && identical(attr(ci, "sides"), "lower")) {
+      return(sprintf(paste0(pattern, " (>", number, ")"), auc, ci[1]))
+    } else if (has.ci && identical(attr(ci, "sides"), "upper")) {
+      return(sprintf(paste0(pattern, " (<", number, ")"), auc, ci[3]))
+    } else if (has.ci) {
+      pattern <- paste0(pattern, " (", number, "\u2013", number, ")")
     }
   }
   if (has.ci) {

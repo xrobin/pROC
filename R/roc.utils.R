@@ -820,6 +820,37 @@ coord.is.monotone <- c(
   "closest.topleft" = FALSE
 )
 
+# What limits each coordinate from above (roc_utils_coords_range). They are
+# all limited by 0 from below, except threshold.
+coord.upper.limit <- c(
+  "threshold" = "unbounded",
+  "sensitivity" = "rate",
+  "specificity" = "rate",
+  "accuracy" = "rate",
+  "tn" = "controls",
+  "tp" = "cases",
+  "fn" = "cases",
+  "fp" = "controls",
+  "npv" = "rate",
+  "ppv" = "rate",
+  "tpr" = "rate",
+  "tnr" = "rate",
+  "fpr" = "rate",
+  "fnr" = "rate",
+  "fdr" = "rate",
+  "1-specificity" = "rate",
+  "1-sensitivity" = "rate",
+  "1-accuracy" = "rate",
+  "1-npv" = "rate",
+  "1-ppv" = "rate",
+  "precision" = "rate",
+  "recall" = "rate",
+  "lr_pos" = "unbounded",
+  "lr_neg" = "unbounded",
+  "youden" = "weighted",
+  "closest.topleft" = "weighted"
+)
+
 coord.is.decreasing <- c(
   "threshold" = NA, # Depends on direction
   "sensitivity" = TRUE,
@@ -1166,15 +1197,67 @@ roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
 }
 
 # CI of an AUC with standard error sd, as (lower, AUC, upper): a normal
-# interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
-roc_utils_logit_ci <- function(auc, sd, conf.level) {
+# interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107).
+# A one-sided interval extends to 0 or 1.
+roc_utils_logit_ci <- function(auc, sd, conf.level, sides) {
   # sd == 0 (AUC of 0 or 1, or all values tied): no interval; the logit interval would be NaN.
-  # conf.level == 0: no interval either, and plogis(qlogis(auc)) can be 1 ulp off auc
-  if (sd == 0 || conf.level == 0) {
-    return(rep(auc, 3))
+  # conf.level == 0: no two-sided interval either, and plogis(qlogis(auc)) can be 1 ulp off auc
+  if (sd == 0 || (conf.level == 0 && sides == "two.sided")) {
+    half <- 0
+  } else {
+    half <- qnorm(1 - roc_utils_ci_tail(conf.level, sides)) * sd / (auc * (1 - auc))
   }
-  half <- qnorm(1 - (1 - conf.level) / 2) * sd / (auc * (1 - auc))
-  c(plogis(qlogis(auc) - half), auc, plogis(qlogis(auc) + half))
+  c(
+    if (sides == "upper") 0 else if (half == 0) auc else plogis(qlogis(auc) - half),
+    auc,
+    if (sides == "lower") 1 else if (half == 0) auc else plogis(qlogis(auc) + half)
+  )
+}
+
+# Probability left out on each bounded side of a CI
+roc_utils_ci_tail <- function(conf.level, sides) {
+  if (sides == "two.sided") (1 - conf.level) / 2 else 1 - conf.level
+}
+
+# Percentile CI of the bootstrap replicates x, with their median. A one-sided
+# interval extends to the limit of the range of the values x can take.
+# Without any replicate there is no interval: all NA.
+roc_utils_ci_quantile <- function(x, conf.level, sides, range) {
+  tail <- roc_utils_ci_tail(conf.level, sides)
+  ci <- quantile(x, c(if (sides == "upper") 0 else tail, .5, if (sides == "lower") 1 else 1 - tail), na.rm = TRUE)
+  if (sides == "upper" && !anyNA(ci)) {
+    ci[1] <- range[1]
+  } else if (sides == "lower" && !anyNA(ci)) {
+    ci[3] <- range[2]
+  }
+  ci
+}
+
+# Range of the values the coordinates 'ret' of a curve can take, with ret in
+# columns: the limits of a one-sided CI. Counts are limited by the size of
+# their class, which is the whole sample in a non-stratified bootstrap.
+roc_utils_coords_range <- function(ret, roc, best.weights, stratified) {
+  max <- ifelse(roc$percent, 100, 1)
+  r <- (1 - best.weights[2]) / (best.weights[1] * best.weights[2])
+  n <- c(cases = length(roc$cases), controls = length(roc$controls))
+  if (!stratified) {
+    n[] <- sum(n)
+  }
+  upper <- c(n, rate = max, weighted = max * (1 + r), unbounded = Inf)[coord.upper.limit[ret]]
+  range <- rbind(ifelse(ret == "threshold", -Inf, 0), upper)
+  colnames(range) <- ret
+  range
+}
+
+# Range of the values an AUC can take, in fraction: the limits of a one-sided CI
+roc_utils_auc_range <- function(auc) {
+  partial.auc <- attr(auc, "partial.auc")
+  range <- c(0, roc_utils_max_partial_auc(partial.auc, FALSE))
+  if (isTRUE(attr(auc, "partial.auc.correct"))) {
+    min <- roc_utils_min_partial_auc(partial.auc, FALSE)
+    range <- (1 + (range - min) / (range[2] - min)) / 2 # McClish, as in auc()
+  }
+  range
 }
 
 # Validates a list of curves for roc.test.list and cov.list. Returns:

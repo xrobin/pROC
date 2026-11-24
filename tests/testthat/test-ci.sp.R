@@ -73,3 +73,23 @@ test_that("ci.sp with NA sensitivities gives NA rows", {
   expect_identical(unname(unclass(ci)[2, ]), rep(NA_real_, 3))
   expect_output(print(ci), "NA")
 })
+
+test_that("ci.sp is one-sided with sides", {
+  boot.ci <- function(roc, ...) {
+    set.seed(42) # the same replicates for each side
+    ci.sp(roc, if (roc$percent) c(90, 50) else c(0.9, 0.5), boot.n = 20, ...)
+  }
+  for (roc in list(r.s100b, r.s100b.percent, smooth(r.s100b))) {
+    two.sided <- boot.ci(roc, conf.level = 0.9)
+    max <- ifelse(roc$percent, 100, 1)
+    lower <- boot.ci(roc, sides = "lower")
+    expect_equal(unclass(lower)[, 1:2], unclass(two.sided)[, 1:2], check.attributes = FALSE)
+    expect_equal(unname(unclass(lower)[, 3]), c(max, max))
+    upper <- boot.ci(roc, sides = "upper")
+    expect_equal(unclass(upper)[, 2:3], unclass(two.sided)[, 2:3], check.attributes = FALSE)
+    expect_equal(unname(unclass(upper)[, 1]), c(0, 0))
+    expect_identical(attr(upper, "sides"), "upper")
+    expect_identical(attr(two.sided, "sides"), "two.sided")
+  }
+  expect_output(print(lower), "95% one-sided CI (20 stratified bootstrap replicates):", fixed = TRUE)
+})

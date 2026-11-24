@@ -75,10 +75,12 @@ ci.coords.smooth.roc <- function(smooth.roc,
                                  boot.stratified = TRUE,
                                  progress = getOption("pROCProgress", interactive()),
                                  cl = NULL,
+                                 sides = c("two.sided", "lower", "upper"),
                                  ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
@@ -133,9 +135,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
     }
   }
 
-  summarized.perfs <- apply(perfs_array, 1:2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE)
-  ci <- lapply(ret, function(x) t(summarized.perfs[, , x]))
-  names(ci) <- ret
+  ci <- ci_coords_quantiles(perfs_array, conf.level, sides, roc_utils_coords_range(ret, roc, best.weights, boot.stratified))
 
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "input") <- input
@@ -145,6 +145,7 @@ ci.coords.smooth.roc <- function(smooth.roc,
   attr(ci, "best.weights") <- best.weights
   attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "roc") <- smooth.roc
@@ -161,10 +162,12 @@ ci.coords.roc <- function(roc,
                           boot.stratified = TRUE,
                           progress = getOption("pROCProgress", interactive()),
                           cl = NULL,
+                          sides = c("two.sided", "lower", "upper"),
                           ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.coords() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
@@ -225,9 +228,7 @@ ci.coords.roc <- function(roc,
     }
   }
 
-  summarized.perfs <- apply(perfs_array, 1:2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE)
-  ci <- lapply(ret, function(x) t(summarized.perfs[, , x]))
-  names(ci) <- ret
+  ci <- ci_coords_quantiles(perfs_array, conf.level, sides, roc_utils_coords_range(ret, roc, best.weights, boot.stratified))
 
   class(ci) <- c("ci.coords", "ci", class(ci))
   attr(ci, "input") <- input
@@ -237,6 +238,7 @@ ci.coords.roc <- function(roc,
   attr(ci, "best.weights") <- best.weights
   attr(ci, "best.policy") <- best.policy
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "roc") <- roc
@@ -288,4 +290,21 @@ ci_coords_numeric_columns <- function(df) {
     }
   })
   df
+}
+
+# Percentile CIs of the bootstrapped coordinates, an array of x by ret by
+# replicate: a list with a matrix of x by (lower, median, upper) for each ret.
+# 'range' has the limits of each ret in columns (roc_utils_coords_range).
+ci_coords_quantiles <- function(perfs_array, conf.level, sides, range) {
+  ret <- dimnames(perfs_array)[[2]]
+  ci <- lapply(ret, function(what) {
+    perfs <- matrix(perfs_array[, what, ], nrow = nrow(perfs_array))
+    quantiles <- apply(perfs, 1, roc_utils_ci_quantile, conf.level = conf.level, sides = sides, range = range[, what])
+    if (nrow(perfs) > 1) {
+      colnames(quantiles) <- rownames(perfs_array)
+    }
+    t(quantiles)
+  })
+  names(ci) <- ret
+  ci
 }

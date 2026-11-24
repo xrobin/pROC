@@ -22,10 +22,12 @@
 # ci.auc(...)
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...)
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL,
+sides = c("two.sided", "lower", "upper"), ...)
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
-progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...,
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL,
+sides = c("two.sided", "lower", "upper"), ...,
 method = NULL)
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
@@ -57,6 +59,10 @@ method = NULL)
     \dQuote{bootstrap}, or \dQuote{ml} for smoothed curves. The first
     letter is sufficient. If omitted, the
     appropriate method is selected as explained in details.
+  }
+  \item{sides}{the sides of the confidence interval: \dQuote{two.sided}
+    (default), \dQuote{lower} for a lower confidence bound only, or
+    \dQuote{upper} for an upper confidence bound only. See details.
   }
   \item{boot.n}{the number of bootstrap replicates. Default: 2000.}
   \item{boot.stratified}{should the bootstrap be stratified (default, same number
@@ -131,6 +137,14 @@ method = NULL)
   described in \code{\link{var}}, and the CI is computed on the logit
   scale as with \code{method="delong"}.
   
+  A one-sided CI (\code{sides="lower"} or \code{"upper"}) has a
+  single confidence bound, which leaves out \code{1 - conf.level} on its
+  side. The other bound is the limit of the values the AUC can take
+  (0 or 1 for a full AUC). A lower
+  bound matches \code{alternative="greater"} in \code{\link{roc.test}}
+  and, like this one-sided test, it is only valid with an explicit
+  \code{direction} in \code{\link{roc}}.
+
   CI of multiclass ROC curves and AUC is not implemented yet. Attempting to call these
   methods returns an error.
 }
@@ -168,6 +182,7 @@ method = NULL)
 A numeric vector of length 3 and class \dQuote{ci.auc}, \dQuote{ci} and \dQuote{numeric} (in this order), with the lower
 bound, the central value and the upper bound of the CI, and the following attributes:
 \item{conf.level}{the width of the CI, in fraction.}
+\item{sides}{the sides of the CI.}
 \item{method}{the method employed.}
 \item{boot.n}{the number of bootstrap replicates.}
 \item{boot.stratified}{whether or not the bootstrapping was stratified.}
@@ -220,6 +235,9 @@ ci.auc(roc1)
 # You can also write:
 ci(roc1)
 ci(auc(roc1))
+
+# One-sided CI: a lower confidence bound
+ci.auc(roc1, sides = "lower")
 
 # Partial AUC: pass an auc object. The CI is bootstrapped
 auc1 <- auc(roc1, partial.auc = c(1, .8), partial.auc.focus = "se",

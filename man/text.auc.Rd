@@ -39,7 +39,8 @@
   \item{pattern}{\link{sprintf} pattern for the label. \code{NULL}
     selects the same default as \code{plot.roc(print.auc.pattern =
     NULL)}: \code{"AUC: "} or \code{"Partial AUC: "}, the value, and the
-    confidence interval if \code{ci} is given.
+    confidence interval if \code{ci} is given (the bound only if it is
+    one-sided).
   }
   \item{xy}{label position, as \code{c(x, y)}. Defaults to the centre of
     the ROC space (\code{c(50, 50)} if \code{percent}, \code{c(.5, .5)}

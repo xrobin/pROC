@@ -74,11 +74,13 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               progress = getOption("pROCProgress", interactive()),
                               parallel = FALSE,
                               cl = NULL,
+                              sides = c("two.sided", "lower", "upper"),
                               ...,
                               method = NULL) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("conf.level must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
@@ -125,7 +127,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   }
 
   if (method == "ml") {
-    ci <- roc_utils_logit_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level)
+    ci <- roc_utils_logit_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level, sides)
   } else {
     boot.n <- roc_utils_check_boot_n(boot.n)
     aucs <- roc_utils_drop_na_replicates(
@@ -136,14 +138,13 @@ ci.auc.smooth.roc <- function(smooth.roc,
         FUN.VALUE = NA_real_, progress = progress, cl = cl
       )
     )
-    # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
-    # Prepare the return value
-    ci <- quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
+    ci <- roc_utils_ci_quantile(aucs, conf.level, sides, roc_utils_auc_range(smooth.roc$auc))
   }
   if (percent) {
     ci <- ci * 100
   }
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "method") <- method
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
@@ -161,10 +162,12 @@ ci.auc.roc <- function(roc,
                        progress = getOption("pROCProgress", interactive()),
                        parallel = FALSE,
                        cl = NULL,
+                       sides = c("two.sided", "lower", "upper"),
                        ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("conf.level must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.")
@@ -210,16 +213,17 @@ ci.auc.roc <- function(roc,
   }
 
   if (method == "delong") {
-    ci <- ci_auc_delong(roc, conf.level)
+    ci <- ci_auc_delong(roc, conf.level, sides)
   } else {
     boot.n <- roc_utils_check_boot_n(boot.n)
-    ci <- ci_auc_bootstrap(roc, conf.level, boot.n, boot.stratified, progress = progress, cl = cl, ...)
+    ci <- ci_auc_bootstrap(roc, conf.level, sides, boot.n, boot.stratified, progress = progress, cl = cl, ...)
   }
 
   if (percent) {
     ci <- ci * 100
   }
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "method") <- method
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified

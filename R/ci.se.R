@@ -66,10 +66,12 @@ ci.se.smooth.roc <- function(smooth.roc,
                              progress = getOption("pROCProgress", interactive()),
                              parallel = FALSE,
                              cl = NULL,
+                             sides = c("two.sided", "lower", "upper"),
                              ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(smooth.roc)) {
     warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
@@ -93,11 +95,12 @@ ci.se.smooth.roc <- function(smooth.roc,
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(specificities))
 
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
+  ci <- t(apply(perfs, 2, roc_utils_ci_quantile, conf.level = conf.level, sides = sides, range = c(0, ifelse(roc$percent, 100, 1))))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "specificities") <- specificities
@@ -113,10 +116,12 @@ ci.se.roc <- function(roc,
                       progress = getOption("pROCProgress", interactive()),
                       parallel = FALSE,
                       cl = NULL,
+                      sides = c("two.sided", "lower", "upper"),
                       ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.se() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
@@ -134,11 +139,12 @@ ci.se.roc <- function(roc,
   )
 
   perfs <- roc_utils_drop_na_replicates(perfs, margin = 1L, ignore = is.na(specificities))
-  ci <- t(apply(perfs, 2, quantile, probs = c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), na.rm = TRUE))
+  ci <- t(apply(perfs, 2, roc_utils_ci_quantile, conf.level = conf.level, sides = sides, range = c(0, ifelse(roc$percent, 100, 1))))
   rownames(ci) <- paste(specificities, ifelse(roc$percent, "%", ""), sep = "")
 
   class(ci) <- c("ci.se", "ci", class(ci))
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "specificities") <- specificities

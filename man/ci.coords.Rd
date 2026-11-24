@@ -26,7 +26,8 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, ...) 
+progress = getOption("pROCProgress", interactive()), cl = NULL,
+sides = c("two.sided", "lower", "upper"), ...) 
 \S3method{ci.coords}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.coords}{smooth.roc}(smooth.roc, x,
 input, ret=c("specificity", "sensitivity"),
@@ -34,7 +35,8 @@ best.method=c("youden", "closest.topleft"), best.weights=c(1, 0.5),
 best.policy = c("unique.stop", "stop", "omit", "random"),
 conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE,
-progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
+progress = getOption("pROCProgress", interactive()), cl = NULL,
+sides = c("two.sided", "lower", "upper"), ...)
 \S3method{ci.coords}{default}(response, predictor, ...)
 }
 		   
@@ -79,6 +81,17 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
     in percent. Default: 0.95, resulting in a 95\% CI.
+  }
+  \item{sides}{the sides of the confidence interval: \dQuote{two.sided}
+    (default), \dQuote{lower} for a lower confidence bound only, or
+    \dQuote{upper} for an upper confidence bound only. See the details
+    of \code{\link{ci.auc}}. The other bound is the limit of the values
+    the coordinate can take: 0, and 1 (or 100 if \code{percent}) for
+    rates, the size of the class for counts (of the sample if
+    \code{boot.stratified=FALSE}), \code{Inf} for \code{lr_pos} and
+    \code{lr_neg}, \code{-Inf} and \code{Inf} for \code{threshold},
+    and the value at a sensitivity and specificity of 1 for
+    \code{youden}, or of 0 for \code{closest.topleft}.
   }
   \item{boot.n}{the number of bootstrap replicates. Default: 2000.}
   \item{boot.stratified}{should the bootstrap be stratified (default, same number
@@ -174,6 +187,7 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   Additionally, the list has the following attributes: 
   
   \item{conf.level}{the width of the CI, in fraction.}
+  \item{sides}{the sides of the CI.}
   \item{boot.n}{the number of bootstrap replicates.}
   \item{boot.stratified}{whether or not the bootstrapping was stratified.}
   \item{input}{the input coordinate, as given in argument.}

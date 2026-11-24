@@ -48,6 +48,7 @@ remove.auc.ci.attributes <- function(x) {
 
 remove.ci.attributes <- function(ci) {
   attr(ci, "conf.level") <- NULL
+  attr(ci, "sides") <- NULL
   attr(ci, "boot.n") <- NULL
   attr(ci, "boot.stratified") <- NULL
   attr(ci, "specificities") <- NULL

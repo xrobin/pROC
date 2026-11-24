@@ -62,7 +62,7 @@ delong.unpaired.calculations <- function(roc1, roc2) {
   return(list("d" = d, "sig" = sqrt(SR + SS)))
 }
 
-ci_auc_delong <- function(roc, conf.level) {
+ci_auc_delong <- function(roc, conf.level, sides) {
   YR <- roc$controls # = C2, n, YRj
   XR <- roc$cases # = C1, m, XRi
 
@@ -79,7 +79,7 @@ ci_auc_delong <- function(roc, conf.level) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  roc_utils_logit_ci(V$theta, sqrt(S), conf.level)
+  roc_utils_logit_ci(V$theta, sqrt(S), conf.level, sides)
 }
 
 # Runs the placements and main calculations for the paired DeLong's test

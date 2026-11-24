@@ -148,3 +148,25 @@ test_that("ci.thresholds takes the partial AUC of auc objects", {
   expect_equal(as.numeric(attr(ci.auc.obj, "thresholds")), c(0.435, 0.475, 0.485, 0.51))
   expect_error(ci.thresholds(auc(smooth(r.s100b))), "not available for smoothed ROC curves")
 })
+
+test_that("ci.thresholds is one-sided with sides", {
+  boot.ci <- function(roc, ...) {
+    set.seed(42) # the same replicates for each side
+    ci.thresholds(roc, thresholds = c(0.1, 0.2), boot.n = 20, ...)
+  }
+  for (roc in list(r.s100b, r.s100b.percent)) {
+    two.sided <- boot.ci(roc, conf.level = 0.9)
+    max <- ifelse(roc$percent, 100, 1)
+    lower <- boot.ci(roc, sides = "lower")
+    upper <- boot.ci(roc, sides = "upper")
+    for (what in c("specificity", "sensitivity")) {
+      expect_equal(lower[[what]][, 1:2], two.sided[[what]][, 1:2], check.attributes = FALSE)
+      expect_equal(unname(lower[[what]][, 3]), c(max, max))
+      expect_equal(upper[[what]][, 2:3], two.sided[[what]][, 2:3], check.attributes = FALSE)
+      expect_equal(unname(upper[[what]][, 1]), c(0, 0))
+    }
+    expect_identical(attr(upper, "sides"), "upper")
+    expect_identical(attr(two.sided, "sides"), "two.sided")
+  }
+  expect_output(print(lower), "95% one-sided CI (20 stratified bootstrap replicates):", fixed = TRUE)
+})
