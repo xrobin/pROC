@@ -80,10 +80,10 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   details} section below).
 
   The default is to use \dQuote{delong} method except for with
-  partial AUC, smoothed curves and curves with case weights. The full AUC
+  partial AUC, smoothed curves and curves with observation weights. The full AUC
   of curves smoothed with \code{method="binormal"} or \code{"proper"}
   uses \dQuote{ml}; partial AUC, other smoothed curves and curves with
-  case weights use \dQuote{bootstrap}.
+  observation weights use \dQuote{bootstrap}.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported, nor \dQuote{ml} for anything else than the full AUC of
   binormal and proper smoothed curves.

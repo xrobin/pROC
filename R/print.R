@@ -256,7 +256,7 @@ print_dataline <- function(x) {
   if (!is.null(x$weights)) {
     on.exit({
       sizes <- roc_utils_class_sizes(x)
-      cat("Case weights: ", format(sizes[["controls"]]), " controls, ", format(sizes[["cases"]]), " cases.\n", sep = "")
+      cat("Observation weights: ", format(sizes[["controls"]]), " controls, ", format(sizes[["cases"]]), " cases.\n", sep = "")
     })
   }
   # Case / Controls call

@@ -62,10 +62,10 @@ delong.unpaired.calculations <- function(roc1, roc2) {
   return(list("d" = d, "sig" = sqrt(SR + SS)))
 }
 
-# DeLong's placements count observations: no case weights
+# DeLong's placements count observations: no observation weights
 delong_stop_if_weighted <- function(roc) {
   if (!is.null(roc$weights)) {
-    stop(roc_utils_no_delong("ROC curves with case weights"), call. = FALSE)
+    stop(roc_utils_no_delong("ROC curves with observation weights"), call. = FALSE)
   }
 }
 

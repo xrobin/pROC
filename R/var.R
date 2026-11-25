@@ -77,7 +77,7 @@ var.roc <- function(roc,
       # other smoothings: bootstrap
       method <- "bootstrap"
     } else if (!is.null(roc$weights)) {
-      # case weights: bootstrap
+      # observation weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"

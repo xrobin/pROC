@@ -144,19 +144,20 @@ weights = NULL)
   \item{density}{\code{density} argument passed to
     \code{\link[=smooth.roc]{smooth}}. Superseded by
     \code{smooth(roc1, density=\dots)} (see \link{all_in_one_calls}).}
-  \item{weights}{an optional numeric vector of non-negative case
-    weights, of the same length as \code{response}: each observation
-    counts as its weight in the sensitivities and specificities, and in
-    everything derived from them (AUC, \code{\link{coords}}, plots).
-    With a \code{formula}, \code{weights} is evaluated in \code{data}
-    as in \code{\link{model.frame}}. If the first argument was a
+  \item{weights}{non-negative weights of the observations, controls
+    and cases alike: each observation counts as its weight in the
+    sensitivities and specificities, and in everything derived from them
+    (AUC, \code{\link{coords}}, plots).
+    A numeric vector of the same length as \code{response}. With a
+    \code{formula}, \code{weights} is evaluated in \code{data} as in
+    \code{\link{model.frame}}. If the first argument was a
     \code{\link{data.frame}}, \code{weights} should be the name of the
     column in \code{data} containing the weights, quoted or not as
     \code{response}.
     Observations with a weight of 0 are not in the curve, and those with
-    a missing weight are handled by \code{na.rm}. Only with
-    \code{response} and \code{predictor}. See the \dQuote{Case weights}
-    section.}
+    a missing weight are handled by \code{na.rm}. Not available with
+    \code{controls} and \code{cases}. See the \dQuote{Observation
+    weights} section.}
   \item{\dots}{further arguments passed to or from other methods, and
     especially:
     \itemize{
@@ -253,7 +254,7 @@ weights = NULL)
   }
 }
 
-\section{Case weights}{
+\section{Observation weights}{
   With \code{weights}, the confidence intervals, variances, covariances
   and tests are computed with the bootstrap (see \code{\link{ci}},
   \code{\link{var}}, \code{\link{cov}} and \code{\link{roc.test}}),
@@ -272,7 +273,7 @@ weights = NULL)
 
   The DeLong, Obuchowski and Venkatraman methods, smoothing,
   \code{\link{power.roc.test}} and \code{\link{multiclass.roc}} are
-  not available with case weights.
+  not available with observation weights.
 }
 
 \section{Shortcuts}{
@@ -343,7 +344,7 @@ weights = NULL)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
-  \item{weights, original.weights}{the case weights, if any: of the
+  \item{weights, original.weights}{the observation weights, if any: of the
     observations of the curve (as \code{predictor}), and as passed (as
     \code{original.predictor}).}
   \item{fun.sesp}{DEPRECATED. The value will be removed in a future version.}

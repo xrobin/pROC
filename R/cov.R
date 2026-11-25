@@ -154,7 +154,7 @@ cov.roc <- function(roc1, roc2,
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
     } else if (!is.null(roc1$weights) || !is.null(roc2$weights)) {
-      # case weights: bootstrap
+      # observation weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"

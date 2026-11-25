@@ -103,7 +103,7 @@ roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.
       }
       # else prepare paired ROCs
       idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
-      # (a missing or null case weight leaves the observation out of both curves)
+      # (a missing or null observation weight leaves the observation out of both curves)
       idx.exclude[is.na(roc1$original.weights) | roc1$original.weights == 0] <- TRUE
       roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE, weights = roc1$original.weights[!idx.exclude])
       roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE, weights = roc2$original.weights[!idx.exclude])
@@ -178,11 +178,11 @@ roc_utils_same_observations <- function(roc1, roc2) {
 }
 
 roc_utils_different_weights <- paste(
-  "ROC curves with different case weights are not paired.",
+  "ROC curves with different observation weights are not paired.",
   "Use 'paired = FALSE' to compare them as unpaired."
 )
 
-roc_utils_paired_different_weights <- "'paired = TRUE' cannot be applied to ROC curves with different case weights."
+roc_utils_paired_different_weights <- "'paired = TRUE' cannot be applied to ROC curves with different observation weights."
 
 roc_utils_not_paired_automatically <- paste(
   "ROC curves built from 'controls' and 'cases' are not paired automatically.",
@@ -239,7 +239,7 @@ roc_utils_paired_list <- function(rocs, paired) {
           return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
           given.only = given.only
         )
-        # 1 if they can be paired, NA if only their case weights differ
+        # 1 if they can be paired, NA if only their observation weights differ
         if (isTRUE(attr(can.pair, "different.weights"))) NA_integer_ else as.integer(isTRUE(can.pair))
       }, integer(1))
     }))

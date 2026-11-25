@@ -49,7 +49,7 @@ are.paired(...)
   of both ROC curves are \link{identical}. If the \code{response}s are different, this can be
   due to missing values differing between the curves. In this case, the
   function will strip all \code{NA}s in both curves and check for
-  identity again. Curves with different case weights (see
+  identity again. Curves with different observation weights (see
   \code{\link{roc}}) are not paired.
 
   This only shows that the curves can be paired. It raises false

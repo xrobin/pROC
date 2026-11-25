@@ -194,7 +194,7 @@ ci.auc.roc <- function(roc,
       # smoothing: bootstrap
       method <- "bootstrap"
     } else if (!is.null(roc$weights)) {
-      # case weights: bootstrap
+      # observation weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"

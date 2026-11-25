@@ -111,7 +111,7 @@ cov(...)
   curves. The curves of a list are not re-paired.
 
   The default is to use \dQuote{delong} method except with
-  partial AUC, smoothed curves and curves with case weights where
+  partial AUC, smoothed curves and curves with observation weights where
   \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported.

@@ -166,7 +166,7 @@ roc.default <- function(response, predictor,
                         ci.method = NULL,
                         # capture density for smooth.roc here (do not pass to graphical functions)
                         density = NULL,
-                        # case weights
+                        # observation weights
                         weights = NULL,
                         # further arguments passed to plot, auc, ci, smooth.
                         ...) {

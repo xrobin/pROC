@@ -97,7 +97,7 @@ roc_utils_auto_direction <- function(controls, cases, weights.controls = NULL, w
   if (roc_utils_weighted_median(controls, weights.controls) <= roc_utils_weighted_median(cases, weights.cases)) "<" else ">"
 }
 
-# The median of x under case weights: median(x) without weights or with equal
+# The median of x under observation weights: median(x) without weights or with equal
 # weights
 roc_utils_weighted_median <- function(x, weights = NULL) {
   if (is.null(weights)) {
@@ -111,7 +111,7 @@ roc_utils_weighted_median <- function(x, weights = NULL) {
   (x[match(TRUE, cumulated >= half)] + x[match(TRUE, cumulated > half)]) / 2
 }
 
-# Case weights: the weights of the controls and of the cases of a curve or of
+# Observation weights: the weights of the controls and of the cases of a curve or of
 # a resample (roc_utils_resample()), NULL without weights
 roc_utils_class_weights <- function(roc) {
   if (is.null(roc$weights)) {
@@ -123,7 +123,7 @@ roc_utils_class_weights <- function(roc) {
   )
 }
 
-# The number of controls and cases of a curve: with case weights, their total
+# The number of controls and cases of a curve: with observation weights, their total
 # weights
 roc_utils_class_sizes <- function(roc) {
   if (is.null(roc$weights)) {
@@ -142,7 +142,7 @@ roc_utils_has_counts <- function(roc) {
 # What has no weighted version
 roc_utils_stop_if_weighted <- function(roc, what) {
   if (!is.null(roc$weights)) {
-    stop(sprintf("%s is not supported for ROC curves with case weights.", what), call. = FALSE)
+    stop(sprintf("%s is not supported for ROC curves with observation weights.", what), call. = FALSE)
   }
 }
 
@@ -217,7 +217,7 @@ roc_utils_coords_basic <- function(threshold, specificity, sensitivity) {
 # scale: 100 for percent curves. The rates are computed as scale * k / n, one
 # rounding, so that a typed value such as 57.5 (23/40) matches the point it
 # denotes, on percent as on fraction curves ((k / n) * 100 rounds twice).
-# weights.controls, weights.cases: case weights, which count each observation
+# weights.controls, weights.cases: observation weights, which count each observation
 # as its weight. The totals are the ends of the cumulated sums, so that the
 # curve ends exactly on 0 and scale.
 roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 1,
@@ -465,7 +465,7 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
 # product of its incoming and outgoing directions is negative. (1, 0) before
 # the first point and (0, -1) after the last compare each end with its single
 # neighbour. Duplicated points count once, keeping 1.19.1's label.
-# Without counts (fractional case weights, exact = FALSE): the same test on
+# Without counts (fractional observation weights, exact = FALSE): the same test on
 # sp and se, in floating point.
 roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, scale = 1, exact = TRUE) {
   if (!exact) {
@@ -1357,7 +1357,7 @@ roc_utils_list_method <- function(x, method, methods) {
     } else if ("ml" %in% methods && !x$paired && all(x$has.ml)) {
       method <- "ml"
     } else if (smoothed || !same.direction || weighted) {
-      # other smoothings, or paired, different directions and case weights: bootstrap
+      # other smoothings, or paired, different directions and observation weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"

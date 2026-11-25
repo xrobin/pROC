@@ -79,7 +79,7 @@ na.rm=TRUE, method=NULL, paired=TRUE, ..., weights=NULL)
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
   }
-  \item{weights}{case weights, see \code{\link{roc}} (default method
+  \item{weights}{observation weights, see \code{\link{roc}} (default method
     only).}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
@@ -184,11 +184,11 @@ na.rm=TRUE, method=NULL, paired=TRUE, ..., weights=NULL)
     \code{method="binormal"} or \code{"proper"}, or a single such
     curve;
     \item \dQuote{bootstrap} for other smoothed curves, for curves with
-    case weights and for curves with different \code{direction};
+    observation weights and for curves with different \code{direction};
     \item \dQuote{delong}.
   }
   \dQuote{delong} and \dQuote{venkatraman} do not support partial AUCs,
-  smoothed curves nor case weights, and \dQuote{ml} only supports the full AUC of
+  smoothed curves nor observation weights, and \dQuote{ml} only supports the full AUC of
   unpaired binormal or proper smoothed curves. \dQuote{delong} and
   \dQuote{venkatraman} ignore the \code{direction} of the curves: with
   different directions the comparison is spurious (a warning is issued
