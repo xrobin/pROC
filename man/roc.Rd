@@ -480,12 +480,6 @@ roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"), direction = "<")
 roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 
 
-## Other options ##
-
-# Sensitivity and specificity in percent
-roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
-
-
 ## Observation weights ##
 
 # Give women and men the same total weight
@@ -502,6 +496,12 @@ coords(rocobj, "best", ret = c("threshold", "specificity", "sensitivity"))
 \dontrun{
 ci(rocobj)
 }
+
+
+## Other options ##
+
+# Sensitivity and specificity in percent
+roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
 }
 
 \keyword{univar}
