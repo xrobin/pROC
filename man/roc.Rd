@@ -485,6 +485,24 @@ roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 
 # Sensitivity and specificity in percent
 roc(aSAH$outcome, aSAH$s100b, percent = TRUE)
+
+
+## Observation weights ##
+
+# Give women and men the same total weight
+aSAH$w <- ifelse(aSAH$gender == "Female", 1 / sum(aSAH$gender == "Female"),
+                 1 / sum(aSAH$gender == "Male"))
+# As a vector
+roc(aSAH$outcome, aSAH$s100b, weights = aSAH$w)
+# As a column of the data, with a formula or a data.frame
+rocobj <- roc(outcome ~ s100b, data = aSAH, weights = w)
+roc(aSAH, outcome, s100b, weights = w)
+# Coordinates are weighted too
+coords(rocobj, "best", ret = c("threshold", "specificity", "sensitivity"))
+# Confidence intervals and tests use the bootstrap
+\dontrun{
+ci(rocobj)
+}
 }
 
 \keyword{univar}
