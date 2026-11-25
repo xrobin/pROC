@@ -144,19 +144,16 @@ weights = NULL)
   \item{density}{\code{density} argument passed to
     \code{\link[=smooth.roc]{smooth}}. Superseded by
     \code{smooth(roc1, density=\dots)} (see \link{all_in_one_calls}).}
-  \item{weights}{non-negative weights of the observations, controls
-    and cases alike: each observation counts as its weight in the
-    sensitivities and specificities, and in everything derived from them
-    (AUC, \code{\link{coords}}, plots).
-    A numeric vector of the same length as \code{response}. With a
+  \item{weights}{non-negative weights of the observations. A numeric
+    vector of the same length as \code{response}. With a
     \code{formula}, \code{weights} is evaluated in \code{data} as in
     \code{\link{model.frame}}. If the first argument was a
     \code{\link{data.frame}}, \code{weights} should be the name of the
     column in \code{data} containing the weights, quoted or not as
     \code{response}.
-    Observations with a weight of 0 are not in the curve, and those with
-    a missing weight are handled by \code{na.rm}. Not available with
-    \code{controls} and \code{cases}. See the \dQuote{Observation
+    Observations with a weight of 0 are removed from the data, and those
+    with a missing weight are handled by \code{na.rm}. Not available
+    with \code{controls} and \code{cases}. See the \dQuote{Observation
     weights} section.}
   \item{\dots}{further arguments passed to or from other methods, and
     especially:
@@ -255,7 +252,9 @@ weights = NULL)
 }
 
 \section{Observation weights}{
-  With \code{weights}, the confidence intervals, variances, covariances
+  With \code{weights}, each observation counts as its weight in the
+  sensitivities and specificities, and in everything derived from them
+  (AUC, \code{\link{coords}}, plots). The confidence intervals, variances, covariances
   and tests are computed with the bootstrap (see \code{\link{ci}},
   \code{\link{var}}, \code{\link{cov}} and \code{\link{roc.test}}),
   where each observation is resampled together with its weight. This
