@@ -255,6 +255,12 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 }
 
 print_dataline <- function(x) {
+  if (!is.null(x$weights)) {
+    on.exit({
+      sizes <- roc_utils_class_sizes(x)
+      cat("Observation weights: ", format(sizes[["controls"]]), " controls, ", format(sizes[["cases"]]), " cases.\n", sep = "")
+    })
+  }
   # Case / Controls call
   if ("cases" %in% names(x$call) && "controls" %in% names(x$call)) {
     cat("Data: ", length(x$controls), " controls ", x$direction, " ", length(x$cases), " cases.\n", sep = "")

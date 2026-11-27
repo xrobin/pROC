@@ -39,7 +39,7 @@ boot.stratified=TRUE, progress = getOption("pROCProgress", interactive()),
 conf.level=0.95, cl = NULL, ...)
 \S3method{roc.test}{formula}(formula, data, ..., subset, na.action)
 \S3method{roc.test}{default}(response, predictor1, predictor2=NULL,
-na.rm=TRUE, method=NULL, paired=TRUE, ...)
+na.rm=TRUE, method=NULL, paired=TRUE, ..., weights=NULL)
 }
 
 \arguments{
@@ -79,6 +79,8 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
   \item{subset, na.action}{arguments for \code{\link{model.frame}},
     used with \code{formula} and \code{data} to build the \code{\link{roc}} curves.
   }
+  \item{weights}{observation weights, see \code{\link{roc}} (default method
+    only).}
   \item{na.rm}{if \code{TRUE}, the observations with \code{NA} values
     in the response or in either predictor will be removed before the
     two curves are built (only when \code{predictor1} and
@@ -181,12 +183,12 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
     \item \dQuote{ml} for unpaired curves all smoothed with
     \code{method="binormal"} or \code{"proper"}, or a single such
     curve;
-    \item \dQuote{bootstrap} for other smoothed curves, and for curves
-    with different \code{direction};
+    \item \dQuote{bootstrap} for other smoothed curves, for curves with
+    observation weights and for curves with different \code{direction};
     \item \dQuote{delong}.
   }
-  \dQuote{delong} and \dQuote{venkatraman} do not support partial AUCs
-  nor smoothed curves, and \dQuote{ml} only supports the full AUC of
+  \dQuote{delong} and \dQuote{venkatraman} do not support partial AUCs,
+  smoothed curves nor observation weights, and \dQuote{ml} only supports the full AUC of
   unpaired binormal or proper smoothed curves. \dQuote{delong} and
   \dQuote{venkatraman} ignore the \code{direction} of the curves: with
   different directions the comparison is spurious (a warning is issued

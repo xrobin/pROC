@@ -33,10 +33,14 @@ are.paired.roc <- function(roc1, roc2,
                            return.paired.rocs = FALSE,
                            reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
                            ...) {
-  roc_utils_can_pair(roc1, roc2, return.paired.rocs, reuse.auc, reuse.ci, reuse.smooth, given.only = TRUE)
+  paired <- roc_utils_can_pair(roc1, roc2, return.paired.rocs, reuse.auc, reuse.ci, reuse.smooth, given.only = TRUE)
+  attr(paired, "different.weights") <- NULL
+  paired
 }
 
-# Whether two curves can be paired: same levels and same response. With
+# Whether two curves can be paired: same levels, same response and same case
+# weights. Curves that differ only by their weights give FALSE with an
+# attribute "different.weights", for the warning of roc_utils_paired(). With
 # given.only (are.paired), the response must have been given: curves built
 # from 'controls' and 'cases' of the same sizes can be paired, but nothing
 # tells that they hold the same patients.
@@ -74,7 +78,11 @@ roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.
   # formula gives the row names, as model.response() does), but not the
   # na.action attribute: two curves that lost different observations must be
   # paired on the observations they share, below.
+  different.weights <- !identical(as.numeric(roc1$original.weights), as.numeric(roc2$original.weights))
   if (roc_utils_same_observations(roc1, roc2)) {
+    if (different.weights) {
+      return(structure(FALSE, different.weights = TRUE))
+    }
     retval <- TRUE
     if (return.paired.rocs) {
       # Return the smoothed curves if the input was smoothed
@@ -86,14 +94,19 @@ roc_utils_can_pair <- function(roc1, roc2, return.paired.rocs, reuse.auc, reuse.
     # Make sure the difference is not only due to missing values
     # compare original response (with NAs and response not in levels)
     if (identical(unname(roc1$original.response), unname(roc2$original.response))) {
+      if (different.weights) {
+        return(structure(FALSE, different.weights = TRUE))
+      }
       retval <- TRUE
       if (!return.paired.rocs) {
         return(retval)
       }
       # else prepare paired ROCs
       idx.exclude <- is.na(roc1$original.predictor) | is.na(roc2$original.predictor) | is.na(roc1$original.response) | !roc1$original.response %in% roc1$levels
-      roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE)
-      roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE)
+      # (a missing or null observation weight leaves the observation out of both curves)
+      idx.exclude[is.na(roc1$original.weights) | roc1$original.weights == 0] <- TRUE
+      roc1.paired <- roc(roc1$original.response[!idx.exclude], roc1$original.predictor[!idx.exclude], levels = roc1$levels, percent = roc1$percent, na.rm = FALSE, direction = roc1$direction, auc = FALSE, weights = roc1$original.weights[!idx.exclude])
+      roc2.paired <- roc(roc2$original.response[!idx.exclude], roc2$original.predictor[!idx.exclude], levels = roc2$levels, percent = roc2$percent, na.rm = FALSE, direction = roc2$direction, auc = FALSE, weights = roc2$original.weights[!idx.exclude])
       # Print the data as the input curves, not as the expressions above
       for (field in c("call", "predictor.name", "response.name", "response.given")) {
         roc1.paired[[field]] <- roc1[[field]]
@@ -164,6 +177,13 @@ roc_utils_same_observations <- function(roc1, roc2) {
     identical(unname(is.na(roc1$original.predictor)), unname(is.na(roc2$original.predictor)))
 }
 
+roc_utils_different_weights <- paste(
+  "ROC curves with different observation weights are not paired.",
+  "Use 'paired = FALSE' to compare them as unpaired."
+)
+
+roc_utils_paired_different_weights <- "'paired = TRUE' cannot be applied to ROC curves with different observation weights."
+
 roc_utils_not_paired_automatically <- paste(
   "ROC curves built from 'controls' and 'cases' are not paired automatically.",
   "Use 'paired = TRUE' if they hold the same patients in the same order, or 'paired = FALSE' if they do not."
@@ -185,10 +205,17 @@ roc_utils_paired <- function(roc1, roc2, paired) {
     given.only = FALSE
   )
   if (!is.null(paired)) {
+    if (isTRUE(attr(can.pair, "different.weights"))) {
+      stop(simpleError(roc_utils_paired_different_weights, sys.call(-1)))
+    }
     if (!can.pair) {
       stop(simpleError("'paired = TRUE' cannot be applied to unpaired ROC curves.", sys.call(-1)))
     }
     return(can.pair)
+  }
+  if (isTRUE(attr(can.pair, "different.weights"))) {
+    warning(simpleWarning(roc_utils_different_weights, sys.call(-1)))
+    return(FALSE)
   }
   if (can.pair && !are.paired(roc1, roc2)) {
     warning(simpleWarning(roc_utils_not_paired_automatically, sys.call(-1)))
@@ -208,25 +235,36 @@ roc_utils_paired_list <- function(rocs, paired) {
   every.pair <- function(given.only) {
     unlist(lapply(seq_along(rocs)[-1], function(j) {
       vapply(seq_len(j - 1), function(i) {
-        isTRUE(roc_utils_can_pair(rocs[[i]], rocs[[j]],
+        can.pair <- roc_utils_can_pair(rocs[[i]], rocs[[j]],
           return.paired.rocs = FALSE, reuse.auc = TRUE, reuse.ci = FALSE, reuse.smooth = TRUE,
           given.only = given.only
-        ))
-      }, logical(1))
+        )
+        # 1 if they can be paired, NA if only their observation weights differ
+        if (isTRUE(attr(can.pair, "different.weights"))) NA_integer_ else as.integer(isTRUE(can.pair))
+      }, integer(1))
     }))
   }
   can.pair <- every.pair(given.only = FALSE)
+  different.weights <- anyNA(can.pair)
+  can.pair <- can.pair %in% 1L
   if (!is.null(paired)) {
+    if (different.weights) {
+      stop(roc_utils_paired_different_weights, call. = FALSE)
+    }
     if (!all(can.pair)) {
       stop("'paired = TRUE' cannot be applied to unpaired ROC curves.", call. = FALSE)
     }
     return(TRUE)
   }
+  if (different.weights) {
+    warning(roc_utils_different_weights, call. = FALSE)
+    return(FALSE)
+  }
   if (any(can.pair) && !all(can.pair)) {
     warning("Only some of the ROC curves are paired: they are all treated as unpaired.", call. = FALSE)
     return(FALSE)
   }
-  if (all(can.pair) && !all(every.pair(given.only = TRUE))) {
+  if (all(can.pair) && !all(every.pair(given.only = TRUE) %in% 1L)) {
     warning(roc_utils_not_paired_automatically, call. = FALSE)
     return(FALSE)
   }

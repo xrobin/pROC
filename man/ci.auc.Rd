@@ -111,9 +111,10 @@ method = NULL, scale = c("auc", "logit"))
   function is called to build the ROC curve first.
 
   The default is to use the \dQuote{delong} method, except for comparison of
-  partial AUC and smoothed curves. The full AUC of curves smoothed with
-  \code{method="binormal"} or \code{"proper"} uses \dQuote{ml};
-  partial AUC and other smoothed curves use \code{bootstrap}. Using
+  partial AUC, smoothed curves and curves with observation weights. The full AUC
+  of curves smoothed with \code{method="binormal"} or \code{"proper"}
+  uses \dQuote{ml}; partial AUC, other smoothed curves and curves with
+  observation weights use \code{bootstrap}. Using
   \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
   partial AUC it is an error, and smoothed curves are bootstrapped
   instead (with a warning). \dQuote{ml} is an error for anything
