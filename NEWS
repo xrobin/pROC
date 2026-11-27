@@ -19,7 +19,7 @@
   * Variance, CIs and tests:
     - Added the "ml" method to 'var', 'ci.auc' and unpaired 'roc.test' for binormal and proper smoothed curves
     - The "obuchowski" methods of 'var', 'cov' and 'power.roc.test' use the maximum-likelihood binormal parameters
-    - The DeLong CI of the AUC is computed on the logit scale
+    - 'ci.auc' computes the DeLong and ML CIs on the logit scale with 'scale = "logit"' (the default will change from "auc" to "logit" in pROC 1.21)
     - DeLong and bootstrap 'roc.test' return a 'conf.int' of the difference (issue #73)
     - 'roc.test' and 'cov' take a list of more than two ROC curves (issue #12)
     - 'roc.test' tests a single ROC curve (issue #39)

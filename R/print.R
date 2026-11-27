@@ -193,10 +193,12 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   signif.ci <- signif(x, digits = digits)
   cat(attr(x, "conf.level") * 100, "% CI: ", sep = "")
   cat(signif.ci[1], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), "-", signif.ci[3], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), sep = "")
+  # The logit scale is shown; the AUC scale, the default, is not
+  logit <- ifelse(identical(attr(x, "scale"), "logit"), ", logit scale", "")
   if (attr(x, "method") == "delong") {
-    cat(" (DeLong)\n", sep = "")
+    cat(" (DeLong", logit, ")\n", sep = "")
   } else if (attr(x, "method") == "ml") {
-    cat(" (maximum likelihood)\n", sep = "")
+    cat(" (maximum likelihood", logit, ")\n", sep = "")
   } else {
     cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates)\n", sep = "")
   }

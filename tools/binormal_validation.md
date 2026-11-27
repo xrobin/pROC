@@ -101,7 +101,7 @@ one <- function(n.controls, n.cases) {
   if (is.null(s)) {
     return(rep(NA_real_, 14))
   }
-  ci <- ci.auc(s)
+  ci <- ci.auc(s, scale = "logit")
   ml <- s$binormal
   df <- data.frame(sp = qnorm(r$specificities), se = qnorm(r$sensitivities))
   df <- df[is.finite(df$sp) & is.finite(df$se), ]
@@ -198,8 +198,9 @@ knitr::kable(summarize(large[, 1:3],
 
 `var()` and `ci.auc()` of the fit use the delta method: O&M Eq. 6
 (p. 1531), with the variances and covariance of $a$ and $b$ from the
-inverse of the expected information at the maximum (D&A p. 490), and a
-normal CI on the logit scale (Pepe p. 107). The mean and median of the
+inverse of the expected information at the maximum (D&A p. 490), and
+`ci.auc(scale = "logit")` computes a normal CI on the logit scale (Pepe
+p. 107). The mean and median of the
 estimated SE are compared with the empirical SD of the AUC estimates,
 with the coverage of the 95% CI, on the datasets fitted above:
 

@@ -243,9 +243,10 @@ na.rm=TRUE, method=NULL, paired=TRUE, ...)
 
   \code{conf.int} is the confidence interval of \eqn{\theta},
   \eqn{\theta \pm z \sqrt{S}}{\theta +/- z sqrt(S)}, so that it agrees
-  with the p-value. It is not the interval of \code{\link{ci.auc}},
-  which is computed on the logit scale (\code{method="delong"} and
-  \code{"ml"}) or from the percentiles of the bootstrap.
+  with the p-value. With \code{method="delong"} or \code{"ml"} and a
+  two-sided alternative, it is the interval of \code{\link{ci.auc}} with
+  \code{scale="auc"}, without truncation; with the bootstrap,
+  \code{\link{ci.auc}} takes the percentiles instead.
 
   With \code{direction="auto"}, \code{\link{roc}} selects the direction
   from the data, and a one-sided test is not valid: set the
