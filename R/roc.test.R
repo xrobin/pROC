@@ -689,7 +689,7 @@ roc_test_one_curve <- function(roc1, method, alternative, boot.n, boot.stratifie
     method = method, boot.n = boot.n, boot.stratified = boot.stratified,
     progress = progress, parallel = parallel, cl = cl
   ))
-  stat <- (estimate - null.value) / sig
+  stat <- delong.test(list(d = estimate - null.value, sig = sig))
 
   htest <- list(
     statistic = stats::setNames(stat, if (method == "bootstrap") "D" else "Z"),
