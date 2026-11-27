@@ -17,7 +17,7 @@ This report checks `smooth(method = "proper")` (issue \#152), and the
 standard error of its AUC by the delta method (`var(method = "ml")`),
 against the published results of the “proper” binormal model (PBM). It
 is maintainer-only: knit it from the package root with the version of
-pROC to check installed, and mvtnorm:
+pROC to check installed:
 
 ``` r
 rmarkdown::render("tools/proper_binormal_validation.Rmd")
@@ -65,11 +65,9 @@ ls.auc <- function(r) {
   co <- coefficients(lm(sp ~ se, df))
   unname(pnorm(co[1] / sqrt(1 + co[2]^2)))
 }
-c(pROC = as.character(packageVersion("pROC")), mvtnorm = as.character(packageVersion("mvtnorm")), R = R.version.string)
-#>                           pROC                        mvtnorm 
-#>                    "1.19.9999"                        "1.4.2" 
-#>                              R 
-#> "R version 4.6.1 (2026-06-24)"
+c(pROC = as.character(packageVersion("pROC")), R = R.version.string)
+#>                           pROC                              R 
+#>                    "1.19.9999" "R version 4.6.1 (2026-06-24)"
 ```
 
 ## AUC (M&P Eq. 36)
@@ -86,7 +84,6 @@ table1 <- data.frame(
   c = c(-0.154357, -0.046907, 0, -0.428571, -0.14, 0, -0.853738, -0.292369, 0)
 )
 table1$eq36 <- mapply(pROC:::proper_binormal_auc, table1$da, table1$c)
-#> Loading required namespace: mvtnorm
 knitr::kable(table1, digits = 8)
 ```
 
@@ -111,9 +108,9 @@ $\rho = -(1 - c^2) / (1 + c^2)$:
 
 ``` r
 cs <- c(-0.99, -0.5, -1e-3, -1e-6, 1e-6, 1e-3, 0.5, 0.99)
-closed <- 1 + asin(-(1 - cs^2) / (1 + cs^2)) / pi
+closed <- 0.5 + 2 * atan(abs(cs)) / pi # arcsin(rho) = 2 atan(|c|) - pi / 2
 max(abs(vapply(cs, pROC:::proper_binormal_auc, numeric(1), da = 0) - closed))
-#> [1] 1.110223e-16
+#> [1] 0
 ```
 
 ## Continuous data (P&M Tables 2–4)
@@ -249,17 +246,17 @@ bias <- do.call(rbind, lapply(seq_along(continuous), function(i) {
 knitr::kable(bias, digits = c(2, 0, 4, 3, 4, 4, 4, 4, 4, 0))
 ```
 
-|  auc | shape     | bias.proper | bias.published | bias.lm | bias.empirical | rmse.proper | rmse.lm | rmse.empirical | failures.lm |
-|-----:|:----------|------------:|---------------:|--------:|---------------:|------------:|--------:|---------------:|------------:|
-| 0.60 | high      |      0.0179 |          0.017 |  0.0013 |         0.0006 |      0.0515 |  0.0547 |         0.0562 |           0 |
-| 0.60 | medium    |      0.0120 |          0.010 |  0.0019 |         0.0030 |      0.0525 |  0.0557 |         0.0571 |           0 |
-| 0.60 | symmetric |      0.0095 |          0.008 |  0.0015 |         0.0028 |      0.0522 |  0.0555 |         0.0569 |           0 |
-| 0.85 | high      |      0.0118 |          0.010 | -0.0010 |         0.0017 |      0.0357 |  0.0378 |         0.0389 |           0 |
-| 0.85 | medium    |      0.0033 |          0.002 | -0.0028 |         0.0017 |      0.0381 |  0.0379 |         0.0384 |           0 |
-| 0.85 | symmetric |      0.0037 |          0.002 | -0.0030 |         0.0017 |      0.0377 |  0.0375 |         0.0377 |           0 |
-| 0.95 | high      |      0.0076 |          0.007 | -0.0044 |         0.0001 |      0.0202 |  0.0244 |         0.0242 |          12 |
-| 0.95 | medium    |      0.0015 |          0.001 | -0.0041 |         0.0006 |      0.0213 |  0.0224 |         0.0223 |           1 |
-| 0.95 | symmetric |      0.0012 |          0.001 | -0.0047 |         0.0006 |      0.0195 |  0.0207 |         0.0199 |           0 |
+| auc | shape | bias.proper | bias.published | bias.lm | bias.empirical | rmse.proper | rmse.lm | rmse.empirical | failures.lm |
+|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.60 | high | 0.0179 | 0.017 | 0.0013 | 0.0006 | 0.0515 | 0.0547 | 0.0562 | 0 |
+| 0.60 | medium | 0.0120 | 0.010 | 0.0019 | 0.0030 | 0.0524 | 0.0557 | 0.0571 | 0 |
+| 0.60 | symmetric | 0.0095 | 0.008 | 0.0015 | 0.0028 | 0.0522 | 0.0555 | 0.0569 | 0 |
+| 0.85 | high | 0.0118 | 0.010 | -0.0010 | 0.0017 | 0.0357 | 0.0378 | 0.0389 | 0 |
+| 0.85 | medium | 0.0033 | 0.002 | -0.0028 | 0.0017 | 0.0381 | 0.0379 | 0.0384 | 0 |
+| 0.85 | symmetric | 0.0037 | 0.002 | -0.0030 | 0.0017 | 0.0377 | 0.0375 | 0.0377 | 0 |
+| 0.95 | high | 0.0076 | 0.007 | -0.0044 | 0.0001 | 0.0202 | 0.0244 | 0.0242 | 12 |
+| 0.95 | medium | 0.0015 | 0.001 | -0.0041 | 0.0006 | 0.0213 | 0.0224 | 0.0223 | 1 |
+| 0.95 | symmetric | 0.0012 | 0.001 | -0.0047 | 0.0006 | 0.0195 | 0.0207 | 0.0199 | 0 |
 
 ## Five-category data (M&P Tables 1–3)
 
@@ -425,19 +422,19 @@ c(
 #>                    10
 summary(proproc$ll.diff)
 #>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.        NAs 
-#> -2.136e-03 -2.036e-08  0.000e+00 -9.124e-06  0.000e+00  9.630e-09          1
+#> -2.136e-03 -2.038e-08  0.000e+00 -9.127e-06  0.000e+00  9.630e-09          1
 summary(abs(proproc$auc.diff))
 #>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-#> 0.000e+00 5.000e-09 4.500e-08 1.864e-04 1.190e-07 4.395e-02
+#> 0.000e+00 7.000e-09 4.400e-08 1.864e-04 1.160e-07 4.395e-02
 mean(proproc$auc.diff)
-#> [1] -0.0001863328
+#> [1] -0.0001862447
 ```
 
 Eq. 36 (pROC’s AUC) at PROPROC’s own estimates, against PROPROC’s AUC:
 
 ``` r
 max(abs(mapply(pROC:::proper_binormal_auc, proproc$da.proproc, proproc$c.proproc) - proproc$auc.proproc))
-#> [1] 4.636661e-06
+#> [1] 4.636365e-06
 ```
 
 The fits whose AUC differs by more than 1e-4, at the chance line, or
@@ -453,11 +450,11 @@ knitr::kable(
 )
 ```
 
-| dataset | modality | reader | code | auc.proproc |    auc | da.proproc |     da | c.proproc |     c | ll.diff |
-|:--------|---------:|-------:|-----:|------------:|-------:|-----------:|-------:|----------:|------:|--------:|
-| DOB3    |        1 |      2 |    6 |      0.5000 | 0.5000 |     0.0000 | 0.0000 |     0.000 | 0.000 |   0.000 |
-| DOB3    |        3 |      5 |    6 |      0.8467 | 0.8028 |     0.0285 | 1.2039 |     0.606 | 0.141 |  -0.002 |
-| VD      |        2 |      4 |    3 |      1.0000 | 1.0000 |     0.0000 | 0.0000 |     1.000 | 1.000 |      NA |
+| dataset | modality | reader | code | auc.proproc | auc | da.proproc | da | c.proproc | c | ll.diff |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| DOB3 | 1 | 2 | 6 | 0.5000 | 0.5000 | 0.0000 | 0.0000 | 0.000 | 0.000 | 0.000 |
+| DOB3 | 3 | 5 | 6 | 0.8467 | 0.8028 | 0.0285 | 1.2039 | 0.606 | 0.141 | -0.002 |
+| VD | 2 | 4 | 3 | 1.0000 | 1.0000 | 0.0000 | 0.0000 | 1.000 | 1.000 | NA |
 
 ## Discussion
 
