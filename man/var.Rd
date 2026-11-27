@@ -129,6 +129,12 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   \eqn{A} and \eqn{B} are their maximum-likelihood estimates (pp. 1530--1531),
   those of pROC's binormal smoothing of the curve (see
   \code{\link[=smooth.roc]{smooth}}).
+  This variance is intended for sample size and power calculations (see
+  \code{\link{power.roc.test}}). Equation 4 leaves out the covariance of
+  \eqn{\hat{A}}{A} and \eqn{\hat{B}}{B}, the third term of Equation 6, to make
+  the variance conservative (pp. 1532 and 1534), so it differs from
+  \code{cov(roc, roc, method="obuchowski")}. To analyse an observed curve,
+  use \dQuote{delong}, or \dQuote{ml} on a binormal smoothed curve.
 
   With \code{method="ml"}, the variance is that of the AUC of the
   maximum-likelihood fit of the smoothed curve, by the delta method, from
@@ -150,14 +156,11 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
 }
 
 \section{Binormality assumption}{
-  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
-  If the data shows a deviation from this assumption, it might help to
-  normalize the data first (that is, before calling \code{\link{roc}}),
-  for example with quantile normalization: 
-  \preformatted{
-    norm.x <- qnorm(rank(x)/(length(x)+1))
-    var(roc(response, norm.x, ...), ...)
-  }
+  The \dQuote{obuchowski} method assumes that the ROC curve is binormal:
+  some monotone transformation of the predictor makes it normal in both
+  controls and cases. The predictor itself need not be normal. As
+  \eqn{A} and \eqn{B} depend only on the ranks of the predictor,
+  a monotone transformation of it does not change the variance.
 
   \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }

@@ -68,13 +68,36 @@ roc_utils_draw_auc_polygon <- function(roc, auc, col = "gainsboro", lty = par("l
   invisible(NULL)
 }
 
+# The AUC label of text.auc, plot.roc(print.auc = TRUE) and geom_text_auc
+roc_utils_auc_label <- function(auc, ci = NULL, pattern = NULL) {
+  percent <- attr(auc, "percent")
+  partial.auc <- attr(auc, "partial.auc")
+  has.ci <- !is.null(ci) && methods::is(ci, "ci.auc")
+  if (is.null(pattern)) {
+    pattern <- ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: ")
+    pattern <- paste0(pattern, ifelse(percent, "%.1f%%", "%.3f"))
+    if (has.ci) {
+      pattern <- paste0(
+        pattern, " (",
+        ifelse(percent, "%.1f%%", "%.3f"), "\u2013",
+        ifelse(percent, "%.1f%%", "%.3f"), ")"
+      )
+    }
+  }
+  if (has.ci) {
+    sprintf(pattern, auc, ci[1], ci[3])
+  } else {
+    sprintf(pattern, auc)
+  }
+}
+
 roc_utils_draw_auc_text <- function(auc, ci = NULL, pattern = NULL, xy = NULL,
                                      adj = c(0, 1), col = par("col"), cex = par("cex"), ...) {
   if (is.null(xy)) {
     percent <- attr(auc, "percent")
     xy <- c(ifelse(percent, 50, .5), ifelse(percent, 50, .5))
   }
-  label <- ggroc_auc_label(auc, ci, pattern)
+  label <- roc_utils_auc_label(auc, ci, pattern)
   suppressWarnings(text(xy[1], xy[2], labels = label, adj = adj, cex = cex, col = col, ...))
   invisible(label)
 }

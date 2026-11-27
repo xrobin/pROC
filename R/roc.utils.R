@@ -1274,6 +1274,34 @@ roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
   }
 }
 
+# The bootstrap percentiles of ci.auc have no scale
+roc_utils_warn_scale_bootstrap <- function(method, scale.given) {
+  if (method == "bootstrap" && scale.given) {
+    warning("'scale' is ignored with the bootstrap method.")
+  }
+}
+
+# CI of an AUC with standard error sd, as (lower, AUC, upper), on the
+# given scale ("auc" or "logit")
+roc_utils_auc_ci <- function(auc, sd, conf.level, scale) {
+  if (scale == "logit") {
+    roc_utils_logit_ci(auc, sd, conf.level)
+  } else {
+    roc_utils_normal_ci(auc, sd, conf.level)
+  }
+}
+
+# The standard confidence interval of an AUC, AUC +- z SE (Efron &
+# Tibshirani 1993, p. 154, Eq. 12.5), as (lower, AUC, upper), bounded to
+# [0, 1]: the bounds can go beyond in rare cases. Exactly the DeLong CI of
+# pROC 1.19 and before.
+roc_utils_normal_ci <- function(auc, sd, conf.level) {
+  ci <- qnorm(c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2), mean = auc, sd = sd)
+  ci[ci > 1] <- 1
+  ci[ci < 0] <- 0
+  ci
+}
+
 # CI of an AUC with standard error sd, as (lower, AUC, upper): a normal
 # interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107)
 roc_utils_logit_ci <- function(auc, sd, conf.level) {

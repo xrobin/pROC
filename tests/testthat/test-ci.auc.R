@@ -3,36 +3,97 @@ data(aSAH)
 
 context("ci.auc")
 
-expected.ci.auc <- c(0.497330565621015, 0.611957994579946, 0.715404233940336)
+expected.ci.auc <- c(0.501244999271703, 0.611957994579946, 0.722670989888189)
+expected.ci.auc.logit <- c(0.497330565621015, 0.611957994579946, 0.715404233940336)
 
 test_that("ci.auc with delong works", {
   test.ci <- ci.auc(r.ndka)
   expect_is(test.ci, "ci.auc")
   expect_equal(as.numeric(test.ci), expected.ci.auc)
+  expect_identical(attr(test.ci, "scale"), "auc")
+  expect_identical(test.ci, ci.auc(r.ndka, scale = "auc"))
+})
+
+test_that("ci.auc with delong is a normal interval on the AUC scale by default, as in pROC 1.19", {
+  # The exact computation of pROC 1.19.1
+  V <- pROC:::delongPlacements(r.ndka)
+  m <- length(r.ndka$cases)
+  n <- length(r.ndka$controls)
+  S <- sum((V$X - V$theta)^2) / (m - 1) / m + sum((V$Y - V$theta)^2) / (n - 1) / n
+  expect_identical(as.numeric(ci.auc(r.ndka)), qnorm(c(0.025, 0.5, 0.975), mean = V$theta, sd = sqrt(S)))
+})
+
+test_that("ci.auc with delong on the AUC scale is bounded to [0, 1]", {
+  r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(4.5, 6, 7, 8, 9), quiet = TRUE)
+  ci <- as.numeric(ci.auc(r))
+  expect_identical(ci[2:3], c(0.96, 1))
+  expect_true(ci[1] > 0 && ci[1] < 0.96)
+})
+
+test_that("ci.auc with delong works on the logit scale", {
+  test.ci <- ci.auc(r.ndka, scale = "logit")
+  expect_equal(as.numeric(test.ci), expected.ci.auc.logit)
+  expect_identical(attr(test.ci, "scale"), "logit")
+  expect_output(print(test.ci), "95% CI: 0.4973-0.7154 (DeLong, logit scale)", fixed = TRUE)
+  expect_output(print(ci.auc(r.ndka)), "95% CI: 0.5012-0.7227 (DeLong)", fixed = TRUE)
+  expect_equal(as.numeric(ci.auc(r.ndka.percent, scale = "logit")), expected.ci.auc.logit * 100)
+  # Through all the methods
+  expect_equal(as.numeric(ci.auc(auc(r.ndka), scale = "logit")), expected.ci.auc.logit)
+  expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH, scale = "logit")), expected.ci.auc.logit)
+  expect_equal(as.numeric(ci.auc(aSAH$outcome, aSAH$ndka, scale = "logit")), expected.ci.auc.logit)
+  expect_equal(as.numeric(ci(r.ndka, scale = "logit")), expected.ci.auc.logit)
+  expect_equal(as.numeric(ci(aSAH$outcome, aSAH$ndka, scale = "logit")), expected.ci.auc.logit)
+  expect_equal(as.numeric(roc(aSAH$outcome, aSAH$ndka, ci = TRUE, scale = "logit", quiet = TRUE)$ci), expected.ci.auc.logit)
+  expect_equal(
+    as.numeric(ci.auc(outcome ~ ndka, data = aSAH, subset = (gender == "Female"), scale = "logit")),
+    c(0.515076172852731, 0.667142857142857, 0.790883412202345)
+  )
+})
+
+test_that("ci.auc rejects an invalid scale", {
+  expect_error(ci.auc(r.ndka, scale = "probit"))
+})
+
+test_that("ci.auc with bootstrap has no scale, and warns when one is given", {
+  expect_silent(ci <- ci.auc(r.ndka, method = "bootstrap", boot.n = 10, progress = "none"))
+  expect_null(attr(ci, "scale"))
+  expect_warning(ci <- ci.auc(r.ndka, method = "bootstrap", boot.n = 10, scale = "logit", progress = "none"))
+  expect_null(attr(ci, "scale"))
+  # partial AUC: bootstrap by default
+  expect_warning(ci.auc(r.ndka.partial1, boot.n = 10, scale = "auc", progress = "none"))
+  # smoothed curves without ML
+  expect_warning(ci.auc(smooth(r.ndka, method = "density"), boot.n = 10, scale = "logit", progress = "none"))
 })
 
 test_that("ci.auc with delong stays within (0, 1) on the logit scale", {
   r <- roc(controls = c(1, 2, 3, 4, 5), cases = c(4.5, 6, 7, 8, 9), quiet = TRUE)
-  expect_equal(as.numeric(ci.auc(r)), c(0.572180762635470, 0.96, 0.997683441755321))
+  expect_equal(as.numeric(ci.auc(r, scale = "logit")), c(0.572180762635470, 0.96, 0.997683441755321))
 })
 
 test_that("ci.auc with delong handles direction and extreme conf.level", {
-  r.rev <- roc(aSAH$outcome, aSAH$ndka, direction = ">", quiet = TRUE)
-  expect_equal(as.numeric(ci.auc(r.rev)), 1 - rev(expected.ci.auc))
-  expect_equal(as.numeric(ci.auc(r.ndka, conf.level = 1)), c(0, as.numeric(auc(r.ndka)), 1))
-  r <- roc(controls = 1:5, cases = c(1.5, 2.5), direction = "<", quiet = TRUE)
-  ci <- as.numeric(ci.auc(r, conf.level = 0))
-  expect_identical(ci, rep(ci[2], 3))
+  for (scale in c("auc", "logit")) {
+    r.rev <- roc(aSAH$outcome, aSAH$ndka, direction = ">", quiet = TRUE)
+    expected <- if (scale == "auc") expected.ci.auc else expected.ci.auc.logit
+    expect_equal(as.numeric(ci.auc(r.rev, scale = scale)), 1 - rev(expected))
+    expect_equal(as.numeric(ci.auc(r.ndka, conf.level = 1, scale = scale)), c(0, as.numeric(auc(r.ndka)), 1))
+    r <- roc(controls = 1:5, cases = c(1.5, 2.5), direction = "<", quiet = TRUE)
+    ci <- as.numeric(ci.auc(r, conf.level = 0, scale = scale))
+    expect_identical(ci, rep(ci[2], 3))
+  }
 })
 
 test_that("ci.auc with delong of a perfect curve is a null interval", {
-  r <- roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE)
-  expect_warning(ci <- ci.auc(r), "ci.auc() of a ROC curve with AUC == 1 is always 1-1 and can be misleading.", fixed = TRUE)
-  expect_identical(as.numeric(ci), c(1, 1, 1))
-  r0 <- roc(controls = c(4, 5, 6), cases = c(1, 2, 3), direction = "<", quiet = TRUE)
-  expect_identical(as.numeric(ci.auc(r0)), c(0, 0, 0))
-  rt <- roc(controls = rep(1, 3), cases = rep(1, 3), quiet = TRUE)
-  expect_identical(as.numeric(ci.auc(rt, conf.level = 1)), c(0.5, 0.5, 0.5))
+  for (scale in c("auc", "logit")) {
+    r <- roc(controls = c(1, 2, 3), cases = c(4, 5, 6), quiet = TRUE)
+    expect_warning(ci <- ci.auc(r, scale = scale))
+    expect_identical(as.numeric(ci), c(1, 1, 1))
+    r0 <- roc(controls = c(4, 5, 6), cases = c(1, 2, 3), direction = "<", quiet = TRUE)
+    expect_identical(as.numeric(ci.auc(r0, scale = scale)), c(0, 0, 0))
+    rt <- roc(controls = rep(1, 3), cases = rep(1, 3), quiet = TRUE)
+    # conf.level = 1: the whole [0, 1] interval on the AUC scale (qnorm gives -Inf, Inf), as in pROC 1.19
+    expected <- if (scale == "auc") c(0, 0.5, 1) else c(0.5, 0.5, 0.5)
+    expect_identical(as.numeric(ci.auc(rt, conf.level = 1, scale = scale)), expected)
+  }
 })
 
 
@@ -50,7 +111,7 @@ test_that("ci.auc works with a formula", {
   expect_equal(as.numeric(ci.auc(outcome ~ ndka, data = aSAH)), expected.ci.auc)
   expect_equal(
     as.numeric(ci.auc(outcome ~ ndka, data = aSAH, subset = (gender == "Female"))),
-    c(0.515076172852731, 0.667142857142857, 0.790883412202345)
+    c(0.5261398281, 0.6671428571, 0.8081458862)
   )
 })
 

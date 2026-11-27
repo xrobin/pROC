@@ -176,7 +176,7 @@ se.continuous <- do.call(rbind, lapply(seq_along(continuous), function(i) {
     auc = table1$auc[i], shape = table1$shape[i],
     sd = sd(res[, "proper"]), published.sd = published$sd[i],
     mean.se = mean(res[, "se"]), published.se = published.se[i], median.se = median(res[, "se"]),
-    # the 95% CI of ci.auc(): normal on the logit scale (Pepe p. 107)
+    # the 95% CI of ci.auc(scale = "logit"): normal on the logit scale (Pepe p. 107)
     coverage = mean(mapply(function(auc, se) {
       ci <- pROC:::roc_utils_logit_ci(auc, se, 0.95)
       ci[1] <= table1$auc[i] && table1$auc[i] <= ci[3]
@@ -331,7 +331,7 @@ proproc <- do.call(rbind, lapply(datasets, function(d) {
       controls = data[[out$R[j]]]$controls[, out$T[j]], cases = data[[out$R[j]]]$cases[, out$T[j]],
       direction = "<", quiet = TRUE
     )
-    categories <- pROC:::proper_binormal_categories(r)
+    categories <- pROC:::binormal_categories(r)
     s <- smooth(r, method = "proper")
     data.frame(
       dataset = d, modality = out$T[j], reader = out$R[j], code = out$returnCode[j],
