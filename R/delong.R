@@ -17,20 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# DeLong's test, paired or unpaired, used by roc.test.roc
-delong.test <- function(calcs) {
-  # Input calcs is a list returned by delong.paired.calculations()
-  # or delong.unpaired.calculations().
-
-  zscore <- with(calcs, d / sig)
-
-  if (is.nan(zscore) && calcs$d == 0 && calcs$sig == 0) {
-    zscore <- 0
-  } # special case: no difference between theta's produces a NaN
-
-  return(zscore)
-}
-
 # Runs the placements and main calculations for the unpaired DeLong's test.
 # The curves are independent, so the variance of the difference is the sum
 # of the variances of the two AUCs.

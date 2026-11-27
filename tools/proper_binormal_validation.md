@@ -394,7 +394,7 @@ proproc <- do.call(rbind, lapply(datasets, function(d) {
       controls = data[[out$R[j]]]$controls[, out$T[j]], cases = data[[out$R[j]]]$cases[, out$T[j]],
       direction = "<", quiet = TRUE
     )
-    categories <- pROC:::proper_binormal_categories(r)
+    categories <- pROC:::binormal_categories(r)
     s <- smooth(r, method = "proper")
     data.frame(
       dataset = d, modality = out$T[j], reader = out$R[j], code = out$returnCode[j],

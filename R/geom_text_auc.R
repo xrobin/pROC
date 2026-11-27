@@ -14,7 +14,7 @@ geom_text_auc.auc <- function(data, ci = NULL, x = NULL, y = NULL, pattern = NUL
   if (is.null(y)) {
     y <- one / 2
   }
-  label <- ggroc_auc_label(data, ci, pattern)
+  label <- roc_utils_auc_label(data, ci, pattern)
   ggroc_text_layer(data.frame(x = x, y = y, label = label, vjust = vjust), hjust, extras, mapping)
 }
 

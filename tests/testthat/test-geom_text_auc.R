@@ -12,7 +12,7 @@ test_that("geom_text_auc does not use the ci.auc stored in the curve", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
   p <- ggroc(roc_ci) + geom_text_auc(roc_ci)
-  expect_identical(ggplot2::layer_data(p, 2)$label, ggroc_auc_label(roc_ci$auc))
+  expect_identical(ggplot2::layer_data(p, 2)$label, roc_utils_auc_label(roc_ci$auc))
 })
 
 test_that("geom_text_auc gives a clear error on a curve without AUC", {
@@ -23,11 +23,11 @@ test_that("geom_text_auc gives a clear error on a curve without AUC", {
 test_that("geom_text_auc(roc, ci = ) uses the given ci.auc", {
   skip_if_not_installed("ggplot2", minimum_version = "4.0.0")
   ci1 <- ci.auc(r.s100b)
-  expect_identical(ggplot2::layer_data(ggroc(r.s100b) + geom_text_auc(r.s100b, ci = ci1), 2)$label, ggroc_auc_label(r.s100b$auc, ci1))
+  expect_identical(ggplot2::layer_data(ggroc(r.s100b) + geom_text_auc(r.s100b, ci = ci1), 2)$label, roc_utils_auc_label(r.s100b$auc, ci1))
   # it takes precedence over the stored CI
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
   ci90 <- ci.auc(roc_ci, conf.level = 0.9)
-  expect_identical(ggplot2::layer_data(ggroc(roc_ci) + geom_text_auc(roc_ci, ci = ci90), 2)$label, ggroc_auc_label(roc_ci$auc, ci90))
+  expect_identical(ggplot2::layer_data(ggroc(roc_ci) + geom_text_auc(roc_ci, ci = ci90), 2)$label, roc_utils_auc_label(roc_ci$auc, ci90))
 })
 
 test_that("geom_text_auc takes a ci.auc as text.ci.auc does", {
@@ -35,7 +35,7 @@ test_that("geom_text_auc takes a ci.auc as text.ci.auc does", {
   ci1 <- ci.auc(r.s100b)
   expect_identical(
     ggplot2::layer_data(ggroc(r.s100b) + geom_text_auc(ci1), 2)$label,
-    ggroc_auc_label(r.s100b$auc, ci1)
+    roc_utils_auc_label(r.s100b$auc, ci1)
   )
 })
 
@@ -45,7 +45,7 @@ test_that("geom_text_auc stacks the labels of a list without facets", {
   d <- ggplot2::layer_data(ggroc(rocs) + geom_text_auc(rocs, vjust = 0), 2)
   expect_equal(as.integer(d$PANEL), c(1L, 1L, 1L))
   expect_equal(d$vjust, c(0, 1.5, 3))
-  expect_equal(d$label, vapply(rocs, function(r) ggroc_auc_label(r$auc), "", USE.NAMES = FALSE))
+  expect_equal(d$label, vapply(rocs, function(r) roc_utils_auc_label(r$auc), "", USE.NAMES = FALSE))
 })
 
 test_that("geom_text_auc puts each label of a list at (x, y) in its facet", {
@@ -63,7 +63,7 @@ test_that("geom_text_auc labels of a list follow the elements", {
   ci1 <- ci.auc(r.s100b)
   # A ci.auc, an auc and an unnamed roc
   l <- list(s100b = ci1, wfns = r.wfns$auc, r.ndka)
-  labels <- c(ggroc_auc_label(r.s100b$auc, ci1), ggroc_auc_label(r.wfns$auc), ggroc_auc_label(r.ndka$auc))
+  labels <- c(roc_utils_auc_label(r.s100b$auc, ci1), roc_utils_auc_label(r.wfns$auc), roc_utils_auc_label(r.ndka$auc))
   p <- ggroc(list(s100b = r.s100b, wfns = r.wfns, r.ndka))
   expect_equal(ggplot2::layer_data(p + geom_text_auc(l), 2)$label, labels)
   # name = TRUE starts them with the names, also with a pattern

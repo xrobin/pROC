@@ -193,7 +193,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     # One contrast: L theta / sqrt(L S L') is standard normal
     d <- tested$d
     sig <- tested$sd
-    stat <- delong.test(list(d = d, sig = sig))
+    stat <- roc_test_normal_stat(d, sig)
     # named as in roc.test.roc
     htest$statistic <- if (method == "ml" || (method == "delong" && x$paired)) c("Z" = stat) else c("D" = stat)
     htest$null.value <- c("contrast of AUCs" = 0)
@@ -211,7 +211,8 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
       stat <- df <- NA_real_
     } else {
       # Contrasts without variance: no degree of freedom, and as for two
-      # curves (delong.test) no difference if they are 0, infinite otherwise
+      # curves (roc_test_normal_stat) no difference if they are 0, infinite
+      # otherwise
       df <- sum(tested$sd > 0)
       stat <- if (any(tested$sd == 0 & tested$d != 0)) Inf else sum(((tested$d / tested$sd)^2)[tested$sd > 0])
     }
@@ -512,11 +513,11 @@ roc.test.roc <- function(roc1, roc2,
     roc_test_check_conf_level(conf.level)
     if (paired) {
       delong.calcs <- delong.paired.calculations(roc1, roc2)
-      stat <- c("Z" = delong.test(delong.calcs))
+      stat <- c("Z" = roc_test_normal_stat(delong.calcs$d, delong.calcs$sig))
       htest$method <- "DeLong's test for two correlated ROC curves"
     } else {
       delong.calcs <- delong.unpaired.calculations(roc1, roc2)
-      stat <- c("D" = delong.test(delong.calcs))
+      stat <- c("D" = roc_test_normal_stat(delong.calcs$d, delong.calcs$sig))
       htest$method <- "DeLong's test for two ROC curves"
     }
     htest$statistic <- stat
@@ -535,7 +536,7 @@ roc.test.roc <- function(roc1, roc2,
     d <- estimate[[1]] - estimate[[2]]
     stat <- c(Z = d / sqrt(variance))
     if (d == 0 && variance == 0) {
-      stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.test
+      stat[] <- 0 # no difference with zero variance (perfect curves), as in roc_test_normal_stat
     }
     htest$statistic <- stat
     htest$conf.int <- roc_test_ci_normal(d, sqrt(variance), conf.level, alternative)
@@ -627,6 +628,17 @@ roc.test.roc <- function(roc1, roc2,
   return(htest)
 }
 
+# Statistic d / sig of a difference d with standard error sig, standard
+# normal under the null hypothesis. No difference with zero variance gives 0
+# instead of NaN.
+roc_test_normal_stat <- function(d, sig) {
+  stat <- d / sig
+  if (is.nan(stat) && d == 0 && sig == 0) {
+    stat <- 0
+  }
+  stat
+}
+
 # p-value of a statistic with a standard normal distribution under the null
 # hypothesis, for the alternative of roc.test
 roc_test_normal_pvalue <- function(stat, alternative) {
@@ -689,7 +701,7 @@ roc_test_one_curve <- function(roc1, method, alternative, boot.n, boot.stratifie
     method = method, boot.n = boot.n, boot.stratified = boot.stratified,
     progress = progress, parallel = parallel, cl = cl
   ))
-  stat <- delong.test(list(d = estimate - null.value, sig = sig))
+  stat <- roc_test_normal_stat(estimate - null.value, sig)
 
   htest <- list(
     statistic = stats::setNames(stat, if (method == "bootstrap") "D" else "Z"),
