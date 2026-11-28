@@ -21,7 +21,7 @@ coords <- function(...) {
   UseMethod("coords")
 }
 
-coords_special_x <- function(x, roc = NULL, keywords = c("all", "local maximas", "best")) {
+coords_special_x <- function(x, roc = NULL, keywords = c("all", "local maximas", "best", "precision-recall")) {
   if (!is.character(x) || length(x) != 1) {
     return(NA_character_)
   }
@@ -225,16 +225,19 @@ coords.roc <- function(roc,
 
   # match input
   input <- roc_utils_match_coords_input_args(input)
-  # match return
-  ret <- roc_utils_match_coords_ret_args(ret)
   # make sure the sort of roc is correct
   roc <- sort_roc(roc)
 
   special <- coords_special_x(x, roc = roc)
+  # match return
+  if (missing(ret) && identical(special, "precision-recall")) {
+    ret <- c("recall", "precision")
+  }
+  ret <- roc_utils_match_coords_ret_args(ret)
   if (!is.na(special)) {
     x <- special
     partial.auc <- attr(roc$auc, "partial.auc")
-    if (x == "all") {
+    if (x == "all" || x == "precision-recall") {
       # Pre-filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
         se <- roc$sensitivities
@@ -284,6 +287,9 @@ coords.roc <- function(roc,
         return(NULL)
       }
       res <- roc_utils_coords_basic(thres, sp, se)
+      if (x == "precision-recall") {
+        res <- roc_utils_interpolate_tp(roc, res)
+      }
     } else if (x == "local maximas") {
       # Pre-filter thresholds based on partial.auc
       if (is.null(roc$auc) || identical(partial.auc, FALSE) || ignore.partial.auc) {
@@ -349,13 +355,13 @@ coords.roc <- function(roc,
   } else if (input == "threshold") {
     roc_utils_check_legacy_ordered(roc)
     if (is.character(x) && !roc_utils_is_ordered_roc(roc)) {
-      stop("'x' must be a numeric or one of \"all\", \"local maximas\", \"best\".")
+      stop("'x' must be a numeric or one of \"all\", \"local maximas\", \"best\", \"precision-recall\".")
     }
     if (is.numeric(x) && roc_utils_is_ordered_roc(roc)) {
       stop("Numeric 'x' is not supported for ordered ROC thresholds. Pass the level as character or ordered.")
     }
     if (!(is.numeric(x) || is.character(x) || is.ordered(x))) {
-      stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
+      stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\", \"precision-recall\".")
     }
     thr_idx <- roc_utils_thr_idx(roc, x)
     thr_col <- if (roc_utils_is_ordered_roc(roc)) roc$thresholds[thr_idx] else x
@@ -440,7 +446,7 @@ coords.roc <- function(roc,
     }
     res <- roc_utils_coords_basic(res.thr, res.sp, res.se)
   } else {
-    stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\".")
+    stop("'x' must be numeric, or a character/ordered threshold, or one of \"all\", \"local maximas\", \"best\", \"precision-recall\".")
   }
 
   if (any(!ret %in% colnames(res))) {

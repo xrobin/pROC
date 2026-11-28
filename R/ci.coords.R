@@ -94,8 +94,8 @@ ci.coords.smooth.roc <- function(smooth.roc,
   special <- coords_special_x(x, roc = smooth.roc)
   if (!is.na(special)) {
     x <- special
-    if (x == "all" || x == "local maximas") {
-      stop("'all' and 'local maximas' are not available for confidence intervals.")
+    if (x != "best") {
+      stop("'all', 'local maximas' and 'precision-recall' are not available for confidence intervals of smoothed curves.")
     }
   }
 
@@ -179,6 +179,15 @@ ci.coords.roc <- function(roc,
     x <- special
     if (x == "all" || x == "local maximas") {
       stop("'all' and 'local maximas' are not available for confidence intervals.")
+    }
+    if (x == "precision-recall") {
+      # At the recalls of coords(), but 0 where the precision is not defined
+      x <- unique(coords(roc, "precision-recall", ret = "recall")$recall)
+      x <- x[x > 0]
+      input <- "recall"
+      if (missing(ret)) {
+        ret <- "precision"
+      }
     }
   }
 

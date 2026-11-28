@@ -490,6 +490,39 @@ roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, 
   return(local.maximas)
 }
 
+# Add the interpolated points of Davis and Goadrich (2006) to the points of
+# a curve: between two adjacent points A and B, one point per additional true
+# positive, TP_A + 1, TP_A + 2, ..., with the true negatives (hence the false
+# positives) changing linearly.
+# Input: coords: the data.frame of roc_utils_coords_basic(), specificity
+#        increasing. Its rows with a threshold are points of the empirical
+#        curve (see 'exact' in roc_utils_calc_coords).
+# Output: the same data.frame with the interpolated rows, threshold NA.
+roc_utils_interpolate_tp <- function(roc, coords) {
+  sizes <- roc_utils_class_sizes(roc)
+  scale <- ifelse(roc$percent, 100, 1)
+  exact <- roc_utils_has_counts(roc) & !is.na(coords$threshold)
+  tp <- coords$sensitivity / scale * sizes[["cases"]]
+  tp[exact] <- round(tp[exact])
+  tn <- coords$specificity / scale * sizes[["controls"]]
+  tn[exact] <- round(tn[exact])
+
+  # tp decreases along the rows: A is the row after B
+  n <- length(tp)
+  d.tp <- tp[-n] - tp[-1]
+  n.new <- pmax(ceiling(d.tp) - 1, 0, na.rm = TRUE)
+  b <- rep(seq_len(n - 1), n.new)
+  x <- sequence(n.new, from = n.new, by = -1)
+  new <- roc_utils_coords_basic(
+    roc_utils_na_thresholds(length(b), coords$threshold),
+    scale * (tn[b + 1] + x * (tn[b] - tn[b + 1]) / d.tp[b]) / sizes[["controls"]],
+    scale * (tp[b + 1] + x) / sizes[["cases"]]
+  )
+  coords <- rbind(coords, new)[order(c(seq_len(n), b + 0.5)), ]
+  rownames(coords) <- NULL
+  coords
+}
+
 # sort roc curve. Make sure specificities are increasing.
 sort_roc <- function(roc) {
   if (is.unsorted(roc$specificities, na.rm = TRUE)) {

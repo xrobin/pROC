@@ -448,3 +448,23 @@ test_that("ci.coords takes auc objects of smoothed curves", {
   expect_equal(unclass(ci.auc.obj)[c("specificity", "sensitivity")], unclass(ci.roc.obj)[c("specificity", "sensitivity")])
   expect_true(all(ci.auc.obj$specificity >= 0.9))
 })
+
+test_that("ci.coords 'precision-recall' is the CI of the precision at the recalls of coords", {
+  recalls <- (1:41) / 41
+  expect_equal(sort(unique(coords(r.wfns, "pr")$recall)), c(0, recalls))
+  for (stratified in c(TRUE, FALSE)) {
+    set.seed(42)
+    obtained <- ci.coords(r.wfns, "pr", boot.n = 20, boot.stratified = stratified, progress = "none")
+    set.seed(42)
+    expected <- ci.coords(r.wfns, rev(recalls), input = "recall", ret = "precision", boot.n = 20, boot.stratified = stratified, progress = "none")
+    expect_equal(obtained, expected)
+    expect_false(anyNA(obtained$precision))
+  }
+  # Other coordinates
+  expect_named(ci.coords(r.wfns, "pr", ret = c("recall", "fdr"), boot.n = 2, progress = "none"), c("recall", "fdr"))
+  # Within the partial AUC
+  obtained <- ci.coords(r.wfns.partial1, "precision-recall", boot.n = 2, progress = "none")
+  expect_equal(attr(obtained, "x"), coords(r.wfns.partial1, "pr")$recall)
+  # Not on smoothed curves
+  expect_error(ci.coords(smooth(r.s100b), "precision-recall", boot.n = 2), "not available for confidence intervals of smoothed curves")
+})

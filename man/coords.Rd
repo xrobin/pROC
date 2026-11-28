@@ -37,8 +37,10 @@ transpose = FALSE, as.matrix=FALSE, ...)
 		labels when \code{input="threshold"} on an ordered ROC curve),
 		or one of \dQuote{all} (all
 		the points of the ROC curve), \dQuote{local maximas} (the local
-		maximas of the ROC curve; not available on smoothed curves) or \dQuote{best} (see \code{best.method}
-		argument). If missing or \code{NULL}, defaults to \dQuote{all}.
+		maximas of the ROC curve; not available on smoothed curves), \dQuote{best} (see \code{best.method}
+		argument) or \dQuote{precision-recall} (the points of the
+		precision-recall curve, see \sQuote{Precision-recall curve}; not
+		available on smoothed curves). If missing or \code{NULL}, defaults to \dQuote{all}.
 		Numeric \code{x} is not allowed with \code{input="threshold"} on
 		an ordered ROC curve; pass the level as character or ordered.
 		A missing value (\code{NA}) in \code{x} gives a row of \code{NA},
@@ -123,7 +125,8 @@ transpose = FALSE, as.matrix=FALSE, ...)
   necessarily to the whole curve.
 
   On an ordered ROC curve a character \code{x} is resolved in this order:
-  an exact keyword (\dQuote{all}, \dQuote{local maximas}, \dQuote{best}),
+  an exact keyword (\dQuote{all}, \dQuote{local maximas}, \dQuote{best},
+  \dQuote{precision-recall}),
   then an exact threshold level, then a unique keyword prefix. If a
   string is both a keyword and a level, the keyword wins and a warning
   is issued. Pass an ordered value such as
@@ -209,6 +212,28 @@ transpose = FALSE, as.matrix=FALSE, ...)
   positives). With other weights, ties are decided in floating point.
 }
 
+\subsection{Precision-recall curve}{
+  The precision is not linear between two points of
+  the ROC curve: joining the points of a precision-recall curve with
+  straight lines overestimates it (Davis and Goadrich, 2006). This
+  matters where cases and controls share a predictor value (ties), so that
+  the true and false positive counts both change by more than one between
+  two adjacent points.
+
+  With \code{x="precision-recall"}, which can be shortened to
+  \dQuote{pr}, \code{coords} returns the points of
+  \dQuote{all} and, between two adjacent points \eqn{A} and \eqn{B} with
+  \eqn{TP_A < TP_B}{TP.A < TP.B}, one point per additional true positive
+  \eqn{x = 1, 2, \ldots}{x = 1, 2, ...}, with
+
+  \deqn{TP = TP_A + x, \quad FP = FP_A + x \frac{FP_B - FP_A}{TP_B - TP_A}}{TP = TP.A + x, FP = FP.A + x * (FP.B - FP.A) / (TP.B - TP.A)}
+
+  and \code{NA} as threshold. The other coordinates are computed from
+  these counts, and \code{ret} defaults to
+  \code{c("recall", "precision")}. The precision is not defined (\code{NaN}) at the point
+  without any positive prediction, as with \dQuote{all}.
+}
+
 \subsection{Available coordinates}{
 
 	The following table lists the coordinates that are available in the \code{ret}
@@ -275,12 +300,17 @@ transpose = FALSE, as.matrix=FALSE, ...)
   and interpolation was required, threshold is returned as \code{NA}.
 
   Note that if giving a character as \code{x} (\dQuote{all},
-  \dQuote{local maximas} or \dQuote{best}), you cannot predict the dimension of
+  \dQuote{local maximas}, \dQuote{best} or \dQuote{precision-recall}), you cannot predict the dimension of
   the return value. Even \dQuote{best} may return more than one value (for
   example if the ROC curve is below the identity line, both extreme points). 
 }
 
 \references{
+  Jesse Davis and Mark Goadrich (2006) ``The relationship between
+  Precision-Recall and ROC curves''. \emph{Proceedings of the 23rd
+  International Conference on Machine Learning}, 233--240. DOI:
+  \doi{10.1145/1143844.1143874}.
+
   Neil J. Perkins, Enrique F. Schisterman (2006) ``The Inconsistency of "Optimal" Cutpoints
   Obtained using Two Criteria based on the Receiver Operating
   Characteristic Curve''. \emph{American Journal of Epidemiology}
@@ -330,7 +360,7 @@ roc2 <- roc(aSAH$outcome, aSAH$wfns)
 coords(roc2, "3")
 
 # Precision-recall curve
-plot(precision ~ recall, coords(roc1, "all", ret = c("recall", "precision")),
+plot(precision ~ recall, coords(roc2, "precision-recall"),
      type = "l", ylim = c(0, 1))
 }
 

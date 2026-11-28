@@ -1121,3 +1121,66 @@ test_that("best with other best.weights is selected on roc_utils_optim_crit", {
     }
   }
 })
+
+test_that("coords 'precision-recall' gives Table 1 of Davis and Goadrich (2006)", {
+  # 20 positives and 2000 negatives, A: TP = 5, FP = 5; B: TP = 10, FP = 30
+  response <- rep(c(1, 0, 1, 0, 1, 0), c(5, 5, 5, 25, 10, 1970))
+  predictor <- rep(c(3, 3, 2, 2, 1, 1), c(5, 5, 5, 25, 10, 1970))
+  for (percent in c(FALSE, TRUE)) {
+    r <- roc(response, predictor, percent = percent, quiet = TRUE)
+    obtained <- coords(r, "precision-recall", ret = c("threshold", "tp", "fp", "recall", "precision"))
+    a.to.b <- obtained[obtained$tp >= 5 & obtained$tp <= 10, ]
+    scale <- ifelse(percent, 100, 1)
+    expect_equal(a.to.b$threshold, c(1.5, NA, NA, NA, NA, 2.5))
+    expect_equal(a.to.b$tp, 10:5)
+    expect_equal(a.to.b$fp, c(30, 25, 20, 15, 10, 5))
+    expect_equal(a.to.b$recall, scale * c(0.50, 0.45, 0.40, 0.35, 0.30, 0.25))
+    expect_equal(a.to.b$precision, scale * c(10 / 40, 9 / 34, 8 / 28, 7 / 22, 6 / 16, 5 / 10))
+    # The points of "all" are kept
+    expect_equal(
+      obtained[!is.na(obtained$threshold), ],
+      coords(r, "all", ret = c("threshold", "tp", "fp", "recall", "precision")),
+      check.attributes = FALSE
+    )
+  }
+})
+
+test_that("coords 'precision-recall' has one point per true positive", {
+  ret <- c("recall", "precision", "tp", "fp")
+  for (r in list(r.wfns, r.wfns.percent, r.s100b)) {
+    obtained <- coords(r, "precision-recall", ret = ret)
+    expect_equal(sort(unique(obtained$tp)), 0:length(r$cases))
+    # The interpolated points are those of a numeric x
+    interpolated <- obtained[is.na(coords(r, "precision-recall", ret = "threshold")$threshold), ]
+    expect_equal(interpolated, coords(r, interpolated$recall, input = "recall", ret = ret),
+      check.attributes = FALSE
+    )
+    # The precision of the first point holds down to recall 0
+    expect_equal(tail(obtained$precision, 2), c(tail(na.omit(coords(r, "all", ret = ret)$precision), 1), NaN))
+  }
+  # No ties, no interpolated points
+  expect_identical(coords(r.ndka, "precision-recall", ret = "all"), coords(r.ndka, "all", ret = "all"))
+})
+
+test_that("coords 'precision-recall' works with partial AUC and weights", {
+  obtained <- coords(r.wfns.percent.partial1, "precision-recall", ret = c("threshold", "specificity", "tp", "fp"))
+  expect_equal(range(obtained$specificity), c(90, 99))
+  # From the boundaries of the window, which are not points of the curve
+  expect_equal(obtained$threshold, ordered(c(NA, NA, NA, NA, "5", rep(NA, 15)), levels = levels(r.wfns$thresholds)))
+  expect_equal(obtained$tp, c(21.2, 21:18, 17.24:3.24))
+  expect_equal(obtained$fp, c(7.2, 7:4, 17.24:3.24 * 4 / 18))
+
+  # Steps of one from the lower point, with non-integer weighted counts
+  r <- roc(c(0, 0, 1, 1, 1), c(1, 2, 2, 2, 3), weights = c(1, 3, 1.5, 2, 1), quiet = TRUE)
+  obtained <- coords(r, "precision-recall", ret = c("threshold", "tp", "fp"))
+  expect_equal(obtained$threshold, c(-Inf, 1.5, NA, NA, NA, 2.5, Inf))
+  expect_equal(obtained$tp, c(4.5, 4.5, 4, 3, 2, 1, 0))
+  expect_equal(obtained$fp, c(4, 3, 3 * 3 / 3.5, 3 * 2 / 3.5, 3 * 1 / 3.5, 0, 0))
+})
+
+test_that("coords 'precision-recall' can be shortened and returns the recall and precision", {
+  expect_identical(coords(r.wfns, "pr"), coords(r.wfns, "precision-recall", ret = c("recall", "precision")))
+  expect_identical(coords(auc(r.wfns), "pr"), coords(r.wfns, "pr"))
+  expect_named(coords(r.wfns, "pr", ret = "fdr"), "fdr")
+  expect_error(coords(smooth(r.s100b), "precision-recall"), "should be one of")
+})

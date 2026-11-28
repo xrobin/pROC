@@ -13,6 +13,7 @@
   * Bootstrap operations can run in parallel with the new 'cl' argument (issue #46)
   * Restored progress bars in bootstrap operations
   * Documented the justification of the stratified bootstrap (issue #131)
+  * 'coords' and 'ci.coords' return the precision-recall curve with its interpolated points with 'x = "precision-recall"' (issue #171)
   * Smoothing:
     - 'smooth(method = "binormal")' fits by maximum likelihood
     - Added proper binormal curves with 'smooth(method = "proper")' (issue #152)

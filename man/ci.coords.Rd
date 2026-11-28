@@ -56,7 +56,10 @@ progress = getOption("pROCProgress", interactive()), cl = NULL, ...)
   }
   \item{x, ret, best.method, best.weights}{Arguments passed to \code{\link{coords}}.
     See there for more details. The only difference is on the \code{x} argument which cannot be
-    \dQuote{all} or \dQuote{local maximas}.
+    \dQuote{all} or \dQuote{local maximas}. With
+    \dQuote{precision-recall}, the confidence interval is computed at each
+    recall above 0 of the precision-recall curve, and \code{ret} defaults
+    to \dQuote{precision}. Not available on smoothed curves.
   }
   \item{input}{Passed to \code{\link{coords}}. Defaults to
     \dQuote{threshold} for \code{roc} curves. Smoothed curves have no
