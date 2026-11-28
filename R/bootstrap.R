@@ -583,7 +583,7 @@ bootstrap.list.replicate <- function(n, rocs, smoothing.args, paired, stratified
 
 ##########  AUC of one ROC curve (ci.auc)  ##########
 
-ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress = FALSE,
+ci_auc_bootstrap <- function(roc, conf.level, sides, boot.n, boot.stratified, progress = FALSE,
                              cl = NULL, ...) {
   aucs <- roc_utils_drop_na_replicates(
     bootstrap.replicates(boot.n, bootstrap.replicate,
@@ -592,8 +592,7 @@ ci_auc_bootstrap <- function(roc, conf.level, boot.n, boot.stratified, progress 
       FUN.VALUE = NA_real_, progress = progress, cl = cl
     )
   )
-  # TODO: Maybe apply a correction (it's in the Tibshirani?) What do Carpenter-Bithell say about that?
-  quantile(aucs, c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2))
+  roc_utils_ci_quantile(aucs, conf.level, sides, roc_utils_auc_range(roc$auc))
 }
 
 # "best" can match several points; the policy decides which one the replicate

@@ -24,6 +24,7 @@
     - DeLong and bootstrap 'roc.test' return a 'conf.int' of the difference (issue #73)
     - 'roc.test' and 'cov' take a list of more than two ROC curves (issue #12)
     - 'roc.test' tests a single ROC curve (issue #39)
+    - The 'ci' functions compute one-sided CIs with the new 'sides' argument (issue #107)
   * Ordered predictors are no longer converted to numeric (issue #63, https://xavier.robin.info/en/blog/2026/10/06/breaking-changes-for-ordered-predictors-in-upcoming-proc-1.20.0).
   * All-in-one calls are superseded by modular calls, described in the new '?all_in_one_calls' help page (issues #70 and #149):
     - Added 'polygon_auc', 'polygon_max_auc' and 'polygon_ci' functions, 'text' and 'points' methods, and 'panel.first'/'panel.last' arguments to 'plot.roc'

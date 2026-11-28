@@ -97,6 +97,72 @@ test_that("ci.auc with delong of a perfect curve is a null interval", {
 })
 
 
+test_that("ci.auc is one-sided with sides", {
+  # The bound of a one-sided 95% CI is that of the two-sided 90% CI
+  two.sided <- as.numeric(ci.auc(r.ndka, conf.level = 0.9))
+  lower <- ci.auc(r.ndka, sides = "lower")
+  expect_equal(as.numeric(lower), c(two.sided[1:2], 1))
+  expect_identical(attr(lower, "sides"), "lower")
+  expect_identical(attr(lower, "conf.level"), 0.95)
+  expect_equal(as.numeric(ci.auc(r.ndka, sides = "upper")), c(0, two.sided[2:3]))
+  expect_identical(attr(ci.auc(r.ndka), "sides"), "two.sided")
+  # Partial matching
+  expect_identical(ci.auc(r.ndka, side = "l"), lower)
+  expect_output(print(lower), "95% one-sided CI: 0.519-1 (DeLong)", fixed = TRUE)
+  # The default label of the plots shows the bound only
+  expect_identical(pROC:::roc_utils_auc_label(r.ndka$auc, lower), "AUC: 0.612 (>0.519)")
+  expect_identical(pROC:::roc_utils_auc_label(r.ndka.percent$auc, ci.auc(r.ndka.percent, sides = "upper")), "AUC: 61.2% (<70.5%)")
+  expect_identical(pROC:::roc_utils_auc_label(r.ndka$auc, lower, "%.2f %.2f %.2f"), "0.61 0.52 1.00")
+  # On the logit scale
+  two.sided.logit <- as.numeric(ci.auc(r.ndka, conf.level = 0.9, scale = "logit"))
+  expect_equal(as.numeric(ci.auc(r.ndka, sides = "lower", scale = "logit")), c(two.sided.logit[1:2], 1))
+  expect_equal(as.numeric(ci.auc(r.ndka, sides = "upper", scale = "logit")), c(0, two.sided.logit[2:3]))
+  # percent, auc and ci entry points, smoothed curves (ml)
+  expect_equal(as.numeric(ci.auc(r.ndka.percent, sides = "lower")), c(two.sided[1:2], 1) * 100)
+  expect_equal(as.numeric(ci(auc(r.ndka), sides = "upper")), c(0, two.sided[2:3]))
+  s <- smooth(r.ndka)
+  expect_equal(as.numeric(ci.auc(s, sides = "lower")), c(as.numeric(ci.auc(s, conf.level = 0.9))[1:2], 1))
+  # A null variance leaves no interval on the bounded side
+  r <- roc(c(0, 0, 1, 1), c(1, 1, 1, 1), levels = c(0, 1), direction = "<")
+  expect_identical(as.numeric(ci.auc(r, sides = "lower")), c(0.5, 0.5, 1))
+  expect_identical(as.numeric(ci.auc(r, sides = "upper")), c(0, 0.5, 0.5))
+  # The formula method and roc(ci = TRUE)
+  expect_identical(ci.auc(outcome ~ ndka, data = aSAH, sides = "lower", quiet = TRUE)[1:3], lower[1:3])
+  expect_identical(roc(aSAH$outcome, aSAH$ndka, ci = TRUE, sides = "lower", quiet = TRUE)$ci[1:3], lower[1:3])
+  # smooth() and are.paired() replay the sides of a CI they re-use
+  r <- r.ndka
+  r$ci <- lower
+  expect_identical(attr(smooth(r, reuse.ci = TRUE)$ci, "sides"), "lower")
+  paired <- are.paired(r, r.s100b, return.paired.rocs = TRUE, reuse.ci = TRUE)
+  expect_identical(attr(attr(paired, "roc1")$ci, "sides"), "lower")
+  expect_error(ci.auc(r.ndka, sides = "one.sided"))
+})
+
+test_that("ci.auc with bootstrap is one-sided with sides", {
+  boot.ci <- function(roc, ...) {
+    set.seed(42) # the same replicates for each side
+    ci.auc(roc, method = "bootstrap", boot.n = 20, ...)
+  }
+  two.sided <- as.numeric(boot.ci(r.ndka, conf.level = 0.9))
+  lower <- boot.ci(r.ndka, sides = "lower")
+  expect_equal(as.numeric(lower), c(two.sided[1:2], 1))
+  expect_named(lower, c("5%", "50%", "100%"))
+  # No replicate: no interval
+  expect_true(all(is.na(pROC:::roc_utils_ci_quantile(numeric(0), 0.95, "lower", c(0, 1)))))
+  expect_equal(as.numeric(boot.ci(r.ndka, sides = "upper")), c(0, two.sided[2:3]))
+  # The other bound is the limit of the partial AUC, corrected or not
+  two.sided <- as.numeric(boot.ci(r.s100b.partial1, conf.level = 0.9))
+  expect_equal(as.numeric(boot.ci(r.s100b.partial1, sides = "lower")), c(two.sided[1:2], 0.09))
+  expect_equal(as.numeric(boot.ci(r.s100b.partial1, sides = "upper")), c(0, two.sided[2:3]))
+  pauc <- auc(r.s100b, partial.auc = c(1, 0.9), partial.auc.correct = TRUE)
+  expect_equal(boot.ci(pauc, sides = "lower")[[3]], 1)
+  expect_equal(boot.ci(pauc, sides = "upper")[[1]], (1 - 0.005 / 0.095) / 2)
+  # percent, smoothed curves
+  expect_equal(boot.ci(r.s100b.percent.partial1, sides = "lower")[[3]], 9)
+  s <- smooth(r.ndka, method = "density")
+  expect_equal(as.numeric(boot.ci(s, sides = "upper")), c(0, as.numeric(boot.ci(s, conf.level = 0.9))[2:3]))
+})
+
 test_that("ci.auc with delong and percent works", {
   expect_equal(as.numeric(ci.auc(r.ndka.percent)), expected.ci.auc * 100)
 })

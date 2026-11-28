@@ -21,7 +21,8 @@
 \S3method{ci.thresholds}{auc}(auc, ...)
 \S3method{ci.thresholds}{roc}(roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, thresholds = "local maximas",
-progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, ...) 
+progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL,
+sides = c("two.sided", "lower", "upper"), ...) 
 \S3method{ci.thresholds}{formula}(formula, data, ..., subset, na.action)
 \S3method{ci.thresholds}{smooth.roc}(smooth.roc, ...)
 \S3method{ci.thresholds}{default}(response, predictor, ...)
@@ -47,6 +48,11 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   }
   \item{conf.level}{the width of the confidence interval as [0,1], never
   in percent. Default: 0.95, resulting in a 95\% CI.
+  }
+  \item{sides}{the sides of the confidence interval: \dQuote{two.sided}
+    (default), \dQuote{lower} for a lower confidence bound only, or
+    \dQuote{upper} for an upper confidence bound only. See the details
+    of \code{\link{ci.auc}}.
   }
   \item{boot.n}{the number of bootstrap replicates. Default: 2000.}
   \item{boot.stratified}{should the bootstrap be stratified (default, same number
@@ -130,6 +136,7 @@ progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL, 
   \item{sensitivity}{same than specificity.}
   Additionally, the list has the following attributes: 
   \item{conf.level}{the width of the CI, in fraction.}
+  \item{sides}{the sides of the CI.}
   \item{boot.n}{the number of bootstrap replicates.}
   \item{boot.stratified}{whether or not the bootstrapping was stratified.}
   \item{thresholds}{the thresholds, as given in argument.}

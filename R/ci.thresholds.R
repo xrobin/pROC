@@ -69,10 +69,12 @@ ci.thresholds.roc <- function(roc,
                               progress = getOption("pROCProgress", interactive()),
                               parallel = FALSE,
                               cl = NULL,
+                              sides = c("two.sided", "lower", "upper"),
                               ...) {
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("'conf.level' must be a single number within the interval [0,1].")
   }
+  sides <- match.arg(sides)
 
   if (roc_utils_is_perfect_curve(roc)) {
     warning("ci.thresholds() of a ROC curve with AUC == 1 is always a null interval and can be misleading.")
@@ -133,9 +135,8 @@ ci.thresholds.roc <- function(roc,
   perfs <- roc_utils_drop_na_replicates(matrix(perfs, ncol = perfs.dim[3]), margin = 2L, ignore = rep(is.na(thresholds.num), each = perfs.dim[1]))
   perfs <- array(perfs, dim = c(perfs.dim[1:2], ncol(perfs)))
 
-  probs <- c(0 + (1 - conf.level) / 2, .5, 1 - (1 - conf.level) / 2)
-  # output is length(probs) x 2 x length(thresholds.num)
-  perf_quantiles <- apply(perfs, 1:2, quantile, probs = probs, na.rm = TRUE)
+  # output is 3 x 2 x length(thresholds.num)
+  perf_quantiles <- apply(perfs, 1:2, roc_utils_ci_quantile, conf.level = conf.level, sides = sides, range = c(0, 1))
 
   sp <- t(perf_quantiles[, 1L, ])
   se <- t(perf_quantiles[, 2L, ])
@@ -150,6 +151,7 @@ ci.thresholds.roc <- function(roc,
   ci <- list(specificity = sp, sensitivity = se)
   class(ci) <- c("ci.thresholds", "ci", "list")
   attr(ci, "conf.level") <- conf.level
+  attr(ci, "sides") <- sides
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
   attr(ci, "thresholds") <- thresholds.num

@@ -448,3 +448,46 @@ test_that("ci.coords takes auc objects of smoothed curves", {
   expect_equal(unclass(ci.auc.obj)[c("specificity", "sensitivity")], unclass(ci.roc.obj)[c("specificity", "sensitivity")])
   expect_true(all(ci.auc.obj$specificity >= 0.9))
 })
+
+test_that("ci.coords is one-sided with sides", {
+  boot.ci <- function(roc, ...) {
+    set.seed(42) # the same replicates for each side
+    ci.coords(roc, c(0.1, 0.2), ret = "all", boot.n = 20, ...)
+  }
+  # r = 2 in youden and closest.topleft
+  for (roc in list(r.s100b, r.s100b.percent)) {
+    two.sided <- boot.ci(roc, conf.level = 0.9, best.weights = c(2, 0.2))
+    lower <- boot.ci(roc, sides = "lower", best.weights = c(2, 0.2))
+    upper <- boot.ci(roc, sides = "upper", best.weights = c(2, 0.2))
+    max <- ifelse(roc$percent, 100, 1)
+    for (ret in names(two.sided)) {
+      limits <- switch(pROC:::coord.upper.limit[[ret]],
+        rate = c(0, max),
+        cases = c(0, 41),
+        controls = c(0, 72),
+        weighted = c(0, 3 * max),
+        unbounded = c(if (ret == "threshold") -Inf else 0, Inf)
+      )
+      expect_equal(lower[[ret]][, 1:2], two.sided[[ret]][, 1:2], check.attributes = FALSE, info = ret)
+      expect_identical(unname(lower[[ret]][, 3]), rep(limits[2], 2), info = ret)
+      expect_equal(upper[[ret]][, 2:3], two.sided[[ret]][, 2:3], check.attributes = FALSE, info = ret)
+      expect_identical(unname(upper[[ret]][, 1]), rep(limits[1], 2), info = ret)
+    }
+    expect_identical(attr(upper, "sides"), "upper")
+    expect_identical(attr(two.sided, "sides"), "two.sided")
+  }
+  expect_output(print(lower), "95% one-sided CI (20 stratified bootstrap replicates):", fixed = TRUE)
+  # Counts are limited by the sample in a non-stratified bootstrap
+  set.seed(42)
+  lower <- ci.coords(r.s100b, 0.1, ret = c("tp", "tn"), boot.n = 20, sides = "lower", boot.stratified = FALSE)
+  expect_identical(unname(c(lower$tp[, 3], lower$tn[, 3])), c(113, 113))
+  # Smoothed curves
+  set.seed(42)
+  lower <- ci.coords(smooth(r.s100b), 0.9, input = "specificity", ret = "sensitivity", boot.n = 20, sides = "lower")
+  expect_identical(unname(lower$sensitivity[, 3]), 1)
+})
+
+test_that("every coordinate has an upper limit for one-sided CIs", {
+  expect_setequal(names(pROC:::coord.upper.limit), c("threshold", pROC:::roc.utils.valid.coords))
+  expect_true(all(pROC:::coord.upper.limit %in% c("rate", "cases", "controls", "weighted", "unbounded")))
+})

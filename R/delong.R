@@ -55,7 +55,7 @@ delong_stop_if_weighted <- function(roc) {
   }
 }
 
-ci_auc_delong <- function(roc, conf.level, scale) {
+ci_auc_delong <- function(roc, conf.level, scale, sides) {
   delong_stop_if_weighted(roc)
   YR <- roc$controls # = C2, n, YRj
   XR <- roc$cases # = C1, m, XRi
@@ -73,7 +73,7 @@ ci_auc_delong <- function(roc, conf.level, scale) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  roc_utils_auc_ci(V$theta, sqrt(S), conf.level, scale)
+  roc_utils_auc_ci(V$theta, sqrt(S), conf.level, scale, sides)
 }
 
 # Runs the placements and main calculations for the paired DeLong's test

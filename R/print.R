@@ -189,9 +189,17 @@ print.multiclass.auc <- function(x, digits = max(3, getOption("digits") - 3), ..
 
 print.mv.multiclass.auc <- print.multiclass.auc
 
+# The level of a CI, as "95% CI" or "95% one-sided CI"
+print_ci_level <- function(x) {
+  # A CI of pROC < 1.20 has no sides attribute
+  one.sided <- !is.null(attr(x, "sides")) && attr(x, "sides") != "two.sided"
+  cat(attr(x, "conf.level") * 100, "% ", if (one.sided) "one-sided ", "CI", sep = "")
+}
+
 print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   signif.ci <- signif(x, digits = digits)
-  cat(attr(x, "conf.level") * 100, "% CI: ", sep = "")
+  print_ci_level(x)
+  cat(": ")
   cat(signif.ci[1], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), "-", signif.ci[3], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), sep = "")
   # The logit scale is shown; the AUC scale, the default, is not
   logit <- ifelse(identical(attr(x, "scale"), "logit"), ", logit scale", "")
@@ -206,7 +214,7 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 }
 
 print.ci.thresholds <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-  cat(attr(x, "conf.level") * 100, "% CI", sep = "")
+  print_ci_level(x)
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
   # unname: the row names (thresholds) can be NA
   signif.sp <- unname(signif(x$specificity, digits = digits))
@@ -216,7 +224,7 @@ print.ci.thresholds <- function(x, digits = max(3, getOption("digits") - 3), ...
 }
 
 print.ci.sp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-  cat(attr(x, "conf.level") * 100, "% CI", sep = "")
+  print_ci_level(x)
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
   signif.sp <- signif(x, digits = digits)
   print(data.frame(se = attr(x, "sensitivities"), sp.low = signif.sp[, 1], sp.median = signif.sp[, 2], sp.high = signif.sp[, 3]), row.names = FALSE)
@@ -224,7 +232,7 @@ print.ci.sp <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 }
 
 print.ci.se <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-  cat(attr(x, "conf.level") * 100, "% CI", sep = "")
+  print_ci_level(x)
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
   signif.se <- signif(x, digits = digits)
   print(data.frame(sp = attr(x, "specificities"), se.low = signif.se[, 1], se.median = signif.se[, 2], se.high = signif.se[, 3]), row.names = FALSE)
@@ -232,7 +240,7 @@ print.ci.se <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 }
 
 print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
-  cat(attr(x, "conf.level") * 100, "% CI", sep = "")
+  print_ci_level(x)
   cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates):\n", sep = "")
 
   table <- do.call(cbind, x)
