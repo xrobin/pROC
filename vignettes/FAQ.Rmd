@@ -206,8 +206,8 @@ r.s100b <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
 coords(r.s100b, "best")
 ```
 
-To find the threshold with the highest specificity under a minimum sensitivity,
-list all the thresholds and filter them:
+To find the threshold with the highest specificity under a minimum
+sensitivity, list all the thresholds and filter them:
 
 ```{r}
 all.coords <- coords(r.s100b, "all", ret = c("threshold", "sensitivity", "specificity"),
@@ -218,16 +218,26 @@ eligible[which.max(eligible$specificity), ]
 
 Asking `coords(r.s100b, 0.75, input = "sensitivity")` instead gives the
 specificity at a sensitivity of exactly 0.75, interpolated on the curve. No
-threshold produces that point, so the `threshold` is `NA`. In the other
-direction, `coords(r.s100b, 0.2, input = "threshold", ret = c("sensitivity", "specificity"))`
-gives the sensitivity and specificity of a given threshold. See the previous
-question for a confidence interval.
+threshold produces that point, so the `threshold` is `NA`.
+
+In the other direction, `coords()` gives the sensitivity and specificity at
+thresholds of your choice. A ROC curve itself always goes over all the
+thresholds.
+
+```{r}
+coords(r.s100b, c(0.1, 0.2, 0.5), input = "threshold", ret = c("threshold", "sensitivity", "specificity"))
+```
+
+The first and last thresholds of a curve are always `-Inf` and `Inf`: they are
+the points where everything is classified as positive or negative. See the
+previous question for a confidence interval of the best threshold.
 
 ## How do I compare two ROC curves or AUCs?
 
 Use `roc.test()`. By default it detects whether the curves are paired (built
 from the same patients, in the same order) and prints it with `Setting paired`.
-The choice matters, and you can set it with `paired = TRUE` or `paired = FALSE`:
+The choice matters, and you can set it with `paired = TRUE` or `paired = FALSE`,
+for instance to compare curves of different outcomes:
 
 ```{r}
 r.ndka <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE)
@@ -235,9 +245,25 @@ roc.test(r.s100b, r.ndka, paired = TRUE)$p.value
 roc.test(r.s100b, r.ndka, paired = FALSE)$p.value
 ```
 
-The default method for the AUC is DeLong's; `method = "bootstrap"` is
-available too. Partial AUCs are compared by the bootstrap test, with the
-`partial.auc` arguments (see the question on partial AUC below).
+The default method for the AUC is DeLong's, and `method = "bootstrap"` is
+available too. The result is an `htest`: `$p.value`, `$statistic`, `$estimate`
+and `$conf.int` hold the values.
+
+The test and the confidence intervals of the two AUCs answer different questions.
+Overlapping intervals do not mean that the AUCs are not different, because the
+paired test takes into account that both curves are computed on the same
+patients:
+
+```{r}
+set.seed(12)
+y <- rbinom(400, 1, 0.5)
+z <- rnorm(400)
+r.a <- roc(y, y * 0.6 + z, quiet = TRUE)
+r.b <- roc(y, y * 0.45 + z + rnorm(400, sd = 0.5), quiet = TRUE)
+ci.auc(r.a)
+ci.auc(r.b)
+roc.test(r.a, r.b)$p.value
+```
 
 ## How do I set which group is the cases, and what does `direction` do?
 
@@ -253,6 +279,11 @@ roc(aSAH$outcome, aSAH$s100b)$levels
 
 With more than two levels, pROC takes the first two (and warns): use `levels`,
 or `multiclass.roc()`.
+
+`levels` is `c(control, case)`, so the first level is the negative class. Other
+tools, such as `caret::confusionMatrix()`, take the first level as the positive
+class by default and report the sensitivity and specificity swapped. Set
+`positive` in caret, or `levels` in pROC, to make them agree.
 
 The `direction = "auto"` default picks the direction from the group medians,
 so the curve usually ends up above the diagonal. That hides a reversed `levels`
@@ -270,36 +301,45 @@ you resample (see above).
 
 ## Why do I get "Predictor must be numeric or ordered" or "Response and predictor must be vectors of the same length"?
 
-The predictor must be numeric or an ordered factor. A character vector or an
-unordered factor, such as a predicted class label, triggers the first message.
-Pass a score (a probability, a numeric predictor) or convert an ordinal
-predictor with `factor(x, ordered = TRUE)`.
+The predictor must be numeric or an ordered factor. The first message usually
+means that you passed the predicted class (a factor or a character vector, as
+returned by `predict()` for `qda`, `svm`, `randomForest`...). Pass a score
+instead: a probability, a posterior or a class vote. A predicted class (0/1)
+gives a curve with a single point, and an AUC that is only the mean of
+sensitivity and specificity at that point.
+
+Also check the order of the arguments: it is `roc(response, predictor)`.
 
 The second message means that the response and the predictor have a different
-number of observations. A common cause is a model fitted with `glm()` or `lm()`
-on data with missing values: the model silently drops the incomplete rows,
-and `predict()` returns fewer values than the response has. Either remove the
-incomplete rows before fitting, or use the response stored in the model
-(`model$y` for `glm`).
+number of observations. A common cause is a model fitted with `glm()` on data
+with missing values: with the default `na.action`, `fitted()` and `predict()`
+only return the observations that were used.
 
-## Why does another package, or caret, give a different AUC?
+```{r}
+d <- aSAH
+d$s100b[1:3] <- NA
+model <- glm(outcome ~ s100b, data = d, family = binomial)
+c(data = nrow(d), fitted = length(fitted(model)), predict_newdata = length(predict(model, newdata = d)))
+```
 
-On the same scores, `ROCR` gives the same AUC as pROC, including when the
-predictor has many ties. The differences come from the input and the way the
-AUC is aggregated:
+`predict(model, newdata = d)` returns `NA` for the incomplete rows, which `roc()`
+removes. Fitting with `na.action = na.exclude` has the same effect on `fitted()`
+and `predict()`.
+
+## Why does another tool give a different AUC than pROC?
+
+On the same scores, the same labels and the same direction, `ROCR` gives the same
+AUC as pROC, including when the predictor has many ties. The differences come from
+what is compared:
 
 * **Direction.** ROCR assumes that higher values mean cases, while pROC detects
   the direction. If the predictor is higher in controls, ROCR gives 1 - AUC,
   which pROC reproduces with `direction = "<"`.
-* **Scores or classes.** The AUC of predicted classes (0/1) is not the AUC of the
-  scores they come from. For a logistic regression on `aSAH`, the AUC of the
-  probabilities is 0.775, and that of the thresholded 0/1 classes is 0.687.
-  Use the probabilities (`type = "response"`).
-* **Cross-validation.** The AUC computed on all the cross-validated predictions
-  pooled together is not the mean of the AUC of each fold. On a 5-fold
-  cross-validation of the same model we got 0.747 pooled and 0.773 averaged.
-  caret's `twoClassSummary` reports the mean of the per-fold AUCs, which you can
-  reproduce with pROC on each `Resample` of the saved predictions.
+* **Positive class.** pROC takes the first level of the response as control, and
+  caret as the positive class. Without `levels` (pROC) or `positive` (caret), the
+  sensitivity and specificity come out swapped.
+* **Resampling.** The direction is detected again in each resample, which biases
+  the average AUC (see the question on resampling above). Fix it with `direction`.
 
 ## How do I plot several ROC curves, with confidence intervals?
 
@@ -322,25 +362,50 @@ plot(r.s100b)
 plot(ci.se(r.s100b, specificities = seq(0, 1, 0.05)), type = "shape")
 ```
 
-The `ggplot2` vignette (`vignette("ggroc")`) shows the options of `ggroc()`,
-including the diagonal and the 1-specificity axis.
+On a `ggroc()` plot, the `geom_polygon_ci()` and `geom_errorbar_ci()` layers
+add them, and `geom_text_auc()` prints the AUC. The `ggplot2` vignette
+(`vignette("ggroc")`) shows examples, including the diagonal and the
+1-specificity axis.
 
-## How do I compute a partial AUC?
+## Can I build a ROC curve from a contingency table or from hit and false alarm rates?
 
-Give the `partial.auc` interval (on the scale of the curve) to `auc()` or
-`roc()`. By default it is an interval of specificity, `partial.auc.focus =
-"sensitivity"` switches it, and `partial.auc.correct = TRUE` applies the
-McClish standardization, so that 0.5 is no discrimination and 1 a perfect curve:
+No. A ROC curve shows how sensitivity and specificity change at every possible
+threshold. A contingency table, or a pair of rates, holds a single threshold
+and the information about the others is lost. A curve built through a handful
+of points is not a ROC curve, and the variance, confidence intervals and tests
+all need the individual predictions.
+
+## How do I run `roc()` in a loop, or on a column name stored in a variable?
+
+`roc(data, response, predictor)` quotes the names of the columns, so it does not
+accept a name stored in a variable. Use `roc_()`, which takes them as strings:
 
 ```{r}
-auc(r.s100b, partial.auc = c(1, 0.8))
-auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)
-auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.focus = "sensitivity")
+for (variable in c("s100b", "ndka")) {
+  print(auc(roc_(aSAH, "outcome", variable, quiet = TRUE)))
+}
 ```
 
-On a curve with `percent = TRUE` the interval is in percent (`c(100, 80)`); on
-a curve in fractions, `auc()` refuses `c(100, 80)`. The confidence interval and the comparison of partial AUCs
-use the bootstrap.
+Alternatively, `lapply()` over the columns, with `roc(response, predictor)`.
+
+## How do I analyze a multiclass or random forest model?
+
+For more than two classes, `multiclass.roc()` takes either a single predictor,
+and compares every pair of classes, or a matrix with one column of
+probabilities per class, named as the levels of the response. The latter
+computes the multi-class AUC of Hand and Till.
+
+```{r}
+library(MASS)
+fit <- lda(Species ~ ., data = iris)
+posterior <- predict(fit)$posterior
+multiclass.roc(iris$Species, posterior, quiet = TRUE)$auc
+```
+
+For two classes and a random forest, use the probability or the vote of one
+class as the predictor, not `predict(rf)`, which is a class (see above). The
+two columns of a binary model sum to 1, so with the default direction either
+gives the same curve.
 
 ## The functions are giving me weird error messages I don't understand
 
