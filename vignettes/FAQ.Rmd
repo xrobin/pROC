@@ -52,7 +52,7 @@ plot(rocobj, main = "Legacy: 1-Specificity (0 to 1)",
 par(mfrow = c(1, 1))
 ```
 
-## I have a GLM/SVM/PLS/<INSERT YOUR FAVORITE MODEL HERE> model, how can I analyze it with pROC?
+## I have a GLM/SVM/PLS/&lt;INSERT YOUR FAVORITE MODEL HERE&gt; model, how can I analyze it with pROC?
 
 You need to use the `predict()` function to get predictions that can be passed
 to pROC (as the `predictor` argument).
@@ -81,6 +81,151 @@ roc_glm <- roc(aSAH$outcome, predictions)
 plot(roc_glm, main = "ROC curve from GLM predictions")
 auc(roc_glm)
 ```
+
+## I get "Predictor must be numeric or ordered", my ROC curve is a "V" with a single point, or I only have a contingency table
+
+You passed predicted classes instead of scores. A classifier that only outputs
+a class produces a single point in the ROC space (Fawcett, 2006), which pROC
+joins to the two corners. A factor of classes is rejected, and classes coded as
+numbers give a curve with a single threshold:
+
+```{r class-predictions, fig.width=5, fig.height=5, fig.align='center'}
+predicted_class <- as.numeric(predictions > 0.5)
+roc_class <- roc(aSAH$outcome, predicted_class)
+coords(roc_class)
+plot(roc_class)
+```
+
+To get the whole curve, pass the numeric scores the classes were derived from:
+predicted probabilities, votes or decision values (see the previous question).
+With `randomForest`, for instance, use `predict(model, type = "prob")[, 2]`
+instead of `predict(model)`.
+
+A contingency table (confusion matrix) has the same problem: it was computed at
+a single threshold, and the information about the other thresholds is lost. The
+AUC of the resulting single-point curve is (sensitivity + specificity) / 2,
+which underestimates the AUC of the full curve. See [this answer on Cross
+Validated](https://stats.stackexchange.com/a/372977) for why this should be
+avoided.
+
+## I get "Response and predictor must be vectors of the same length"
+
+The response and the predictor don't have the same number of observations. A
+common cause is a model fitted on data with missing values: by default,
+`fitted()` and `predict()` only return the observations that were used to fit
+the model.
+
+```{r same-length}
+incomplete <- aSAH
+incomplete$s100b[1:3] <- NA
+model <- glm(outcome ~ s100b, data = incomplete, family = binomial)
+nrow(incomplete)
+length(predict(model, type = "response"))
+```
+
+Pass the data as `newdata` to get one prediction per row. The predictions of
+the incomplete rows are `NA`, and `roc` removes them:
+
+```{r same-length-newdata}
+predictions <- predict(model, newdata = incomplete, type = "response")
+length(predictions)
+roc(incomplete$outcome, predictions)
+```
+
+## Which threshold is used to compute the AUC? Why is my AUC high when many observations are misclassified?
+
+None: the ROC curve shows the sensitivity and specificity at all possible
+thresholds, and the AUC summarizes them all. It is the probability that a
+randomly chosen case is ranked higher than a randomly chosen control (Fawcett,
+2006), so it depends only on the ranks of the predictor:
+
+- The predictor doesn't need to be a probability. Any numeric or ordered
+  variable works, and a monotone transformation doesn't change the curve:
+
+    ```{r auc-ranks}
+    auc(roc(aSAH$outcome, aSAH$s100b))
+    auc(roc(aSAH$outcome, log(aSAH$s100b)))
+    ```
+
+- The AUC says nothing about a particular threshold such as 0.5. In the
+  following example, all the cases have a higher probability than all the
+  controls, so the AUC is 1, although a threshold of 0.5 classifies every
+  observation as a case. The curve shows that a better threshold exists (here
+  between 0.90 and 0.93), see `coords` below.
+
+    ```{r auc-misclassified}
+    truth <- c(1, 1, 1, 1, 1, 0, 0, 0, 0, 0)
+    probs <- c(0.99, 0.99, 0.95, 0.93, 0.98, 0.81, 0.90, 0.90, 0.63, 0.75)
+    auc(roc(truth, probs))
+    ```
+
+## How do I plot several ROC curves on the same plot, with a legend?
+
+With base graphics, `plot` the first curve and add the others with `lines`:
+
+```{r multiple-curves, fig.width=5, fig.height=5, fig.align='center'}
+rocs <- list(
+  S100B = roc(aSAH$outcome, aSAH$s100b),
+  NDKA = roc(aSAH$outcome, aSAH$ndka),
+  WFNS = roc(aSAH$outcome, aSAH$wfns)
+)
+colors <- c("#1b9e77", "#d95f02", "#7570b3")
+
+plot(rocs$S100B, col = colors[1])
+lines(rocs$NDKA, col = colors[2])
+lines(rocs$WFNS, col = colors[3])
+legend("bottomright",
+  legend = sprintf("%s (AUC: %.3f)", names(rocs), sapply(rocs, auc)),
+  col = colors, lwd = 2
+)
+```
+
+With ggplot2, pass the list of curves to `ggroc`. The names of the list make
+the legend:
+
+```{r multiple-curves-ggroc, fig.width=6, fig.height=4, fig.align='center'}
+library(ggplot2)
+names(rocs) <- sprintf("%s (AUC: %.3f)", names(rocs), sapply(rocs, auc))
+ggroc(rocs) + labs(colour = NULL)
+```
+
+## How do I analyze or plot a multiclass ROC curve?
+
+`multiclass.roc` computes a multiclass AUC, which is the mean of the AUCs of
+all the pairs of classes (Hand and Till, 2001). Pass it a matrix with one
+column of predicted probabilities per class, named as the levels of the
+response:
+
+```{r multiclass}
+library(MASS)
+model <- lda(Species ~ Sepal.Length + Sepal.Width, data = iris)
+probabilities <- predict(model)$posterior
+head(probabilities, 3)
+mc <- multiclass.roc(iris$Species, probabilities)
+auc(mc)
+```
+
+With a single numeric predictor instead of a matrix, a curve is built on that
+predictor for each pair of classes.
+
+A multiclass AUC is a mean of several curves and not a curve itself, so it
+cannot be plotted: `plot(mc)` fails with
+`'x' is a list, but does not have components 'x' and 'y'`. The pairwise curves
+are in `mc$rocs` and can be plotted individually. Alternatively you can build
+and plot one curve per class, against all the other classes:
+
+```{r multiclass-one-vs-rest, fig.width=6, fig.height=4, fig.align='center'}
+one_vs_rest <- lapply(levels(iris$Species), function(class) {
+  roc(iris$Species == class, probabilities[, class],
+    levels = c(FALSE, TRUE), direction = "<"
+  )
+})
+names(one_vs_rest) <- levels(iris$Species)
+sapply(one_vs_rest, auc)
+ggroc(one_vs_rest)
+```
+
+Confidence intervals and tests are not available for multiclass AUCs.
 
 ## How do I remove empty space on the sides of my ROC plot?
 
@@ -151,6 +296,33 @@ controls and cases, respectively) argument explicitly too.
 pROC prints a message such as `Setting direction: controls < cases` when it
 auto-detects the direction (unless `quiet = TRUE`).
 
+## Why do I get a different AUC, sensitivity or specificity than with another package?
+
+By default, pROC detects which level of the response is the cases, and whether
+the cases have higher or lower values than the controls (see the previous
+question). Most other packages assume that higher values indicate the positive
+class instead, and some take the positive class from a different level of the
+response. Typical symptoms are:
+
+- an AUC of `1 - x` in one package and `x` in the other;
+- sensitivity and specificity swapped. For instance, `confusionMatrix` of the
+  caret package takes the first level of the response as the positive class by
+  default (see its `positive` argument), which is the controls for pROC.
+
+Check the `Setting levels` and `Setting direction` messages, or the `Data:`
+line printed with the curve, and set both arguments explicitly to match the
+other package:
+
+```{r explicit-levels-direction}
+roc(aSAH$outcome, aSAH$s100b, levels = c("Good", "Poor"), direction = "<")
+```
+
+Here `levels` gives the controls first and the cases second, and
+`direction = "<"` means that the controls have lower values than the cases.
+
+If only the plots differ, the other package may show 1-specificity on the X
+axis (see the first question).
+
 ## Can I test if a single ROC curve is significantly different from 0.5?
 
 Yes, with `roc.test(roc1)`: without a second curve, it tests the (partial) AUC
@@ -167,6 +339,33 @@ distribution. That implies an AUC of 0.5, but not the reverse: with different
 spreads, it can reject even when the AUC is 0.5. It is not a test of the medians
 either, which can be identical even when the AUC is far from 0.5.
 
+## How do I compare two ROC curves? Their confidence intervals overlap but the test is significant
+
+Use `roc.test`. By default it tests the difference of the AUCs with DeLong's
+method, and detects whether the two curves are paired, that is built on the
+same observations. Set `paired` explicitly to override the detection.
+
+```{r roc-test}
+roc_s100b <- roc(aSAH$outcome, aSAH$s100b)
+roc_ndka <- roc(aSAH$outcome, aSAH$ndka)
+roc.test(roc_s100b, roc_ndka)
+```
+
+Don't compare the confidence intervals of the two AUCs instead. Two intervals
+can overlap while the difference is significant, especially with paired curves,
+where the test takes the correlation between the two curves into account:
+
+```{r roc-test-overlap}
+set.seed(12)
+response <- rbinom(400, 1, 0.5)
+noise <- rnorm(400)
+roc_a <- roc(response, response * 0.6 + noise)
+roc_b <- roc(response, response * 0.45 + noise + rnorm(400, sd = 0.5))
+ci(roc_a)
+ci(roc_b)
+roc.test(roc_a, roc_b)$p.value
+```
+
 ## My dataset is huge. Can I use pROC?
 
 A large effort has been made to render pROC more and more efficient with large
@@ -177,6 +376,44 @@ functions have been implemented too.
 If you feel that a function is abnormally slow, especially in comparison to
 other packages, feel free to [open a bug
 report](https://github.com/xrobin/pROC/issues/new?template=Bug_report.md).
+
+## How do I choose a threshold, or get the sensitivity and specificity at my thresholds?
+
+Use `coords`. To get the performance at your own thresholds:
+
+```{r coords-thresholds}
+rocobj <- roc(aSAH$outcome, aSAH$s100b)
+coords(rocobj, c(0.1, 0.2, 0.5),
+  ret = c("threshold", "sensitivity", "specificity", "ppv", "npv")
+)
+```
+
+`"best"` returns the threshold that maximizes the Youden index (sensitivity +
+specificity) by default. See `best.method` and `best.weights` in `?coords` for
+other criteria.
+
+```{r coords-best}
+coords(rocobj, "best")
+```
+
+For any other criterion, get all the points of the curve and select the one you
+want, for instance the highest specificity with a sensitivity of at least 75%:
+
+```{r coords-constraint}
+all_coords <- coords(rocobj, "all")
+candidates <- all_coords[all_coords$sensitivity >= 0.75, ]
+candidates[which.max(candidates$specificity), ]
+```
+
+Asking for a sensitivity of exactly 75% with
+`coords(rocobj, 0.75, input = "sensitivity")` returns a `threshold` of `NA`
+instead: no threshold has this sensitivity, and the point is interpolated
+between the two closest points of the curve.
+
+The thresholds reported by pROC are half-way between two consecutive values of
+the predictor, so that no observation is equal to a threshold. The best
+threshold of 0.205 above means that observations up to 0.20 are classified as
+controls, and those from 0.21 as cases.
 
 ## Can I compute the confidence interval of the best threshold of the curve (not its SE/SP)?
 
@@ -191,6 +428,64 @@ ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
 ```
 
 The 95% bootstrap confidence interval of the optimal threshold is 0.155-0.485.
+
+## Can pROC plot precision-recall curves?
+
+`coords` returns the precision and recall at each threshold, which can be
+plotted:
+
+```{r precision-recall, fig.width=5, fig.height=5, fig.align='center'}
+pr <- coords(rocobj, "all", ret = c("recall", "precision"))
+plot(precision ~ recall, pr, type = "l", ylim = c(0, 1))
+```
+
+`ci.coords` computes the confidence interval of the precision at given recalls:
+
+```{r, eval = FALSE}
+ci.coords(rocobj, x = c(0.25, 0.5, 0.75), input = "recall", ret = "precision")
+# 95% CI (2000 stratified bootstrap replicates):
+#  recall precision.low precision.median precision.high
+#    0.25        0.5062           1.0000         1.0000
+#    0.50        0.4713           0.6381         0.8723
+#    0.75        0.3796           0.4749         0.7193
+```
+
+pROC has no function for the area under the precision-recall curve, but the
+trapezoid rule gives it from the coordinates:
+
+```{r precision-recall-auc}
+pr <- na.omit(pr)
+with(pr, -sum(diff(recall) * (head(precision, -1) + tail(precision, -1)) / 2))
+```
+
+This is the area from the lowest observed recall: the precision is not defined
+at a recall of 0, where no observation is classified as positive. Straight
+lines between the points, in the plot and in this area, are optimistic when
+several cases and controls share the same value of the predictor (Davis and
+Goadrich, 2006).
+
+## How do I use pROC in a dplyr pipeline, or with column names stored in variables?
+
+`roc` has a method for data frames, which takes the data first and the names
+of the response and predictor columns next. It is meant for pipelines, where
+the column names are typically unquoted:
+
+```{r, eval = FALSE}
+library(dplyr)
+aSAH %>%
+  filter(gender == "Female") %>%
+  roc(outcome, s100b)
+```
+
+An unquoted name is taken literally, so this doesn't work in a loop or a
+function where the name of the column is stored in a variable. Use `roc_`
+there, which takes the column names as character strings:
+
+```{r roc-underscore}
+for (marker in c("s100b", "ndka")) {
+  print(auc(roc_(aSAH, "outcome", marker)))
+}
+```
 
 ## The functions are giving me weird error messages I don't understand
 
@@ -268,3 +563,23 @@ hide pROC's functions if the package is loaded after pROC:
 
 To get an updated list, run `tools/sos_clashes.R` from the pROC source repository. It may be needed to
 start R with `export R_MAX_NUM_DLLS=1000` to be able to run the script.
+
+## References
+
+Jesse Davis and Mark Goadrich (2006) "The relationship between Precision-Recall
+and ROC curves". *Proceedings of the 23rd International Conference on Machine
+Learning*, 233--240. DOI:
+[10.1145/1143844.1143874](https://doi.org/10.1145/1143844.1143874)
+
+Tom Fawcett (2006) "An introduction to ROC analysis". *Pattern Recognition
+Letters* **27**, 861--874.
+<https://ccrma.stanford.edu/workshops/mir2009/references/ROCintro.pdf>
+
+David J. Hand and Robert J. Till (2001) "A Simple Generalisation of the Area
+Under the ROC Curve for Multiple Class Classification Problems". *Machine
+Learning* **45**, 171--186. DOI:
+[10.1023/A:1010920819831](https://doi.org/10.1023/A:1010920819831)
+
+James A. Hanley and Barbara J. McNeil (1982) "The meaning and use of the area
+under a receiver operating characteristic (ROC) curve". *Radiology* **143**,
+29--36.
