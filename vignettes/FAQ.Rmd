@@ -192,6 +192,156 @@ ci.coords(aSAH$outcome, aSAH$s100b, x="best", input = "threshold",
 
 The 95% bootstrap confidence interval of the optimal threshold is 0.155-0.485.
 
+## How do I get the best threshold, or a threshold for a given sensitivity?
+
+`coords()` with `x = "best"` returns the threshold that maximizes the Youden
+index (or minimizes the distance to the top-left corner with
+`best.method = "closest.topleft"`). `best.weights` sets the cost of false
+negatives and the prevalence.
+
+```{r}
+library(pROC)
+data(aSAH)
+r.s100b <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
+coords(r.s100b, "best")
+```
+
+To find the threshold with the highest specificity under a minimum sensitivity,
+list all the thresholds and filter them:
+
+```{r}
+all.coords <- coords(r.s100b, "all", ret = c("threshold", "sensitivity", "specificity"),
+                     transpose = FALSE)
+eligible <- all.coords[all.coords$sensitivity >= 0.75, ]
+eligible[which.max(eligible$specificity), ]
+```
+
+Asking `coords(r.s100b, 0.75, input = "sensitivity")` instead gives the
+specificity at a sensitivity of exactly 0.75, interpolated on the curve. No
+threshold produces that point, so the `threshold` is `NA`. In the other
+direction, `coords(r.s100b, 0.2, input = "threshold", ret = c("sensitivity", "specificity"))`
+gives the sensitivity and specificity of a given threshold. See the previous
+question for a confidence interval.
+
+## How do I compare two ROC curves or AUCs?
+
+Use `roc.test()`. By default it detects whether the curves are paired (built
+from the same patients, in the same order) and prints it with `Setting paired`.
+The choice matters, and you can set it with `paired = TRUE` or `paired = FALSE`:
+
+```{r}
+r.ndka <- roc(aSAH$outcome, aSAH$ndka, quiet = TRUE)
+roc.test(r.s100b, r.ndka, paired = TRUE)$p.value
+roc.test(r.s100b, r.ndka, paired = FALSE)$p.value
+```
+
+The default method for the AUC is DeLong's; `method = "bootstrap"` is
+available too. Partial AUCs are compared by the bootstrap test, with the
+`partial.auc` arguments (see the question on partial AUC below).
+
+## How do I set which group is the cases, and what does `direction` do?
+
+`roc()` needs to know which values of the response are the controls and the
+cases (`levels = c(control, case)`), and whether the predictor is higher in
+cases (`direction = "<"`) or in controls (`direction = ">"`). If you don't
+set them, pROC makes a guess and tells you with `Setting levels` and
+`Setting direction`:
+
+```{r}
+roc(aSAH$outcome, aSAH$s100b)$levels
+```
+
+With more than two levels, pROC takes the first two (and warns): use `levels`,
+or `multiclass.roc()`.
+
+The `direction = "auto"` default picks the direction from the group medians,
+so the curve usually ends up above the diagonal. That hides a reversed `levels`
+or a predictor that goes the other way:
+
+```{r}
+auc(roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"), quiet = TRUE))
+auc(roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"), direction = "<", quiet = TRUE))
+```
+
+In the second call, the AUC is 1 minus the first one: the controls are the
+"Poor" outcomes and the predictor is higher in the other group. Set both
+arguments explicitly whenever the result will be used in code, and always when
+you resample (see above).
+
+## Why do I get "Predictor must be numeric or ordered" or "Response and predictor must be vectors of the same length"?
+
+The predictor must be numeric or an ordered factor. A character vector or an
+unordered factor, such as a predicted class label, triggers the first message.
+Pass a score (a probability, a numeric predictor) or convert an ordinal
+predictor with `factor(x, ordered = TRUE)`.
+
+The second message means that the response and the predictor have a different
+number of observations. A common cause is a model fitted with `glm()` or `lm()`
+on data with missing values: the model silently drops the incomplete rows,
+and `predict()` returns fewer values than the response has. Either remove the
+incomplete rows before fitting, or use the response stored in the model
+(`model$y` for `glm`).
+
+## Why does another package, or caret, give a different AUC?
+
+On the same scores, `ROCR` gives the same AUC as pROC, including when the
+predictor has many ties. The differences come from the input and the way the
+AUC is aggregated:
+
+* **Direction.** ROCR assumes that higher values mean cases, while pROC detects
+  the direction. If the predictor is higher in controls, ROCR gives 1 - AUC,
+  which pROC reproduces with `direction = "<"`.
+* **Scores or classes.** The AUC of predicted classes (0/1) is not the AUC of the
+  scores they come from. For a logistic regression on `aSAH`, the AUC of the
+  probabilities is 0.775, and that of the thresholded 0/1 classes is 0.687.
+  Use the probabilities (`type = "response"`).
+* **Cross-validation.** The AUC computed on all the cross-validated predictions
+  pooled together is not the mean of the AUC of each fold. On a 5-fold
+  cross-validation of the same model we got 0.747 pooled and 0.773 averaged.
+  caret's `twoClassSummary` reports the mean of the per-fold AUCs, which you can
+  reproduce with pROC on each `Resample` of the saved predictions.
+
+## How do I plot several ROC curves, with confidence intervals?
+
+Put the curves in a list and give it to `ggroc()`, or draw them one after the
+other with `lines()` or `add = TRUE`:
+
+```{r, eval = FALSE}
+r.wfns <- roc(aSAH$outcome, aSAH$wfns, quiet = TRUE)
+ggroc(list(s100b = r.s100b, ndka = r.ndka, wfns = r.wfns))
+
+plot(r.s100b)
+lines(r.ndka, col = "red")
+```
+
+Confidence intervals of the sensitivity at given specificities are drawn on
+top of a curve with `ci.se()` and `plot()`:
+
+```{r, eval = FALSE}
+plot(r.s100b)
+plot(ci.se(r.s100b, specificities = seq(0, 1, 0.05)), type = "shape")
+```
+
+The `ggplot2` vignette (`vignette("ggroc")`) shows the options of `ggroc()`,
+including the diagonal and the 1-specificity axis.
+
+## How do I compute a partial AUC?
+
+Give the `partial.auc` interval (on the scale of the curve) to `auc()` or
+`roc()`. By default it is an interval of specificity, `partial.auc.focus =
+"sensitivity"` switches it, and `partial.auc.correct = TRUE` applies the
+McClish standardization, so that 0.5 is no discrimination and 1 a perfect curve:
+
+```{r}
+auc(r.s100b, partial.auc = c(1, 0.8))
+auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.correct = TRUE)
+auc(r.s100b, partial.auc = c(1, 0.8), partial.auc.focus = "sensitivity")
+```
+
+On a curve with `percent = TRUE` the interval is in percent (`c(100, 80)`); on
+a curve in fractions, `auc()` refuses `c(100, 80)`. The confidence interval and the comparison of partial AUCs
+use the bootstrap.
+
 ## The functions are giving me weird error messages I don't understand
 
 Several packages on CRAN provide alternative `roc` or `auc` functions. These
