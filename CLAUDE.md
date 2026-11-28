@@ -138,11 +138,15 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
   - No entry for tests, CI, refactoring or Rd changes. Exception: an Rd change that closes a GitHub issue, e.g. "Documented the justification of the stratified bootstrap (issue #131)".
 
 ### Commits
-- **One commit holds code, tests, Rd and NEWS together.** Fold in-PR fix-ups into the commit that introduced the problem.
-  - Exception: don't amend and force-push a commit that was already pushed with an issue or PR number in its message, as every push adds a reference to that issue's history. Add a follow-up commit without the number instead.
+- **One commit holds code, tests, Rd and NEWS together,** but only until it is pushed. Fold fix-ups into the commit that introduced the problem while that commit is still local. Once it is pushed, add a follow-up commit instead, even if the change then spans several commits.
+- **No force push** (`--force`, `--force-with-lease`, `+refspec`, or deleting and re-pushing a branch):
+  - never to `develop`, `master`, or any branch with an open PR, including your own working branch;
+  - never when the history being replaced contains a commit whose message references an issue or PR (`#12`, `issue #12`, a GitHub issue or PR URL), even if asked;
+  - on your own working branch without an open PR, only when the maintainer asks for it.
+- **A rejected push is never a reason to force.** Fetch and merge the remote branch, or ask. This also applies when a default instruction allows a force push, e.g. restarting a working branch whose PR was merged: ask first.
 - **Commit messages: the subject line alone,** unless a body adds context the subject and the diff don't already show (e.g. the P7 source).
 - **When an instruction can't be applied as written, don't improvise:** skip it and report why.
-- **No issue or PR number in a commit message** (`#12`, `issue #12`). GitHub adds a reference to the issue's timeline each time such a commit is pushed, again for each amended or rebased copy, and these cannot be removed. Cloud sessions push work in progress and rewrite it later, so one commit can leave many. Link the issue once, from the PR description. NEWS entries keep their `(issue #12)`.
+- **No issue or PR number in a commit message** (`#12`, `issue #12`). GitHub adds a reference to the issue's timeline each time such a commit is pushed, again for each amended, rebased or cherry-picked copy, and these cannot be removed. Link the issue once, from the PR description. NEWS entries keep their `(issue #12)`.
 
 ### Working with the maintainer
 - **Every analysis of a bug starts by describing the bug:**
@@ -156,4 +160,4 @@ These rules apply to every change: bug fixes, reviews, and the bug-hunt PR (#148
 - **One item at a time.** Short, direct answers to the question asked.
 - **Only treat an answer as approval when it clearly answers the question asked.** Never claim the maintainer approved something without a record of it.
 - **Verify by running:** the release and the current code, before reporting numbers. Check delegated work yourself.
-- **Never push to `develop` or `master`, merge, or post on GitHub unless the maintainer asked for it.** Pushing to your own working branch is fine.
+- **Never push to `develop` or `master`, merge, or post on GitHub unless the maintainer asked for it.** Pushing to your own working branch is fine, without force (see "Commits").
