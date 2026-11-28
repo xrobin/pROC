@@ -37,7 +37,7 @@ smooth_roc_binormal <- function(roc, n) {
   if (smooth_roc_binormal_degenerate(df)) {
     stop("ROC curve not smoothable (degenerate data).")
   }
-  categories <- proper_binormal_categories(roc)
+  categories <- binormal_categories(roc)
   fit <- binormal_fit(categories$controls, categories$cases, binormal_ls(df))
   if (!fit$converged) {
     stop("ROC curve not smoothable (the binormal fit did not converge).")
@@ -85,8 +85,8 @@ smooth_roc_binormal_params <- function(smooth.roc) {
 # the cases, with Z_0 = -Inf and Z_I = Inf
 binormal_probs <- function(a, b, z) {
   list(
-    controls = proper_binormal_pdiff(-c(-Inf, z, Inf)),
-    cases = proper_binormal_pdiff(-c(-Inf, b * z - a, Inf))
+    controls = binormal_pdiff(-c(-Inf, z, Inf)),
+    cases = binormal_pdiff(-c(-Inf, b * z - a, Inf))
   )
 }
 
@@ -307,7 +307,7 @@ smooth_roc_binormal_degenerate <- function(df) {
 # - Pesce LL, Metz CE (2007) Acad Radiol 14:814-829 (P&M)
 smooth_roc_proper <- function(roc, n) {
   load.suggested.package("mvtnorm")
-  categories <- proper_binormal_categories(roc)
+  categories <- binormal_categories(roc)
   k <- categories$controls
   l <- categories$cases
   if (length(k) < 2) {
@@ -367,7 +367,7 @@ smooth_roc_proper <- function(roc, n) {
 # rank-ordered data are split into runs of a single truth state, and tied
 # control and case values form a category of their own. From the least to
 # the most "positive" category.
-proper_binormal_categories <- function(roc) {
+binormal_categories <- function(roc) {
   controls <- roc$controls
   cases <- roc$cases
   if (is.ordered(controls) || is.ordered(cases)) {
@@ -421,7 +421,7 @@ proper_binormal_rate_dv <- function(args, c, slope) {
 }
 # Phi(x[i]) - Phi(x[i + 1]) for decreasing x, from the tail where it does
 # not cancel
-proper_binormal_pdiff <- function(x) {
+binormal_pdiff <- function(x) {
   n <- length(x)
   upper <- x[-1] > 0
   lower.tail <- pnorm(x)
@@ -434,9 +434,9 @@ proper_binormal_pdiff <- function(x) {
 # cut-points 'v' (the bounds of the range included). H(c) cancels out in the
 # differences.
 proper_binormal_probs <- function(args) {
-  p <- proper_binormal_pdiff(args$A)
+  p <- binormal_pdiff(args$A)
   if (!is.null(args$B)) {
-    p <- p + proper_binormal_pdiff(args$B)
+    p <- p + binormal_pdiff(args$B)
   }
   p
 }

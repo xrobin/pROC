@@ -37,11 +37,20 @@ test_that("var and ci.auc of binormal and proper fits default to the ML method",
   expect_identical(attr(ci, "method"), "ml")
   expect_identical(ci, ci(s.s100b))
   expect_identical(ci, ci.auc(s.s100b, method = "ml"))
+  # Wald interval around the AUC
+  expect_identical(attr(ci, "scale"), "auc")
+  expect_equal(as.numeric(ci), as.numeric(auc(s.s100b)) + c(-1, 0, 1) * qnorm(0.975) * sqrt(var(s.s100b)))
+  expect_equal(as.numeric(ci.auc(s.s100b, conf.level = 0.9)), as.numeric(auc(s.s100b)) + c(-1, 0, 1) * qnorm(0.95) * sqrt(var(s.s100b)))
+  expect_output(print(ci), "95% CI: 0.632-0.8345 (maximum likelihood)", fixed = TRUE)
   # normal interval on the logit scale (Pepe 2003, p. 107)
   logit_ci <- function(auc, se, z) plogis(qlogis(auc) + c(-1, 0, 1) * z * se / (auc * (1 - auc)))
-  expect_equal(as.numeric(ci), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.975)))
-  expect_equal(as.numeric(ci.auc(s.s100b, conf.level = 0.9)), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.95)))
-  expect_output(print(ci), "95% CI: 0.6209-0.8219 (maximum likelihood)", fixed = TRUE)
+  ci.logit <- ci.auc(s.s100b, scale = "logit")
+  expect_identical(attr(ci.logit, "scale"), "logit")
+  expect_equal(as.numeric(ci.logit), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.975)))
+  expect_equal(as.numeric(ci.auc(s.s100b, conf.level = 0.9, scale = "logit")), logit_ci(as.numeric(auc(s.s100b)), sqrt(var(s.s100b)), qnorm(0.95)))
+  expect_output(print(ci.logit), "95% CI: 0.6209-0.8219 (maximum likelihood, logit scale)", fixed = TRUE)
+  expect_equal(as.numeric(ci(s.s100b, scale = "logit")), as.numeric(ci.logit))
+  expect_equal(as.numeric(roc(aSAH$outcome, aSAH$s100b, smooth = TRUE, ci = TRUE, scale = "logit", quiet = TRUE)$ci), as.numeric(ci.logit))
   # from the shortcuts
   for (shortcut in list(
     ci.auc(aSAH$outcome, aSAH$s100b, smooth = TRUE, quiet = TRUE),
@@ -56,6 +65,7 @@ test_that("ML var and ci.auc of percent curves are rescaled", {
   s <- smooth(r.s100b.percent)
   expect_equal(var(s), var(s.s100b) * 100^2)
   expect_equal(as.numeric(ci.auc(s)), as.numeric(ci.auc(s.s100b)) * 100)
+  expect_equal(as.numeric(ci.auc(s, scale = "logit")), as.numeric(ci.auc(s.s100b, scale = "logit")) * 100)
 })
 
 test_that("the ML method is refused where it does not apply", {

@@ -55,6 +55,7 @@ remove.ci.attributes <- function(ci) {
   attr(ci, "sensitivities") <- NULL
   attr(ci, "roc") <- NULL
   attr(ci, "method") <- NULL
+  attr(ci, "scale") <- NULL
   attr(ci, "auc") <- NULL
   class(ci) <- class(ci)[-(1:2)]
   return(ci)

@@ -18,16 +18,17 @@
 }
 \usage{
 roc(...)
-\S3method{roc}{formula}(formula, data, ..., subset, na.action)
+\S3method{roc}{formula}(formula, data, ..., subset, na.action, weights)
 \S3method{roc}{data.frame}(data, response, predictor,
-ret = c("roc", "coords", "all_coords"), ...)
+ret = c("roc", "coords", "all_coords"), ..., weights = NULL)
 \S3method{roc}{default}(response, predictor, controls, cases,
 density.controls, density.cases,
 levels=base::levels(as.factor(response)), percent=FALSE, na.rm=TRUE,
 direction=c("auto", "<", ">"), algorithm = 2, quiet = FALSE, 
 smooth=FALSE, auc=TRUE, ci=FALSE, plot=FALSE, smooth.method="binormal",
-smooth.n=512, ci.method=NULL, density=NULL, ...)
-roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
+smooth.n=512, ci.method=NULL, density=NULL, weights=NULL, ...)
+roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...,
+weights = NULL)
 }
 
 \arguments{
@@ -143,6 +144,17 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{density}{\code{density} argument passed to
     \code{\link[=smooth.roc]{smooth}}. Superseded by
     \code{smooth(roc1, density=\dots)} (see \link{all_in_one_calls}).}
+  \item{weights}{non-negative weights of the observations. A numeric
+    vector of the same length as \code{response}. With a
+    \code{formula}, \code{weights} is evaluated in \code{data} as in
+    \code{\link{model.frame}}. If the first argument was a
+    \code{\link{data.frame}}, \code{weights} should be the name of the
+    column in \code{data} containing the weights, quoted or not as
+    \code{response}.
+    Observations with a weight of 0 are removed from the data, and those
+    with a missing weight are handled by \code{na.rm}. Not available
+    with \code{controls} and \code{cases}. See the \dQuote{Observation
+    weights} section.}
   \item{\dots}{further arguments passed to or from other methods, and
     especially:
     \itemize{
@@ -239,6 +251,30 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   }
 }
 
+\section{Observation weights}{
+  With \code{weights}, each observation counts as its weight in the
+  sensitivities and specificities, and in everything derived from them
+  (AUC, \code{\link{coords}}, plots). The confidence intervals, variances, covariances
+  and tests are computed with the bootstrap (see \code{\link{ci}},
+  \code{\link{var}}, \code{\link{cov}} and \code{\link{roc.test}}),
+  where each observation is resampled together with its weight. This
+  treats the weights as importance weights, known properties of
+  independent observations. It is not appropriate for frequency
+  weights (an observation with a weight of 3 is resampled as one
+  observation, not three: replicate the rows instead), for weights
+  estimated from the same data, or for complex survey designs.
+
+  With \code{direction="auto"}, the weighted medians are compared.
+  With weights that are not whole numbers, the ties of
+  \code{\link{coords}} (\dQuote{best}, \dQuote{local maximas} and the
+  matching of an input value to a point of the curve) are decided in
+  floating point.
+
+  The DeLong, Obuchowski and Venkatraman methods, smoothing,
+  \code{\link{power.roc.test}} and \code{\link{multiclass.roc}} are
+  not available with observation weights.
+}
+
 \section{Shortcuts}{
   The \code{smooth}, \code{auc}, \code{ci} and \code{plot} arguments are
   shortcuts for calling these functions on the curve. With them, a single
@@ -307,6 +343,9 @@ roc_(data, response, predictor, ret = c("roc", "coords", "all_coords"), ...)
   \item{call}{how the function was called. See \code{\link{match.call}} for
     more details.
   }
+  \item{weights, original.weights}{the observation weights, if any: of the
+    observations of the curve (as \code{predictor}), and as passed (as
+    \code{original.predictor}).}
   \item{fun.sesp}{DEPRECATED. The value will be removed in a future version.}
 
   If \code{smooth=TRUE} a list of class \dQuote{smooth.roc} as returned
@@ -439,6 +478,24 @@ roc(aSAH$outcome, aSAH$s100b, levels = c("Poor", "Good"), direction = "<")
 
 # Turn off the messages if sure about levels and direction
 roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
+
+
+## Observation weights ##
+
+# Give women and men the same total weight
+aSAH$w <- ifelse(aSAH$gender == "Female", 1 / sum(aSAH$gender == "Female"),
+                 1 / sum(aSAH$gender == "Male"))
+# As a vector
+roc(aSAH$outcome, aSAH$s100b, weights = aSAH$w)
+# As a column of the data, with a formula or a data.frame
+rocobj <- roc(outcome ~ s100b, data = aSAH, weights = w)
+roc(aSAH, outcome, s100b, weights = w)
+# Coordinates are weighted too
+coords(rocobj, "best", ret = c("threshold", "specificity", "sensitivity"))
+# Confidence intervals and tests use the bootstrap
+\dontrun{
+ci(rocobj)
+}
 
 
 ## Other options ##

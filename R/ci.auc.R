@@ -76,7 +76,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
                               cl = NULL,
                               sides = c("two.sided", "lower", "upper"),
                               ...,
-                              method = NULL) {
+                              method = NULL,
+                              scale = c("auc", "logit")) {
+  scale.given <- !missing(scale)
+  scale <- match.arg(scale)
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("conf.level must be a single number within the interval [0,1].")
   }
@@ -110,6 +113,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
       roc_utils_stop_if_no_ml(smooth.roc)
     }
   }
+  roc_utils_warn_scale_bootstrap(method, scale.given)
 
   # Get the non smoothed roc.
   roc <- attr(smooth.roc, "roc")
@@ -127,7 +131,7 @@ ci.auc.smooth.roc <- function(smooth.roc,
   }
 
   if (method == "ml") {
-    ci <- roc_utils_logit_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level, sides)
+    ci <- roc_utils_auc_ci(as.numeric(oldauc) / ifelse(percent, 100, 1), sqrt(var_roc_ml(smooth.roc)), conf.level, scale, sides)
   } else {
     boot.n <- roc_utils_check_boot_n(boot.n)
     aucs <- roc_utils_drop_na_replicates(
@@ -148,6 +152,10 @@ ci.auc.smooth.roc <- function(smooth.roc,
   attr(ci, "method") <- method
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
+  # The bootstrap percentiles have no scale
+  if (method != "bootstrap") {
+    attr(ci, "scale") <- scale
+  }
   attr(ci, "auc") <- oldauc
   class(ci) <- c("ci.auc", "ci", class(ci))
   return(ci)
@@ -163,7 +171,10 @@ ci.auc.roc <- function(roc,
                        parallel = FALSE,
                        cl = NULL,
                        sides = c("two.sided", "lower", "upper"),
-                       ...) {
+                       ...,
+                       scale = c("auc", "logit")) {
+  scale.given <- !missing(scale)
+  scale <- match.arg(scale)
   if (!roc_utils_is_single_number(conf.level) || conf.level > 1 || conf.level < 0) {
     stop("conf.level must be a single number within the interval [0,1].")
   }
@@ -196,6 +207,9 @@ ci.auc.roc <- function(roc,
     } else if ("smooth.roc" %in% class(roc)) {
       # smoothing: bootstrap
       method <- "bootstrap"
+    } else if (!is.null(roc$weights)) {
+      # observation weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -211,9 +225,10 @@ ci.auc.roc <- function(roc,
       stop(roc_utils_no_delong("smoothed ROCs"))
     }
   }
+  roc_utils_warn_scale_bootstrap(method, scale.given)
 
   if (method == "delong") {
-    ci <- ci_auc_delong(roc, conf.level, sides)
+    ci <- ci_auc_delong(roc, conf.level, scale, sides)
   } else {
     boot.n <- roc_utils_check_boot_n(boot.n)
     ci <- ci_auc_bootstrap(roc, conf.level, sides, boot.n, boot.stratified, progress = progress, cl = cl, ...)
@@ -227,6 +242,10 @@ ci.auc.roc <- function(roc,
   attr(ci, "method") <- method
   attr(ci, "boot.n") <- boot.n
   attr(ci, "boot.stratified") <- boot.stratified
+  # The bootstrap percentiles have no scale
+  if (method != "bootstrap") {
+    attr(ci, "scale") <- scale
+  }
   attr(ci, "auc") <- oldauc
   class(ci) <- c("ci.auc", "ci", class(ci))
   return(ci)

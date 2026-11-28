@@ -111,7 +111,8 @@ cov(...)
   curves. The curves of a list are not re-paired.
 
   The default is to use \dQuote{delong} method except with
-  partial AUC and smoothed curves where \dQuote{bootstrap} is employed.
+  partial AUC, smoothed curves and curves with observation weights where
+  \dQuote{bootstrap} is employed.
   Using \dQuote{delong} for partial AUC and smoothed ROCs is not
   supported.
 
@@ -157,17 +158,18 @@ cov(...)
   \eqn{A} and \eqn{B} are their maximum-likelihood estimates (pp. 1530--1531),
   those of pROC's binormal smoothing of the curve (see
   \code{\link[=smooth.roc]{smooth}}).
+  This covariance is intended for sample size and power calculations (see
+  \code{\link{power.roc.test}}), with the variance of \code{\link{var}}.
 }
 
 \section{Binormality assumption}{
-  The \dQuote{obuchowski} method makes the assumption that the data is binormal.
-  If the data shows a deviation from this assumption, it might help to
-  normalize the data first (that is, before calling \code{\link{roc}}),
-  for example with quantile normalization: 
-  \preformatted{
-    norm.x <- qnorm(rank(x)/(length(x)+1))
-    cov(roc(response, norm.x, ...), ...)
-  }
+  The \dQuote{obuchowski} method assumes that the ROC curves are binormal:
+  some monotone transformation of each predictor makes it normal in both
+  controls and cases. The predictors themselves need not be normal.
+  \eqn{A} and \eqn{B} depend only on the ranks of the predictors, but the
+  correlations \eqn{r_A}{rA} and \eqn{r_N}{rN} of Equation 5 are Pearson
+  correlations of the predictor values, which a monotone transformation
+  (such as quantile normalization) changes.
 
   \dQuote{delong} and \dQuote{bootstrap} methods make no such assumption.
 }

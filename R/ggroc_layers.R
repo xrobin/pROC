@@ -194,29 +194,6 @@ ggroc_axis_labs <- function(roc, legacy.axes) {
   ggplot2::labs(x = xlab, y = ylab)
 }
 
-ggroc_auc_label <- function(auc, ci = NULL, pattern = NULL) {
-  percent <- attr(auc, "percent")
-  partial.auc <- attr(auc, "partial.auc")
-  has.ci <- !is.null(ci) && methods::is(ci, "ci.auc")
-  if (is.null(pattern)) {
-    number <- ifelse(percent, "%.1f%%", "%.3f")
-    pattern <- paste0(ifelse(identical(partial.auc, FALSE), "AUC: ", "Partial AUC: "), number)
-    # A one-sided CI shows its bound only, in ASCII: pdf() has no glyph for >=
-    if (has.ci && identical(attr(ci, "sides"), "lower")) {
-      return(sprintf(paste0(pattern, " (>", number, ")"), auc, ci[1]))
-    } else if (has.ci && identical(attr(ci, "sides"), "upper")) {
-      return(sprintf(paste0(pattern, " (<", number, ")"), auc, ci[3]))
-    } else if (has.ci) {
-      pattern <- paste0(pattern, " (", number, "\u2013", number, ")")
-    }
-  }
-  if (has.ci) {
-    sprintf(pattern, auc, ci[1], ci[3])
-  } else {
-    sprintf(pattern, auc)
-  }
-}
-
 # List method shared by the layers: one layer per curve, named as in
 # ggroc.list, with a 'name' column so that facet_*(~ name) draws each layer
 # in its own panel only. make_layers(plot, named = TRUE) tells the layer

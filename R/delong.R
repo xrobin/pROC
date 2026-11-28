@@ -17,20 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# DeLong's test, paired or unpaired, used by roc.test.roc
-delong.test <- function(calcs) {
-  # Input calcs is a list returned by delong.paired.calculations()
-  # or delong.unpaired.calculations().
-
-  zscore <- with(calcs, d / sig)
-
-  if (is.nan(zscore) && calcs$d == 0 && calcs$sig == 0) {
-    zscore <- 0
-  } # special case: no difference between theta's produces a NaN
-
-  return(zscore)
-}
-
 # Runs the placements and main calculations for the unpaired DeLong's test.
 # The curves are independent, so the variance of the difference is the sum
 # of the variances of the two AUCs.
@@ -62,7 +48,15 @@ delong.unpaired.calculations <- function(roc1, roc2) {
   return(list("d" = d, "sig" = sqrt(SR + SS)))
 }
 
-ci_auc_delong <- function(roc, conf.level, sides) {
+# DeLong's placements count observations: no observation weights
+delong_stop_if_weighted <- function(roc) {
+  if (!is.null(roc$weights)) {
+    stop(roc_utils_no_delong("ROC curves with observation weights"), call. = FALSE)
+  }
+}
+
+ci_auc_delong <- function(roc, conf.level, scale, sides) {
+  delong_stop_if_weighted(roc)
   YR <- roc$controls # = C2, n, YRj
   XR <- roc$cases # = C1, m, XRi
 
@@ -79,7 +73,7 @@ ci_auc_delong <- function(roc, conf.level, sides) {
   SX <- sum((V$X - V$theta) * (V$X - V$theta)) / (m - 1)
   SY <- sum((V$Y - V$theta) * (V$Y - V$theta)) / (n - 1)
   S <- SX / m + SY / n
-  roc_utils_logit_ci(V$theta, sqrt(S), conf.level, sides)
+  roc_utils_auc_ci(V$theta, sqrt(S), conf.level, scale, sides)
 }
 
 # Runs the placements and main calculations for the paired DeLong's test
@@ -110,6 +104,7 @@ delong.cov <- function(rocs) {
 # Calls delongPlacementsCpp safely
 # Ensures that the theta value calculated is correct
 delongPlacements <- function(roc) {
+  delong_stop_if_weighted(roc)
   if (roc_utils_is_ordered_roc(roc)) {
     roc$cases <- as.numeric(roc$cases)
     roc$controls <- as.numeric(roc$controls)

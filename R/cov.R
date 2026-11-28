@@ -153,6 +153,9 @@ cov.roc <- function(roc1, roc2,
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
+    } else if (!is.null(roc1$weights) || !is.null(roc2$weights)) {
+      # observation weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -170,6 +173,8 @@ cov.roc <- function(roc1, roc2,
         warning("DeLong's method should not be applied to ROC curves with a different direction.")
       }
     } else if (method == "obuchowski") {
+      roc_utils_stop_if_weighted(roc1, "Obuchowski method")
+      roc_utils_stop_if_weighted(roc2, "Obuchowski method")
       if (smooth1 || smooth2) {
         stop("Obuchowski method is not supported for smoothed ROCs. Use method=\"bootstrap\" instead.")
       }

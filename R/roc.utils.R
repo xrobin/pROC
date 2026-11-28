@@ -89,15 +89,66 @@ roc_utils_combine_predictor <- function(...) {
 # Auto direction from typical control vs case values.
 # Ordered data are compared by as.integer() rank so median() is defined when n is even;
 # cases/controls themselves are not converted to numeric.
-roc_utils_auto_direction <- function(controls, cases) {
+roc_utils_auto_direction <- function(controls, cases, weights.controls = NULL, weights.cases = NULL) {
   if (is.ordered(controls)) {
-    ctrl <- median(as.integer(controls))
-    case <- median(as.integer(cases))
-  } else {
-    ctrl <- median(controls)
-    case <- median(cases)
+    controls <- as.integer(controls)
+    cases <- as.integer(cases)
   }
-  if (ctrl <= case) "<" else ">"
+  if (roc_utils_weighted_median(controls, weights.controls) <= roc_utils_weighted_median(cases, weights.cases)) "<" else ">"
+}
+
+# The median of x under observation weights: median(x) without weights or with equal
+# weights
+roc_utils_weighted_median <- function(x, weights = NULL) {
+  if (is.null(weights)) {
+    return(median(x))
+  }
+  o <- order(x)
+  x <- x[o]
+  cumulated <- cumsum(weights[o])
+  half <- cumulated[length(x)] / 2
+  # the middle of the values reaching and exceeding half the weight
+  (x[match(TRUE, cumulated >= half)] + x[match(TRUE, cumulated > half)]) / 2
+}
+
+# Observation weights: the weights of the controls and of the cases of a curve or of
+# a resample (roc_utils_resample()), NULL without weights
+roc_utils_class_weights <- function(roc) {
+  if (is.null(roc$weights)) {
+    return(NULL)
+  }
+  list(
+    controls = roc$weights[roc$response %in% roc$levels[1]],
+    cases = roc$weights[roc$response %in% roc$levels[2]]
+  )
+}
+
+# The number of controls and cases of a curve: with observation weights, their total
+# weights
+roc_utils_class_sizes <- function(roc) {
+  if (is.null(roc$weights)) {
+    c(controls = length(roc$controls), cases = length(roc$cases))
+  } else {
+    vapply(roc_utils_class_weights(roc), sum, numeric(1))
+  }
+}
+
+# Whether the (weighted) numbers of true and false positives and negatives of
+# a curve are whole numbers, that round() recovers exactly from se and sp
+roc_utils_has_counts <- function(roc) {
+  is.null(roc$weights) || all(roc$weights == round(roc$weights))
+}
+
+# What has no weighted version
+roc_utils_stop_if_weighted <- function(roc, what) {
+  if (!is.null(roc$weights)) {
+    stop(sprintf("%s is not supported for ROC curves with observation weights.", what), call. = FALSE)
+  }
+}
+
+# sum(selected), or the total weight of the selected observations
+roc_utils_weighted_count <- function(selected, weights = NULL) {
+  if (is.null(weights)) sum(selected, na.rm = TRUE) else sum(weights[which(selected)])
 }
 
 # P-scale (predictor/cases/controls) rank is as.integer(x).
@@ -107,15 +158,20 @@ roc_utils_threshold_rank <- function(threshold, direction) {
   as.integer(threshold) - (direction == ">")
 }
 
-roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction, scale = 1) {
+roc_utils_sesp_from_ranks <- function(thr_i, ctrl_i, case_i, direction, scale = 1,
+                                      weights.controls = NULL, weights.cases = NULL) {
   if (direction == ">") {
-    tp <- sum(case_i <= thr_i, na.rm = TRUE)
-    tn <- sum(ctrl_i > thr_i, na.rm = TRUE)
+    tp <- roc_utils_weighted_count(case_i <= thr_i, weights.cases)
+    tn <- roc_utils_weighted_count(ctrl_i > thr_i, weights.controls)
   } else if (direction == "<") {
-    tp <- sum(case_i >= thr_i, na.rm = TRUE)
-    tn <- sum(ctrl_i < thr_i, na.rm = TRUE)
+    tp <- roc_utils_weighted_count(case_i >= thr_i, weights.cases)
+    tn <- roc_utils_weighted_count(ctrl_i < thr_i, weights.controls)
   }
-  c(sp = scale * tn / length(ctrl_i), se = scale * tp / length(case_i))
+  if (is.null(weights.controls)) {
+    c(sp = scale * tn / length(ctrl_i), se = scale * tp / length(case_i))
+  } else {
+    c(sp = scale * tn / sum(weights.controls), se = scale * tp / sum(weights.cases))
+  }
 }
 
 roc_utils_c_thresholds <- function(...) {
@@ -161,12 +217,14 @@ roc_utils_coords_basic <- function(threshold, specificity, sensitivity) {
 # scale: 100 for percent curves. The rates are computed as scale * k / n, one
 # rounding, so that a typed value such as 57.5 (23/40) matches the point it
 # denotes, on percent as on fraction curves ((k / n) * 100 rounds twice).
-roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 1) {
+# weights.controls, weights.cases: observation weights, which count each observation
+# as its weight. The totals are the ends of the cumulated sums, so that the
+# curve ends exactly on 0 and scale.
+roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 1,
+                                weights.controls = NULL, weights.cases = NULL) {
   if (is.ordered(thresholds) || is.ordered(cases) || is.ordered(controls)) {
-    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction, scale))
+    return(roc_utils_perfs_all_ordered(thresholds, controls, cases, direction, scale, weights.controls, weights.cases))
   }
-  ncontrols <- length(controls)
-  ncases <- length(cases)
   predictor <- c(controls, cases)
   response <- c(rep(0, length(controls)), rep(1, length(cases)))
   decr <- direction == "<"
@@ -174,14 +232,23 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 
   predictor.sorted <- predictor[predictor.order]
   response.sorted <- response[predictor.order]
 
-  tp <- cumsum(response.sorted == 1)
-  fp <- cumsum(response.sorted == 0)
+  if (is.null(weights.controls)) {
+    tp <- cumsum(response.sorted == 1)
+    fp <- cumsum(response.sorted == 0)
+  } else {
+    weights.sorted <- c(weights.controls, weights.cases)[predictor.order]
+    tp <- cumsum(weights.sorted * (response.sorted == 1))
+    fp <- cumsum(weights.sorted * (response.sorted == 0))
+  }
+  ncases <- tp[length(tp)]
+  ncontrols <- fp[length(fp)]
   se <- scale * tp / ncases
   sp <- scale * (ncontrols - fp) / ncontrols
   # filter duplicate thresholds
   dups.pred <- rev(duplicated(rev(predictor.sorted)))
   dups.sesp <- duplicated(se) & duplicated(sp)
-  dups <- dups.pred | dups.sesp
+  # (not with weights: a weight too small to move se or sp is still a point)
+  dups <- dups.pred | (dups.sesp & is.null(weights.controls))
   # Make sure we have the right length
   if (sum(!dups) != length(thresholds) - 1) {
     roc_utils_bug("fast algorithm computed an incorrect number of sensitivities and specificities", thresholds = thresholds, controls = controls, cases = cases, direction = direction)
@@ -196,7 +263,7 @@ roc_utils_perfs_all <- function(thresholds, controls, cases, direction, scale = 
   return(list(se = se, sp = sp))
 }
 
-roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, scale = 1) {
+roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, scale, weights.controls, weights.cases) {
   user_levels <- if (is.ordered(cases)) levels(cases) else levels(controls)
   expected <- if (direction == "<") c(user_levels, "Inf") else c("-Inf", user_levels)
   stopifnot(is.ordered(thresholds), identical(levels(thresholds), expected))
@@ -207,8 +274,15 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, 
   # The counts of roc_utils_sesp_from_ranks() at every threshold rank at once:
   # number of codes <= r at index r + 1, for r = 0, ..., nlevels (NAs not counted)
   nbins <- length(user_levels)
-  case_le <- c(0L, cumsum(tabulate(case_i, nbins)))
-  ctrl_le <- c(0L, cumsum(tabulate(ctrl_i, nbins)))
+  # With weights, the total weight of these codes
+  tabulate.weights <- function(codes, weights) {
+    if (is.null(weights)) {
+      return(tabulate(codes, nbins))
+    }
+    vapply(split(weights, factor(codes, seq_len(nbins))), sum, numeric(1), USE.NAMES = FALSE)
+  }
+  case_le <- c(0L, cumsum(tabulate.weights(case_i, weights.cases)))
+  ctrl_le <- c(0L, cumsum(tabulate.weights(ctrl_i, weights.controls)))
   if (direction == ">") {
     tp <- case_le[thr_i + 1L] # case_i <= thr_i
     tn <- ctrl_le[nbins + 1L] - ctrl_le[thr_i + 1L] # ctrl_i > thr_i
@@ -217,7 +291,11 @@ roc_utils_perfs_all_ordered <- function(thresholds, controls, cases, direction, 
     tn <- ctrl_le[thr_i] # ctrl_i < thr_i
   }
   # The same expressions as roc_utils_sesp_from_ranks(): the same doubles
-  return(list(se = scale * tp / length(case_i), sp = scale * tn / length(ctrl_i)))
+  # without weights
+  if (is.null(weights.cases)) {
+    return(list(se = scale * tp / length(case_i), sp = scale * tn / length(ctrl_i)))
+  }
+  return(list(se = scale * tp / case_le[nbins + 1L], sp = scale * tn / ctrl_le[nbins + 1L]))
 }
 
 roc_utils_fun_sesp <- function(...) {
@@ -228,9 +306,17 @@ roc_utils_fun_sesp <- function(...) {
 # returns a vector with two elements, sensitivity and specificity, given the threshold at which to evaluate the performance, the values of controls and cases and the direction of the comparison, a character '>' or '<' as controls CMP cases
 # sp <- roc_utils_perfs(...)[1,]
 # se <- roc_utils_perfs(...)[2,]
-roc_utils_perfs <- function(threshold, controls, cases, direction) {
+roc_utils_perfs <- function(threshold, controls, cases, direction, weights.controls = NULL, weights.cases = NULL) {
   if (is.ordered(cases) || is.ordered(controls) || is.ordered(threshold)) {
     return(roc_utils_perfs_ordered(threshold, controls, cases, direction))
+  }
+  if (!is.null(weights.controls)) {
+    if (is.na(threshold)) { # a missing threshold stays NA
+      return(c(sp = NA_real_, se = NA_real_))
+    }
+    return(roc_utils_sesp_from_ranks(threshold, controls, cases, direction,
+      weights.controls = weights.controls, weights.cases = weights.cases
+    ))
   }
   if (direction == ">") {
     tp <- sum(cases <= threshold)
@@ -258,7 +344,7 @@ roc_utils_perfs_ordered <- function(threshold, controls, cases, direction) {
 }
 
 # Evaluate roc_utils_perfs at each threshold without dropping ordered class.
-roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
+roc_utils_perfs_each <- function(thresholds, controls, cases, direction, weights.controls = NULL, weights.cases = NULL) {
   nthr <- length(thresholds)
   out <- matrix(NA_real_, nrow = 2L, ncol = nthr)
   rownames(out) <- c("sp", "se")
@@ -270,11 +356,16 @@ roc_utils_perfs_each <- function(thresholds, controls, cases, direction) {
     ctrl_i <- as.integer(controls)
     offset <- as.integer(direction == ">")
     for (i in which(!is.na(thresholds))) { # a missing threshold stays NA
-      out[, i] <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction)
+      out[, i] <- roc_utils_sesp_from_ranks(as.integer(thresholds[i]) - offset, ctrl_i, case_i, direction,
+        weights.controls = weights.controls, weights.cases = weights.cases
+      )
     }
   } else {
     for (i in seq_len(nthr)) {
-      out[, i] <- roc_utils_perfs(thresholds[i], controls = controls, cases = cases, direction = direction)
+      out[, i] <- roc_utils_perfs(thresholds[i],
+        controls = controls, cases = cases, direction = direction,
+        weights.controls = weights.controls, weights.cases = weights.cases
+      )
     }
   }
   out
@@ -374,9 +465,16 @@ roc_utils_thresholds_ordered <- function(predictor, direction) {
 # product of its incoming and outgoing directions is negative. (1, 0) before
 # the first point and (0, -1) after the last compare each end with its single
 # neighbour. Duplicated points count once, keeping 1.19.1's label.
-roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, scale = 1) {
-  tn <- round(sp / scale * ncontrols)
-  tp <- round(se / scale * ncases)
+# Without counts (fractional observation weights, exact = FALSE): the same test on
+# sp and se, in floating point.
+roc_utils_max_thresholds_idx <- function(thresholds, sp, se, ncontrols, ncases, scale = 1, exact = TRUE) {
+  if (!exact) {
+    tn <- sp
+    tp <- se
+  } else {
+    tn <- round(sp / scale * ncontrols)
+    tp <- round(se / scale * ncases)
+  }
   idx <- if (is.unsorted(sp)) rev(seq_along(sp)) else seq_along(sp)
   o <- idx[order(tn[idx], -tp[idx])]
   o <- o[!duplicated(cbind(tn[o], tp[o]))]
@@ -581,11 +679,12 @@ load.suggested.package <- function(pkg) {
 # counts are not integers. Every other coordinate is then computed from the
 # counts, with one rounding.
 roc_utils_calc_coords <- function(roc, thr, se, sp, best.weights, exact = FALSE) {
-  ncases <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$cases), length(roc$cases))
-  ncontrols <- ifelse(methods::is(roc, "smooth.roc"), length(attr(roc, "roc")$controls), length(roc$controls))
+  sizes <- roc_utils_class_sizes(if (methods::is(roc, "smooth.roc")) attr(roc, "roc") else roc)
+  ncases <- sizes[["cases"]]
+  ncontrols <- sizes[["controls"]]
   substr.percent <- ifelse(roc$percent, 100, 1)
 
-  exact <- rep_len(exact, length(se))
+  exact <- rep_len(exact & roc_utils_has_counts(roc), length(se))
   tp <- se * ncases / substr.percent
   tp[exact] <- round(tp[exact])
   fn <- ncases - tp
@@ -769,11 +868,11 @@ roc_utils_in_partial_auc <- function(roc, ignore = FALSE) {
 # roc_utils_optim_crit as before.
 roc_utils_optim_crit_counts <- function(roc, weights, method) {
   r <- (1 - weights[2]) / (weights[1] * weights[2])
-  if (!isTRUE(r == 1) || methods::is(roc, "smooth.roc")) {
+  if (!isTRUE(r == 1) || methods::is(roc, "smooth.roc") || !roc_utils_has_counts(roc)) {
     return(NULL)
   }
-  n1 <- length(roc$cases)
-  n0 <- length(roc$controls)
+  n1 <- roc_utils_class_sizes(roc)[["cases"]]
+  n0 <- roc_utils_class_sizes(roc)[["controls"]]
   scale <- ifelse(roc$percent, 100, 1)
   # round() inverts scale * k / n (see roc_utils_calc_coords)
   tp <- round(roc$sensitivities * n1 / scale)
@@ -883,15 +982,16 @@ coord.is.decreasing <- c(
 # Get response and predictor(s) from a formula.
 # This function takes care of all the logic to handle
 # weights, subset, na.action etc. It handles formulas with
-# and without data. It rejects weights and certain na.actions.
+# and without data. It rejects certain na.actions, and weights unless the
+# caller takes them (allow.weights = TRUE).
 # @param formula
 # @param data
 # @param data.missing
 # @param call the call from the parent function
 # @param ... the ... from the parent function
 # @return a list with 3 elements: response (vector), predictor.names (character),
-#         predictors (data.frame).
-roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
+#         predictors (data.frame), and weights if any.
+roc_utils_extract_formula <- function(formula, data, data.missing, call, ..., allow.weights = FALSE) {
   # Get predictors (easy)
   if (data.missing) {
     formula.terms <- terms(formula)
@@ -962,7 +1062,15 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
     m <- eval.parent(temp, n = 2)
   }
 
-  if (!is.null(model.weights(m))) stop("weights are not supported")
+  if (!is.null(model.weights(m))) {
+    if (!allow.weights) {
+      stop("weights are not supported in the formula of this function.")
+    }
+    m.weights <- as.vector(model.weights(m))
+    m[["(weights)"]] <- NULL
+  } else {
+    m.weights <- NULL
+  }
 
   # Sanity checks
   if (length(predictors) != ncol(m) - 1) {
@@ -974,7 +1082,8 @@ roc_utils_extract_formula <- function(formula, data, data.missing, call, ...) {
     response.name = names(m)[1],
     response = model.response(m),
     predictor.names = names(m)[-1],
-    predictors = m[-1]
+    predictors = m[-1],
+    weights = m.weights
   ))
 }
 
@@ -1196,6 +1305,40 @@ roc_utils_stop_if_no_ml <- function(roc, auc = roc$auc) {
   }
 }
 
+# The bootstrap percentiles of ci.auc have no scale
+roc_utils_warn_scale_bootstrap <- function(method, scale.given) {
+  if (method == "bootstrap" && scale.given) {
+    warning("'scale' is ignored with the bootstrap method.")
+  }
+}
+
+# CI of an AUC with standard error sd, as (lower, AUC, upper), on the
+# given scale ("auc" or "logit")
+roc_utils_auc_ci <- function(auc, sd, conf.level, scale, sides) {
+  if (scale == "logit") {
+    roc_utils_logit_ci(auc, sd, conf.level, sides)
+  } else {
+    roc_utils_normal_ci(auc, sd, conf.level, sides)
+  }
+}
+
+# The standard confidence interval of an AUC, AUC +- z SE (Efron &
+# Tibshirani 1993, p. 154, Eq. 12.5), as (lower, AUC, upper), bounded to
+# [0, 1]: the bounds can go beyond in rare cases. Exactly the DeLong CI of
+# pROC 1.19 and before. A one-sided interval extends to 0 or 1.
+roc_utils_normal_ci <- function(auc, sd, conf.level, sides) {
+  tail <- roc_utils_ci_tail(conf.level, sides)
+  ci <- qnorm(c(tail, .5, 1 - tail), mean = auc, sd = sd)
+  if (sides == "upper") {
+    ci[1] <- 0
+  } else if (sides == "lower") {
+    ci[3] <- 1
+  }
+  ci[ci > 1] <- 1
+  ci[ci < 0] <- 0
+  ci
+}
+
 # CI of an AUC with standard error sd, as (lower, AUC, upper): a normal
 # interval on the logit scale, which stays within (0, 1) (Pepe 2003, p. 107).
 # A one-sided interval extends to 0 or 1.
@@ -1323,14 +1466,15 @@ roc_utils_list_method <- function(x, method, methods) {
   partial <- any(vapply(rocs, has.partial.auc, logical(1)))
   smoothed <- !all(vapply(smoothing.args, is.null, logical(1)))
   same.direction <- length(unique(vapply(rocs, `[[`, character(1), "direction"))) == 1
+  weighted <- !all(vapply(lapply(rocs, `[[`, "weights"), is.null, logical(1)))
   if (is.null(method)) {
     if (partial) {
       # partial auc: go for bootstrap
       method <- "bootstrap"
     } else if ("ml" %in% methods && !x$paired && all(x$has.ml)) {
       method <- "ml"
-    } else if (smoothed || !same.direction) {
-      # other smoothings, or paired, and different directions: bootstrap
+    } else if (smoothed || !same.direction || weighted) {
+      # other smoothings, or paired, different directions and observation weights: bootstrap
       method <- "bootstrap"
     } else {
       method <- "delong"

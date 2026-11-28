@@ -50,14 +50,14 @@ roc.test.formula <- function(formula, data, ..., subset, na.action) {
   return(testres)
 }
 
-roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, paired = TRUE, ...) {
+roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TRUE, method = NULL, paired = TRUE, ..., weights = NULL) {
   if (is.matrix(predictor1) | is.data.frame(predictor1)) {
     if (!is.null(predictor2)) {
       stop("Predictor2 must not be specified if predictor1 is a matrix or a data.frame.")
     }
     if (dim(predictor1)[2] == 2 & length(response) == dim(predictor1)[1]) {
-      roc1 <- roc(response, predictor1[, 1], ...)
-      roc2 <- roc(response, predictor1[, 2], ...)
+      roc1 <- roc(response, predictor1[, 1], ..., weights = weights)
+      roc2 <- roc(response, predictor1[, 2], ..., weights = weights)
       if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
         stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
       }
@@ -74,7 +74,7 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
   } else {
     if (missing(predictor2)) {
       # A single predictor: test of one curve
-      roc1 <- roc(response, predictor1, ...)
+      roc1 <- roc(response, predictor1, ..., weights = weights)
       if (!roc_utils_is_curve(roc1)) {
         stop("Cannot test the ROC curve: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
       }
@@ -89,12 +89,16 @@ roc.test.default <- function(response, predictor1, predictor2 = NULL, na.rm = TR
     # Need to remove NAs
     if (na.rm) {
       nas <- is.na(response) | is.na(predictor1) | is.na(predictor2)
+      if (!is.null(weights) && length(weights) != length(response)) {
+        stop("'weights' must be a numeric vector of the same length as 'response'.")
+      }
+      weights <- weights[!nas]
       response <- response[!nas]
       predictor1 <- predictor1[!nas]
       predictor2 <- predictor2[!nas]
     }
-    roc1 <- roc(response, predictor1, ...)
-    roc2 <- roc(response, predictor2, ...)
+    roc1 <- roc(response, predictor1, ..., weights = weights)
+    roc2 <- roc(response, predictor2, ..., weights = weights)
     if (!roc_utils_is_curve(roc1) || !roc_utils_is_curve(roc2)) {
       stop("Cannot compare ROC curves: roc() returned NA or NaN (NA values with na.rm = FALSE, or infinite predictor values).")
     }
@@ -193,7 +197,7 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
     # One contrast: L theta / sqrt(L S L') is standard normal
     d <- tested$d
     sig <- tested$sd
-    stat <- delong.test(list(d = d, sig = sig))
+    stat <- roc_test_normal_stat(d, sig)
     # named as in roc.test.roc
     htest$statistic <- if (method == "ml" || (method == "delong" && x$paired)) c("Z" = stat) else c("D" = stat)
     htest$null.value <- c("contrast of AUCs" = 0)
@@ -211,7 +215,8 @@ roc.test.list <- function(rocs, contrast = NULL, method = c("delong", "bootstrap
       stat <- df <- NA_real_
     } else {
       # Contrasts without variance: no degree of freedom, and as for two
-      # curves (delong.test) no difference if they are 0, infinite otherwise
+      # curves (roc_test_normal_stat) no difference if they are 0, infinite
+      # otherwise
       df <- sum(tested$sd > 0)
       stat <- if (any(tested$sd == 0 & tested$d != 0)) Inf else sum(((tested$d / tested$sd)^2)[tested$sd > 0])
     }
@@ -336,7 +341,7 @@ roc.test.roc <- function(roc1, roc2,
       # As var()
       method <- if (roc_utils_has_ml(roc1)) {
         "ml"
-      } else if (has.partial.auc(roc1) || smooth) {
+      } else if (has.partial.auc(roc1) || smooth || !is.null(roc1$weights)) {
         "bootstrap"
       } else {
         "delong"
@@ -441,6 +446,9 @@ roc.test.roc <- function(roc1, roc2,
     } else if (roc1$direction != roc2$direction) {
       # delong doesn't work well with opposite directions (will report high significance if roc1$auc and roc2$auc are similar and high)
       method <- "bootstrap"
+    } else if (!is.null(roc1$weights) || !is.null(roc2$weights)) {
+      # observation weights: bootstrap
+      method <- "bootstrap"
     } else {
       method <- "delong"
     }
@@ -459,6 +467,8 @@ roc.test.roc <- function(roc1, roc2,
       }
 
     } else if (method == "venkatraman") {
+      roc_utils_stop_if_weighted(roc1, "Venkatraman's test")
+      roc_utils_stop_if_weighted(roc2, "Venkatraman's test")
       if (has.partial.auc(roc1) || has.partial.auc(roc2)) {
         stop("Venkatraman's test is not supported for partial AUC.")
       }
@@ -512,11 +522,11 @@ roc.test.roc <- function(roc1, roc2,
     roc_test_check_conf_level(conf.level)
     if (paired) {
       delong.calcs <- delong.paired.calculations(roc1, roc2)
-      stat <- c("Z" = delong.test(delong.calcs))
+      stat <- c("Z" = roc_test_normal_stat(delong.calcs$d, delong.calcs$sig))
       htest$method <- "DeLong's test for two correlated ROC curves"
     } else {
       delong.calcs <- delong.unpaired.calculations(roc1, roc2)
-      stat <- c("D" = delong.test(delong.calcs))
+      stat <- c("D" = roc_test_normal_stat(delong.calcs$d, delong.calcs$sig))
       htest$method <- "DeLong's test for two ROC curves"
     }
     htest$statistic <- stat
@@ -535,7 +545,7 @@ roc.test.roc <- function(roc1, roc2,
     d <- estimate[[1]] - estimate[[2]]
     stat <- c(Z = d / sqrt(variance))
     if (d == 0 && variance == 0) {
-      stat[] <- 0 # no difference with zero variance (perfect curves), as in delong.test
+      stat[] <- 0 # no difference with zero variance (perfect curves), as in roc_test_normal_stat
     }
     htest$statistic <- stat
     htest$conf.int <- roc_test_ci_normal(d, sqrt(variance), conf.level, alternative)
@@ -627,6 +637,17 @@ roc.test.roc <- function(roc1, roc2,
   return(htest)
 }
 
+# Statistic d / sig of a difference d with standard error sig, standard
+# normal under the null hypothesis. No difference with zero variance gives 0
+# instead of NaN.
+roc_test_normal_stat <- function(d, sig) {
+  stat <- d / sig
+  if (is.nan(stat) && d == 0 && sig == 0) {
+    stat <- 0
+  }
+  stat
+}
+
 # p-value of a statistic with a standard normal distribution under the null
 # hypothesis, for the alternative of roc.test
 roc_test_normal_pvalue <- function(stat, alternative) {
@@ -689,7 +710,7 @@ roc_test_one_curve <- function(roc1, method, alternative, boot.n, boot.stratifie
     method = method, boot.n = boot.n, boot.stratified = boot.stratified,
     progress = progress, parallel = parallel, cl = cl
   ))
-  stat <- (estimate - null.value) / sig
+  stat <- roc_test_normal_stat(estimate - null.value, sig)
 
   htest <- list(
     statistic = stats::setNames(stat, if (method == "bootstrap") "D" else "Z"),

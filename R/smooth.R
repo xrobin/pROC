@@ -39,6 +39,7 @@ smooth.roc <- function(roc, method = c("binormal", "density", "fitdistr", "logco
                        reuse.auc = TRUE, reuse.ci = FALSE,
                        ...) {
   method <- match.arg(method)
+  roc_utils_stop_if_weighted(roc, "Smoothing")
 
   if (roc_utils_is_ordered_roc(roc) && !method %in% c("binormal", "proper")) {
     stop("ROC curves of ordered predictors can be smoothed only with binormal or proper smoothing.")

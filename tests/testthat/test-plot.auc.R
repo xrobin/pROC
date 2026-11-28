@@ -27,25 +27,25 @@ capture_polygon_call <- function(expr) {
   get(".test_captured_polygon", envir = globalenv())
 }
 
-test_that("text(auc), text(ci.auc) and text(roc) match ggroc_auc_label()", {
+test_that("text(auc), text(ci.auc) and text(roc) match roc_utils_auc_label()", {
   pdf(NULL)
   on.exit(dev.off())
 
   plot(r.s100b)
-  expect_identical(text(r.s100b$auc), ggroc_auc_label(r.s100b$auc))
-  expect_identical(text(r.s100b), ggroc_auc_label(r.s100b$auc))
+  expect_identical(text(r.s100b$auc), roc_utils_auc_label(r.s100b$auc))
+  expect_identical(text(r.s100b), roc_utils_auc_label(r.s100b$auc))
 
   plot(r.s100b.percent)
-  expect_identical(text(r.s100b.percent$auc), ggroc_auc_label(r.s100b.percent$auc))
+  expect_identical(text(r.s100b.percent$auc), roc_utils_auc_label(r.s100b.percent$auc))
 
   plot(r.s100b.partial1)
-  expect_identical(text(r.s100b.partial1$auc), ggroc_auc_label(r.s100b.partial1$auc))
+  expect_identical(text(r.s100b.partial1$auc), roc_utils_auc_label(r.s100b.partial1$auc))
 
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, boot.n = 100, quiet = TRUE)
   plot(roc_ci)
   # The CI stored in the curve is not used by default
-  expect_identical(text(roc_ci), ggroc_auc_label(roc_ci$auc))
-  expect_identical(text(roc_ci$ci), ggroc_auc_label(roc_ci$auc, roc_ci$ci))
+  expect_identical(text(roc_ci), roc_utils_auc_label(roc_ci$auc))
+  expect_identical(text(roc_ci$ci), roc_utils_auc_label(roc_ci$auc, roc_ci$ci))
 })
 
 test_that("text() ignores a non-ci.auc confidence interval", {
@@ -55,7 +55,7 @@ test_that("text() ignores a non-ci.auc confidence interval", {
   roc_se_ci <- roc(aSAH$outcome, aSAH$s100b, quiet = TRUE)
   roc_se_ci$ci <- ci.se(roc_se_ci, boot.n = 100)
   plot(roc_se_ci)
-  expect_identical(text(roc_se_ci), ggroc_auc_label(roc_se_ci$auc))
+  expect_identical(text(roc_se_ci), roc_utils_auc_label(roc_se_ci$auc))
 })
 
 test_that("polygon_auc partial polygon area matches the (uncorrected) partial AUC: focus sp", {
@@ -343,12 +343,12 @@ test_that("text(roc, ci = ) uses the given ci.auc", {
 
   ci1 <- ci.auc(r.s100b)
   plot(r.s100b)
-  expect_identical(text(r.s100b, ci = ci1), ggroc_auc_label(r.s100b$auc, ci1))
+  expect_identical(text(r.s100b, ci = ci1), roc_utils_auc_label(r.s100b$auc, ci1))
   # it takes precedence over the stored CI
   roc_ci <- roc(aSAH$outcome, aSAH$s100b, ci = TRUE, quiet = TRUE)
   ci90 <- ci.auc(roc_ci, conf.level = 0.9)
-  expect_identical(text(roc_ci, ci = ci90), ggroc_auc_label(roc_ci$auc, ci90))
-  expect_identical(text(smooth(r.s100b), ci = ci1), ggroc_auc_label(smooth(r.s100b)$auc, ci1))
+  expect_identical(text(roc_ci, ci = ci90), roc_utils_auc_label(roc_ci$auc, ci90))
+  expect_identical(text(smooth(r.s100b), ci = ci1), roc_utils_auc_label(smooth(r.s100b)$auc, ci1))
 })
 
 # Two drawings give the same SVG

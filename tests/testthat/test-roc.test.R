@@ -507,6 +507,35 @@ test_that("roc.test of one perfect curve has a null variance", {
   expect_identical(ht$p.value, 0)
 })
 
+test_that("roc.test of one curve at the null with zero variance gives 0, p = 1", {
+  constant <- roc(c(0, 0, 0, 1, 1, 1), rep(1, 6), quiet = TRUE)
+  ht <- roc.test(constant)
+  expect_identical(ht$statistic, c(Z = 0))
+  expect_identical(ht$p.value, 1)
+  expect_equal(as.numeric(ht$conf.int), c(0.5, 0.5))
+  expect_identical(roc.test(constant, alternative = "greater")$p.value, 0.5)
+  expect_identical(roc.test(constant, alternative = "less")$p.value, 0.5)
+
+  constant.percent <- roc(c(0, 0, 0, 1, 1, 1), rep(1, 6), percent = TRUE, quiet = TRUE)
+  ht.pct <- roc.test(constant.percent)
+  expect_identical(ht.pct$statistic, c(Z = 0))
+  expect_identical(ht.pct$p.value, 1)
+
+  ht.boot <- roc.test(constant, method = "bootstrap", boot.n = 10)
+  expect_identical(ht.boot$statistic, c(D = 0))
+  expect_identical(ht.boot$p.value, 1)
+
+  constant.pa <- roc(c(0, 0, 0, 1, 1, 1), rep(1, 6), partial.auc = c(1, 0.8), quiet = TRUE)
+  ht.pa <- roc.test(constant.pa, boot.n = 10)
+  expect_identical(ht.pa$statistic, c(D = 0))
+  expect_identical(ht.pa$p.value, 1)
+
+  constant.pac <- roc(c(0, 0, 0, 1, 1, 1), rep(1, 6), partial.auc = c(1, 0.8), partial.auc.correct = TRUE, quiet = TRUE)
+  ht.pac <- roc.test(constant.pac, boot.n = 10)
+  expect_identical(ht.pac$statistic, c(D = 0))
+  expect_identical(ht.pac$p.value, 1)
+})
+
 test_that("roc.test selects the bootstrap when only roc2 has a partial AUC", {
   set.seed(42)
   expect_warning(res.12 <- roc.test(r.ndka, r.s100b.partial1, boot.n = 10), "Different AUC specifications")

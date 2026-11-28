@@ -23,12 +23,12 @@
 \S3method{ci.auc}{roc}(roc, conf.level=0.95, method=c("delong",
 "bootstrap"), boot.n = 2000, boot.stratified = TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL,
-sides = c("two.sided", "lower", "upper"), ...)
+sides = c("two.sided", "lower", "upper"), ..., scale = c("auc", "logit"))
 \S3method{ci.auc}{smooth.roc}(smooth.roc, conf.level=0.95, boot.n=2000,
 boot.stratified=TRUE, reuse.auc=TRUE,
 progress = getOption("pROCProgress", interactive()), parallel=FALSE, cl = NULL,
 sides = c("two.sided", "lower", "upper"), ...,
-method = NULL)
+method = NULL, scale = c("auc", "logit"))
 \S3method{ci.auc}{multiclass.roc}(multiclass.roc, ...)
 \S3method{ci.auc}{multiclass.auc}(multiclass.auc, ...)
 \S3method{ci.auc}{auc}(auc, ...)
@@ -59,6 +59,12 @@ method = NULL)
     \dQuote{bootstrap}, or \dQuote{ml} for smoothed curves. The first
     letter is sufficient. If omitted, the
     appropriate method is selected as explained in details.
+  }
+  \item{scale}{the scale on which the normal CI of \code{method="delong"}
+    and \code{"ml"} is computed: \dQuote{auc} (the default), the AUC
+    itself, or \dQuote{logit}, the logit of the AUC. See details.
+    Ignored with \code{method="bootstrap"}. The default will change to
+    \dQuote{logit} in \pkg{pROC} 1.21.
   }
   \item{sides}{the sides of the confidence interval: \dQuote{two.sided}
     (default), \dQuote{lower} for a lower confidence bound only, or
@@ -110,9 +116,10 @@ method = NULL)
   function is called to build the ROC curve first.
 
   The default is to use the \dQuote{delong} method, except for comparison of
-  partial AUC and smoothed curves. The full AUC of curves smoothed with
-  \code{method="binormal"} or \code{"proper"} uses \dQuote{ml};
-  partial AUC and other smoothed curves use \code{bootstrap}. Using
+  partial AUC, smoothed curves and curves with observation weights. The full AUC
+  of curves smoothed with \code{method="binormal"} or \code{"proper"}
+  uses \dQuote{ml}; partial AUC, other smoothed curves and curves with
+  observation weights use \code{bootstrap}. Using
   \dQuote{delong} for partial AUC and smoothed ROCs is not supported: with
   partial AUC it is an error, and smoothed curves are bootstrapped
   instead (with a warning). \dQuote{ml} is an error for anything
@@ -130,12 +137,20 @@ method = NULL)
 
   With \code{method="delong"}, the variance of the AUC is computed as
   defined by DeLong \emph{et al.} (1988) using the algorithm by Sun and Xu (2014).
-  The CI is a normal interval on the logit scale, back-transformed to the
-  AUC scale (Pepe, 2003, p. 107).
-
   With \code{method="ml"}, the variance of the AUC is computed as
-  described in \code{\link{var}}, and the CI is computed on the logit
-  scale as with \code{method="delong"}.
+  described in \code{\link{var}}.
+
+  With both methods, the CI is a normal interval computed from this
+  variance on the scale given by \code{scale}:
+  \describe{
+    \item{\code{scale="auc"}}{the standard interval
+      \eqn{AUC \pm z \sqrt{V}}{AUC +/- z sqrt(V)} (Efron and Tibshirani,
+      1993, p. 154, Eq. 12.5), with \code{\link{qnorm}}. Its bounds can
+      go beyond 0 or 1, and are then truncated.}
+    \item{\code{scale="logit"}}{a normal interval on the logit scale,
+      back-transformed to the AUC scale (Pepe, 2003, p. 107). It is
+      asymmetric and stays within (0, 1).}
+  }
   
   A one-sided CI (\code{sides="lower"} or \code{"upper"}) has a
   single confidence bound, which leaves out \code{1 - conf.level} on its
@@ -186,6 +201,9 @@ bound, the central value and the upper bound of the CI, and the following attrib
 \item{method}{the method employed.}
 \item{boot.n}{the number of bootstrap replicates.}
 \item{boot.stratified}{whether or not the bootstrapping was stratified.}
+\item{scale}{the scale of the CI (\dQuote{auc} or \dQuote{logit}) with
+  \code{method="delong"} and \code{"ml"}, \code{NULL} with
+  \code{method="bootstrap"}.}
 \item{auc}{an object of class \dQuote{\link{auc}} stored for reference about the
   computed AUC details (partial, percent, ...)}
 
@@ -206,6 +224,9 @@ consistency reasons.
   (1988) ``Comparing the areas under two or more correlated receiver
   operating characteristic curves: a nonparametric
   approach''. \emph{Biometrics} \bold{44}, 837--845.
+
+  Bradley Efron and Robert J. Tibshirani (1993) \emph{An Introduction to
+  the Bootstrap}. Chapman & Hall, New York.
 
   Margaret Sullivan Pepe (2003) \emph{The Statistical Evaluation of Medical
   Tests for Classification and Prediction}. Oxford University Press.

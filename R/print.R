@@ -201,10 +201,12 @@ print.ci.auc <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   print_ci_level(x)
   cat(": ")
   cat(signif.ci[1], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), "-", signif.ci[3], ifelse(attr(attr(x, "auc"), "percent"), "%", ""), sep = "")
+  # The logit scale is shown; the AUC scale, the default, is not
+  logit <- ifelse(identical(attr(x, "scale"), "logit"), ", logit scale", "")
   if (attr(x, "method") == "delong") {
-    cat(" (DeLong)\n", sep = "")
+    cat(" (DeLong", logit, ")\n", sep = "")
   } else if (attr(x, "method") == "ml") {
-    cat(" (maximum likelihood)\n", sep = "")
+    cat(" (maximum likelihood", logit, ")\n", sep = "")
   } else {
     cat(" (", attr(x, "boot.n"), " ", ifelse(attr(x, "boot.stratified"), "stratified", "non-stratified"), " bootstrap replicates)\n", sep = "")
   }
@@ -261,6 +263,12 @@ print.ci.coords <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 }
 
 print_dataline <- function(x) {
+  if (!is.null(x$weights)) {
+    on.exit({
+      sizes <- roc_utils_class_sizes(x)
+      cat("Observation weights: ", format(sizes[["controls"]]), " controls, ", format(sizes[["cases"]]), " cases.\n", sep = "")
+    })
+  }
   # Case / Controls call
   if ("cases" %in% names(x$call) && "controls" %in% names(x$call)) {
     cat("Data: ", length(x$controls), " controls ", x$direction, " ", length(x$cases), " cases.\n", sep = "")
